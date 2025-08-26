@@ -1,12 +1,12 @@
-name: Ping API health-check
+# name: Ping API health-check
 
-on:
-  schedule:
-    - cron: '*/10 * * * *'
+# on:
+#   schedule:
+#     - cron: '*/10 * * * *'
 
-jobs:
-  ping-api:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Curl health-check endpoint
-        run: curl -fsS --retry 3 https://tfm-eta.vercel.app/api/health-check
+# jobs:
+#   ping-api:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Curl health-check endpoint
+#         run: curl -fsS --retry 3 https://tfm-eta.vercel.app/api/health-check
