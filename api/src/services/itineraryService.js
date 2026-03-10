@@ -96,8 +96,11 @@ export class ItineraryService {
             throw new NotFoundError("Itinerary not found");
         }
 
-        // If a new image is provided, upload it to Cloudinary and store its details
+        // If a new image is provided, delete the old one and upload the new one
         if (file) {
+            if (itinerary.photoPublicId) {
+                await this.cloudinaryService.deleteImage(itinerary.photoPublicId);
+            }
             const result = await this.cloudinaryService.uploadImageFromBuffer(file.buffer, file.originalname);
             itineraryData.photoUrl = result.secure_url;
             itineraryData.photoPublicId = result.public_id;
@@ -141,8 +144,10 @@ export class ItineraryService {
 
     async generateSmartItinerary(destination, totalDays) {
         const rawText = await this.aiService.generateTextPrompt(destination, totalDays)
-        const parsedItinerary = JSON.parse(rawText)
-
-        return parsedItinerary
+        try {
+            return JSON.parse(rawText)
+        } catch {
+            throw new Error(`AI returned invalid JSON for destination "${destination}"`)
+        }
     }
 }

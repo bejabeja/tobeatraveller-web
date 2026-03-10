@@ -64,10 +64,7 @@ export class AIService {
       if (!jsonMatch) {
         throw new Error('No valid JSON found in response text')
       }
-      const cleanText = jsonMatch[0]
-      console.log(cleanText)
-
-      return cleanText;
+      return jsonMatch[0];
     } catch (error) {
       console.error('Error generating itinerary text:', error)
       throw error
