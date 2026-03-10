@@ -23,7 +23,7 @@ export const createItinerariesRouter = () => {
     // router.post("/:id/comments", authenticate, commentsController.create);
     // router.post("/:id/like", authenticate, itinerariesController.likeItinerary);
     // router.delete("/:id/like", authenticate, itinerariesController.unlikeItinerary);
-
+//test
 
     return router;
 }

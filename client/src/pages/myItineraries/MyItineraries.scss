@@ -6,15 +6,134 @@
 
   &__section-ctas {
     display: flex;
-    flex-direction: row;
     justify-content: center;
+    width: 100%;
   }
 }
 
-@media (min-width: 480px) {
+.filters {
+  background-color: #f9f9f9;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+
+  &__main {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  &__more {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  input,
+  select {
+    margin-top: 0.5rem;
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--secondary-color, #d1d5db);
+    border-radius: 8px;
+    font-size: 1rem;
+    background-color: var(--white-color, #fff);
+    transition: all 0.3s ease;
+    max-width: 100%;
+
+    &:focus {
+      outline: none;
+      border-color: var(--primary-color, #0077ff);
+      box-shadow: 0 0 0 3px rgba(0, 119, 255, 0.1);
+    }
+  }
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #4b5563;
+  }
+}
+
+.filter-pair {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  input {
+    width: 100%;
+  }
+
+  span {
+    display: none;
+  }
+}
+
+.btn-toggle-filters {
+  background: transparent;
+  border: none;
+  color: var(--primary-color);
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: var(--primary-color-hover);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (min-width: 768px) {
   .my-itineraries {
     &__section-ctas {
       justify-content: flex-end;
     }
+  }
+  .filters__more {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .filter-pair {
+    flex-direction: row;
+    align-items: center;
+
+    span {
+      width: fit-content;
+      display: inline;
+      font-weight: bold;
+      color: var(--primary-color);
+    }
+  }
+
+  .filter-group {
+    max-width: 300px;
+  }
+
+  .dates {
+    max-width: fit-content;
   }
 }

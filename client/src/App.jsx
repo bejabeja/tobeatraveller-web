@@ -29,9 +29,7 @@ import {
   selectIsAuthenticated,
 } from "./store/auth/authSelectors";
 import { initFilters } from "./store/filters/filterActions";
-import { initFeaturedItineraries } from "./store/itineraries/itinerariesActions";
 import { loadMyUserInfo } from "./store/user/userInfoActions";
-import { initFeaturedUsers } from "./store/users/usersActions";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -42,8 +40,6 @@ const App = () => {
   useEffect(() => {
     dispatch(initAuthUser());
     dispatch(initFilters());
-    dispatch(initFeaturedItineraries());
-    dispatch(initFeaturedUsers());
   }, []);
 
   useEffect(() => {

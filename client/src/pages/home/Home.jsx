@@ -29,10 +29,15 @@ const Home = () => {
   const featuredUsersLoading = useSelector(selectFeaturedUsersLoading);
 
   useEffect(() => {
-    dispatch(initFeaturedItineraries());
-    dispatch(initFeaturedUsers());
-  }, [dispatch]);
+    if (!featuredItineraries || featuredItineraries.length === 0) {
+      dispatch(initFeaturedItineraries());
+    }
 
+    if (!featuredUsers || featuredUsers.length === 0) {
+      dispatch(initFeaturedUsers());
+    }
+  }, [dispatch, featuredItineraries, featuredUsers]);
+  
   return (
     <section className="home">
       <Hero />

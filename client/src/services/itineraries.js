@@ -1,10 +1,14 @@
 const baseUrl = `${import.meta.env.VITE_API_URL}/itineraries`;
 
-export const getItinerariesByFilters = async ({ category = "all", destination = "", page = 1, limit = 10 }) => {
+export const getItinerariesByFilters = async (filters = {}) => {
+    const { page = 1, limit = 10, ...rest } = filters;
     const params = new URLSearchParams();
+    Object.entries(rest).forEach(([key, value]) => {
+        if (value !== "" && value !== null && value !== undefined) {
+            params.append(key, value);
+        }
+    });
 
-    if (category) params.append("category", category);
-    if (destination) params.append("destination", destination);
     params.append('page', page)
     params.append('limit', limit)
 

@@ -27,7 +27,7 @@ const Profile = () => {
       <Error message="We couldn't load the profile info. Please try again later." />
     );
   }
-  
+
   return (
     <section className="profile section__container">
       <HeaderSection
@@ -43,7 +43,16 @@ const Profile = () => {
         itineraries={itineraries}
         title="Shared Itineraries"
         isLoading={loadingItineraries}
+        {...(isMyProfile ? { limit: 3 } : {})}
       />
+
+      {user?.totalItineraries > 3 && isMyProfile && (
+        <div className="profile__itineraries-more">
+          <Link to={`/my-itineraries`} className="btn btn__secondary">
+            Ver todos
+          </Link>
+        </div>
+      )}
     </section>
   );
 };

@@ -8,7 +8,6 @@ export class UserRepository {
             "INSERT INTO users (id, username, email, password, location, avatar_url) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
             [uuid, username, email, password, location, avatarUrl]
         );
-        if (result.rows.length === 0) return null;
 
         return User.fromDb(result.rows[0]);
     }
@@ -34,8 +33,7 @@ export class UserRepository {
     }
 
     async getAllUsers() {
-        const result = await db.query("SELECT * FROM users");
-        if (result.rows.length === 0) return null;
+        const result = await db.query("SELECT * FROM users WHERE role != 'test'");
 
         return result.rows.map(row => User.fromDb(row));
     }
@@ -52,9 +50,8 @@ export class UserRepository {
 
     async getFeaturedUsers() {
         const result = await db.query(
-            "SELECT * FROM users WHERE role = 'featured' ORDER BY RANDOM() LIMIT 3"
+            "SELECT * FROM users WHERE role = 'featured' AND role != 'test' ORDER BY RANDOM() LIMIT 3"
         );
-        if (result.rows.length === 0) return null;
 
         return result.rows.map(row => User.fromDb(row));
     }
@@ -76,7 +73,7 @@ export class UserRepository {
         const result = await db.query(
             `
             SELECT * FROM users
-            WHERE username ILIKE $1
+            WHERE username ILIKE $1 AND role != 'test'
             ORDER BY username ASC
             LIMIT $2 OFFSET $3
             `,
@@ -84,7 +81,7 @@ export class UserRepository {
         );
 
         const countResult = await db.query(
-            `SELECT COUNT(*) FROM users WHERE username ILIKE $1`,
+            `SELECT COUNT(*) FROM users WHERE username ILIKE $1 AND role != 'test'`,
             [searchTerm]
         );
 

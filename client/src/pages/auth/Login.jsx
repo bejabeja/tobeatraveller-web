@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { InputForm } from "../../components/form/InputForm";
+import { PasswordInputForm } from "../../components/form/PasswordInputForm";
 import SubmitButton from "../../components/form/SubmitButton";
 import { loginUser, setImageAuthLoaded } from "../../store/auth/authActions";
 import {
@@ -59,16 +60,26 @@ const Login = () => {
       <form onSubmit={handleSubmit(checkUser)} className="auth__form">
         <h1 className="auth__form-title">Log in</h1>
 
-        {fields.map((field) => (
-          <InputForm
-            key={field.name}
-            name={field.name}
-            label={field.label}
-            control={control}
-            type={field.type}
-            error={errors[field.name]}
-          />
-        ))}
+        {fields.map((field) =>
+          field.type === "password" ? (
+            <PasswordInputForm
+              key={field.name}
+              name={field.name}
+              label={field.label}
+              control={control}
+              error={errors[field.name]}
+            />
+          ) : (
+            <InputForm
+              key={field.name}
+              name={field.name}
+              label={field.label}
+              control={control}
+              type={field.type}
+              error={errors[field.name]}
+            />
+          )
+        )}
 
         <div className="auth__form-error" role="alert" aria-live="assertive">
           {errorInAuth && Object.keys(errors).length === 0

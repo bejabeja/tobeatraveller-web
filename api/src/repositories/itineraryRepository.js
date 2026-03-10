@@ -6,238 +6,184 @@ export class ItineraryRepository {
     async findByUserId(userId) {
         const query = `SELECT * FROM itineraries WHERE user_id = $1`;
         const result = await client.query(query, [userId]);
-
-        return result.rows.map(row => Itinerary.fromDb(row));
+        return result.rows.map(Itinerary.fromDb);
     }
 
-    async getItineraryById(itineraryId) {
+    async findById(itineraryId) {
         const query = `SELECT * FROM itineraries WHERE id = $1`;
         const result = await client.query(query, [itineraryId]);
-        if (result.rows.length === 0) return null;
-
-        return Itinerary.fromDb(result.rows[0]);
+        return result.rows.length ? Itinerary.fromDb(result.rows[0]) : null;
     }
 
-    async createItinerary(itineraryData) {
+    async create(itineraryData) {
         const {
-            userId,
-            title,
-            description,
-            location,
-            startDate,
-            endDate,
-            numberOfPeople,
-            category,
-            budget,
-            currency,
-            photoUrl,
-            photoPublicId
+            userId, title, description, location, startDate, endDate,
+            numberOfPeople, category, budget, currency, photoUrl, photoPublicId
         } = itineraryData;
-        const itineraryId = uuidv4();
-        const itineraryQuery = `
+        const id = uuidv4();
+
+        const query = `
             INSERT INTO itineraries (
                 id, user_id, title, description,
                 location_name, location_label, latitude, longitude,
                 start_date, end_date, number_of_people,
                 category, budget, currency, photo_url, photo_public_id
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
             RETURNING *;
         `;
 
-        const result = await client.query(itineraryQuery, [
-            itineraryId,
-            userId,
-            title,
-            description,
-            location.name,
-            location.label,
-            location.lat,
-            location.lon,
-            startDate,
-            endDate,
-            numberOfPeople,
-            category,
-            budget,
-            currency,
-            photoUrl,
-            photoPublicId
+        const result = await client.query(query, [
+            id, userId, title, description,
+            location.name, location.label, location.lat, location.lon,
+            startDate, endDate, numberOfPeople, category, budget, currency, photoUrl, photoPublicId
         ]);
 
         return Itinerary.fromDb(result.rows[0]);
     }
 
-    async updateItinerary(itineraryId, itineraryData) {
+    async update(itineraryId, itineraryData) {
         const {
-            title,
-            description,
-            location,
-            startDate,
-            endDate,
-            numberOfPeople,
-            budget,
-            currency,
-            category,
-            photoUrl,
-            photoPublicId
+            title, description, location, startDate, endDate,
+            numberOfPeople, budget, currency, category, photoUrl, photoPublicId
         } = itineraryData;
 
-        const updateItineraryQuery = `
-            UPDATE itineraries
-            SET 
-                title = $2, 
-                description = $3, 
-                location_name = $4, 
-                location_label = $5,
-                latitude = $6,
-                longitude = $7,
-                start_date = $8, 
-                end_date = $9, 
-                number_of_people = $10, 
-                budget = $11, 
-                currency = $12, 
-                category = $13,
-                photo_url = $14,
-                photo_public_id = $15,
+        const query = `
+            UPDATE itineraries SET 
+                title = $2, description = $3,
+                location_name = $4, location_label = $5,
+                latitude = $6, longitude = $7,
+                start_date = $8, end_date = $9,
+                number_of_people = $10, budget = $11,
+                currency = $12, category = $13,
+                photo_url = $14, photo_public_id = $15,
                 updated_at = NOW()
-            WHERE id = $1
-            RETURNING *;
+            WHERE id = $1 RETURNING *;
         `;
 
-        const result = await client.query(updateItineraryQuery, [
-            itineraryId,
-            title,
-            description,
-            location.name,
-            location.label,
-            location.lat,
-            location.lon,
-            startDate,
-            endDate,
-            numberOfPeople,
-            budget,
-            currency,
-            category,
-            photoUrl,
-            photoPublicId
+        const result = await client.query(query, [
+            itineraryId, title, description,
+            location.name, location.label, location.lat, location.lon,
+            startDate, endDate, numberOfPeople,
+            budget, currency, category, photoUrl, photoPublicId
         ]);
+        console.log("hereee7");
 
         return Itinerary.fromDb(result.rows[0]);
     }
 
-    async deleteItinerary(itineraryId) {
-        const deleteItineraryQuery = `DELETE FROM itineraries WHERE id = $1;`;
-        await client.query(deleteItineraryQuery, [itineraryId]);
+    async delete(itineraryId) {
+        await client.query(`DELETE FROM itineraries WHERE id = $1`, [itineraryId]);
     }
 
-    async linkPlaceToItinerary(itineraryId, placeId, orderIndex) {
-        const itineraryPlaceId = uuidv4();
-        const itineraryPlaceQuery = `
-            INSERT INTO itinerary_places (id, itinerary_id, place_id, order_index)
-            VALUES ($1, $2, $3, $4);
-        `;
-
-        await client.query(itineraryPlaceQuery, [
-            itineraryPlaceId,
-            itineraryId,
-            placeId,
-            orderIndex,
-        ]);
+    async linkPlace(itineraryId, placeId, orderIndex) {
+        const id = uuidv4();
+        await client.query(
+            `INSERT INTO itinerary_places (id, itinerary_id, place_id, order_index) VALUES ($1, $2, $3, $4)`,
+            [id, itineraryId, placeId, orderIndex]
+        );
     }
 
-    async updatePlaceInItinerary(itineraryId, placeData) {
-        const itineraryPlaceQuery = `
+    async updatePlaceOrder(itineraryId, { id: placeId, orderIndex }) {
+        const query = `
             UPDATE itinerary_places
             SET order_index = $2
             WHERE itinerary_id = $1 AND place_id = $3
             RETURNING *;
         `;
-
-        const result = await client.query(itineraryPlaceQuery, [
-            itineraryId,
-            placeData.orderIndex,
-            placeData.id
-        ]);
-
+        const result = await client.query(query, [itineraryId, orderIndex, placeId]);
         return result.rows[0];
     }
 
-    async unlinkPlaceFromItinerary(itineraryId, placeId) {
-        const itineraryPlaceQuery = `
-            DELETE FROM itinerary_places
-            WHERE itinerary_id = $1 AND place_id = $2;
-        `;
-
-        await client.query(itineraryPlaceQuery, [itineraryId, placeId]);
+    async unlinkPlace(itineraryId, placeId) {
+        await client.query(
+            `DELETE FROM itinerary_places WHERE itinerary_id = $1 AND place_id = $2`,
+            [itineraryId, placeId]
+        );
     }
 
-    async getTotalItinerariesByUserId(userId) {
-        const query = `
-            SELECT COUNT(*) as total
-            FROM itineraries
-            WHERE user_id = $1
-        `;
-        const result = await client.query(query, [userId]);
+    async getTotalByUserId(userId) {
+        const result = await client.query(
+            `SELECT COUNT(*) AS total FROM itineraries WHERE user_id = $1`, [userId]
+        );
         return parseInt(result.rows[0].total, 10);
     }
 
-    async findByFilters({ category, destination, page = 1, limit = 10 }) {
-        const offset = (page - 1) * limit;
-        const filters = [];
+    buildFilters(filters, indexStart = 1) {
+        const conditions = [`users.role != 'test'`];
         const values = [];
-        let index = 1;
+        let i = indexStart;
 
-        if (category && category !== "all") {
-            filters.push(`category = $${index++}`);
-            values.push(category);
+        if (filters.category && filters.category !== 'all') {
+            conditions.push(`category = $${i++}`);
+            values.push(filters.category);
         }
 
-        if (destination) {
-            filters.push(`LOWER(location_name) LIKE LOWER($${index++})`);
-            values.push(`%${destination}%`);
+        if (filters.destination) {
+            conditions.push(`LOWER(location_name) LIKE LOWER($${i++})`);
+            values.push(`%${filters.destination}%`);
         }
 
-        const whereClause = filters.length > 0 ? `WHERE ${filters.join(" AND ")}` : "";
+        if (filters.budgetMin !== undefined) {
+            conditions.push(`budget >= $${i++}`);
+            values.push(filters.budgetMin);
+        }
 
-        const query = `
-            SELECT *
-            FROM itineraries
-            ${whereClause}
-            ORDER BY start_date DESC
-            LIMIT $${index++} OFFSET $${index}
-        `;
+        if (filters.budgetMax !== undefined) {
+            conditions.push(`budget <= $${i++}`);
+            values.push(filters.budgetMax);
+        }
 
-        values.push(limit);
-        values.push(offset);
+        if (filters.durationMin !== undefined) {
+            conditions.push(`(FLOOR(EXTRACT(EPOCH FROM (end_date - start_date))/86400)+1) >= $${i++}`);
+            values.push(filters.durationMin);
+        }
 
-        const result = await client.query(query, values);
-        return result.rows.map(row => Itinerary.fromDb(row));
+        if (filters.durationMax !== undefined) {
+            conditions.push(`(FLOOR(EXTRACT(EPOCH FROM (end_date - start_date))/86400)+1) <= $${i++}`);
+            values.push(filters.durationMax);
+        }
+
+        if (filters.startDateMin) {
+            conditions.push(`start_date::date >= $${i++}::date`);
+            values.push(filters.startDateMin);
+        }
+
+        if (filters.startDateMax) {
+            conditions.push(`start_date::date <= $${i++}::date`);
+            values.push(filters.startDateMax);
+        }
+
+        return { conditions, values, nextIndex: i };
     }
 
-    async countByFilters({ category, destination }) {
-        const filters = [];
-        const values = [];
-        let index = 1;
-
-        if (category && category !== "all") {
-            filters.push(`category = $${index++}`);
-            values.push(category);
-        }
-
-        if (destination) {
-            filters.push(`LOWER(location_name) LIKE LOWER($${index++})`);
-            values.push(`%${destination}%`);
-        }
-
-        const whereClause = filters.length > 0 ? `WHERE ${filters.join(" AND ")}` : "";
+    async findByFilters(filters) {
+        const { conditions, values, nextIndex } = this.buildFilters(filters);
+        const whereClause = `WHERE ${conditions.join(" AND ")}`;
+        const offset = (filters.page - 1) * filters.limit;
 
         const query = `
-            SELECT COUNT(*) AS total
+            SELECT itineraries.*
             FROM itineraries
+            JOIN users ON itineraries.user_id = users.id
             ${whereClause}
+            ORDER BY start_date DESC
+            LIMIT $${nextIndex} OFFSET $${nextIndex + 1}
         `;
 
-        const result = await client.query(query, values);
+        const result = await client.query(query, [...values, filters.limit, offset]);
+        return result.rows.map(Itinerary.fromDb);
+    }
+
+    async countByFilters(filters) {
+        const { conditions, values } = this.buildFilters(filters);
+        const whereClause = `WHERE ${conditions.join(" AND ")}`;
+
+        const result = await client.query(
+            `SELECT COUNT(*) AS total FROM itineraries JOIN users ON itineraries.user_id = users.id ${whereClause}`,
+            values
+        );
+
         return parseInt(result.rows[0].total, 10);
     }
 }

@@ -13,15 +13,9 @@ export class UserService {
 
     async create(userData) {
         const { password, username, email, location } = userData;
-        const existingUser = await this.userRepository.findByName(username);
-        if (existingUser) {
-            throw new ConflictError("Username is not available. Please choose another one.");
-        }
 
-        const existingByEmail = await this.userRepository.findByEmail(email);
-        if (existingByEmail) {
-            throw new ConflictError("Email already in use");
-        }
+        await this._ensureUsernameAvailable(username);
+        await this._ensureEmailAvailable(email);
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -39,11 +33,11 @@ export class UserService {
 
     async getAllUsers() {
         const users = await this.userRepository.getAllUsers();
-        if (!users) {
+        if (!users || users.length === 0) {
             throw new NotFoundError("No users found");
         }
 
-        return users.map(user => (user.toSimpleDTO()));
+        return users.map(user => user.toSimpleDTO());
     }
 
     async getFilteredAllUsers({ searchName, page, limit }) {
@@ -55,16 +49,14 @@ export class UserService {
             limit,
         });
 
-        const totalPages = Math.ceil(total / limit);
-        for (const user of users) {
-            const countItineraries = await this.itinerariesRepository.getTotalItinerariesByUserId(user.id);
-            user.totalItineraries = countItineraries;
-        }
+        await Promise.all(users.map(async (user) => {
+            user.totalItineraries = await this.itinerariesRepository.getTotalByUserId(user.id);
+        }));
 
         return {
             users: users.map(user => user.toFeaturedDTO()),
-            totalPages,
-            currentPage: page
+            totalPages: Math.ceil(total / limit),
+            currentPage: page,
         };
     }
 
@@ -84,12 +76,12 @@ export class UserService {
         }
 
         const [itineraries, followersListIds, followingListIds] = await Promise.all([
-            this.itinerariesRepository.findByUserId(id), //TODO refactor
+            this.itinerariesRepository.findByUserId(id),
             this.followRepository.getFollowers(id),
-            this.followRepository.getFollowing(id)
+            this.followRepository.getFollowing(id),
         ]);
 
-        user.itineraries = itineraries.map((itinerary) => itinerary.toDTO());
+        user.itineraries = itineraries.map(itinerary => itinerary.toDTO());
         user.followersListIds = followersListIds;
         user.followingListIds = followingListIds;
 
@@ -97,10 +89,7 @@ export class UserService {
     }
 
     async updateUser(id, userData) {
-        const usernameExist = await this.userRepository.findByName(userData.username);
-        if (usernameExist && usernameExist.id !== id) {
-            throw new ConflictError("Username is not available. Please choose another one.");
-        }
+        await this._ensureUsernameAvailable(userData.username, id);
 
         const user = await this.userRepository.getUserById(id);
         if (!user) {
@@ -121,15 +110,28 @@ export class UserService {
 
     async getFeaturedUsers() {
         const users = await this.userRepository.getFeaturedUsers();
-        if (!users) {
+        if (!users || users.length === 0) {
             throw new NotFoundError("No featured users found");
         }
 
-        for (const user of users) {
-            const countItineraries = await this.itinerariesRepository.getTotalItinerariesByUserId(user.id);
-            user.totalItineraries = countItineraries;
-        }
+        await Promise.all(users.map(async (user) => {
+            user.totalItineraries = await this.itinerariesRepository.getTotalByUserId(user.id);
+        }));
 
         return users.map(user => user.toFeaturedDTO());
+    }
+
+    async _ensureUsernameAvailable(username, currentUserId = null) {
+        const existingUser = await this.userRepository.findByName(username);
+        if (existingUser && existingUser.id !== currentUserId) {
+            throw new ConflictError("Username is not available. Please choose another one.");
+        }
+    }
+
+    async _ensureEmailAvailable(email) {
+        const existingByEmail = await this.userRepository.findByEmail(email);
+        if (existingByEmail) {
+            throw new ConflictError("Email already in use");
+        }
     }
 }

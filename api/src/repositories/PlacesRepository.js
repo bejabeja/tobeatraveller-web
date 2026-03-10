@@ -3,8 +3,14 @@ import client from '../db/clientPostgres.js';
 import { Place } from "../models/place.js";
 
 export class PlacesRepository {
+    round6(value) {
+        return Math.round(value * 1e6) / 1e6;
+    };
 
     async insertPlace(placeData) {
+        const lat = this.round6(placeData.infoPlace.lat);
+        const lon = this.round6(placeData.infoPlace.lon);
+
         const placeId = uuidv4();
         const placeQuery = `
             INSERT INTO places (id, title, description, label, address, latitude, longitude, category)
@@ -18,8 +24,8 @@ export class PlacesRepository {
             placeData.description,
             placeData.infoPlace.label,
             placeData.infoPlace.label,
-            placeData.infoPlace.lat,
-            placeData.infoPlace.lon,
+            lat,
+            lon,
             placeData.category,
         ]);
 
@@ -41,6 +47,9 @@ export class PlacesRepository {
     }
 
     async updatePlace(placeData) {
+        const lat = this.round6(placeData.infoPlace.lat);
+        const lon = this.round6(placeData.infoPlace.lon);
+
         const { id } = placeData;
         const placeQuery = `
             UPDATE places
@@ -62,13 +71,23 @@ export class PlacesRepository {
             placeData.description,
             placeData.infoPlace.label,
             placeData.infoPlace.label,
-            placeData.infoPlace.lat,
-            placeData.infoPlace.lon,
-            placeData.infoPlace.category,
+            lat,
+            lon,
+            placeData.category,
         ]);
 
         return Place.fromDb(result.rows[0], placeData.orderIndex);
     }
+    async findByPlaceAttributes(lat, lon, orderIndex) {
+        const latRounded = this.round6(lat);
+        const lonRounded = this.round6(lon);
+        const query = `
+        SELECT * FROM places
+        WHERE latitude = $1 AND longitude = $2
+        LIMIT 1;
+    `;
 
-
+        const result = await client.query(query, [latRounded, lonRounded]);
+        return result.rows.length ? Place.fromDb(result.rows[0], orderIndex) : null;
+    }
 }

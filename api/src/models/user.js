@@ -2,7 +2,11 @@ import { generateAvatar } from "../utils/avatar.js";
 import { formatDate } from "../utils/date.js";
 
 export class User {
-    constructor({ id, username, email, password, location, avatarUrl, createdAt, updatedAt, name, followersListIds, followingListIds, itineraries, bio, about, totalItineraries }) {
+    constructor({
+        id, username, email, password, location, avatarUrl,
+        createdAt, updatedAt, name, followersListIds,
+        followingListIds, itineraries, bio, about, totalItineraries
+    }) {
         this.id = id;
         this.username = username;
         this.email = email;
@@ -32,7 +36,7 @@ export class User {
             updatedAt: row.updated_at,
             name: row.name,
             bio: row.bio,
-            about: row.about
+            about: row.about,
         });
     }
 
@@ -47,7 +51,7 @@ export class User {
     }
 
     countItineraries() {
-        return this.itineraries.length || this.totalItineraries;
+        return this.totalItineraries || this.itineraries.length;
     }
 
     totalFollowers() {
@@ -74,7 +78,7 @@ export class User {
             followers: this.totalFollowers(),
             following: this.totalFollowing(),
             bio: this.bio,
-            about: this.about
+            about: this.about,
         };
     }
 
@@ -95,5 +99,4 @@ export class User {
             avatarUrl: this.avatarUrl,
         };
     }
-
 }
