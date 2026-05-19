@@ -10,6 +10,8 @@
   --text-secondary-color: #666;
   --white-color: #fff;
   --secondary-color: #e0e0e0;
+  --surface-color: #f8fafc;
+  --border-color: #e8ecf0;
 
   --primary-color-hover: #005f91;
   --error-color: #e63946;
@@ -169,6 +171,22 @@ body {
   padding: 2rem;
   margin: 0 auto;
   margin-bottom: 2rem;
+}
+
+.section__header {
+  margin-bottom: 0.5rem;
+
+  h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-color);
+  }
+
+  p {
+    margin-top: 0.35rem;
+    color: var(--text-secondary-color);
+    font-size: 1rem;
+  }
 }
 
 .loading-container {

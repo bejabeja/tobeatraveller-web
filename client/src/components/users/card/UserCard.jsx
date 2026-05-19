@@ -49,7 +49,7 @@ const UserCard = ({
           </button>
         )}
 
-        <button className="btn btn__primary" onClick={handleProfile}>
+        <button className="btn btn__primary-outline" onClick={handleProfile}>
           Profile
         </button>
       </div>

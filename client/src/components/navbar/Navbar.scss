@@ -42,9 +42,19 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 15px;
+  gap: 4px;
   width: 100%;
   margin: 0 auto;
+
+  h3 {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    opacity: 0.6;
+    padding: 0.25rem 0.75rem;
+    margin-bottom: 0.25rem;
+  }
 }
 
 .nav-item {
@@ -54,26 +64,30 @@
   color: var(--white-color);
   text-decoration: none;
   font-size: 16px;
-  transition: color 0.2s;
-  padding: 5px 0;
+  transition: color 0.2s, background-color 0.2s;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
   width: 100%;
 
   &:hover {
-    color: var(--primary-color);
+    color: var(--white-color);
+    background-color: rgba(255, 255, 255, 0.15);
   }
 
   &.active {
-    color: var(--text-color);
+    color: var(--white-color);
     font-weight: bold;
+    background-color: rgba(255, 255, 255, 0.25);
 
     .nav-icon {
-      color: var(--text-color);
+      color: var(--white-color);
     }
   }
 
   .nav-icon {
     font-size: 1.2rem;
     width: auto;
+    flex-shrink: 0;
   }
 }
 
@@ -99,15 +113,12 @@
     transform: translateX(0);
     background-color: var(--white-color);
     color: var(--text-color);
+    border-right: 1px solid var(--border-color);
   }
 
   .navbar a {
     font-size: 1rem;
     color: var(--text-color);
-
-    &:hover {
-      color: var(--primary-color);
-    }
   }
 
   .navbar-section {
@@ -119,13 +130,23 @@
     color: var(--primary-color);
   }
 
-  .nav-item.active {
-    color: var(--primary-color);
-    font-weight: bold;
-  }
+  .nav-item {
+    color: var(--text-color);
 
-  .nav-item.active .nav-icon {
-    color: var(--primary-color);
+    &:hover {
+      color: var(--primary-color);
+      background-color: rgba(0, 119, 182, 0.07);
+    }
+
+    &.active {
+      color: var(--primary-color);
+      font-weight: 600;
+      background-color: rgba(0, 119, 182, 0.1);
+
+      .nav-icon {
+        color: var(--primary-color);
+      }
+    }
   }
 
   .desktop-only {
