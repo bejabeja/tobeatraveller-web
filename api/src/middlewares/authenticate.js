@@ -1,6 +1,7 @@
 import { AuthError } from '../errors/AuthError.js';
 import { AuthService } from '../services/authService.js';
-const authService = new AuthService();
+import { UserRepository } from '../repositories/userRepository.js';
+const authService = new AuthService(new UserRepository());
 export const authenticate = async (req, res, next) => {
     const authHeader = req.headers.authorization;
     const token = authHeader?.split(" ")[1] || req.cookies.access_token;

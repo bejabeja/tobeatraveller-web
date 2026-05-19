@@ -1,12 +1,12 @@
 
 export class ItineraryController {
-    constructor(itinerariesService) {
-        this.itinerariesService = itinerariesService;
+    constructor(itineraryService) {
+        this.itineraryService = itineraryService;
     }
     async getItineraryById(req, res, next) {
         try {
             const { id } = req.params;
-            const itinerary = await this.itinerariesService.getItineraryById(id);
+            const itinerary = await this.itineraryService.getItineraryById(id);
             res.status(200).json(itinerary);
         } catch (error) {
             next(error);
@@ -17,7 +17,7 @@ export class ItineraryController {
         try {
             const { file } = req;
             const itineraryData = JSON.parse(req.body.itinerary);
-            const newItinerary = await this.itinerariesService.createItinerary(itineraryData, file);
+            const newItinerary = await this.itineraryService.createItinerary(itineraryData, file);
             res.status(201).json(newItinerary);
         } catch (error) {
             next(error);
@@ -27,7 +27,7 @@ export class ItineraryController {
     async deleteItinerary(req, res, next) {
         try {
             const { id } = req.params;
-            await this.itinerariesService.deleteItinerary(id);
+            await this.itineraryService.deleteItinerary(id);
             res.status(204).send();
         } catch (error) {
             next(error);
@@ -39,7 +39,7 @@ export class ItineraryController {
             const { id } = req.params;
             const { file } = req;
             const itineraryData = JSON.parse(req.body.itinerary);
-            await this.itinerariesService.updateItinerary(id, itineraryData, file);
+            await this.itineraryService.updateItinerary(id, itineraryData, file);
             res.status(200).json({ message: "Itinerary updated successfully" });
 
         } catch (error) {
@@ -50,7 +50,7 @@ export class ItineraryController {
     async generateSmartItinerary(req, res, next) {
         try {
             const { destination, days } = req.body;
-            const itinerary = await this.itinerariesService.generateSmartItinerary(destination, days);
+            const itinerary = await this.itineraryService.generateSmartItinerary(destination, days);
             res.status(200).json(itinerary)
         } catch (error) {
             next(error)

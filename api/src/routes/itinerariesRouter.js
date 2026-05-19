@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { ItinerariesController } from "../controllers/itinerariesController.js";
-import { PlacesRepository } from "../repositories/PlacesRepository.js";
+import { PlacesRepository } from "../repositories/placesRepository.js";
 import { ItineraryRepository } from "../repositories/itineraryRepository.js";
 import { UserRepository } from "../repositories/userRepository.js";
 import { ItinerariesService } from "../services/itinerariesService.js";
@@ -18,12 +18,6 @@ export const createItinerariesRouter = () => {
     router.get("/", itinerariesController.filterItinerariesBy.bind(itinerariesController));
     router.get("/featured", itinerariesController.featuredItineraries.bind(itinerariesController));
     router.get("/:id", itinerariesController.getItinerariesByUserId.bind(itinerariesController));
-
-    // router.get("/:id/comments", commentsController.list);
-    // router.post("/:id/comments", authenticate, commentsController.create);
-    // router.post("/:id/like", authenticate, itinerariesController.likeItinerary);
-    // router.delete("/:id/like", authenticate, itinerariesController.unlikeItinerary);
-//test
 
     return router;
 }

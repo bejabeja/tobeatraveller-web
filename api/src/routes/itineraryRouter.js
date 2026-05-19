@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { ItineraryController } from "../controllers/itineraryController.js";
 import { upload } from "../middlewares/uploadImage.js";
-import { PlacesRepository } from "../repositories/PlacesRepository.js";
+import { PlacesRepository } from "../repositories/placesRepository.js";
 import { ItineraryRepository } from "../repositories/itineraryRepository.js";
 import { UserRepository } from "../repositories/userRepository.js";
 import { AIService } from "../services/AIService.js";
