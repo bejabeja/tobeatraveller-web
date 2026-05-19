@@ -5,7 +5,9 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "dev": "node --watch index.js",
     "start": "node index.js && npm run sentry:sourcemaps",
     "migrate": "node src/migrations/migrate.js",
@@ -23,7 +25,8 @@
   "author": "Miriam Abella",
   "license": "ISC",
   "devDependencies": {
-    "standard": "^17.1.2"
+    "standard": "^17.1.2",
+    "vitest": "^4.0.18"
   },
   "eslintConfig": {
     "extends": "standard"
