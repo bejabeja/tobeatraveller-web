@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { FaHeart, FaRegHeart } from "react-icons/fa";
+import { FaRegComment } from "react-icons/fa6";
 import { Link } from "react-router-dom";
+import { useLike } from "../../../hooks/useLike";
 
 const ItineraryCard = ({ itinerary, user: userProp }) => {
   const {
@@ -8,14 +10,14 @@ const ItineraryCard = ({ itinerary, user: userProp }) => {
     location,
     tripTotalDays,
     commentsCount,
-    likesCount,
+    likesCount: initialLikesCount,
     user: userFromItinerary,
   } = itinerary;
 
   const user = userFromItinerary || userProp || {};
   const { username = "Anonymous", avatarUrl = "" } = user;
 
-  const [isLiked, setIsLiked] = useState(false);
+  const { isLiked, likesCount, handleToggleLike } = useLike(id, initialLikesCount);
 
   return (
     <div className="itinerary-card break-text">
@@ -44,24 +46,19 @@ const ItineraryCard = ({ itinerary, user: userProp }) => {
         </div>
       </Link>
 
-      {/* TODO */}
-      {/* <div className="itinerary-card__actions">
+      <div className="itinerary-card__actions">
         <button
           className={`btn__itinerary-card ${isLiked ? "active" : ""}`}
-          onClick={() => setIsLiked(!isLiked)}
+          onClick={handleToggleLike}
         >
-          {isLiked ? (
-            <FaHeart className="icon" />
-          ) : (
-            <FaRegHeart className="icon" />
-          )}
+          {isLiked ? <FaHeart className="icon" /> : <FaRegHeart className="icon" />}
           <span>{likesCount}</span>
         </button>
-        <Link to={`/friend-profile/${user.id}`} className="btn__itinerary-card">
+        <Link to={`/itinerary/${id}#comments`} className="btn__itinerary-card">
           <FaRegComment className="icon" />
           <span>{commentsCount}</span>
         </Link>
-      </div> */}
+      </div>
     </div>
   );
 };

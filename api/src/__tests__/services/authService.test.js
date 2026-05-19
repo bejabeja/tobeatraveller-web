@@ -42,35 +42,35 @@ describe('AuthService', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         mockUserRepository = {
-            findByName: vi.fn(),
+            findByEmail: vi.fn(),
         };
         authService = new AuthService(mockUserRepository);
     });
 
     describe('login()', () => {
         it('returns user DTO when credentials are valid', async () => {
-            mockUserRepository.findByName.mockResolvedValue(mockUser);
+            mockUserRepository.findByEmail.mockResolvedValue(mockUser);
             bcrypt.compare.mockResolvedValue(true);
 
-            const result = await authService.login({ username: 'johndoe', password: 'correctpassword' });
+            const result = await authService.login({ email: 'johndoe@example.com', password: 'correctpassword' });
 
-            expect(mockUserRepository.findByName).toHaveBeenCalledWith('johndoe');
+            expect(mockUserRepository.findByEmail).toHaveBeenCalledWith('johndoe@example.com');
             expect(bcrypt.compare).toHaveBeenCalledWith('correctpassword', 'hashed_password');
             expect(result).toEqual({ id: 'user-1', username: 'johndoe', avatarUrl: 'https://...' });
         });
 
         it('throws NotFoundError when user does not exist', async () => {
-            mockUserRepository.findByName.mockResolvedValue(null);
+            mockUserRepository.findByEmail.mockResolvedValue(null);
 
-            await expect(authService.login({ username: 'unknown', password: 'pass' }))
+            await expect(authService.login({ email: 'unknown@example.com', password: 'pass' }))
                 .rejects.toThrow(NotFoundError);
         });
 
         it('throws AuthError when password is incorrect', async () => {
-            mockUserRepository.findByName.mockResolvedValue(mockUser);
+            mockUserRepository.findByEmail.mockResolvedValue(mockUser);
             bcrypt.compare.mockResolvedValue(false);
 
-            await expect(authService.login({ username: 'johndoe', password: 'wrongpassword' }))
+            await expect(authService.login({ email: 'johndoe@example.com', password: 'wrongpassword' }))
                 .rejects.toThrow(AuthError);
         });
     });

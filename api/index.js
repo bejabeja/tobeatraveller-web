@@ -11,6 +11,7 @@ import { createAuthRouter } from './src/routes/authRouter.js';
 import { createCloudinaryRouter } from "./src/routes/cloudinaryRouter.js";
 import { createCommentsRouter } from "./src/routes/commentsRouter.js";
 import { createFavoritesRouter } from "./src/routes/favoritesRouter.js";
+import { createLikesRouter } from "./src/routes/likesRouter.js";
 import { createFollowRouter } from "./src/routes/followRouter.js";
 import { healthCheckRouter } from './src/routes/healthCheckRouter.js';
 import { createItinerariesRouter } from "./src/routes/itinerariesRouter.js";
@@ -31,6 +32,7 @@ app.use('/auth', createAuthRouter());
 app.use('/itineraries', createItinerariesRouter());
 app.use('/cloudinary', createCloudinaryRouter());
 app.use('/favorites', authenticate, createFavoritesRouter());
+app.use('/likes', authenticate, createLikesRouter());
 app.use('/comments', createCommentsRouter());
 
 app.use('/api', healthCheckRouter());
