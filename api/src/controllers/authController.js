@@ -30,8 +30,8 @@ export class AuthController {
         const isMobile = /Mobi|Android/i.test(userAgent);
 
         try {
-            const { username, password } = result.data;
-            const user = await this.authService.login({ username, password });
+            const { email, password } = result.data;
+            const user = await this.authService.login({ email, password });
             const accessToken = this.authService.generateAccessToken(user);
             const refreshToken = this.authService.generateRefreshToken(user);
             this.authService.setAuthCookies(res, accessToken, refreshToken)

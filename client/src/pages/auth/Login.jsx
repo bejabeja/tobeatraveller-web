@@ -16,8 +16,11 @@ import { preloadImg } from "../../utils/preloadImg";
 import { loginSchema } from "../../utils/schemasValidation";
 import "./Auth.scss";
 
+const GUEST_EMAIL = "test.tobeatraveller@gmail.com";
+const GUEST_PASSWORD = "testtest";
+
 const fields = [
-  { name: "username", label: "Username", type: "text" },
+  { name: "email", label: "Email", type: "email" },
   { name: "password", label: "Password", type: "password" },
 ];
 
@@ -40,7 +43,7 @@ const Login = () => {
   } = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      username: "",
+      email: "",
       password: "",
     },
   });
@@ -51,6 +54,12 @@ const Login = () => {
         navigate("/");
       })
     );
+  };
+
+  const loginAsGuest = () => {
+    dispatch(loginUser({ email: GUEST_EMAIL, password: GUEST_PASSWORD }, () => {
+      navigate("/");
+    }));
   };
 
   return (
@@ -89,6 +98,11 @@ const Login = () => {
 
         <div className="auth__form-link">
           <SubmitButton label="Log In" loading={isSubmitting} />
+          {import.meta.env.DEV && (
+            <button type="button" className="auth__form-guest" onClick={loginAsGuest}>
+              Continue as guest
+            </button>
+          )}
           <Link to="/register">Don't have an account? Register!</Link>
         </div>
       </form>
