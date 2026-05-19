@@ -91,6 +91,47 @@
   }
 }
 
+.nav-create {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  width: 100%;
+  transition: opacity 0.2s;
+
+  // mobile: navbar bg is primary, so button is inverted
+  background-color: var(--white-color);
+  color: var(--primary-color);
+
+  &:hover {
+    opacity: 0.85;
+    color: var(--primary-color);
+  }
+
+  .nav-icon {
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+}
+
+@media (min-width: 480px) {
+  .navbar .nav-create {
+    background-color: var(--primary-color);
+    color: var(--white-color);
+
+    &:hover {
+      opacity: 0.85;
+      color: var(--white-color);
+      background-color: var(--primary-color);
+    }
+  }
+}
+
 .desktop-only {
   display: none;
 }

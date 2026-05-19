@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { FaBars } from "react-icons/fa";
 import { GoBook, GoHome, GoPerson, GoSignIn, GoSignOut } from "react-icons/go";
-import { IoSaveOutline, IoSearch } from "react-icons/io5";
+import { IoAddOutline, IoSaveOutline, IoSearch } from "react-icons/io5";
 import { RiUserCommunityLine } from "react-icons/ri";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
@@ -62,6 +62,13 @@ const Navbar = () => {
             <span>Community</span>
           </NavLink>
         </div>
+
+        {isAuthenticated && !authLoading && (
+          <NavLink to="/create-itinerary" className="nav-create">
+            <IoAddOutline className="nav-icon" />
+            <span>Create trip</span>
+          </NavLink>
+        )}
 
         {authLoading ? (
           <div className="loading-placeholder nav-section">
