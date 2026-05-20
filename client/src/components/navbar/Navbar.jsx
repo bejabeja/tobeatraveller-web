@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FaBars } from "react-icons/fa";
+import { FaBars, FaTimes } from "react-icons/fa";
 import { GoBook, GoHome, GoPerson, GoSignIn, GoSignOut } from "react-icons/go";
 import { IoAddOutline, IoSaveOutline, IoSearch } from "react-icons/io5";
 import { RiUserCommunityLine } from "react-icons/ri";
@@ -38,9 +38,11 @@ const Navbar = () => {
           Trobeatraveller
         </Link>
         <div className="hamburger-menu" onClick={toggleNavbar}>
-          <FaBars className="nav-icon" />
+          {isOpen ? <FaTimes className="nav-icon" /> : <FaBars className="nav-icon" />}
         </div>
       </div>
+
+      {isOpen && <div className="navbar-backdrop" onClick={toggleNavbar} />}
 
       <nav className={`navbar ${isOpen ? "open" : ""}`}>
         <div className="nav-section">
