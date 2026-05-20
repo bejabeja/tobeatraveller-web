@@ -34,12 +34,8 @@ export const signupSchema = z.object({
         .email("Invalid email address")
         .min(1, "Email is required"),
     password: z.string().min(6, "Password must be at least 6 characters long"),
-    confirmPassword: z
-        .string()
-        .min(6, "Password confirmation must be at least 6 characters long"),
-    location: z.string()
-        .min(2, "Location is required")
-        .max(50, "No valid location"),
+    confirmPassword: z.string(),
+    location: z.string().max(50, "No valid location").optional().or(z.literal("")),
 }).refine((data) => {
     return data.password === data.confirmPassword;
 }, {

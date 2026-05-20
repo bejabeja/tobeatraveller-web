@@ -88,6 +88,9 @@ const Login = () => {
               </button>
             )}
             <Link to="/register">New here? <strong>Create an account</strong></Link>
+            <Link to="/explore" className="auth__form-browse">
+              Explore without an account →
+            </Link>
           </div>
         </form>
       </div>

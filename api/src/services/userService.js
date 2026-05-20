@@ -24,7 +24,7 @@ export class UserService {
             username,
             email,
             password: hashedPassword,
-            location,
+            location: location || null,
             avatarUrl: generateAvatar(username),
         };
 

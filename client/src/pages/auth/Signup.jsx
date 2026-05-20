@@ -37,11 +37,10 @@ const Signup = () => {
   } = useForm({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      username: "",
       email: "",
+      username: "",
       password: "",
       confirmPassword: "",
-      location: "",
     },
   });
 
@@ -77,11 +76,10 @@ const Signup = () => {
             <p className="auth__form-subtitle">Join the community of travellers</p>
           </div>
 
-          <InputForm name="username" label="Username" type="text" control={control} error={errors.username} />
           <InputForm name="email" label="Email" type="email" control={control} error={errors.email} />
+          <InputForm name="username" label="Username" type="text" control={control} error={errors.username} />
           <PasswordInputForm name="password" label="Password" control={control} error={errors.password} />
           <PasswordInputForm name="confirmPassword" label="Confirm password" control={control} error={errors.confirmPassword} />
-          <InputForm name="location" label="Location" type="text" control={control} error={errors.location} />
 
           <div className="auth__form-error">
             {errorInAuth && Object.keys(errors).length === 0 ? errorInAuth : " "}
@@ -90,6 +88,9 @@ const Signup = () => {
           <div className="auth__form-link">
             <SubmitButton label="Create account" loading={isSubmitting} />
             <Link to="/login">Already have an account? <strong>Sign in</strong></Link>
+            <Link to="/explore" className="auth__form-browse">
+              Explore without an account →
+            </Link>
           </div>
         </form>
       </div>
