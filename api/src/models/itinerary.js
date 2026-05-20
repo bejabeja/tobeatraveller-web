@@ -89,6 +89,7 @@ export class Itinerary {
             location: this.location,
             tripTotalDays: this.getTotalDays(),
             photoUrl: this.photoUrl,
+            category: this.category,
             likesCount: this.likesCount,
             commentsCount: this.commentsCount,
             user: this.user

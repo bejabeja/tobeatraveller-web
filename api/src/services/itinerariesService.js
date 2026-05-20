@@ -1,9 +1,3 @@
-const FEATURED_ITINERARY_IDS = [
-    'fe35c13c-4708-4c5d-8467-13970a5f3d8f',
-    '9f2c9f0e-8f98-46be-8fdd-f5f82b4169a3',
-    'f2b4e7b1-5c2f-4cc5-8fb7-ec4f814c0835',
-];
-
 export class ItinerariesService {
     constructor(itinerariesRepository, userRepository, placesRepository) {
         this.itinerariesRepository = itinerariesRepository;
@@ -37,21 +31,14 @@ export class ItinerariesService {
     }
 
     async getFeaturedItineraries() {
-        const ids = FEATURED_ITINERARY_IDS;
-        const itineraries = await Promise.all(
-            ids.map(async (id) => {
-                const itinerary = await this.itinerariesRepository.findById(id);
-                if (!itinerary) {
-                    return null;
-                }
+        const itineraries = await this.itinerariesRepository.findTopByLikes(3);
+        await Promise.all(
+            itineraries.map(async (itinerary) => {
                 const user = await this.userRepository.getUserById(itinerary.userId);
-                if (user) {
-                    itinerary.addUser(user.toSimpleDTO());
-                }
-                return itinerary.toSimpleDTO();
+                if (user) itinerary.addUser(user.toSimpleDTO());
             })
         );
-        return itineraries.filter(Boolean);
+        return itineraries.map(it => it.toSimpleDTO());
     }
 
     async getItinerariesByUserId(userId) {

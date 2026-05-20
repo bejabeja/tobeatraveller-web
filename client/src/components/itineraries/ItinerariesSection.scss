@@ -38,30 +38,13 @@
   &__link {
     text-decoration: none;
     color: inherit;
-  }
-
-  &__header {
-    display: flex;
-    align-items: center;
-    padding: 1rem;
-    gap: 1rem;
-  }
-
-  &__avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
-  }
-
-  &__username {
-    font-weight: 600;
-    color: var(--text-color);
+    flex: 1;
   }
 
   &__image-wrapper {
+    position: relative;
     width: 100%;
-    height: 180px;
+    height: 200px;
     overflow: hidden;
   }
 
@@ -70,44 +53,92 @@
     height: 100%;
     object-fit: cover;
     transition: transform 0.4s ease;
+    display: block;
   }
 
   &:hover &__image {
     transform: scale(1.05);
   }
 
-  &__info {
-    padding: 1rem;
+  &__category {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    z-index: 1;
+    width: fit-content;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.45);
+    padding: 0.2rem 0.5rem;
+    border-radius: 999px;
+    text-transform: capitalize;
+    backdrop-filter: blur(4px);
+  }
+
+  &__author {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
     display: flex;
-    flex-direction: row;
     align-items: center;
-    justify-content: space-between;
     gap: 0.5rem;
+    padding: 1.5rem 0.75rem 0.6rem;
+    background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
+  }
+
+  &__avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1.5px solid rgba(255,255,255,0.7);
+    flex-shrink: 0;
+  }
+
+  &__username {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: white;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__info {
+    padding: 0.75rem 1rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  &__title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   &__location {
-    font-size: 1.05rem;
-    font-weight: 600;
-    color: var(--text-color);
+    font-size: 0.85rem;
+    color: var(--text-secondary-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   &__days {
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--primary-color);
-    background-color: rgba(0, 119, 182, 0.08);
-    padding: 0.25rem 0.6rem;
-    border-radius: 999px;
-    white-space: nowrap;
-    flex-shrink: 0;
+    font-size: 0.75rem;
+    color: var(--text-secondary-color);
   }
 
   &__actions {
     display: flex;
     justify-content: space-between;
-    border-top: 1px solid var(--secondary-color);
-    padding: 0.75rem 1rem;
-    background-color: #fafafa;
+    padding: 0.5rem 1rem 1rem;
   }
 }
 
@@ -118,7 +149,8 @@
   gap: 0.4rem;
   background: none;
   border: none;
-  font-size: 1rem;
+  font-size: 0.85rem;
+  font-family: inherit;
   color: var(--text-color);
   cursor: pointer;
   transition: color 0.3s ease;
@@ -128,7 +160,7 @@
     display: flex;
     align-items: flex-start;
     text-decoration: none;
-    font-size: 1.1rem;
+    font-size: 0.95rem;
   }
 
   span {
@@ -136,15 +168,21 @@
     display: flex;
     align-items: flex-start;
     text-decoration: none;
+    font-size: 0.85rem;
+    line-height: 1;
   }
 
   &:hover {
     color: var(--primary-color);
   }
 
+  &.like-btn:hover {
+    color: #e63946;
+  }
+
   .icon {
     width: fit-content;
-    font-size: 1.2rem;
+    font-size: 1rem;
     display: flex;
     align-items: flex-end;
     justify-content: right;
@@ -157,7 +195,8 @@
 
 @media (min-width: 1024px) {
   .itineraries-section {
-    padding-top: 2rem;
+    padding-top: 0.5rem;
+    padding-bottom: 3rem;
 
     &__title {
       font-size: 2rem;
@@ -177,12 +216,8 @@
       padding: 1.25rem;
     }
 
-    &__location {
-      font-size: 1.2rem;
-    }
-
-    &__days {
-      font-size: 1rem;
+    &__title {
+      font-size: 1.1rem;
     }
   }
 }

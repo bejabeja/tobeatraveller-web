@@ -100,6 +100,19 @@ export class ItineraryRepository {
     );
   }
 
+  async findTopByLikes(limit = 3) {
+    const query = `
+      SELECT itineraries.*
+      FROM itineraries
+      JOIN users ON itineraries.user_id = users.id
+      WHERE users.role != 'test'
+      ORDER BY likes_count DESC
+      LIMIT $1
+    `;
+    const result = await client.query(query, [limit]);
+    return result.rows.map(Itinerary.fromDb);
+  }
+
   async getTotalByUserId(userId) {
     const result = await client.query(
       `SELECT COUNT(*) AS total FROM itineraries WHERE user_id = $1`, [userId]
