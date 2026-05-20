@@ -16,7 +16,7 @@
   &__overlay {
     position: absolute;
     inset: 0;
-    background-color: rgba(0, 119, 182, 0.5);
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.6) 100%);
   }
 
   &__content {
@@ -68,8 +68,5 @@
   .hero {
     height: 50vh;
 
-    &__overlay {
-      /* background-color: rgba(0, 0, 0, 0.5); */
-    }
   }
 }

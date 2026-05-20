@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 
 import LoadingButton from "../../components/LoadingButton.jsx";
@@ -33,7 +34,11 @@ const Explore = () => {
   const totalPages = useSelector(selectExploreTotalPages);
   const page = useSelector(selectExplorePage);
 
-  const [filters, setFilters] = useState({});
+  const [searchParams] = useSearchParams();
+  const [filters, setFilters] = useState(() => {
+    const location = searchParams.get("location");
+    return location ? { locationName: location } : {};
+  });
 
   useEffect(() => {
     dispatch(initExploreItineraries({ page: 1, ...filters }));

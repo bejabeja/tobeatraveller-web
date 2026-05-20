@@ -41,6 +41,22 @@ const Home = () => {
   return (
     <section className="home">
       <Hero />
+      <div className="home__stats">
+        <div className="home__stats-inner">
+          <div className="home__stats-item">
+            <span className="home__stats-number">1,200+</span>
+            <span className="home__stats-label">Trips shared</span>
+          </div>
+          <div className="home__stats-item">
+            <span className="home__stats-number">340+</span>
+            <span className="home__stats-label">Travelers</span>
+          </div>
+          <div className="home__stats-item">
+            <span className="home__stats-number">60+</span>
+            <span className="home__stats-label">Countries</span>
+          </div>
+        </div>
+      </div>
       <div className="section__container home__container">
         <div className="home__users">
           <div className="home__section-header">
@@ -62,7 +78,11 @@ const Home = () => {
             {["paris", "tokyo", "newYork", "barcelona"].map((city) => {
               const cityInfo = getImagesInfo(city);
               return (
-                <Link className="destination-card" key={city}>
+                <Link
+                  className="destination-card"
+                  key={city}
+                  to={`/explore?location=${encodeURIComponent(cityInfo.city)}`}
+                >
                   <img src={cityInfo.photoUrl} alt={cityInfo.city} />
                   <span>{cityInfo.city}</span>
                 </Link>

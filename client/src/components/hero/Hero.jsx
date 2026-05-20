@@ -26,10 +26,10 @@ const Hero = () => {
     <section className={`hero ${imageHeroLoaded ? "loaded" : ""}`}>
       <div className="hero__overlay" />
       <div className="hero__content">
-        <h1 className="hero__content__title">Connect with Your World</h1>
+        <h1 className="hero__content__title">Plan Your Next Adventure</h1>
         <p className="hero__content__description">
-          Share moments, build connections, and discover amazing stories from
-          people around the globe.
+          Discover inspiring itineraries, share your journeys, and connect with
+          travelers from around the world.
         </p>
         {!isAuthenticated && (
           <div className="hero__content__buttons">
