@@ -119,13 +119,121 @@
     align-items: flex-start;
     gap: 1.5rem;
     overflow-y: auto;
+    overflow-x: hidden;
     z-index: 100;
+    transition: width 0.2s ease, padding 0.2s ease;
   }
 }
 
 .navbar__logo {
-  margin-bottom: 0.5rem;
   font-size: 1.3rem;
+  overflow: hidden;
+  white-space: nowrap;
+  margin-bottom: 0.5rem;
+}
+
+.navbar__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  color: var(--text-secondary-color);
+  font-size: 0.875rem;
+  font-family: inherit;
+  font-weight: 500;
+  width: 100%;
+  transition: background-color 0.2s, color 0.2s;
+
+  &:hover {
+    background-color: rgba(0, 119, 182, 0.07);
+    color: var(--primary-color);
+  }
+
+  span {
+    width: auto;
+  }
+
+  .nav-icon {
+    font-size: 1rem;
+    width: auto;
+    flex-shrink: 0;
+  }
+}
+
+/* ── Collapsed sidebar ── */
+:root.sidebar-collapsed {
+  .navbar {
+    width: 64px;
+    padding: 1.5rem 0.75rem 1rem;
+    align-items: center;
+  }
+
+  .navbar__logo span {
+    display: none;
+  }
+
+  .nav-section {
+    align-items: center;
+
+    h3 {
+      display: none;
+    }
+  }
+
+  .nav-item {
+    justify-content: center;
+    padding: 0.6rem;
+    width: auto;
+
+    span {
+      display: none;
+    }
+  }
+
+  .nav-create {
+    justify-content: center;
+    padding: 0.65rem;
+    width: auto;
+    border-radius: 50%;
+
+    span {
+      display: none;
+    }
+  }
+
+  .navbar__bottom {
+    align-items: center;
+  }
+
+  .navbar__toggle {
+    justify-content: center;
+    padding: 0.5rem;
+    width: auto;
+
+    span {
+      display: none;
+    }
+  }
+
+  .nav-footer {
+    flex-direction: column;
+    padding: 0.75rem 0 0;
+    gap: 0.5rem;
+    align-items: center;
+
+    &__user {
+      padding: 0.25rem;
+    }
+
+    &__username {
+      display: none;
+    }
+  }
 }
 
 .nav-section {
@@ -287,9 +395,17 @@
   }
 }
 
-.nav-footer {
+.navbar__bottom {
   margin-top: auto;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 0.75rem;
+}
+
+.nav-footer {
+  width: 100%;
+  margin-top: 1rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;

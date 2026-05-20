@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
 import { GoBook, GoHome, GoPerson, GoSignIn, GoSignOut } from "react-icons/go";
-import { IoAddOutline, IoEarth, IoSaveOutline, IoSearch } from "react-icons/io5";
+import {
+  IoAddOutline,
+  IoChevronBack,
+  IoChevronForward,
+  IoEarth,
+  IoSaveOutline,
+  IoSearch,
+} from "react-icons/io5";
 import { RiUserCommunityLine } from "react-icons/ri";
 import { useSelector } from "react-redux";
 import { Link, NavLink, useLocation } from "react-router-dom";
@@ -17,11 +24,19 @@ const Navbar = () => {
   const authLoading = useSelector(selectAuthLoading);
   const userMe = useSelector(selectMe);
   const [meOpen, setMeOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(
+    () => localStorage.getItem("sidebar-collapsed") === "true"
+  );
   const location = useLocation();
 
   useEffect(() => {
     setMeOpen(false);
   }, [location]);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("sidebar-collapsed", isCollapsed);
+    localStorage.setItem("sidebar-collapsed", isCollapsed);
+  }, [isCollapsed]);
 
   return (
     <>
@@ -34,27 +49,29 @@ const Navbar = () => {
 
       {/* Desktop: fixed left sidebar */}
       <nav className="navbar">
+        <Link to="/" className="logo navbar__logo">
+          <IoEarth className="logo__icon" />
+          <span>Tobeatraveller</span>
+        </Link>
+
         <div className="nav-section">
-          <Link to="/" className="logo navbar__logo">
-            <IoEarth className="logo__icon" />Tobeatraveller
-          </Link>
           <h3>Discover</h3>
-          <NavLink to="/" className="nav-item" end>
+          <NavLink to="/" className="nav-item" end title="Home">
             <GoHome className="nav-icon" />
             <span>Home</span>
           </NavLink>
-          <NavLink to="/explore" className="nav-item">
+          <NavLink to="/explore" className="nav-item" title="Explore">
             <IoSearch className="nav-icon" />
             <span>Explore</span>
           </NavLink>
-          <NavLink to="/community" className="nav-item">
+          <NavLink to="/community" className="nav-item" title="Community">
             <RiUserCommunityLine className="nav-icon" />
             <span>Community</span>
           </NavLink>
         </div>
 
         {isAuthenticated && !authLoading && (
-          <NavLink to="/create-itinerary" className="nav-create">
+          <NavLink to="/create-itinerary" className="nav-create" title="Create trip">
             <IoAddOutline className="nav-icon" />
             <span>Create trip</span>
           </NavLink>
@@ -71,22 +88,22 @@ const Navbar = () => {
             <h3>Your Space</h3>
             {isAuthenticated ? (
               <>
-                <NavLink to="/my-itineraries" className="nav-item">
+                <NavLink to="/my-itineraries" className="nav-item" title="My trips">
                   <GoBook className="nav-icon" />
                   <span>My trips</span>
                 </NavLink>
-                <NavLink to="/itineraries/saved" className="nav-item">
+                <NavLink to="/itineraries/saved" className="nav-item" title="Saved trips">
                   <IoSaveOutline className="nav-icon" />
                   <span>Saved trips</span>
                 </NavLink>
               </>
             ) : (
               <>
-                <NavLink to="/login" className="nav-item">
+                <NavLink to="/login" className="nav-item" title="Login">
                   <GoSignIn className="nav-icon" />
                   <span>Login</span>
                 </NavLink>
-                <NavLink to="/register" className="nav-item">
+                <NavLink to="/register" className="nav-item" title="Register">
                   <GoSignIn className="nav-icon" />
                   <span>Register</span>
                 </NavLink>
@@ -95,22 +112,36 @@ const Navbar = () => {
           </div>
         )}
 
-        {/* Desktop: user footer pinned at bottom */}
-        {isAuthenticated && userMe && (
-          <div className="nav-footer">
-            <Link to={`/profile/${userMe.id}`} className="nav-footer__user">
-              <img
-                src={userMe.avatarUrl || generateAvatar(userMe.username)}
-                alt={userMe.username}
-                className="nav-footer__avatar"
-              />
-              <span className="nav-footer__username">@{userMe.username}</span>
-            </Link>
-            <NavLink to="/logout" className="nav-footer__logout" title="Logout">
-              <GoSignOut />
-            </NavLink>
-          </div>
-        )}
+        <div className="navbar__bottom">
+          <button
+            className="navbar__toggle"
+            onClick={() => setIsCollapsed((v) => !v)}
+            title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {isCollapsed ? (
+              <IoChevronForward className="nav-icon" />
+            ) : (
+              <IoChevronBack className="nav-icon" />
+            )}
+            <span>Collapse</span>
+          </button>
+
+          {isAuthenticated && userMe && (
+            <div className="nav-footer">
+              <Link to={`/profile/${userMe.id}`} className="nav-footer__user" title={`@${userMe.username}`}>
+                <img
+                  src={userMe.avatarUrl || generateAvatar(userMe.username)}
+                  alt={userMe.username}
+                  className="nav-footer__avatar"
+                />
+                <span className="nav-footer__username">@{userMe.username}</span>
+              </Link>
+              <NavLink to="/logout" className="nav-footer__logout" title="Logout">
+                <GoSignOut />
+              </NavLink>
+            </div>
+          )}
+        </div>
       </nav>
 
       {/* Mobile: Me panel (slide up) */}
