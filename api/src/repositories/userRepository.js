@@ -49,9 +49,16 @@ export class UserRepository {
     }
 
     async getFeaturedUsers() {
-        const result = await db.query(
-            "SELECT * FROM users WHERE role = 'featured' AND role != 'test' ORDER BY RANDOM() LIMIT 3"
-        );
+        const result = await db.query(`
+            SELECT users.*
+            FROM users
+            WHERE users.role != 'test'
+            AND EXISTS (
+                SELECT 1 FROM itineraries WHERE itineraries.user_id = users.id
+            )
+            ORDER BY RANDOM()
+            LIMIT 3
+        `);
 
         return result.rows.map(row => User.fromDb(row));
     }

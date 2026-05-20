@@ -97,6 +97,7 @@ export class User {
             location: this.location,
             totalItineraries: this.countItineraries(),
             avatarUrl: this.avatarUrl,
+            lastItinerary: this.lastItinerary || null,
         };
     }
 }

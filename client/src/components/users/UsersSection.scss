@@ -13,7 +13,7 @@
 .user-card {
   border-radius: 1rem;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
-  padding: 1.5rem;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   transition: box-shadow 0.3s ease;
@@ -22,58 +22,113 @@
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
   }
 
-  &__header {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
+  &__banner {
+    position: relative;
+    height: 90px;
+    background-color: var(--border-color);
+    flex-shrink: 0;
+  }
+
+  &__banner-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
   &__image {
-    width: 60px;
-    height: 60px;
+    position: absolute;
+    bottom: -28px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 56px;
+    height: 56px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid var(--primary-color);
+    border: 3px solid white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
   }
 
-  &__header--info {
+  &__body {
     display: flex;
     flex-direction: column;
-
-    .user-card__name {
-      font-weight: 700;
-      font-size: 1.1rem;
-      color: var(--primary-color);
-    }
-
-    .user-card__location {
-      font-size: 0.9rem;
-      color: var(--text-secondary-color);
-    }
+    align-items: flex-start;
+    padding: 2rem 1.25rem 1rem;
+    gap: 0.2rem;
+    flex: 1;
+    width: 100%;
+    box-sizing: border-box;
   }
 
-  &__trips {
-    font-size: 0.875rem;
-    margin-top: 0.25rem;
+  &__name {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--text-color);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__location {
+    font-size: 0.8rem;
     color: var(--text-secondary-color);
   }
 
-  &__buttons {
+  &__last-trip {
+    font-size: 0.78rem;
+    color: var(--primary-color);
+    font-style: italic;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+  }
+
+  &__trips {
+    font-size: 0.78rem;
+    color: var(--text-secondary-color);
+    margin-top: 0.1rem;
+  }
+
+  &__body {
+    cursor: pointer;
+  }
+
+  &__name-row {
     display: flex;
-    justify-content: flex-start;
-    gap: 0.75rem;
-    margin-top: 1.25rem;
-  }
-}
-
-@media (min-width: 768px) {
-  .user-card {
-    padding: 2rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    width: 100%;
   }
 
-  .user-card__image {
-    width: 64px;
-    height: 64px;
+  &__follow-btn {
+    flex-shrink: 0;
+    width: fit-content;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    border: 1.5px solid var(--primary-color);
+    color: var(--primary-color);
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+
+    &:hover {
+      background: var(--primary-color);
+      color: white;
+    }
+
+    &.following {
+      background: var(--primary-color);
+      color: white;
+
+      &:hover {
+        background: var(--primary-color-hover);
+        border-color: var(--primary-color-hover);
+      }
+    }
   }
 }

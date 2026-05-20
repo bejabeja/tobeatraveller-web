@@ -115,7 +115,12 @@ export class UserService {
         }
 
         await Promise.all(users.map(async (user) => {
-            user.totalItineraries = await this.itinerariesRepository.getTotalByUserId(user.id);
+            const [total, lastItinerary] = await Promise.all([
+                this.itinerariesRepository.getTotalByUserId(user.id),
+                this.itinerariesRepository.findLastByUserId(user.id),
+            ]);
+            user.totalItineraries = total;
+            user.lastItinerary = lastItinerary ? lastItinerary.toSimpleDTO() : null;
         }));
 
         return users.map(user => user.toFeaturedDTO());
