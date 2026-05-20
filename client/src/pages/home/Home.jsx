@@ -61,12 +61,24 @@ const Home = () => {
         <div className="home__users">
           <div className="home__section-header">
             <h2>Featured Travel Journeys</h2>
+            <Link to="/explore" className="home__see-all">See all →</Link>
             <p>Where will your next adventure take you?</p>
           </div>
           <ItinerariesSection
             user={featuredItineraries?.user}
             itineraries={featuredItineraries}
             isLoading={featuredItinerariesLoading}
+          />
+        </div>
+        <div className="home__users">
+          <div className="home__section-header">
+            <h2>People You May Like</h2>
+            <Link to="/community" className="home__see-all">See all →</Link>
+            <p>Discover fellow travelers who share your passion.</p>
+          </div>
+          <UsersSection
+            users={featuredUsers}
+            isLoading={featuredUsersLoading}
           />
         </div>
         <div className="home__destinations">
@@ -89,16 +101,6 @@ const Home = () => {
               );
             })}
           </div>
-        </div>
-        <div className="home__users">
-          <div className="home__section-header">
-            <h2>People You May Like</h2>
-            <p>Discover fellow travelers who share your passion.</p>
-          </div>
-          <UsersSection
-            users={featuredUsers}
-            isLoading={featuredUsersLoading}
-          />
         </div>
         <div className="home__cta">
           <h2>Start Your Adventure</h2>
