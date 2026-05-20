@@ -83,34 +83,19 @@ const Navbar = () => {
             <p><GoBook className="nav-icon" /><span>Loading...</span></p>
             <p><GoBook className="nav-icon" /><span>Loading...</span></p>
           </div>
-        ) : (
+        ) : isAuthenticated ? (
           <div className="nav-section">
             <h3>Your Space</h3>
-            {isAuthenticated ? (
-              <>
-                <NavLink to="/my-itineraries" className="nav-item" title="My trips">
-                  <GoBook className="nav-icon" />
-                  <span>My trips</span>
-                </NavLink>
-                <NavLink to="/itineraries/saved" className="nav-item" title="Saved trips">
-                  <IoSaveOutline className="nav-icon" />
-                  <span>Saved trips</span>
-                </NavLink>
-              </>
-            ) : (
-              <>
-                <NavLink to="/login" className="nav-item" title="Login">
-                  <GoSignIn className="nav-icon" />
-                  <span>Login</span>
-                </NavLink>
-                <NavLink to="/register" className="nav-item" title="Register">
-                  <GoSignIn className="nav-icon" />
-                  <span>Register</span>
-                </NavLink>
-              </>
-            )}
+            <NavLink to="/my-itineraries" className="nav-item" title="My trips">
+              <GoBook className="nav-icon" />
+              <span>My trips</span>
+            </NavLink>
+            <NavLink to="/itineraries/saved" className="nav-item" title="Saved trips">
+              <IoSaveOutline className="nav-icon" />
+              <span>Saved trips</span>
+            </NavLink>
           </div>
-        )}
+        ) : null}
 
         <div className="navbar__bottom">
           <button
@@ -125,6 +110,13 @@ const Navbar = () => {
             )}
             <span>Collapse</span>
           </button>
+
+          {!isAuthenticated && !authLoading && (
+            <div className="nav-auth">
+              <Link to="/register" className="nav-auth__register">Create account</Link>
+              <Link to="/login" className="nav-auth__login">Already a member? <span>Sign in</span></Link>
+            </div>
+          )}
 
           {isAuthenticated && userMe && (
             <div className="nav-footer">

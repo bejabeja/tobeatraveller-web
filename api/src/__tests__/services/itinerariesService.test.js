@@ -27,6 +27,7 @@ describe('ItinerariesService', () => {
       findByUserId: vi.fn(),
       findByFilters: vi.fn(),
       countByFilters: vi.fn(),
+      findTopByLikes: vi.fn(),
     };
     userRepository = {
       getUserById: vi.fn(),
@@ -100,24 +101,25 @@ describe('ItinerariesService', () => {
   });
 
   describe('getFeaturedItineraries()', () => {
-    it('returns itineraries enriched with user for all configured ids', async () => {
-      const itin = makeItinerary('fe35c13c-4708-4c5d-8467-13970a5f3d8f', 'user-1');
+    it('returns top-liked itineraries enriched with user', async () => {
+      const itin1 = makeItinerary('itin-1', 'user-1');
+      const itin2 = makeItinerary('itin-2', 'user-1');
+      const itin3 = makeItinerary('itin-3', 'user-1');
       const user = makeUser('user-1');
-      itinerariesRepository.findById.mockResolvedValue(itin);
+      itinerariesRepository.findTopByLikes.mockResolvedValue([itin1, itin2, itin3]);
       userRepository.getUserById.mockResolvedValue(user);
 
       const result = await service.getFeaturedItineraries();
 
+      expect(itinerariesRepository.findTopByLikes).toHaveBeenCalledWith(3);
       expect(result).toHaveLength(3);
-      expect(itin.addUser).toHaveBeenCalled();
-      expect(itin.toSimpleDTO).toHaveBeenCalled();
+      expect(itin1.addUser).toHaveBeenCalled();
+      expect(itin1.toSimpleDTO).toHaveBeenCalled();
     });
 
-    it('filters out ids that return no itinerary', async () => {
-      itinerariesRepository.findById
-        .mockResolvedValueOnce(null)
-        .mockResolvedValueOnce(makeItinerary('9f2c9f0e-8f98-46be-8fdd-f5f82b4169a3'))
-        .mockResolvedValueOnce(null);
+    it('returns fewer results when repo returns fewer than 3', async () => {
+      const itin = makeItinerary('itin-1', 'user-1');
+      itinerariesRepository.findTopByLikes.mockResolvedValue([itin]);
       userRepository.getUserById.mockResolvedValue(makeUser());
 
       const result = await service.getFeaturedItineraries();
@@ -126,8 +128,8 @@ describe('ItinerariesService', () => {
     });
 
     it('skips addUser when user is not found', async () => {
-      const itin = makeItinerary('fe35c13c-4708-4c5d-8467-13970a5f3d8f');
-      itinerariesRepository.findById.mockResolvedValue(itin);
+      const itin = makeItinerary('itin-1');
+      itinerariesRepository.findTopByLikes.mockResolvedValue([itin]);
       userRepository.getUserById.mockResolvedValue(null);
 
       await service.getFeaturedItineraries();

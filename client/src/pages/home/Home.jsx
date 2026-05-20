@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { selectIsAuthenticated } from "../../store/auth/authSelectors.js";
 
 import { Link } from "react-router-dom";
 import Hero from "../../components/hero/Hero.jsx";
@@ -30,6 +31,7 @@ const Home = () => {
   const featuredUsers = useSelector(selectFeaturedUsers);
   const featuredUsersLoading = useSelector(selectFeaturedUsersLoading);
   const stats = useSelector(selectStats);
+  const isAuthenticated = useSelector(selectIsAuthenticated);
 
   useEffect(() => {
     if (!featuredItineraries || featuredItineraries.length === 0) {
@@ -107,13 +109,15 @@ const Home = () => {
             })}
           </div>
         </div>
-        <div className="home__cta">
-          <h2>Start Your Adventure</h2>
-          <p>Create and share your next trip in just a few clicks.</p>
-          <Link to="/create-itinerary" className="btn btn__secondary">
-            Plan a Trip
-          </Link>
-        </div>
+        {!isAuthenticated && (
+          <div className="home__cta">
+            <h2>Join the Community</h2>
+            <p>Share your journeys, discover inspiring itineraries, and connect with travelers from around the world.</p>
+            <Link to="/register" className="home__cta-btn btn">
+              Get Started — It's Free
+            </Link>
+          </div>
+        )}
       </div>
     </section>
   );
