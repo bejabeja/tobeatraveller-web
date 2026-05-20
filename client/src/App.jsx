@@ -53,6 +53,8 @@ const App = () => {
 
   const publicRoutes = ["/", "/explore", "/community"];
 
+  const isAuthRoute = ["/login", "/register"].includes(location.pathname);
+
   const isPublicRoute = publicRoutes.some((route) => {
     const regex = new RegExp(`^${route.replace(/:[^\s/]+/g, "[^/]+")}$`);
     return regex.test(location.pathname);
@@ -61,10 +63,10 @@ const App = () => {
   return (
     <div className="App ">
       <CustomToaster />
-      <div className="side-content">
+      <div className={`side-content${isAuthRoute ? " side-content--hidden" : ""}`}>
         <Navbar />
       </div>
-      <div className="main-content">
+      <div className={`main-content${isAuthRoute ? " main-content--auth" : ""}`}>
         <div className="content">
           <Routes>
             {/* public routes */}

@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { IoEarth } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { InputForm } from "../../components/form/InputForm";
@@ -19,16 +20,12 @@ import "./Auth.scss";
 const GUEST_EMAIL = "test.tobeatraveller@gmail.com";
 const GUEST_PASSWORD = "testtest";
 
-const fields = [
-  { name: "email", label: "Email", type: "email" },
-  { name: "password", label: "Password", type: "password" },
-];
-
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const imageAuthLoaded = useSelector(selectimageAuthLoaded);
   const errorInAuth = useSelector(selectAuthError);
+
   useEffect(() => {
     if (imageAuthLoaded) return;
     preloadImg(authImage, () => {
@@ -42,70 +39,58 @@ const Login = () => {
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
+    defaultValues: { email: "", password: "" },
   });
 
-  const checkUser = (data) => {
-    return dispatch(
-      loginUser(data, () => {
-        navigate("/");
-      })
-    );
-  };
+  const checkUser = (data) =>
+    dispatch(loginUser(data, () => navigate("/")));
 
-  const loginAsGuest = () => {
-    dispatch(loginUser({ email: GUEST_EMAIL, password: GUEST_PASSWORD }, () => {
-      navigate("/");
-    }));
-  };
+  const loginAsGuest = () =>
+    dispatch(loginUser({ email: GUEST_EMAIL, password: GUEST_PASSWORD }, () => navigate("/")));
 
   return (
     <section className="auth">
       <div className={`auth__bg ${imageAuthLoaded ? "loaded" : ""}`} />
 
-      <form onSubmit={handleSubmit(checkUser)} className="auth__form">
-        <h1 className="auth__form-title">Log in</h1>
-
-        {fields.map((field) =>
-          field.type === "password" ? (
-            <PasswordInputForm
-              key={field.name}
-              name={field.name}
-              label={field.label}
-              control={control}
-              error={errors[field.name]}
-            />
-          ) : (
-            <InputForm
-              key={field.name}
-              name={field.name}
-              label={field.label}
-              control={control}
-              type={field.type}
-              error={errors[field.name]}
-            />
-          )
-        )}
-
-        <div className="auth__form-error" role="alert" aria-live="assertive">
-          {errorInAuth && Object.keys(errors).length === 0
-            ? errorInAuth
-            : "\u00A0"}
+      <div className={`auth__visual ${imageAuthLoaded ? "auth__visual--loaded" : ""}`}>
+        <Link to="/" className="auth__brand">
+          <IoEarth /><span>Tobeatraveller</span>
+        </Link>
+        <div className="auth__tagline">
+          <h2>Discover the world,<br />one journey at a time.</h2>
+          <p>Join a community of travellers sharing their most inspiring journeys.</p>
         </div>
+      </div>
 
-        <div className="auth__form-link">
-          <SubmitButton label="Log In" loading={isSubmitting} />
-          {import.meta.env.DEV && (
-            <button type="button" className="auth__form-guest" onClick={loginAsGuest}>
-              Continue as guest
-            </button>
-          )}
-          <Link to="/register">Don't have an account? Register!</Link>
-        </div>
-      </form>
+      <div className="auth__panel">
+        <form onSubmit={handleSubmit(checkUser)} className="auth__form">
+          <Link to="/" className="auth__form-logo">
+            <IoEarth />Tobeatraveller
+          </Link>
+
+          <div className="auth__form-header">
+            <h1 className="auth__form-title">Welcome back</h1>
+            <p className="auth__form-subtitle">Sign in to continue your journey</p>
+          </div>
+
+          <InputForm name="email" label="Email" type="email" control={control} error={errors.email} />
+          <PasswordInputForm name="password" label="Password" control={control} error={errors.password} />
+
+          <div className="auth__form-error" role="alert" aria-live="assertive">
+            {errorInAuth && Object.keys(errors).length === 0 ? errorInAuth : " "}
+          </div>
+
+          <div className="auth__form-link">
+            <SubmitButton label="Log In" loading={isSubmitting} />
+            {import.meta.env.DEV && (
+              <button type="button" className="auth__form-guest" onClick={loginAsGuest}>
+                Continue as guest
+              </button>
+            )}
+            <Link to="/register">New here? <strong>Create an account</strong></Link>
+          </div>
+        </form>
+      </div>
     </section>
   );
 };

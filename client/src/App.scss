@@ -21,6 +21,12 @@
   width: 100%;
 }
 
+@media (max-width: 479px) {
+  .main-content--auth {
+    padding-top: 0;
+  }
+}
+
 @media (min-width: 480px) {
   .App {
     flex-direction: row;
@@ -31,6 +37,10 @@
     min-width: 240px;
     flex-shrink: 0;
     transition: width 0.2s ease, min-width 0.2s ease;
+
+    &--hidden {
+      display: none;
+    }
   }
 
   :root.sidebar-collapsed .side-content {
@@ -43,3 +53,4 @@
     padding-bottom: 0;
   }
 }
+

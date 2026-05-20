@@ -28,6 +28,7 @@ const Navbar = () => {
     () => localStorage.getItem("sidebar-collapsed") === "true"
   );
   const location = useLocation();
+  const isAuthRoute = ["/login", "/register"].includes(location.pathname);
 
   useEffect(() => {
     setMeOpen(false);
@@ -40,12 +41,14 @@ const Navbar = () => {
 
   return (
     <>
-      {/* Mobile: fixed top header */}
-      <div className="mobile-header">
-        <Link to="/" className="logo">
-          <IoEarth className="logo__icon" />Tobeatraveller
-        </Link>
-      </div>
+      {/* Mobile: fixed top header — hidden on auth pages */}
+      {!isAuthRoute && (
+        <div className="mobile-header">
+          <Link to="/" className="logo">
+            <IoEarth className="logo__icon" />Tobeatraveller
+          </Link>
+        </div>
+      )}
 
       {/* Desktop: fixed left sidebar */}
       <nav className="navbar">
