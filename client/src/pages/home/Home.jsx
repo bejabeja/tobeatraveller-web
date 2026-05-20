@@ -5,16 +5,18 @@ import { Link } from "react-router-dom";
 import Hero from "../../components/hero/Hero.jsx";
 import ItinerariesSection from "../../components/itineraries/ItinerariesSection.jsx";
 import UsersSection from "../../components/users/UsersSection.jsx";
-import { initFeaturedItineraries } from "../../store/itineraries/itinerariesActions.js";
+import { initFeaturedItineraries, initStats } from "../../store/itineraries/itinerariesActions.js";
 import {
   selectFeaturedItineraries,
   selectFeaturedItinerariesLoading,
+  selectStats,
 } from "../../store/itineraries/itinerariesSelectors.js";
 import { initFeaturedUsers } from "../../store/users/usersActions.js";
 import {
   selectFeaturedUsers,
   selectFeaturedUsersLoading,
 } from "../../store/users/usersSelectors.js";
+import { FEATURES } from "../../utils/constants/constants.js";
 import { getImagesInfo } from "../../utils/constants/images.js";
 import "./Home.scss";
 
@@ -27,36 +29,39 @@ const Home = () => {
   );
   const featuredUsers = useSelector(selectFeaturedUsers);
   const featuredUsersLoading = useSelector(selectFeaturedUsersLoading);
+  const stats = useSelector(selectStats);
 
   useEffect(() => {
     if (!featuredItineraries || featuredItineraries.length === 0) {
       dispatch(initFeaturedItineraries());
     }
-
     if (!featuredUsers || featuredUsers.length === 0) {
       dispatch(initFeaturedUsers());
     }
+    dispatch(initStats());
   }, [dispatch, featuredItineraries, featuredUsers]);
   
   return (
     <section className="home">
       <Hero />
-      <div className="home__stats">
-        <div className="home__stats-inner">
-          <div className="home__stats-item">
-            <span className="home__stats-number">1,200+</span>
-            <span className="home__stats-label">Trips shared</span>
-          </div>
-          <div className="home__stats-item">
-            <span className="home__stats-number">340+</span>
-            <span className="home__stats-label">Travelers</span>
-          </div>
-          <div className="home__stats-item">
-            <span className="home__stats-number">60+</span>
-            <span className="home__stats-label">Countries</span>
+      {FEATURES.SHOW_HOME_STATS && (
+        <div className="home__stats">
+          <div className="home__stats-inner">
+            <div className="home__stats-item">
+              <span className="home__stats-number">{stats.trips}</span>
+              <span className="home__stats-label">Trips shared</span>
+            </div>
+            <div className="home__stats-item">
+              <span className="home__stats-number">{stats.travelers}</span>
+              <span className="home__stats-label">Travelers</span>
+            </div>
+            <div className="home__stats-item">
+              <span className="home__stats-number">{stats.destinations}</span>
+              <span className="home__stats-label">Destinations</span>
+            </div>
           </div>
         </div>
-      </div>
+      )}
       <div className="section__container home__container">
         <div className="home__users">
           <div className="home__section-header">

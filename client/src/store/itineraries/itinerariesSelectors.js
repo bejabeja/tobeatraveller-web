@@ -1,3 +1,4 @@
+export const selectStats = (state) => state.itineraries.stats;
 export const selectFeaturedItineraries = (state) => state.itineraries.featuredItineraries.data;
 export const selectFeaturedItinerariesLoading = (state) => state.itineraries.featuredItineraries.loading;
 export const selectFeaturedItinerariesError = (state) => state.itineraries.featuredItineraries.error;

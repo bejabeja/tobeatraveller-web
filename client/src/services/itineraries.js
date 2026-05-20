@@ -1,5 +1,11 @@
 const baseUrl = `${import.meta.env.VITE_API_URL}/itineraries`;
 
+export const getStats = async () => {
+    const response = await fetch(`${baseUrl}/stats`);
+    if (!response.ok) throw new Error('Failed to fetch stats');
+    return response.json();
+};
+
 export const getItinerariesByFilters = async (filters = {}) => {
     const { page = 1, limit = 10, ...rest } = filters;
     const params = new URLSearchParams();

@@ -15,6 +15,7 @@ export const createItinerariesRouter = () => {
     const itinerariesService = new ItinerariesService(itinerariesRepository, userRepository, placesRepository);
     const itinerariesController = new ItinerariesController(itinerariesService)
 
+    router.get("/stats", itinerariesController.getStats.bind(itinerariesController));
     router.get("/", itinerariesController.filterItinerariesBy.bind(itinerariesController));
     router.get("/featured", itinerariesController.featuredItineraries.bind(itinerariesController));
     router.get("/:id", itinerariesController.getItinerariesByUserId.bind(itinerariesController));

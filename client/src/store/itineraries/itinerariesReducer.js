@@ -4,12 +4,14 @@ import {
     SET_EXPLORE_PAGINATION,
     SET_FEATURED_ITINERARIES,
     SET_FEATURED_ITINERARIES_ERROR,
+    SET_STATS,
     START_LOADING_EXPLORE_ITINERARIES,
     START_LOADING_FEATURED_ITINERARIES,
     START_LOADING_MORE_ITINERARIES
 } from './itinerariesActions';
 
 const initialState = {
+    stats: { trips: 0, travelers: 0, destinations: 0 },
     featuredItineraries: {
         data: [],
         loading: false,
@@ -97,6 +99,9 @@ export const itinerariesReducer = (state = initialState, action) => {
                     page: action.payload.page,
                 }
             };
+
+        case SET_STATS:
+            return { ...state, stats: action.payload };
 
         default:
             return state;

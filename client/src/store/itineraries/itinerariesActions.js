@@ -1,4 +1,4 @@
-import { getItinerariesByFilters, getfeaturedItineraries } from "../../services/itineraries.js";
+import { getItinerariesByFilters, getfeaturedItineraries, getStats } from "../../services/itineraries.js";
 
 export const START_LOADING_FEATURED_ITINERARIES = "@featuredItineraries/init/start";
 export const SET_FEATURED_ITINERARIES = "@featuredItineraries/init/success";
@@ -8,6 +8,7 @@ export const SET_EXPLORE_ITINERARIES = "@exploreItineraries/setItineraries";
 export const SET_EXPLORE_ITINERARIES_ERROR = "@exploreItineraries/setError";
 export const SET_EXPLORE_PAGINATION = "@exploreItineraries/setPagination";
 export const START_LOADING_MORE_ITINERARIES = "@exploreItineraries/startLoadingMore";
+export const SET_STATS = "@stats/set";
 
 export const initFeaturedItineraries = () => {
     return async (dispatch) => {
@@ -62,6 +63,15 @@ export const loadMoreExploreItineraries = (filters) => async (dispatch) => {
             type: SET_EXPLORE_ITINERARIES_ERROR,
             payload: 'Error fetching explore itineraries',
         });
+    }
+};
+
+export const initStats = () => async (dispatch) => {
+    try {
+        const stats = await getStats();
+        dispatch({ type: SET_STATS, payload: stats });
+    } catch (error) {
+        // stats are non-critical, fail silently
     }
 };
 

@@ -41,6 +41,10 @@ export class ItinerariesService {
         return itineraries.map(it => it.toSimpleDTO());
     }
 
+    async getStats() {
+        return this.itinerariesRepository.getStats();
+    }
+
     async getItinerariesByUserId(userId) {
         const itineraries = await this.itinerariesRepository.findByUserId(userId);
         if (!itineraries.length) {

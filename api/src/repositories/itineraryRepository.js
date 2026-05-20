@@ -119,6 +119,21 @@ export class ItineraryRepository {
     return result.rows.length ? Itinerary.fromDb(result.rows[0]) : null;
   }
 
+  async getStats() {
+    const result = await client.query(`
+      SELECT
+        (SELECT COUNT(*) FROM itineraries JOIN users ON itineraries.user_id = users.id WHERE users.role != 'test') AS trips,
+        (SELECT COUNT(*) FROM users WHERE role != 'test') AS travelers,
+        (SELECT COUNT(DISTINCT location_name) FROM itineraries JOIN users ON itineraries.user_id = users.id WHERE users.role != 'test') AS destinations
+    `);
+    const row = result.rows[0];
+    return {
+      trips: parseInt(row.trips, 10),
+      travelers: parseInt(row.travelers, 10),
+      destinations: parseInt(row.destinations, 10),
+    };
+  }
+
   async getTotalByUserId(userId) {
     const result = await client.query(
       `SELECT COUNT(*) AS total FROM itineraries WHERE user_id = $1`, [userId]

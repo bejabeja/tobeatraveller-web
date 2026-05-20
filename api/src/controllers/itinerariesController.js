@@ -37,6 +37,15 @@ export class ItinerariesController {
         }
     }
 
+    async getStats(req, res, next) {
+        try {
+            const stats = await this.itinerariesService.getStats();
+            res.status(200).json(stats);
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async featuredItineraries(req, res, next) {
         try {
             const itineraries = await this.itinerariesService.getFeaturedItineraries();
