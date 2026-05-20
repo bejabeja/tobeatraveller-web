@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react";
-import { FaBars, FaTimes } from "react-icons/fa";
 import { GoBook, GoHome, GoPerson, GoSignIn, GoSignOut } from "react-icons/go";
-import { IoAddOutline, IoSaveOutline, IoSearch } from "react-icons/io5";
+import { IoAddOutline, IoEarth, IoSaveOutline, IoSearch } from "react-icons/io5";
 import { RiUserCommunityLine } from "react-icons/ri";
-import { useDispatch, useSelector } from "react-redux";
-import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
-import { logoutUser } from "../../store/auth/authActions";
+import { useSelector } from "react-redux";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import {
   selectAuthLoading,
   selectIsAuthenticated,
@@ -14,42 +12,31 @@ import { selectMe } from "../../store/user/userInfoSelectors";
 import "./Navbar.scss";
 
 const Navbar = () => {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const authLoading = useSelector(selectAuthLoading);
   const userMe = useSelector(selectMe);
-
-  const [isOpen, setIsOpen] = useState(false);
+  const [meOpen, setMeOpen] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
-    setIsOpen(false);
+    setMeOpen(false);
   }, [location]);
 
-  const toggleNavbar = () => {
-    setIsOpen(!isOpen);
-  };
-
   return (
-    <section>
-      <div className="navbar-section">
+    <>
+      {/* Mobile: fixed top header */}
+      <div className="mobile-header">
         <Link to="/" className="logo">
-          Trobeatraveller
+          <IoEarth className="logo__icon" />Tobeatraveller
         </Link>
-        <div className="hamburger-menu" onClick={toggleNavbar}>
-          {isOpen ? <FaTimes className="nav-icon" /> : <FaBars className="nav-icon" />}
-        </div>
       </div>
 
-      {isOpen && <div className="navbar-backdrop" onClick={toggleNavbar} />}
-
-      <nav className={`navbar ${isOpen ? "open" : ""}`}>
+      {/* Desktop: fixed left sidebar */}
+      <nav className="navbar">
         <div className="nav-section">
-          <NavLink to="/" className="logo desktop-only">
-            Trobeatraveller
-          </NavLink>
-
+          <Link to="/" className="logo">
+            <IoEarth className="logo__icon" />Tobeatraveller
+          </Link>
           <h3>Discover</h3>
           <NavLink to="/" className="nav-item">
             <GoHome className="nav-icon" />
@@ -75,62 +62,110 @@ const Navbar = () => {
         {authLoading ? (
           <div className="loading-placeholder nav-section">
             <h3>Your space</h3>
-            <p>
-              <GoBook className="nav-icon" />
-              <span>Loading...</span>
-            </p>
-            <p>
-              <GoBook className="nav-icon" />
-              <span>Loading...</span>
-            </p>
+            <p><GoBook className="nav-icon" /><span>Loading...</span></p>
+            <p><GoBook className="nav-icon" /><span>Loading...</span></p>
           </div>
         ) : (
-          <>
-            <div className="nav-section">
-              <h3>Your Space</h3>
-              {isAuthenticated ? (
-                <>
-                  <NavLink to="/my-itineraries" className="nav-item">
-                    <GoBook className="nav-icon" />
-                    <span>My trips</span>
-                  </NavLink>
-                  <NavLink to="/itineraries/saved" className="nav-item">
-                    <IoSaveOutline className="nav-icon" />
-                    <span>Saved trips</span>
-                  </NavLink>
-                  {isOpen && (
-                    <>
-                      <NavLink
-                        to={`/profile/${userMe.id}`}
-                        className="nav-item"
-                      >
-                        <GoPerson className="nav-icon" />
-                        <span>Profile</span>
-                      </NavLink>
-                      <NavLink to="/logout" className="nav-item">
-                        <GoSignOut className="nav-icon" />
-                        <span>Logout</span>
-                      </NavLink>
-                    </>
-                  )}
-                </>
-              ) : (
-                <>
-                  <NavLink to="/login" className="nav-item">
-                    <GoSignIn className="nav-icon" />
-                    <span>Login</span>
-                  </NavLink>
-                  <NavLink to="/register" className="nav-item">
-                    <GoSignIn className="nav-icon" />
-                    <span>Register</span>
-                  </NavLink>
-                </>
-              )}
-            </div>
-          </>
+          <div className="nav-section">
+            <h3>Your Space</h3>
+            {isAuthenticated ? (
+              <>
+                <NavLink to="/my-itineraries" className="nav-item">
+                  <GoBook className="nav-icon" />
+                  <span>My trips</span>
+                </NavLink>
+                <NavLink to="/itineraries/saved" className="nav-item">
+                  <IoSaveOutline className="nav-icon" />
+                  <span>Saved trips</span>
+                </NavLink>
+                <NavLink to={`/profile/${userMe?.id}`} className="nav-item">
+                  <GoPerson className="nav-icon" />
+                  <span>Profile</span>
+                </NavLink>
+                <NavLink to="/logout" className="nav-item">
+                  <GoSignOut className="nav-icon" />
+                  <span>Logout</span>
+                </NavLink>
+              </>
+            ) : (
+              <>
+                <NavLink to="/login" className="nav-item">
+                  <GoSignIn className="nav-icon" />
+                  <span>Login</span>
+                </NavLink>
+                <NavLink to="/register" className="nav-item">
+                  <GoSignIn className="nav-icon" />
+                  <span>Register</span>
+                </NavLink>
+              </>
+            )}
+          </div>
         )}
       </nav>
-    </section>
+
+      {/* Mobile: Me panel (slide up) */}
+      {meOpen && isAuthenticated && (
+        <>
+          <div className="me-panel__backdrop" onClick={() => setMeOpen(false)} />
+          <nav className="me-panel">
+            <NavLink to={`/profile/${userMe?.id}`} className="me-panel__item">
+              <GoPerson className="me-panel__icon" />
+              <span>Profile</span>
+            </NavLink>
+            <NavLink to="/my-itineraries" className="me-panel__item">
+              <GoBook className="me-panel__icon" />
+              <span>My trips</span>
+            </NavLink>
+            <NavLink to="/itineraries/saved" className="me-panel__item">
+              <IoSaveOutline className="me-panel__icon" />
+              <span>Saved trips</span>
+            </NavLink>
+            <div className="me-panel__divider" />
+            <NavLink to="/logout" className="me-panel__item me-panel__item--danger">
+              <GoSignOut className="me-panel__icon" />
+              <span>Logout</span>
+            </NavLink>
+          </nav>
+        </>
+      )}
+
+      {/* Mobile: fixed bottom tab bar */}
+      <nav className="bottom-nav">
+        <NavLink to="/" className="bottom-nav__item" end>
+          <GoHome className="bottom-nav__icon" />
+          <span>Home</span>
+        </NavLink>
+        <NavLink to="/explore" className="bottom-nav__item">
+          <IoSearch className="bottom-nav__icon" />
+          <span>Explore</span>
+        </NavLink>
+        {isAuthenticated && (
+          <NavLink to="/create-itinerary" className="bottom-nav__item bottom-nav__item--create">
+            <div className="bottom-nav__create-btn">
+              <IoAddOutline className="bottom-nav__icon" />
+            </div>
+          </NavLink>
+        )}
+        <NavLink to="/community" className="bottom-nav__item">
+          <RiUserCommunityLine className="bottom-nav__icon" />
+          <span>Community</span>
+        </NavLink>
+        {isAuthenticated ? (
+          <button
+            className={`bottom-nav__item ${meOpen ? "active" : ""}`}
+            onClick={() => setMeOpen(!meOpen)}
+          >
+            <GoPerson className="bottom-nav__icon" />
+            <span>Me</span>
+          </button>
+        ) : (
+          <NavLink to="/login" className="bottom-nav__item">
+            <GoSignIn className="bottom-nav__icon" />
+            <span>Login</span>
+          </NavLink>
+        )}
+      </nav>
+    </>
   );
 };
 
