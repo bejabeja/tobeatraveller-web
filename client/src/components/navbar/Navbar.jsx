@@ -9,6 +9,7 @@ import {
   selectIsAuthenticated,
 } from "../../store/auth/authSelectors";
 import { selectMe } from "../../store/user/userInfoSelectors";
+import { generateAvatar } from "../../utils/constants/constants";
 import "./Navbar.scss";
 
 const Navbar = () => {
@@ -34,11 +35,11 @@ const Navbar = () => {
       {/* Desktop: fixed left sidebar */}
       <nav className="navbar">
         <div className="nav-section">
-          <Link to="/" className="logo">
+          <Link to="/" className="logo navbar__logo">
             <IoEarth className="logo__icon" />Tobeatraveller
           </Link>
           <h3>Discover</h3>
-          <NavLink to="/" className="nav-item">
+          <NavLink to="/" className="nav-item" end>
             <GoHome className="nav-icon" />
             <span>Home</span>
           </NavLink>
@@ -78,14 +79,6 @@ const Navbar = () => {
                   <IoSaveOutline className="nav-icon" />
                   <span>Saved trips</span>
                 </NavLink>
-                <NavLink to={`/profile/${userMe?.id}`} className="nav-item">
-                  <GoPerson className="nav-icon" />
-                  <span>Profile</span>
-                </NavLink>
-                <NavLink to="/logout" className="nav-item">
-                  <GoSignOut className="nav-icon" />
-                  <span>Logout</span>
-                </NavLink>
               </>
             ) : (
               <>
@@ -99,6 +92,23 @@ const Navbar = () => {
                 </NavLink>
               </>
             )}
+          </div>
+        )}
+
+        {/* Desktop: user footer pinned at bottom */}
+        {isAuthenticated && userMe && (
+          <div className="nav-footer">
+            <Link to={`/profile/${userMe.id}`} className="nav-footer__user">
+              <img
+                src={userMe.avatarUrl || generateAvatar(userMe.username)}
+                alt={userMe.username}
+                className="nav-footer__avatar"
+              />
+              <span className="nav-footer__username">@{userMe.username}</span>
+            </Link>
+            <NavLink to="/logout" className="nav-footer__logout" title="Logout">
+              <GoSignOut />
+            </NavLink>
           </div>
         )}
       </nav>

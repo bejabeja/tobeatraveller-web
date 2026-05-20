@@ -4,7 +4,6 @@ import { Route, Routes, useLocation } from "react-router-dom";
 import "./App.scss";
 import Footer from "./components/footer/Footer";
 import Navbar from "./components/navbar/Navbar";
-import Topbar from "./components/topbar/Topbar";
 import PrivateLayout from "./pages/PrivateLayout";
 import Login from "./pages/auth/Login";
 import Logout from "./pages/auth/Logout";
@@ -66,11 +65,6 @@ const App = () => {
         <Navbar />
       </div>
       <div className="main-content">
-        {isAuthenticated && (
-          <div className="header">
-            <Topbar />
-          </div>
-        )}
         <div className="content">
           <Routes>
             {/* public routes */}
