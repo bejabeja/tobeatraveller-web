@@ -126,6 +126,12 @@ export class UserService {
         return users.map(user => user.toFeaturedDTO());
     }
 
+    async isUsernameAvailable(username) {
+        if (!username || username.length < 2) return false;
+        const existing = await this.userRepository.findByName(username);
+        return !existing;
+    }
+
     async _ensureUsernameAvailable(username, currentUserId = null) {
         const existingUser = await this.userRepository.findByName(username);
         if (existingUser && existingUser.id !== currentUserId) {

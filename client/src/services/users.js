@@ -2,6 +2,13 @@ import { parseError } from "../utils/parseError";
 
 const baseUrl = `${import.meta.env.VITE_API_URL}/users`;
 
+export const checkUsernameAvailable = async (username) => {
+    const response = await fetch(`${baseUrl}/check-username?username=${encodeURIComponent(username)}`);
+    if (!response.ok) return null;
+    const data = await response.json();
+    return data.available;
+};
+
 export const getUserForAuth = async () => {
     const isMobile = /Mobi|Android/i.test(navigator.userAgent);
     const headers = { 'Content-Type': 'application/json' };

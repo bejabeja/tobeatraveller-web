@@ -302,4 +302,33 @@
       }
     }
   }
+
+  &__username-wrapper {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__username-status {
+    align-self: flex-end;
+    width: fit-content;
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    margin-top: 0.2rem;
+    line-height: 1.4;
+
+    &--checking {
+      color: var(--text-secondary-color);
+      background-color: #f1f5f9;
+    }
+    &--available {
+      color: #16a34a;
+      background-color: #f0fdf4;
+    }
+    &--taken {
+      color: var(--error-color);
+      background-color: #fef2f2;
+    }
+  }
 }

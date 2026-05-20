@@ -1,11 +1,12 @@
-const SubmitButton = ({ label, loading = false }) => {
+const SubmitButton = ({ label, loading = false, disabled = false }) => {
+  const isDisabled = loading || disabled;
   return (
     <button
       type="submit"
       className="btn btn__primary"
-      disabled={loading}
+      disabled={isDisabled}
       aria-busy={loading}
-      aria-disabled={loading}
+      aria-disabled={isDisabled}
     >
       {loading ? "Loading..." : label}
     </button>

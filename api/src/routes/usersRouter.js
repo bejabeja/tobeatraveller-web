@@ -19,6 +19,7 @@ export const createUsersRouter = () => {
     router.put("/me", authenticate, userController.updateUserMe.bind(userController));
     router.get("/featured", userController.getFeaturedUsers.bind(userController));
     router.get("/all", userController.getAllUsersFiltered.bind(userController));
+    router.get("/check-username", userController.checkUsernameAvailable.bind(userController));
     router.get("/:id", userController.getUserById.bind(userController));
 
     return router;

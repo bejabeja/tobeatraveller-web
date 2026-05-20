@@ -1,12 +1,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
+import { useForm, useWatch } from "react-hook-form";
 import { IoEarth } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { InputForm } from "../../components/form/InputForm";
 import { PasswordInputForm } from "../../components/form/PasswordInputForm";
 import SubmitButton from "../../components/form/SubmitButton";
+import { checkUsernameAvailable } from "../../services/users";
 import { createUser, setImageAuthLoaded } from "../../store/auth/authActions";
 import {
   selectAuthError,
@@ -22,6 +23,7 @@ const Signup = () => {
   const navigate = useNavigate();
   const imageAuthLoaded = useSelector(selectimageAuthLoaded);
   const errorInAuth = useSelector(selectAuthError);
+  const [usernameStatus, setUsernameStatus] = useState(null); // null | "checking" | "available" | "taken"
 
   useEffect(() => {
     if (imageAuthLoaded) return;
@@ -43,6 +45,22 @@ const Signup = () => {
       confirmPassword: "",
     },
   });
+
+  const usernameValue = useWatch({ control, name: "username" });
+
+  useEffect(() => {
+    if (!usernameValue || usernameValue.length < 2 || /\s/.test(usernameValue)) {
+      setUsernameStatus(null);
+      return;
+    }
+    setUsernameStatus("checking");
+    const timer = setTimeout(async () => {
+      const available = await checkUsernameAvailable(usernameValue);
+      if (available === null) { setUsernameStatus(null); return; }
+      setUsernameStatus(available ? "available" : "taken");
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [usernameValue]);
 
   const addUser = (data) =>
     dispatch(createUser(data, () => navigate("/")));
@@ -77,16 +95,31 @@ const Signup = () => {
           </div>
 
           <InputForm name="email" label="Email" type="email" control={control} error={errors.email} />
-          <InputForm name="username" label="Username" type="text" control={control} error={errors.username} />
+
+          <div className="auth__username-wrapper">
+            <InputForm name="username" label="Username" type="text" control={control} error={errors.username} />
+            {usernameStatus && (
+              <span
+                className={`auth__username-status auth__username-status--${usernameStatus}`}
+                aria-live="polite"
+                aria-atomic="true"
+              >
+                {usernameStatus === "checking" && "…"}
+                {usernameStatus === "available" && "✓ Available"}
+                {usernameStatus === "taken" && "✗ Already taken"}
+              </span>
+            )}
+          </div>
+
           <PasswordInputForm name="password" label="Password" control={control} error={errors.password} />
           <PasswordInputForm name="confirmPassword" label="Confirm password" control={control} error={errors.confirmPassword} />
 
-          <div className="auth__form-error">
+          <div className="auth__form-error" role="alert" aria-live="assertive">
             {errorInAuth && Object.keys(errors).length === 0 ? errorInAuth : " "}
           </div>
 
           <div className="auth__form-link">
-            <SubmitButton label="Create account" loading={isSubmitting} />
+            <SubmitButton label="Create account" loading={isSubmitting} disabled={usernameStatus === "taken"} />
             <Link to="/login">Already have an account? <strong>Sign in</strong></Link>
             <Link to="/explore" className="auth__form-browse">
               Explore without an account →

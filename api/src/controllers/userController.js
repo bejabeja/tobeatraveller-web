@@ -55,6 +55,16 @@ export class UserController {
         }
     }
 
+    async checkUsernameAvailable(req, res, next) {
+        const { username } = req.query;
+        try {
+            const available = await this.userService.isUsernameAvailable(username);
+            res.status(200).json({ available });
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async getAllUsersFiltered(req, res, next) {
         try {
             const { searchName = '', page = 1, limit = 9 } = req.query;
