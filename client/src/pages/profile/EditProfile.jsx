@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { InputForm, TextAreaForm } from "../../components/form/InputForm";
 import Modal from "../../components/modal/Modal";
+import { useAvatarUpload } from "../../hooks/useAvatarUpload";
 import { checkUsernameAvailable, updateUser } from "../../services/users";
 import { initAuthUser } from "../../store/auth/authActions";
 import { setUserInfo } from "../../store/user/userInfoActions";
@@ -23,9 +24,7 @@ const EditProfile = () => {
   const [errorSubmit, setErrorSubmit] = useState(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [usernameStatus, setUsernameStatus] = useState(null);
-  const [avatarFile, setAvatarFile] = useState(null);
-  const [avatarPreview, setAvatarPreview] = useState(null);
-  const [removeAvatar, setRemoveAvatar] = useState(false);
+  const { avatarFile, avatarPreview, removeAvatar, handleAvatarChange, handleRemoveAvatar, handleUndoRemove } = useAvatarUpload();
   const navigate = useNavigate();
 
   const {
@@ -65,10 +64,6 @@ const EditProfile = () => {
   }, [userMe, reset]);
 
   useEffect(() => {
-    return () => { if (avatarPreview) URL.revokeObjectURL(avatarPreview); };
-  }, [avatarPreview]);
-
-  useEffect(() => {
     if (!usernameValue || usernameValue.length < 2 || /\s/.test(usernameValue)) {
       setUsernameStatus(null);
       return;
@@ -87,22 +82,6 @@ const EditProfile = () => {
   }, [usernameValue, userMe]);
 
   if (!userMe) return <EditProfileSkeleton />;
-
-  const handleAvatarChange = (file) => {
-    if (avatarPreview) URL.revokeObjectURL(avatarPreview);
-    setAvatarFile(file);
-    setAvatarPreview(URL.createObjectURL(file));
-    setRemoveAvatar(false);
-  };
-
-  const handleRemoveAvatar = () => {
-    if (avatarPreview) URL.revokeObjectURL(avatarPreview);
-    setAvatarFile(null);
-    setAvatarPreview(null);
-    setRemoveAvatar(true);
-  };
-
-  const handleUndoRemove = () => setRemoveAvatar(false);
 
   const saveUser = async (data) => {
     try {
@@ -190,9 +169,7 @@ const EditProfile = () => {
                   placeholder="A short description of yourself…"
                   error={errors.bio}
                 />
-                <span className={`edit-profile__char-count ${(bioValue?.length || 0) > 140 ? "edit-profile__char-count--warn" : ""}`}>
-                  {bioValue?.length || 0}/160
-                </span>
+                <CharCount value={bioValue} max={160} warnAt={140} />
               </div>
             </div>
           </div>
@@ -219,9 +196,7 @@ const EditProfile = () => {
               placeholder="Tell the community about yourself and your travel style…"
               error={errors.about}
             />
-            <span className={`edit-profile__char-count ${(aboutValue?.length || 0) > 900 ? "edit-profile__char-count--warn" : ""}`}>
-              {aboutValue?.length || 0}/1000
-            </span>
+            <CharCount value={aboutValue} max={1000} warnAt={900} />
           </div>
         </div>
 
@@ -299,6 +274,12 @@ const EditProfileSkeleton = () => (
   </div>
 );
 
+const CharCount = ({ value, max, warnAt }) => (
+  <span className={`edit-profile__char-count ${(value?.length || 0) > warnAt ? "edit-profile__char-count--warn" : ""}`}>
+    {value?.length || 0}/{max}
+  </span>
+);
+
 const AvatarSection = ({ userMe, avatarPreview, removeAvatar, onAvatarChange, onRemoveAvatar, onUndoRemove }) => {
   const inputRef = useRef(null);
   const hasCloudinaryAvatar = userMe?.avatarUrl?.includes("res.cloudinary.com");
@@ -307,12 +288,7 @@ const AvatarSection = ({ userMe, avatarPreview, removeAvatar, onAvatarChange, on
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image must be under 5 MB");
-      return;
-    }
-    onAvatarChange(file);
+    if (file) onAvatarChange(file);
   };
 
   return (
