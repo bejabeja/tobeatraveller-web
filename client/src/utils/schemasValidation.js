@@ -91,15 +91,14 @@ export const createItinerarySchema = z
                         .string()
                         .optional(),
 
-                    infoPlace: z
-                        .object({
-                            name: z.string().min(1, "Please select a valid place from the list"),
-                            label: z.string(),
-                            coordinates: z.object({
-                                lat: z.number(),
-                                lon: z.number(),
-                            }),
-                        }),
+                    infoPlace: z.object({
+                        name: z.string().min(1, "Please select a valid place from the list"),
+                        label: z.string().optional(),
+                        coordinates: z.object({
+                            lat: z.number(),
+                            lon: z.number(),
+                        }).optional(),
+                    }),
                 })
             ).optional(),
 

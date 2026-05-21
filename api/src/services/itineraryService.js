@@ -45,14 +45,7 @@ export class ItineraryService {
         }
 
         for (const placeData of itineraryData.places) {
-            let place = await this.placesRepository.findByPlaceAttributes(
-                placeData.infoPlace.lat,
-                placeData.infoPlace.lon,
-                placeData.orderIndex
-            );
-            if (!place) {
-                place = await this.placesRepository.insertPlace(placeData);
-            }
+            const place = await this.placesRepository.insertPlace(placeData);
             await this.itinerariesRepository.linkPlace(itinerary.id, place.id, placeData.orderIndex, placeData.dayNumber ?? 1);
             itinerary.addPlace(place);
         }

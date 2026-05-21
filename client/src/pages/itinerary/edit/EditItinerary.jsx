@@ -105,8 +105,8 @@ const EditItinerary = () => {
             name: place.name,
             label: place.label,
             coordinates: {
-              lat: Number(place.latitude),
-              lon: Number(place.longitude),
+              lat: Number(place.latitude) || 0,
+              lon: Number(place.longitude) || 0,
             },
           },
         })),
@@ -141,9 +141,9 @@ const EditItinerary = () => {
         dayNumber: place.dayNumber ?? 1,
         infoPlace: {
           name: place.infoPlace.name,
-          label: place.infoPlace.label,
-          lat: place.infoPlace.coordinates.lat,
-          lon: place.infoPlace.coordinates.lon,
+          label: place.infoPlace.label ?? place.infoPlace.name,
+          lat: place.infoPlace.coordinates?.lat ?? 0,
+          lon: place.infoPlace.coordinates?.lon ?? 0,
         },
       })),
       category: data.category,

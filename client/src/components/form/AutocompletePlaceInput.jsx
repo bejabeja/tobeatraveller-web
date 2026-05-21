@@ -14,7 +14,7 @@ const AutocompletePlaceInput = ({
 }) => {
   const [suggestions, setSuggestions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const { searchPlaces } = useGeocodeSearch();
+  const { searchPOIs } = useGeocodeSearch();
   const inputRef = useRef(null);
   const dropdownRef = useRef(null);
   const destinationRef = useRef(destination);
@@ -27,7 +27,7 @@ const AutocompletePlaceInput = ({
     debounce(async (val) => {
       if (val.length >= 3) {
         setIsLoading(true);
-        const results = await searchPlaces(val, destinationRef.current);
+        const results = await searchPOIs(val, destinationRef.current);
         setSuggestions(results);
         setIsLoading(false);
       } else {
@@ -91,6 +91,7 @@ const AutocompletePlaceInput = ({
               onChange={(e) =>
                 handleInputChange(e.target.value, field.onChange)
               }
+              placeholder={!destination?.name ? "Select a destination first" : "Search for a place..."}
               className={`input__field ${error ? "input__field--invalid" : ""}`}
               autoComplete="off"
               aria-invalid={!!error}
@@ -98,9 +99,7 @@ const AutocompletePlaceInput = ({
               disabled={!destination?.name || disabled}
             />
             <div className="input__error">
-              {!destination?.name
-                ? "Please select a valid destination first"
-                : error?.label
+              {error?.label
                 ? "Please select a valid place from the list"
                 : error?.message || "\u00A0"}
             </div>

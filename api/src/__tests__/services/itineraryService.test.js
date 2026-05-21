@@ -144,19 +144,18 @@ describe('ItineraryService', () => {
       expect(itinerariesRepository.linkPlace).toHaveBeenCalledTimes(2);
     });
 
-    it('reuses existing place instead of inserting a duplicate', async () => {
-      const place = makePlace('place-existing', 0);
+    it('always inserts a new place', async () => {
+      const place = makePlace('place-1', 0);
       const dataWithPlaces = { ...baseData, places: [place] };
-      const existingPlace = { id: 'place-existing', toDTO: () => ({}) };
       const itinerary = makeItinerary();
 
       itinerariesRepository.create.mockResolvedValue(itinerary);
-      placesRepository.findByPlaceAttributes.mockResolvedValue(existingPlace);
+      placesRepository.insertPlace.mockResolvedValue({ id: 'place-1', toDTO: () => ({}) });
 
       await service.createItinerary(dataWithPlaces, null);
 
-      expect(placesRepository.insertPlace).not.toHaveBeenCalled();
-      expect(itinerariesRepository.linkPlace).toHaveBeenCalledWith('itin-1', 'place-existing', 0, 1);
+      expect(placesRepository.insertPlace).toHaveBeenCalledTimes(1);
+      expect(itinerariesRepository.linkPlace).toHaveBeenCalledWith('itin-1', 'place-1', 0, 1);
     });
 
     it('throws ConflictError when repository fails to create', async () => {

@@ -88,9 +88,9 @@ const CreateItinerary = () => {
         dayNumber: place.dayNumber ?? 1,
         infoPlace: {
           name: place.infoPlace.name,
-          label: place.infoPlace.label,
-          lat: place.infoPlace.coordinates.lat,
-          lon: place.infoPlace.coordinates.lon,
+          label: place.infoPlace.label ?? place.infoPlace.name,
+          lat: place.infoPlace.coordinates?.lat ?? 0,
+          lon: place.infoPlace.coordinates?.lon ?? 0,
         },
       })),
       category: data.category,
