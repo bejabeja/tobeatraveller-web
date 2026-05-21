@@ -21,6 +21,7 @@ const DatesForm = ({ control, errors, watch, setValue }) => {
           type="date"
           control={control}
           error={errors.startDate}
+          required
         ></InputForm>
         <InputForm
           name="endDate"
@@ -29,6 +30,7 @@ const DatesForm = ({ control, errors, watch, setValue }) => {
           control={control}
           error={errors.endDate}
           inputProps={{ min: startDateWatch }}
+          required
         ></InputForm>
       </div>
     </div>

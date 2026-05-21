@@ -10,6 +10,11 @@
     font-size: 1rem;
   }
 
+  &__required {
+    color: var(--danger-color, #e53e3e);
+    margin-left: 2px;
+  }
+
   &__field {
     padding: 0.75em 1em;
     border: 1px solid var(--border-color);

@@ -16,6 +16,7 @@ const BasicInfoForm = ({ control, errors, disabled = false }) => {
           type="text"
           control={control}
           error={errors.title}
+          required
         ></InputForm>
         <AutocompleteObjectInput
           name="destination"
@@ -23,6 +24,7 @@ const BasicInfoForm = ({ control, errors, disabled = false }) => {
           control={control}
           error={errors.destination}
           disabled={disabled}
+          required
         />
       </div>
 

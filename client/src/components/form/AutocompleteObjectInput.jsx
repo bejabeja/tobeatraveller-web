@@ -10,6 +10,7 @@ const AutocompleteObjectInput = ({
   control,
   error,
   disabled = false,
+  required = false,
 }) => {
   const [suggestions, setSuggestions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -71,7 +72,7 @@ const AutocompleteObjectInput = ({
   return (
     <div className="autocomplete-input" ref={dropdownRef}>
       <label htmlFor={name} className="input__label">
-        {label}
+        {label}{required && <span className="input__required">*</span>}
       </label>
       <Controller
         name={name}

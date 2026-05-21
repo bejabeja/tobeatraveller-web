@@ -105,18 +105,19 @@ export const createItinerarySchema = z
 
         budget: z
             .string()
-            .refine(val => !isNaN(Number(val)), "Must be a number")
-            .transform(val => parseFloat(val)),
+            .optional()
+            .transform(val => (val && !isNaN(Number(val)) ? parseFloat(val) : 0)),
 
         currency: z
             .string()
-            .min(1, "Currency is required")
-            .max(3, "Currency code too long"),
+            .max(3, "Currency code too long")
+            .optional()
+            .default(""),
 
         numberOfTravellers: z
             .string()
-            .refine(val => !isNaN(Number(val)), "Must be a number")
-            .transform(val => parseInt(val, 10)),
+            .optional()
+            .transform(val => (val && !isNaN(Number(val)) ? parseInt(val, 10) : 1)),
 
         category: z
             .string(),

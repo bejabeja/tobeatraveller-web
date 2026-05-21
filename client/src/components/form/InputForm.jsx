@@ -8,13 +8,14 @@ export const InputForm = ({
   error,
   type = "text",
   inputProps = {},
+  required = false,
 }) => {
   const errorId = `${name}-error`;
 
   return (
     <div className="input">
       <label htmlFor={name} className="input__label">
-        {label}
+        {label}{required && <span className="input__required">*</span>}
       </label>
       <Controller
         name={name}
@@ -49,13 +50,14 @@ export const TextAreaForm = ({
   control,
   error,
   type = "text",
+  required = false,
 }) => {
   const errorId = `${name}-error`;
 
   return (
     <div className="input">
       <label htmlFor={name} className="input__label">
-        {label}
+        {label}{required && <span className="input__required">*</span>}
       </label>
       <Controller
         name={name}
@@ -83,13 +85,13 @@ export const TextAreaForm = ({
   );
 };
 
-export const DropdownForm = ({ label, name, control, error, options }) => {
+export const DropdownForm = ({ label, name, control, error, options, required = false }) => {
   const errorId = `${name}-error`;
 
   return (
     <div className="input">
       <label htmlFor={name} className="input__label">
-        {label}
+        {label}{required && <span className="input__required">*</span>}
       </label>
       <Controller
         name={name}
