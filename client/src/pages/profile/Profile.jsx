@@ -1,129 +1,340 @@
-import { IoLocationOutline } from "react-icons/io5";
-import { MdOutlineCalendarMonth } from "react-icons/md";
+import { useEffect, useRef, useState } from "react";
+import toast from "react-hot-toast";
+import { IoAirplaneOutline, IoEarthOutline, IoLinkOutline, IoLocationOutline, IoStarOutline } from "react-icons/io5";
+import { MdExplore, MdOutlineCalendarMonth, MdOutlineEdit } from "react-icons/md";
 import { Link, useParams } from "react-router-dom";
 import ItinerariesSection from "../../components/itineraries/ItinerariesSection";
-import Spinner from "../../components/spinner/Spinner";
+import Modal from "../../components/modal/Modal";
 import { useFollow } from "../../hooks/useFollow";
 import { useProfileData } from "../../hooks/useProfileData";
+import { generateAvatar } from "../../utils/constants/constants";
 import Error from "../error/Error";
 import "./Profile.scss";
 
+// ─── Badge definitions ────────────────────────────────────────────────────────
+const TRIP_BADGES = [
+  { id: "globetrotter", label: "Globetrotter", Icon: IoEarthOutline, min: 10 },
+  { id: "adventurer",   label: "Adventurer",   Icon: IoAirplaneOutline, min: 5 },
+  { id: "explorer",     label: "Explorer",     Icon: MdExplore, min: 1 },
+];
+
+const COMPLETENESS_FIELDS = [
+  { key: "name",      tip: "Add your name" },
+  { key: "bio",       tip: "Write a bio" },
+  { key: "about",     tip: "Complete your About section" },
+  { key: "location",  tip: "Add your location" },
+  { key: "avatarUrl", tip: "Set a profile photo" },
+];
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 const Profile = () => {
   const { id } = useParams();
   const {
-    user,
-    itineraries,
-    loadingUser,
-    error,
-    isMyProfile,
-    loadingItineraries,
-    isAuthenticated,
+    user, itineraries, loadingUser, error,
+    isMyProfile, loadingItineraries, isAuthenticated,
   } = useProfileData(id);
-  const { isFollowing, toggleFollow } = useFollow(id);
+  const { isFollowing, toggleFollow, isLoadingFollow } = useFollow(id);
+  const [showUnfollowModal, setShowUnfollowModal] = useState(false);
 
-  if (loadingUser) return <Spinner />;
-  if (error) {
-    return (
-      <Error message="We couldn't load the profile info. Please try again later." />
-    );
-  }
+  if (error) return <Error message="We couldn't load the profile info. Please try again later." />;
+
+  const handleFollowToggle = () => {
+    if (isFollowing) setShowUnfollowModal(true);
+    else toggleFollow();
+  };
+
+  const handleCopyLink = () => {
+    navigator.clipboard
+      .writeText(window.location.href)
+      .then(() => toast.success("Link copied!"))
+      .catch(() => toast.error("Couldn't copy link"));
+  };
+
+  const aboutContent = user?.about ? (
+    <AboutSection about={user.about} />
+  ) : isMyProfile ? (
+    <div className="profile__about profile__about--empty">
+      <h2 className="profile__about-title">About</h2>
+      <Link to={`/profile/edit/${user?.id}`} className="profile__about-prompt">
+        + Tell the community about yourself
+      </Link>
+    </div>
+  ) : null;
 
   return (
     <section className="profile section__container">
-      <HeaderSection
-        user={user}
-        isMyProfile={isMyProfile}
-        isFollowing={isFollowing}
-        onFollowToggle={toggleFollow}
-        isAuthenticated={isAuthenticated}
-      />
-      <AboutSection user={user} />
-      <ItinerariesSection
-        user={user}
-        itineraries={itineraries}
-        title="Shared Itineraries"
-        isLoading={loadingItineraries}
-        {...(isMyProfile ? { limit: 3 } : {})}
-      />
-
-      {user?.totalItineraries > 3 && isMyProfile && (
-        <div className="profile__itineraries-more">
-          <Link to={`/my-itineraries`} className="btn btn__secondary">
-            Ver todos
-          </Link>
+      <div className="profile__layout">
+        <div className="profile__sidebar">
+          {loadingUser ? (
+            <ProfileCardSkeleton />
+          ) : (
+            <>
+              <HeaderSection
+                user={user}
+                isMyProfile={isMyProfile}
+                isFollowing={isFollowing}
+                onFollowToggle={handleFollowToggle}
+                onCopyLink={handleCopyLink}
+                isAuthenticated={isAuthenticated}
+                isLoadingFollow={isLoadingFollow}
+              />
+              {isMyProfile && <ProfileCompleteness user={user} />}
+              {aboutContent}
+            </>
+          )}
         </div>
-      )}
+
+        <div className="profile__main">
+          <ItinerariesSection
+            user={user}
+            itineraries={itineraries}
+            title="Shared Itineraries"
+            isLoading={loadingItineraries}
+            {...(isMyProfile ? { limit: 3 } : {})}
+          />
+          {user?.totalItineraries > 3 && isMyProfile && (
+            <div className="profile__more">
+              <Link to="/my-itineraries" className="btn btn__primary">
+                See all {user.totalItineraries} trips
+              </Link>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <Modal
+        isOpen={showUnfollowModal}
+        onClose={() => setShowUnfollowModal(false)}
+        onConfirm={() => { toggleFollow(); setShowUnfollowModal(false); }}
+        title="Unfollow?"
+        description={`Stop following @${user?.username}?`}
+        confirmText="Unfollow"
+        type="danger"
+      />
     </section>
   );
 };
 
 export default Profile;
 
+// ─── Header card ──────────────────────────────────────────────────────────────
 const HeaderSection = ({
-  user,
-  isMyProfile,
-  isFollowing,
-  onFollowToggle,
-  isAuthenticated,
+  user, isMyProfile, isFollowing, onFollowToggle,
+  onCopyLink, isAuthenticated, isLoadingFollow,
 }) => {
+  const followBtnRef = useRef(null);
+  const wasLoadingRef = useRef(false);
+
+  useEffect(() => {
+    if (wasLoadingRef.current && !isLoadingFollow) followBtnRef.current?.focus();
+    wasLoadingRef.current = isLoadingFollow;
+  }, [isLoadingFollow]);
+
   return (
-    <div className="profile__header">
-      <div className="profile__header-main-content">
+    <div className="profile__card">
+      <div className="profile__banner" />
+      <div className="profile__card-body">
         <img
-          className="profile__header-image"
+          className="profile__avatar"
           src={user?.avatarUrl}
-          alt="Profile"
+          alt={user?.name || user?.username}
+          onError={(e) => { e.currentTarget.src = generateAvatar(user?.username); }}
         />
-        <div className="profile__header-info">
-          <h1 className="profile__header-info-name">{user?.name}</h1>
-          <h2 className="profile__header-info-username">@{user?.username}</h2>
-          <div className="profile__header-info-stats">
+        <div className="profile__card-actions">
+          <button
+            className="btn profile__copy-btn"
+            onClick={onCopyLink}
+            aria-label="Copy profile link"
+            title="Copy profile link"
+          >
+            <IoLinkOutline aria-hidden="true" />
+          </button>
+          {isMyProfile ? (
+            <Link to={`/profile/edit/${user?.id}`} className="btn btn__primary-outline profile__btn">
+              <MdOutlineEdit aria-hidden="true" />
+              Edit profile
+            </Link>
+          ) : (
+            <button
+              ref={followBtnRef}
+              className={`btn profile__btn ${isFollowing ? "btn__primary-outline" : "btn__primary"}`}
+              onClick={onFollowToggle}
+              disabled={isLoadingFollow}
+            >
+              {isLoadingFollow ? "…" : isFollowing ? "Unfollow" : "Follow"}
+            </button>
+          )}
+        </div>
+
+        <div className="profile__info">
+          <h1 className="profile__name">{user?.name || user?.username}</h1>
+          <p className="profile__username">@{user?.username}</p>
+
+          {user?.bio ? (
+            <p className="profile__bio">{user.bio}</p>
+          ) : isMyProfile ? (
+            <Link to={`/profile/edit/${user?.id}`} className="profile__empty-bio">
+              + Add a bio
+            </Link>
+          ) : null}
+
+          <ProfileBadges user={user} />
+
+          {(user?.location || user?.createdAt) && (
+            <div className="profile__meta">
+              {user.location && (
+                <span className="profile__meta-item">
+                  <IoLocationOutline aria-hidden="true" />
+                  <span className="profile__meta-text">{user.location}</span>
+                </span>
+              )}
+              {user.createdAt && (
+                <span className="profile__meta-item">
+                  <MdOutlineCalendarMonth aria-hidden="true" />
+                  <span className="profile__meta-text">Joined {user.createdAt}</span>
+                </span>
+              )}
+            </div>
+          )}
+
+          <div className="profile__stats">
             <Link
               to={isAuthenticated ? `/profile/${user?.id}/followers` : "/login"}
+              className="profile__stat"
             >
-              <strong>{user?.followers}</strong> followers
+              <StatNumber value={user?.followers} />
+              <span>Followers</span>
             </Link>
             <Link
               to={isAuthenticated ? `/profile/${user?.id}/following` : "/login"}
+              className="profile__stat"
             >
-              <strong>{user?.following}</strong> following
+              <StatNumber value={user?.following} />
+              <span>Following</span>
             </Link>
-            <p>
-              <strong>{user?.totalItineraries}</strong> itineraries
-            </p>
+            <span className="profile__stat">
+              <StatNumber value={user?.totalItineraries} />
+              <span>Trips</span>
+            </span>
           </div>
-          <p className="profile__header-info-bio">{user?.bio}</p>
         </div>
-      </div>
-      <div className="profile__header-actions">
-        {isMyProfile ? (
-          <Link to={`/profile/edit/${user?.id}`} className="btn btn__primary">
-            Edit Profile
-          </Link>
-        ) : (
-          <button className="btn btn__primary" onClick={onFollowToggle}>
-            {isFollowing ? "Unfollow" : "Follow"}
-          </button>
-        )}
       </div>
     </div>
   );
 };
 
-const AboutSection = ({ user }) => (
+// ─── About ────────────────────────────────────────────────────────────────────
+const AboutSection = ({ about }) => (
   <div className="profile__about">
     <h2 className="profile__about-title">About</h2>
-    <div className="profile__about-content">
-      <p className="profile__about-content-description">{user?.about}</p>
-      <div className="profile__about-content-stats">
-        <p className="profile__about-content-stats-location">
-          <IoLocationOutline className="nav-icon" />
-          <span>{user?.location}</span>
+    <p className="profile__about-text">{about}</p>
+  </div>
+);
+
+// ─── Achievement badges ───────────────────────────────────────────────────────
+const ProfileBadges = ({ user }) => {
+  const tripBadge = TRIP_BADGES.find((b) => (user?.totalItineraries || 0) >= b.min);
+  const popularBadge = (user?.followers || 0) >= 50
+    ? { id: "popular", label: "Popular", Icon: IoStarOutline }
+    : null;
+
+  const badges = [tripBadge, popularBadge].filter(Boolean);
+  if (badges.length === 0) return null;
+
+  return (
+    <div className="profile__badges">
+      {badges.map(({ id, label, Icon }) => (
+        <span key={id} className="profile__badge" title={label}>
+          <Icon aria-hidden="true" />
+          {label}
+        </span>
+      ))}
+    </div>
+  );
+};
+
+// ─── Profile completeness ─────────────────────────────────────────────────────
+const ProfileCompleteness = ({ user }) => {
+  const done = COMPLETENESS_FIELDS.filter((f) => !!user?.[f.key]).length;
+  const percent = Math.round((done / COMPLETENESS_FIELDS.length) * 100);
+  if (percent === 100) return null;
+
+  const nextTip = COMPLETENESS_FIELDS.find((f) => !user?.[f.key])?.tip;
+
+  return (
+    <div className="profile__completeness">
+      <div className="profile__completeness-header">
+        <span className="profile__completeness-label">Profile strength</span>
+        <strong className="profile__completeness-pct">{percent}%</strong>
+      </div>
+      <div className="profile__completeness-track">
+        <div className="profile__completeness-fill" style={{ width: `${percent}%` }} />
+      </div>
+      {nextTip && (
+        <p className="profile__completeness-tip">
+          <Link to={`/profile/edit/${user?.id}`}>→ {nextTip}</Link>
         </p>
-        <p className="profile__about-content-stats-created-at">
-          <MdOutlineCalendarMonth className="nav-icon" />
-          <span>{user?.createdAt}</span>
-        </p>
+      )}
+    </div>
+  );
+};
+
+// ─── Animated stat number ─────────────────────────────────────────────────────
+const StatNumber = ({ value }) => {
+  const [display, setDisplay] = useState(0);
+  const [flash, setFlash] = useState(false);
+  const isFirstValue = useRef(true);
+  const rafRef = useRef(null);
+
+  useEffect(() => {
+    if (value == null) return;
+
+    if (isFirstValue.current) {
+      isFirstValue.current = false;
+      if (value === 0) { setDisplay(0); return; }
+
+      const duration = 650;
+      const start = performance.now();
+      const tick = (now) => {
+        const t = Math.min((now - start) / duration, 1);
+        setDisplay(Math.round((1 - Math.pow(1 - t, 3)) * value));
+        if (t < 1) rafRef.current = requestAnimationFrame(tick);
+      };
+      rafRef.current = requestAnimationFrame(tick);
+      return () => cancelAnimationFrame(rafRef.current);
+    }
+
+    setDisplay(value);
+    setFlash(true);
+    const t = setTimeout(() => setFlash(false), 400);
+    return () => clearTimeout(t);
+  }, [value]);
+
+  return (
+    <strong className={flash ? "profile__stat-number--flash" : undefined}>
+      {display}
+    </strong>
+  );
+};
+
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
+const ProfileCardSkeleton = () => (
+  <div className="profile__card">
+    <div className="profile__banner" />
+    <div className="profile__card-body">
+      <div className="profile__avatar skeleton" />
+      <div className="profile__card-actions">
+        <div className="skeleton profile__skeleton-btn" />
+      </div>
+      <div className="profile__info">
+        <div className="skeleton profile__skeleton-name" />
+        <div className="skeleton profile__skeleton-username" />
+        <div className="skeleton profile__skeleton-bio" />
+        <div className="profile__stats">
+          <div className="profile__stat"><div className="skeleton profile__skeleton-stat" /></div>
+          <div className="profile__stat"><div className="skeleton profile__skeleton-stat" /></div>
+          <div className="profile__stat"><div className="skeleton profile__skeleton-stat" /></div>
+        </div>
       </div>
     </div>
   </div>

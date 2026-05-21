@@ -13,6 +13,7 @@ export const useFollow = (targetUserId) => {
     const userMe = useSelector(selectMe);
 
     const [isFollowing, setIsFollowing] = useState(false);
+    const [isLoadingFollow, setIsLoadingFollow] = useState(false);
 
     const isMyUser = targetUserId === userMe?.id;
 
@@ -30,6 +31,7 @@ export const useFollow = (targetUserId) => {
             return;
         }
 
+        setIsLoadingFollow(true);
         try {
             if (isFollowing) {
                 await unfollowUser(targetUserId);
@@ -41,8 +43,10 @@ export const useFollow = (targetUserId) => {
             setIsFollowing((prev) => !prev);
         } catch (err) {
             console.error("Failed to toggle follow:", err);
+        } finally {
+            setIsLoadingFollow(false);
         }
     };
 
-    return { isFollowing, toggleFollow, isMyUser };
+    return { isFollowing, toggleFollow, isMyUser, isLoadingFollow };
 };

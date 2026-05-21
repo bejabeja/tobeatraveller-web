@@ -2,18 +2,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import toast from "react-hot-toast";
-import { IoLocationOutline } from "react-icons/io5";
+import { IoCameraOutline, IoArrowBackOutline, IoLocationOutline } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { InputForm, TextAreaForm } from "../../components/form/InputForm";
 import Modal from "../../components/modal/Modal";
 import Spinner from "../../components/spinner/Spinner";
-import { updateUser } from "../../services/users";
+import { checkUsernameAvailable, updateUser } from "../../services/users";
 import { initAuthUser } from "../../store/auth/authActions";
 import { setUserInfo } from "../../store/user/userInfoActions";
 import {
   selectMe,
-  selectMeError,
   selectMeLoading,
 } from "../../store/user/userInfoSelectors";
 import { generateAvatar } from "../../utils/constants/constants";
@@ -25,10 +24,10 @@ const EditProfile = () => {
   const { id } = useParams();
   const userMe = useSelector(selectMe);
   const userMeLoading = useSelector(selectMeLoading);
-  const userMeError = useSelector(selectMeError);
 
   const [errorSubmit, setErrorSubmit] = useState(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [usernameStatus, setUsernameStatus] = useState(null);
   const navigate = useNavigate();
 
   const {
@@ -48,6 +47,10 @@ const EditProfile = () => {
     },
   });
 
+  const usernameValue = useWatch({ control, name: "username" });
+  const bioValue     = useWatch({ control, name: "bio" });
+  const aboutValue   = useWatch({ control, name: "about" });
+
   useEffect(() => {
     dispatch(setUserInfo(id));
   }, [dispatch, id]);
@@ -55,26 +58,42 @@ const EditProfile = () => {
   useEffect(() => {
     if (userMe) {
       reset({
-        username: userMe.username,
-        name: userMe.name,
-        bio: userMe.bio,
-        location: userMe.location,
-        about: userMe.about,
-        avatarUrl: userMe.avatarUrl,
+        username:  userMe.username  ?? "",
+        name:      userMe.name      ?? "",
+        bio:       userMe.bio       ?? "",
+        location:  userMe.location  ?? "",
+        about:     userMe.about     ?? "",
+        avatarUrl: userMe.avatarUrl ?? "",
       });
     }
   }, [userMe, reset]);
-  
-  if (userMeLoading || !userMe) {
-    return <Spinner />;
-  }
+
+  useEffect(() => {
+    if (!usernameValue || usernameValue.length < 2 || /\s/.test(usernameValue)) {
+      setUsernameStatus(null);
+      return;
+    }
+    if (userMe && usernameValue === userMe.username) {
+      setUsernameStatus(null);
+      return;
+    }
+    setUsernameStatus("checking");
+    const timer = setTimeout(async () => {
+      const available = await checkUsernameAvailable(usernameValue);
+      if (available === null) { setUsernameStatus(null); return; }
+      setUsernameStatus(available ? "available" : "taken");
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [usernameValue, userMe]);
+
+  if (userMeLoading || !userMe) return <Spinner />;
 
   const saveUser = async (data) => {
     try {
       await updateUser(data);
       dispatch(initAuthUser());
       dispatch(setUserInfo(id));
-      toast.success("Profile updated successfully!");
+      toast.success("Profile updated!");
       navigate(`/profile/${id}`);
     } catch (err) {
       console.error("Error updating profile", err);
@@ -84,21 +103,111 @@ const EditProfile = () => {
   };
 
   const handleCancel = () => {
-    console;
-    if (isDirty) {
-      setShowCancelModal(true);
-    } else {
-      navigate(-1);
-    }
+    if (isDirty) setShowCancelModal(true);
+    else navigate(-1);
   };
 
   return (
     <section className="edit-profile section__container">
+      {/* Page header */}
+      <div className="edit-profile__header">
+        <button
+          type="button"
+          className="edit-profile__back"
+          onClick={handleCancel}
+          aria-label="Go back"
+        >
+          <IoArrowBackOutline aria-hidden="true" />
+        </button>
+        <h1 className="edit-profile__title">Edit profile</h1>
+      </div>
+
       <form onSubmit={handleSubmit(saveUser)} className="edit-profile__form">
-        <HeaderSection userInfo={userMe} control={control} errors={errors} />
-        <AboutSection control={control} errors={errors} />
-        {errorSubmit && <div className="error-message">{userMeError}</div>}
-        <div className="edit-profile__header-actions">
+
+        {/* Identity card */}
+        <div className="edit-profile__card">
+          <div className="edit-profile__banner" />
+          <div className="edit-profile__card-body">
+            <AvatarSection userMe={userMe} control={control} errors={errors} />
+            <div className="edit-profile__fields">
+              <InputForm
+                name="name"
+                label="Name"
+                control={control}
+                type="text"
+                placeholder="Your display name"
+                error={errors.name}
+              />
+              <div className="edit-profile__username-wrapper">
+                <InputForm
+                  name="username"
+                  label="Username"
+                  control={control}
+                  type="text"
+                  placeholder="your_username"
+                  error={errors.username}
+                />
+                {usernameStatus && (
+                  <span
+                    className={`edit-profile__username-status edit-profile__username-status--${usernameStatus}`}
+                    aria-live="polite"
+                    aria-atomic="true"
+                  >
+                    {usernameStatus === "checking"  && "…"}
+                    {usernameStatus === "available" && "✓ Available"}
+                    {usernameStatus === "taken"     && "✗ Already taken"}
+                  </span>
+                )}
+              </div>
+              <div className="edit-profile__field-group">
+                <TextAreaForm
+                  name="bio"
+                  label="Bio"
+                  control={control}
+                  placeholder="A short description of yourself…"
+                  error={errors.bio}
+                />
+                <span className={`edit-profile__char-count ${(bioValue?.length || 0) > 140 ? "edit-profile__char-count--warn" : ""}`}>
+                  {bioValue?.length || 0}/160
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Location & About card */}
+        <div className="edit-profile__card edit-profile__card--padded">
+          <div className="edit-profile__section-header">
+            <IoLocationOutline aria-hidden="true" />
+            <h2 className="edit-profile__section-title">Location & About</h2>
+          </div>
+          <InputForm
+            name="location"
+            label="Location"
+            control={control}
+            type="text"
+            placeholder="City, Country"
+            error={errors.location}
+          />
+          <div className="edit-profile__field-group">
+            <TextAreaForm
+              name="about"
+              label="About"
+              control={control}
+              placeholder="Tell the community about yourself and your travel style…"
+              error={errors.about}
+            />
+            <span className={`edit-profile__char-count ${(aboutValue?.length || 0) > 900 ? "edit-profile__char-count--warn" : ""}`}>
+              {aboutValue?.length || 0}/1000
+            </span>
+          </div>
+        </div>
+
+        {errorSubmit && (
+          <div className="edit-profile__error" role="alert">{errorSubmit}</div>
+        )}
+
+        <div className="edit-profile__actions">
           <button
             type="button"
             className="btn btn__primary-outline"
@@ -106,16 +215,16 @@ const EditProfile = () => {
           >
             Cancel
           </button>
-
           <button
             type="submit"
             className="btn btn__primary"
-            disabled={isSubmitting}
+            disabled={isSubmitting || usernameStatus === "taken"}
           >
-            {isSubmitting ? "Saving..." : "Save Profile"}
+            {isSubmitting ? "Saving…" : "Save profile"}
           </button>
         </div>
       </form>
+
       <Modal
         isOpen={showCancelModal}
         onClose={() => setShowCancelModal(false)}
@@ -131,72 +240,32 @@ const EditProfile = () => {
 
 export default EditProfile;
 
-const HeaderSection = ({ userMe, control, errors }) => {
+const AvatarSection = ({ userMe, control, errors }) => {
   const avatarUrl = useWatch({ control, name: "avatarUrl" });
 
   return (
-    <div className="edit-profile__header">
-      <img
-        className="profile__header-image"
-        src={avatarUrl || generateAvatar(userMe?.username)}
-        alt="Profile"
-      />
-      <div className="edit-profile__header-info">
-        <InputForm
-          name="name"
-          control={control}
-          type="text"
-          placeholder="Edit your name"
-          error={errors.name}
+    <div className="edit-profile__avatar-section">
+      <div className="edit-profile__avatar-wrapper">
+        <img
+          className="edit-profile__avatar"
+          src={avatarUrl || generateAvatar(userMe?.username)}
+          alt="Avatar preview"
+          onError={(e) => { e.currentTarget.src = generateAvatar(userMe?.username); }}
         />
-        <InputForm
-          name="username"
-          control={control}
-          type="text"
-          placeholder="Edit your username"
-          error={errors.username}
-        />
-        <TextAreaForm
-          name="bio"
-          control={control}
-          type="text"
-          placeholder="Edit your bio"
-          error={errors.bio}
-        />
+        <span className="edit-profile__avatar-badge" aria-hidden="true">
+          <IoCameraOutline />
+        </span>
       </div>
-    </div>
-  );
-};
-
-const AboutSection = ({ control, errors }) => {
-  return (
-    <div className="profile__about">
-      <h2 className="profile__about-title">About</h2>
-
-      <div className="profile__about-content">
-        <div className="profile__about-content-description">
-          <TextAreaForm
-            name="about"
-            control={control}
-            type="text"
-            placeholder="Edit your about"
-            error={errors.about}
-          />
-        </div>
-        <div className="profile__about-content-stats">
-          <div className="profile__about-content-stats-location edit-profile__location">
-            <IoLocationOutline className="nav-icon" />
-            <div>
-              <InputForm
-                name="location"
-                control={control}
-                type="text"
-                placeholder="Edit your location"
-                error={errors.location}
-              ></InputForm>
-            </div>
-          </div>
-        </div>
+      <div className="edit-profile__avatar-url">
+        <InputForm
+          name="avatarUrl"
+          label="Profile photo URL"
+          control={control}
+          type="url"
+          placeholder="https://example.com/photo.jpg"
+          error={errors.avatarUrl}
+        />
+        <p className="edit-profile__avatar-hint">Paste a direct link to an image</p>
       </div>
     </div>
   );

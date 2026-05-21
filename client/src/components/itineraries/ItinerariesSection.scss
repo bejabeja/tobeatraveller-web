@@ -28,12 +28,26 @@
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.45s ease, transform 0.45s ease, box-shadow 0.3s ease;
 
-  &:hover {
+  &--visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  &--visible:hover {
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
     transform: translateY(-4px);
   }
+
+  // staggered entrance per grid position
+  &:nth-child(2) { transition-delay: 80ms; }
+  &:nth-child(3) { transition-delay: 160ms; }
+  &:nth-child(4) { transition-delay: 80ms; }
+  &:nth-child(5) { transition-delay: 160ms; }
+  &:nth-child(6) { transition-delay: 240ms; }
 
   &__link {
     text-decoration: none;
