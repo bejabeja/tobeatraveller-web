@@ -18,6 +18,7 @@ import DatesForm from "../sectionsForm/DatesForm";
 import ImageUpload from "../sectionsForm/ImageUpload";
 import PlacesForm from "../sectionsForm/PlacesForm";
 import TravellersForm from "../sectionsForm/TravellersForm";
+import VisibilityForm from "../sectionsForm/VisibilityForm";
 import "./CreateItinerary.scss";
 
 const CreateItinerary = () => {
@@ -55,6 +56,7 @@ const CreateItinerary = () => {
       currency: "",
       numberOfTravellers: "1",
       category: "other",
+      isPublic: true,
     },
   });
 
@@ -91,6 +93,7 @@ const CreateItinerary = () => {
         },
       })),
       category: data.category,
+      isPublic: data.isPublic,
     };
 
     const formData = new FormData();
@@ -133,6 +136,7 @@ const CreateItinerary = () => {
         />
         <BudgetForm control={control} errors={errors} />
         <TravellersForm control={control} errors={errors} />
+        <VisibilityForm control={control} />
         <div className="form__cta">
           <Link
             to={`/my-itineraries`}

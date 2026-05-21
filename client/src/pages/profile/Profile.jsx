@@ -44,8 +44,7 @@ const Profile = () => {
 
   useEffect(() => {
     if (!user) return;
-    const display = user.name ? `${user.name} (@${user.username})` : `@${user.username}`;
-    document.title = `${display} — Tobeatraveller`;
+    document.title = `@${user.username} — Tobeatraveller`;
     return () => { document.title = "Tobeatraveller"; };
   }, [user]);
 

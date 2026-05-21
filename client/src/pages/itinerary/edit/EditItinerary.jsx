@@ -18,6 +18,7 @@ import DatesForm from "../sectionsForm/DatesForm";
 import ImageUpload from "../sectionsForm/ImageUpload";
 import PlacesForm from "../sectionsForm/PlacesForm";
 import TravellersForm from "../sectionsForm/TravellersForm";
+import VisibilityForm from "../sectionsForm/VisibilityForm";
 
 const EditItinerary = () => {
   const dispatch = useDispatch();
@@ -64,6 +65,7 @@ const EditItinerary = () => {
       currency: "",
       numberOfTravellers: "",
       category: "",
+      isPublic: true,
     },
   });
 
@@ -93,6 +95,7 @@ const EditItinerary = () => {
         currency: response.currency,
         numberOfTravellers: response.numberOfPeople.toString(),
         category: response.category,
+        isPublic: response.isPublic ?? true,
         places: response.places.map((place) => ({
           id: place.id,
           description: place.description,
@@ -142,6 +145,7 @@ const EditItinerary = () => {
         },
       })),
       category: data.category,
+      isPublic: data.isPublic,
     };
 
     const formData = new FormData();
@@ -181,6 +185,7 @@ const EditItinerary = () => {
         />
         <BudgetForm control={control} errors={errors} />
         <TravellersForm control={control} errors={errors} />
+        <VisibilityForm control={control} />
         {isMyItinerary() && (
           <div className="form__cta">
             <Link

@@ -36,6 +36,7 @@ export class ItineraryService {
             ...data,
             photoUrl: imageUrl,
             photoPublicId: imagePublicId,
+            isPublic: data.isPublic ?? true,
         };
 
         const itinerary = await this.itinerariesRepository.create(itineraryData);

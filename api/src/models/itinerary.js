@@ -1,7 +1,7 @@
 import { formatDateRange } from '../utils/date.js';
 
 export class Itinerary {
-    constructor({ id, userId, title, description, location, startDate, endDate, createdAt, updatedAt, photoUrl, photoPublicId, budget, numberOfPeople, likesCount, commentsCount, category, currency }) {
+    constructor({ id, userId, title, description, location, startDate, endDate, createdAt, updatedAt, photoUrl, photoPublicId, budget, numberOfPeople, likesCount, commentsCount, category, currency, isPublic }) {
         this.id = id;
         this.userId = userId;
         this.title = title;
@@ -19,6 +19,7 @@ export class Itinerary {
         this.commentsCount = commentsCount;
         this.category = category?.toLowerCase();
         this.currency = currency;
+        this.isPublic = isPublic ?? true;
         this.places = [];
         this.user = null;
     }
@@ -47,6 +48,7 @@ export class Itinerary {
             commentsCount: row.comments_count,
             category: row.category,
             currency: row.currency,
+            isPublic: row.is_public,
         });
     }
 
@@ -75,6 +77,7 @@ export class Itinerary {
             commentsCount: this.commentsCount,
             category: this.category,
             currency: this.currency,
+            isPublic: this.isPublic,
             tripDates: formatDateRange(this.startDate, this.endDate),
             startDate: this.startDate,
             endDate: this.endDate,

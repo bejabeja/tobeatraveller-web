@@ -117,7 +117,9 @@ export const createItinerarySchema = z
             .transform(val => parseInt(val, 10)),
 
         category: z
-            .string()
+            .string(),
+
+        isPublic: z.boolean().default(true),
     })
     .refine((data) => data.endDate >= data.startDate, {
         message: "End date must be after or equal to start date",

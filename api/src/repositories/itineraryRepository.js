@@ -18,7 +18,7 @@ export class ItineraryRepository {
   async create(itineraryData) {
     const {
       userId, title, description, location, startDate, endDate,
-      numberOfPeople, category, budget, currency, photoUrl, photoPublicId
+      numberOfPeople, category, budget, currency, photoUrl, photoPublicId, isPublic
     } = itineraryData;
     const id = uuidv4();
 
@@ -27,16 +27,17 @@ export class ItineraryRepository {
                 id, user_id, title, description,
                 location_name, location_label, latitude, longitude,
                 start_date, end_date, number_of_people,
-                category, budget, currency, photo_url, photo_public_id
+                category, budget, currency, photo_url, photo_public_id, is_public
             )
-            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
             RETURNING *;
         `;
 
     const result = await client.query(query, [
       id, userId, title, description,
       location.name, location.label, location.lat, location.lon,
-      startDate, endDate, numberOfPeople, category, budget, currency, photoUrl, photoPublicId
+      startDate, endDate, numberOfPeople, category, budget, currency, photoUrl, photoPublicId,
+      isPublic ?? true
     ]);
 
     return Itinerary.fromDb(result.rows[0]);
@@ -45,7 +46,7 @@ export class ItineraryRepository {
   async update(itineraryId, itineraryData) {
     const {
       title, description, location, startDate, endDate,
-      numberOfPeople, budget, currency, category, photoUrl, photoPublicId
+      numberOfPeople, budget, currency, category, photoUrl, photoPublicId, isPublic
     } = itineraryData;
 
     const query = `
@@ -57,6 +58,7 @@ export class ItineraryRepository {
                 number_of_people = $10, budget = $11,
                 currency = $12, category = $13,
                 photo_url = $14, photo_public_id = $15,
+                is_public = $16,
                 updated_at = NOW()
             WHERE id = $1 RETURNING *;
         `;
@@ -65,7 +67,8 @@ export class ItineraryRepository {
       itineraryId, title, description,
       location.name, location.label, location.lat, location.lon,
       startDate, endDate, numberOfPeople,
-      budget, currency, category, photoUrl, photoPublicId
+      budget, currency, category, photoUrl, photoPublicId,
+      isPublic ?? true
     ]);
     return Itinerary.fromDb(result.rows[0]);
   }
@@ -105,7 +108,7 @@ export class ItineraryRepository {
       SELECT itineraries.*
       FROM itineraries
       JOIN users ON itineraries.user_id = users.id
-      WHERE users.role != 'test'
+      WHERE users.role != 'test' AND itineraries.is_public = true
       ORDER BY likes_count DESC
       LIMIT $1
     `;
@@ -142,7 +145,7 @@ export class ItineraryRepository {
   }
 
   buildFilters(filters, indexStart = 1) {
-    const conditions = [`users.role != 'test'`];
+    const conditions = [`users.role != 'test'`, `itineraries.is_public = true`];
     const values = [];
     let i = indexStart;
 

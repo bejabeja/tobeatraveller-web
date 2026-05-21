@@ -99,6 +99,59 @@
   }
 }
 
+.form__visibility {
+  &-toggle {
+    display: flex;
+    gap: 1rem;
+    margin: 0.5rem 0;
+    flex-wrap: wrap;
+  }
+
+  &-option {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--primary-color);
+    border-radius: 8px;
+    background-color: var(--white-color);
+    cursor: pointer;
+    flex: 1;
+    min-width: 140px;
+    transition: all 0.3s ease;
+    color: var(--primary-color);
+    text-align: left;
+
+    &.selected {
+      background-color: var(--primary-color);
+      color: var(--white-color);
+
+      .form__visibility-desc {
+        color: rgba(255, 255, 255, 0.8);
+      }
+    }
+
+    &:hover:not(.selected) {
+      background-color: var(--primary-color-light, #f0f4ff);
+    }
+  }
+
+  &-icon {
+    font-size: 1.25rem;
+  }
+
+  &-label {
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+
+  &-desc {
+    font-size: 0.78rem;
+    color: var(--text-secondary-color, #666);
+  }
+}
+
 .image-upload-container {
   display: flex;
   flex-direction: column;
