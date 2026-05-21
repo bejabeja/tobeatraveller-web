@@ -99,7 +99,7 @@ export class UserService {
         user.updateProfile(
             userData.name,
             userData.location,
-            userData.avatarUrl || user.avatarUrl,
+            Object.hasOwn(userData, "avatarUrl") ? userData.avatarUrl : user.avatarUrl,
             userData.bio,
             userData.about,
             userData.username

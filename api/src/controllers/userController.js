@@ -2,6 +2,13 @@ import { updateUserSchema } from "../utils/schemasValidation.js";
 
 const MAX_AVATAR_SIZE = 5 * 1024 * 1024; // 5 MB
 
+// Extracts "avatars/abc123" from a Cloudinary URL, null for non-Cloudinary URLs
+function extractCloudinaryPublicId(url) {
+    if (!url || !url.includes("res.cloudinary.com")) return null;
+    const match = url.match(/\/upload\/(?:v\d+\/)?(.+)\.[^.]+$/);
+    return match ? match[1] : null;
+}
+
 export class UserController {
     constructor(userService, cloudinaryService) {
         this.userService = userService;
@@ -32,14 +39,27 @@ export class UserController {
 
         try {
             const rawBody = req.body.user ? JSON.parse(req.body.user) : req.body;
-            const validatedData = updateUserSchema.parse(rawBody);
+            const { removeAvatar, ...bodyForValidation } = rawBody;
+            const validatedData = updateUserSchema.parse(bodyForValidation);
 
             if (req.file) {
                 if (req.file.size > MAX_AVATAR_SIZE) {
                     return res.status(400).json({ message: "Image must be under 5 MB" });
                 }
+                const currentUser = await this.userService.getUserForAuth(id);
+                const oldPublicId = extractCloudinaryPublicId(currentUser.avatarUrl);
+                if (oldPublicId) {
+                    await this.cloudinaryService.deleteImage(oldPublicId).catch(() => {});
+                }
                 const result = await this.cloudinaryService.uploadImageFromBuffer(req.file.buffer, "avatars");
                 validatedData.avatarUrl = result.secure_url;
+            } else if (removeAvatar) {
+                const currentUser = await this.userService.getUserForAuth(id);
+                const oldPublicId = extractCloudinaryPublicId(currentUser.avatarUrl);
+                if (oldPublicId) {
+                    await this.cloudinaryService.deleteImage(oldPublicId).catch(() => {});
+                }
+                validatedData.avatarUrl = null;
             }
 
             const updatedUser = await this.userService.updateUser(id, validatedData);

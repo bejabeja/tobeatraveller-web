@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import toast from "react-hot-toast";
-import { IoCameraOutline, IoArrowBackOutline, IoLocationOutline } from "react-icons/io5";
+import { IoCameraOutline, IoTrashOutline, IoCheckmarkCircle, IoArrowBackOutline, IoLocationOutline } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { InputForm, TextAreaForm } from "../../components/form/InputForm";
@@ -25,6 +25,7 @@ const EditProfile = () => {
   const [usernameStatus, setUsernameStatus] = useState(null);
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
+  const [removeAvatar, setRemoveAvatar] = useState(false);
   const navigate = useNavigate();
 
   const {
@@ -91,17 +92,26 @@ const EditProfile = () => {
     if (avatarPreview) URL.revokeObjectURL(avatarPreview);
     setAvatarFile(file);
     setAvatarPreview(URL.createObjectURL(file));
+    setRemoveAvatar(false);
   };
+
+  const handleRemoveAvatar = () => {
+    if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+    setAvatarFile(null);
+    setAvatarPreview(null);
+    setRemoveAvatar(true);
+  };
+
+  const handleUndoRemove = () => setRemoveAvatar(false);
 
   const saveUser = async (data) => {
     try {
       const formData = new FormData();
-      formData.append("user", JSON.stringify(data));
+      formData.append("user", JSON.stringify({ ...data, ...(removeAvatar && { removeAvatar: true }) }));
       if (avatarFile) formData.append("avatar", avatarFile);
       await updateUser(formData);
-      dispatch(initAuthUser());
-      dispatch(setUserInfo(id));
       toast.success("Profile updated!");
+      await Promise.all([dispatch(initAuthUser()), dispatch(setUserInfo(id))]);
       navigate(`/profile/${id}`);
     } catch (err) {
       console.error("Error updating profile", err);
@@ -111,7 +121,7 @@ const EditProfile = () => {
   };
 
   const handleCancel = () => {
-    if (isDirty || avatarFile) setShowCancelModal(true);
+    if (isDirty || avatarFile || removeAvatar) setShowCancelModal(true);
     else navigate(-1);
   };
 
@@ -137,7 +147,10 @@ const EditProfile = () => {
             <AvatarSection
               userMe={userMe}
               avatarPreview={avatarPreview}
+              removeAvatar={removeAvatar}
               onAvatarChange={handleAvatarChange}
+              onRemoveAvatar={handleRemoveAvatar}
+              onUndoRemove={handleUndoRemove}
             />
             <div className="edit-profile__fields">
               <InputForm
@@ -286,9 +299,11 @@ const EditProfileSkeleton = () => (
   </div>
 );
 
-const AvatarSection = ({ userMe, avatarPreview, onAvatarChange }) => {
+const AvatarSection = ({ userMe, avatarPreview, removeAvatar, onAvatarChange, onRemoveAvatar, onUndoRemove }) => {
   const inputRef = useRef(null);
+  const hasCloudinaryAvatar = userMe?.avatarUrl?.includes("res.cloudinary.com");
   const preview = avatarPreview || userMe?.avatarUrl || generateAvatar(userMe?.username);
+  const wrapperMod = removeAvatar ? "remove" : avatarPreview ? "selected" : "";
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
@@ -303,22 +318,27 @@ const AvatarSection = ({ userMe, avatarPreview, onAvatarChange }) => {
   return (
     <div className="edit-profile__avatar-section">
       <div
-        className="edit-profile__avatar-wrapper"
-        onClick={() => inputRef.current?.click()}
-        role="button"
-        tabIndex={0}
-        aria-label="Change profile photo"
-        onKeyDown={(e) => e.key === "Enter" && inputRef.current?.click()}
+        className={`edit-profile__avatar-wrapper${wrapperMod ? ` edit-profile__avatar-wrapper--${wrapperMod}` : ""}`}
+        onClick={() => !removeAvatar && inputRef.current?.click()}
+        role={removeAvatar ? undefined : "button"}
+        tabIndex={removeAvatar ? -1 : 0}
+        aria-label={removeAvatar ? undefined : "Change profile photo"}
+        onKeyDown={(e) => !removeAvatar && e.key === "Enter" && inputRef.current?.click()}
       >
         <img
           className="edit-profile__avatar"
           src={preview}
-          alt="Avatar preview"
+          alt="Avatar"
           onError={(e) => { e.currentTarget.src = generateAvatar(userMe?.username); }}
         />
         <div className="edit-profile__avatar-overlay" aria-hidden="true">
-          <IoCameraOutline />
+          {removeAvatar ? <IoTrashOutline /> : <IoCameraOutline />}
         </div>
+        {!removeAvatar && (
+          <div className="edit-profile__avatar-badge" aria-hidden="true">
+            {avatarPreview ? <IoCheckmarkCircle /> : <IoCameraOutline />}
+          </div>
+        )}
         <input
           ref={inputRef}
           type="file"
@@ -328,9 +348,18 @@ const AvatarSection = ({ userMe, avatarPreview, onAvatarChange }) => {
           tabIndex={-1}
         />
       </div>
-      <p className={`edit-profile__avatar-hint ${avatarPreview ? "edit-profile__avatar-hint--selected" : ""}`}>
-        {avatarPreview ? "✓ New photo selected" : "Click to change"}
-      </p>
+
+      {removeAvatar ? (
+        <button type="button" className="edit-profile__avatar-remove-btn edit-profile__avatar-remove-btn--undo" onClick={onUndoRemove}>
+          <IoArrowBackOutline aria-hidden="true" />
+          Undo remove
+        </button>
+      ) : (hasCloudinaryAvatar || avatarPreview) ? (
+        <button type="button" className="edit-profile__avatar-remove-btn" onClick={onRemoveAvatar}>
+          <IoTrashOutline aria-hidden="true" />
+          Remove photo
+        </button>
+      ) : null}
     </div>
   );
 };

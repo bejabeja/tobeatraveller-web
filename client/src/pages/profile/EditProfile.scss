@@ -251,6 +251,7 @@
     margin-bottom: 1.25rem;
   }
 
+  // ── Avatar wrapper & states ───────────────────────────────────
   &__avatar-wrapper {
     position: relative;
     width: fit-content;
@@ -258,14 +259,31 @@
     cursor: pointer;
     border-radius: 50%;
 
-    &:hover &-overlay,
-    &:focus-visible &-overlay {
+    &:hover .edit-profile__avatar-overlay,
+    &:focus-visible .edit-profile__avatar-overlay {
       opacity: 1;
     }
 
     &:focus-visible {
       outline: 2px solid var(--primary-color);
       outline-offset: 3px;
+      border-radius: 50%;
+    }
+
+    // ── Selected: green ring + green badge ────────────────────
+    &--selected {
+      .edit-profile__avatar { outline: 3px solid #16a34a; outline-offset: 2px; }
+      .edit-profile__avatar-badge { background: #16a34a; }
+    }
+
+    // ── Remove: red overlay always visible, no pointer ────────
+    &--remove {
+      cursor: default;
+
+      .edit-profile__avatar-overlay {
+        opacity: 1;
+        background: rgba(220, 38, 38, 0.52);
+      }
     }
   }
 
@@ -278,7 +296,7 @@
     background: #e2e8f0;
     display: block;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
-    transition: filter 0.18s;
+    transition: outline 0.18s;
   }
 
   &__avatar-overlay {
@@ -290,26 +308,57 @@
     align-items: center;
     justify-content: center;
     opacity: 0;
-    transition: opacity 0.18s;
+    transition: opacity 0.2s;
     color: #fff;
 
-    svg {
-      font-size: 1.4rem;
-      width: auto;
-    }
+    svg { font-size: 1.4rem; width: auto; }
   }
 
-  &__avatar-input {
-    display: none;
+  // Permanent badge bottom-right (camera or checkmark)
+  &__avatar-badge {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    color: #fff;
+    border: 2px solid var(--white-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    pointer-events: none;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    transition: background 0.18s;
+
+    svg { width: auto; }
   }
 
-  &__avatar-hint {
-    font-size: 0.78rem;
+  &__avatar-input { display: none; }
+
+  // ── Caption/action below avatar ───────────────────────────────
+  &__avatar-remove-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
     color: var(--text-secondary-color);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin-top: 0.1rem;
+    transition: color 0.15s;
 
-    &--selected {
-      color: #16a34a;
-      font-weight: 600;
+    svg { width: auto; font-size: 0.8rem; }
+
+    &:hover { color: var(--error-color); }
+
+    &--undo {
+      color: var(--primary-color);
+      &:hover { color: var(--primary-color); opacity: 0.75; }
     }
   }
 
@@ -419,6 +468,14 @@
     &__avatar {
       width: 88px;
       height: 88px;
+    }
+
+    &__avatar-badge {
+      width: 26px;
+      height: 26px;
+      font-size: 0.8rem;
+      bottom: 3px;
+      right: 3px;
     }
 
     &__card--padded {
