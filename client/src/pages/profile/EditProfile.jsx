@@ -7,14 +7,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { InputForm, TextAreaForm } from "../../components/form/InputForm";
 import Modal from "../../components/modal/Modal";
-import Spinner from "../../components/spinner/Spinner";
 import { checkUsernameAvailable, updateUser } from "../../services/users";
 import { initAuthUser } from "../../store/auth/authActions";
 import { setUserInfo } from "../../store/user/userInfoActions";
-import {
-  selectMe,
-  selectMeLoading,
-} from "../../store/user/userInfoSelectors";
+import { selectMe } from "../../store/user/userInfoSelectors";
 import { generateAvatar } from "../../utils/constants/constants";
 import { updateUserSchema } from "../../utils/schemasValidation";
 import "./EditProfile.scss";
@@ -23,7 +19,6 @@ const EditProfile = () => {
   const dispatch = useDispatch();
   const { id } = useParams();
   const userMe = useSelector(selectMe);
-  const userMeLoading = useSelector(selectMeLoading);
 
   const [errorSubmit, setErrorSubmit] = useState(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -86,7 +81,7 @@ const EditProfile = () => {
     return () => clearTimeout(timer);
   }, [usernameValue, userMe]);
 
-  if (userMeLoading || !userMe) return <Spinner />;
+  if (!userMe) return <EditProfileSkeleton />;
 
   const saveUser = async (data) => {
     try {
@@ -239,6 +234,44 @@ const EditProfile = () => {
 };
 
 export default EditProfile;
+
+const EditProfileSkeleton = () => (
+  <div className="edit-profile-skeleton section__container">
+    <div className="edit-profile-skeleton__header">
+      <div className="skeleton edit-profile-skeleton__back" />
+      <div className="skeleton edit-profile-skeleton__title" />
+    </div>
+
+    <div className="edit-profile-skeleton__card">
+      <div className="edit-profile-skeleton__banner" />
+      <div className="edit-profile-skeleton__card-body">
+        <div className="edit-profile-skeleton__avatar-row">
+          <div className="skeleton edit-profile-skeleton__avatar" />
+          <div className="skeleton edit-profile-skeleton__avatar-url" />
+        </div>
+        <div className="edit-profile-skeleton__fields">
+          <div className="skeleton edit-profile-skeleton__field" />
+          <div className="skeleton edit-profile-skeleton__field" />
+          <div className="skeleton edit-profile-skeleton__field" />
+        </div>
+      </div>
+    </div>
+
+    <div className="edit-profile-skeleton__card edit-profile-skeleton__card--padded">
+      <div className="edit-profile-skeleton__section-header">
+        <div className="skeleton edit-profile-skeleton__section-header-icon" />
+        <div className="skeleton edit-profile-skeleton__section-header-title" />
+      </div>
+      <div className="skeleton edit-profile-skeleton__field" />
+      <div className="skeleton edit-profile-skeleton__textarea" />
+    </div>
+
+    <div className="edit-profile-skeleton__actions">
+      <div className="skeleton edit-profile-skeleton__actions-btn edit-profile-skeleton__actions-btn--secondary" />
+      <div className="skeleton edit-profile-skeleton__actions-btn edit-profile-skeleton__actions-btn--primary" />
+    </div>
+  </div>
+);
 
 const AvatarSection = ({ userMe, control, errors }) => {
   const avatarUrl = useWatch({ control, name: "avatarUrl" });
