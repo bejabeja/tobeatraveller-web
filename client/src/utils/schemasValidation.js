@@ -79,6 +79,8 @@ export const createItinerarySchema = z
                 z.object({
                     id: z.string().uuid().optional(),
 
+                    dayNumber: z.number().int().min(1).default(1),
+
                     description: z
                         .string()
                         .max(500, "Description must be less than 500 characters")

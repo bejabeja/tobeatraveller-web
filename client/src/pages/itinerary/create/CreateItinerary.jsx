@@ -85,6 +85,7 @@ const CreateItinerary = () => {
         description: place.description,
         category: place.category || "other",
         orderIndex: index,
+        dayNumber: place.dayNumber ?? 1,
         infoPlace: {
           name: place.infoPlace.name,
           label: place.infoPlace.label,

@@ -77,22 +77,22 @@ export class ItineraryRepository {
     await client.query(`DELETE FROM itineraries WHERE id = $1`, [itineraryId]);
   }
 
-  async linkPlace(itineraryId, placeId, orderIndex) {
+  async linkPlace(itineraryId, placeId, orderIndex, dayNumber = 1) {
     const id = uuidv4();
     await client.query(
-      `INSERT INTO itinerary_places (id, itinerary_id, place_id, order_index) VALUES ($1, $2, $3, $4)`,
-      [id, itineraryId, placeId, orderIndex]
+      `INSERT INTO itinerary_places (id, itinerary_id, place_id, order_index, day_number) VALUES ($1, $2, $3, $4, $5)`,
+      [id, itineraryId, placeId, orderIndex, dayNumber]
     );
   }
 
-  async updatePlaceOrder(itineraryId, { id: placeId, orderIndex }) {
+  async updatePlaceOrder(itineraryId, { id: placeId, orderIndex, dayNumber = 1 }) {
     const query = `
             UPDATE itinerary_places
-            SET order_index = $2
+            SET order_index = $2, day_number = $4
             WHERE itinerary_id = $1 AND place_id = $3
             RETURNING *;
         `;
-    const result = await client.query(query, [itineraryId, orderIndex, placeId]);
+    const result = await client.query(query, [itineraryId, orderIndex, placeId, dayNumber]);
     return result.rows[0];
   }
 

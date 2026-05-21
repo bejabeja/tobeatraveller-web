@@ -34,16 +34,15 @@ export class PlacesRepository {
 
     async getPlacesByItineraryId(itineraryId) {
         const placesQuery = `
-            SELECT p.*, ip.order_index
+            SELECT p.*, ip.order_index, ip.day_number
             FROM places p
             JOIN itinerary_places ip ON p.id = ip.place_id
             WHERE ip.itinerary_id = $1
-            ORDER BY ip.order_index;
+            ORDER BY ip.day_number, ip.order_index;
         `;
 
         const result = await client.query(placesQuery, [itineraryId]);
-        return result.rows.map(row => Place.fromDb(row, row.order_index));
-
+        return result.rows.map(row => Place.fromDb(row, row.order_index, row.day_number));
     }
 
     async updatePlace(placeData) {

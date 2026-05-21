@@ -1,5 +1,5 @@
 export class Place {
-    constructor({ id, title, name, description, address, label, latitude, longitude, category, createdAt, updatedAt, orderIndex }) {
+    constructor({ id, title, name, description, address, label, latitude, longitude, category, createdAt, updatedAt, orderIndex, dayNumber }) {
         this.id = id;
         this.title = title;
         this.name = name;
@@ -12,9 +12,10 @@ export class Place {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.orderIndex = orderIndex;
+        this.dayNumber = dayNumber ?? 1;
     }
 
-    static fromDb(row, orderIndex) {
+    static fromDb(row, orderIndex, dayNumber) {
         return new Place({
             id: row.id,
             name: row.title,
@@ -27,6 +28,7 @@ export class Place {
             createdAt: row.created_at,
             updatedAt: row.updated_at,
             orderIndex,
+            dayNumber: dayNumber ?? row.day_number ?? 1,
         });
     }
 
@@ -40,7 +42,8 @@ export class Place {
             latitude: this.latitude,
             longitude: this.longitude,
             category: this.category,
-            orderIndex: this.orderIndex
+            orderIndex: this.orderIndex,
+            dayNumber: this.dayNumber,
         };
     }
 }

@@ -100,6 +100,7 @@ const EditItinerary = () => {
           id: place.id,
           description: place.description,
           category: place.category,
+          dayNumber: place.dayNumber ?? 1,
           infoPlace: {
             name: place.name,
             label: place.label,
@@ -137,6 +138,7 @@ const EditItinerary = () => {
         description: place.description,
         category: place.category || "other",
         orderIndex: index,
+        dayNumber: place.dayNumber ?? 1,
         infoPlace: {
           name: place.infoPlace.name,
           label: place.infoPlace.label,
