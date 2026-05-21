@@ -1,1 +1,0 @@
-ALTER TABLE itineraries ADD COLUMN IF NOT EXISTS is_public BOOLEAN DEFAULT true;

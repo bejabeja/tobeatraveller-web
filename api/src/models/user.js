@@ -3,7 +3,7 @@ import { formatDate } from "../utils/date.js";
 
 export class User {
     constructor({
-        id, username, email, password, location, avatarUrl,
+        id, username, email, password, location, avatarUrl, avatarPublicId,
         createdAt, updatedAt, name, followersListIds,
         followingListIds, itineraries, bio, about, totalItineraries
     }) {
@@ -13,6 +13,7 @@ export class User {
         this.password = password;
         this.location = location;
         this.avatarUrl = avatarUrl || generateAvatar(username);
+        this.avatarPublicId = avatarPublicId || null;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.name = name || null;
@@ -32,6 +33,7 @@ export class User {
             password: row.password,
             location: row.location,
             avatarUrl: row.avatar_url,
+            avatarPublicId: row.avatar_public_id,
             createdAt: row.created_at,
             updatedAt: row.updated_at,
             name: row.name,
@@ -69,6 +71,7 @@ export class User {
             email: this.email,
             location: this.location,
             avatarUrl: this.avatarUrl,
+            avatarPublicId: this.avatarPublicId,
             createdAt: formatDate(this.createdAt),
             updatedAt: formatDate(this.updatedAt),
             name: this.name,

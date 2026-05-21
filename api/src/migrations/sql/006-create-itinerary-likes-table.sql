@@ -5,4 +5,3 @@ CREATE TABLE IF NOT EXISTS itinerary_likes (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(user_id, itinerary_id)
 );
-

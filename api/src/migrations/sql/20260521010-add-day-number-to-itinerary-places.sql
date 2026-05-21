@@ -1,1 +1,0 @@
-ALTER TABLE itinerary_places ADD COLUMN IF NOT EXISTS day_number INT DEFAULT 1;

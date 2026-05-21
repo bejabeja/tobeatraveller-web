@@ -5,88 +5,62 @@ import { Place } from "../models/place.js";
 export class PlacesRepository {
     round6(value) {
         return Math.round(value * 1e6) / 1e6;
-    };
+    }
 
     async insertPlace(placeData) {
-        const lat = this.round6(placeData.infoPlace.lat);
-        const lon = this.round6(placeData.infoPlace.lon);
+        const lat = this.round6(placeData.infoPlace.lat ?? 0);
+        const lon = this.round6(placeData.infoPlace.lon ?? 0);
 
-        const placeId = uuidv4();
-        const placeQuery = `
-            INSERT INTO places (id, title, description, label, address, latitude, longitude, category)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-            RETURNING *;
-        `;
-
-        const result = await client.query(placeQuery, [
-            placeId,
-            placeData.infoPlace.name,
-            placeData.description,
-            placeData.infoPlace.label,
-            placeData.infoPlace.label,
-            lat,
-            lon,
-            placeData.category,
-        ]);
+        const result = await client.query(
+            `INSERT INTO places (id, title, description, label, latitude, longitude, category)
+             VALUES ($1, $2, $3, $4, $5, $6, $7)
+             RETURNING *;`,
+            [
+                uuidv4(),
+                placeData.infoPlace.name,
+                placeData.description,
+                placeData.infoPlace.label ?? placeData.infoPlace.name,
+                lat,
+                lon,
+                placeData.category ?? 'other',
+            ]
+        );
 
         return Place.fromDb(result.rows[0], placeData.orderIndex);
     }
 
     async getPlacesByItineraryId(itineraryId) {
-        const placesQuery = `
-            SELECT p.*, ip.order_index, ip.day_number
-            FROM places p
-            JOIN itinerary_places ip ON p.id = ip.place_id
-            WHERE ip.itinerary_id = $1
-            ORDER BY ip.day_number, ip.order_index;
-        `;
-
-        const result = await client.query(placesQuery, [itineraryId]);
+        const result = await client.query(
+            `SELECT p.*, ip.order_index, ip.day_number
+             FROM places p
+             JOIN itinerary_places ip ON p.id = ip.place_id
+             WHERE ip.itinerary_id = $1
+             ORDER BY ip.day_number, ip.order_index;`,
+            [itineraryId]
+        );
         return result.rows.map(row => Place.fromDb(row, row.order_index, row.day_number));
     }
 
     async updatePlace(placeData) {
-        const lat = this.round6(placeData.infoPlace.lat);
-        const lon = this.round6(placeData.infoPlace.lon);
+        const lat = this.round6(placeData.infoPlace.lat ?? 0);
+        const lon = this.round6(placeData.infoPlace.lon ?? 0);
 
-        const { id } = placeData;
-        const placeQuery = `
-            UPDATE places
-            SET 
-                title = $2, 
-                description = $3, 
-                address = $4, 
-                label = $5, 
-                latitude = $6, 
-                longitude = $7, 
-                category = $8
-            WHERE id = $1
-            RETURNING *;
-        `;
-
-        const result = await client.query(placeQuery, [
-            id,
-            placeData.infoPlace.name,
-            placeData.description,
-            placeData.infoPlace.label,
-            placeData.infoPlace.label,
-            lat,
-            lon,
-            placeData.category,
-        ]);
+        const result = await client.query(
+            `UPDATE places
+             SET title = $2, description = $3, label = $4, latitude = $5, longitude = $6, category = $7
+             WHERE id = $1
+             RETURNING *;`,
+            [
+                placeData.id,
+                placeData.infoPlace.name,
+                placeData.description,
+                placeData.infoPlace.label ?? placeData.infoPlace.name,
+                lat,
+                lon,
+                placeData.category ?? 'other',
+            ]
+        );
 
         return Place.fromDb(result.rows[0], placeData.orderIndex);
-    }
-    async findByPlaceAttributes(lat, lon, orderIndex) {
-        const latRounded = this.round6(lat);
-        const lonRounded = this.round6(lon);
-        const query = `
-        SELECT * FROM places
-        WHERE latitude = $1 AND longitude = $2
-        LIMIT 1;
-    `;
-
-        const result = await client.query(query, [latRounded, lonRounded]);
-        return result.rows.length ? Place.fromDb(result.rows[0], orderIndex) : null;
     }
 }

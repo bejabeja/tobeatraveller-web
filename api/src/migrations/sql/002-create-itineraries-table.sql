@@ -1,0 +1,23 @@
+CREATE TABLE IF NOT EXISTS itineraries (
+    id UUID PRIMARY KEY,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    description TEXT,
+    location_name TEXT NOT NULL,
+    location_label TEXT,
+    latitude DECIMAL(9,6),
+    longitude DECIMAL(9,6),
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    photo_url TEXT,
+    photo_public_id TEXT,
+    budget DECIMAL(10,2) DEFAULT 0,
+    currency VARCHAR(10) DEFAULT '',
+    number_of_people INT DEFAULT 1,
+    category VARCHAR(50) DEFAULT 'other',
+    is_public BOOLEAN DEFAULT true,
+    likes_count INT DEFAULT 0,
+    comments_count INT DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
