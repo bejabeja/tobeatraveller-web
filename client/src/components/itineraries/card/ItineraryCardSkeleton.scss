@@ -1,15 +1,33 @@
 @use "../../SkeletonBase.scss";
 
-.skeleton-card__header {
-  display: flex;
-  align-items: center;
-  padding: 1rem;
-  gap: 1rem;
+.itinerary-card--skeleton {
+  opacity: 1 !important;
+  transform: none !important;
+  pointer-events: none;
 }
 
-.skeleton-card__info {
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+.itinerary-sk {
+  &__title {
+    height: 18px;
+    width: 78%;
+    border-radius: 4px;
+  }
+
+  &__location {
+    height: 13px;
+    width: 52%;
+    border-radius: 4px;
+  }
+
+  &__days {
+    height: 12px;
+    width: 28%;
+    border-radius: 4px;
+  }
+
+  &__action {
+    height: 18px;
+    width: 44px;
+    border-radius: 4px;
+  }
 }

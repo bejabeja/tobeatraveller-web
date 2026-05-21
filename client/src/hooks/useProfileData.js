@@ -3,12 +3,14 @@ import { useSelector } from "react-redux";
 import { getAllFollowers, getAllFollowing } from "../services/followers";
 import { getItinerariesByUserId } from "../services/itineraries";
 import { getUserById } from "../services/users";
-import { selectIsAuthenticated } from "../store/auth/authSelectors";
-import { selectMe, selectMyFollowers, selectMyFollowing, selectMyItineraries } from "../store/user/userInfoSelectors";
+import { selectAuthUser, selectIsAuthenticated } from "../store/auth/authSelectors";
+import { selectMe, selectMyFollowers, selectMyFollowing, selectMyItineraries, selectMyItinerariesLoading } from "../store/user/userInfoSelectors";
 
 export const useProfileData = (profileId) => {
+    const authUser = useSelector(selectAuthUser)
     const userMe = useSelector(selectMe)
     const myItineraries = useSelector(selectMyItineraries)
+    const myItinerariesLoading = useSelector(selectMyItinerariesLoading)
     const myFollowers = useSelector(selectMyFollowers)
     const myFollowing = useSelector(selectMyFollowing)
     const isAuthenticated = useSelector(selectIsAuthenticated)
@@ -24,7 +26,7 @@ export const useProfileData = (profileId) => {
     const [loadingItineraries, setLoadingItineraries] = useState(true);
     const [error, setError] = useState(null);
 
-    const isMyProfile = userMe?.id === profileId;
+    const isMyProfile = String(authUser?.id) === String(profileId);
 
     const user = isMyProfile ? userMe : userData;
     const followers = isMyProfile ? myFollowers : followersData;
@@ -78,7 +80,7 @@ export const useProfileData = (profileId) => {
         loadingUser,
         loadingFollowers,
         loadingFollowing,
-        loadingItineraries,
+        loadingItineraries: isMyProfile ? myItinerariesLoading : loadingItineraries,
         error,
         isAuthenticated
     };

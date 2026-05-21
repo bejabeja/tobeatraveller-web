@@ -1,20 +1,18 @@
-import React from "react";
 import "./ItineraryCardSkeleton.scss";
 
-const ItineraryCardSkeleton = () => {
-  return (
-    <div className="itinerary-card skeleton-card">
-      <div className="skeleton-card__header">
-        <div className="skeleton skeleton--avatar" />
-        <div className="skeleton skeleton--text short" />
-      </div>
-      <div className="skeleton skeleton--image" />
-      <div className="skeleton-card__info">
-        <div className="skeleton skeleton--text" />
-        <div className="skeleton skeleton--text shorter" />
-      </div>
+const ItineraryCardSkeleton = () => (
+  <div className="itinerary-card itinerary-card--skeleton">
+    <div className="itinerary-card__image-wrapper skeleton" />
+    <div className="itinerary-card__info">
+      <div className="skeleton itinerary-sk__title" />
+      <div className="skeleton itinerary-sk__location" />
+      <div className="skeleton itinerary-sk__days" />
     </div>
-  );
-};
+    <div className="itinerary-card__actions">
+      <div className="skeleton itinerary-sk__action" />
+      <div className="skeleton itinerary-sk__action" />
+    </div>
+  </div>
+);
 
 export default ItineraryCardSkeleton;

@@ -2,11 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { IoAirplaneOutline, IoEarthOutline, IoLinkOutline, IoLocationOutline, IoStarOutline } from "react-icons/io5";
 import { MdExplore, MdOutlineCalendarMonth, MdOutlineEdit } from "react-icons/md";
+import { useSelector } from "react-redux";
 import { Link, useParams } from "react-router-dom";
 import ItinerariesSection from "../../components/itineraries/ItinerariesSection";
 import Modal from "../../components/modal/Modal";
 import { useFollow } from "../../hooks/useFollow";
 import { useProfileData } from "../../hooks/useProfileData";
+import { selectAuthUser } from "../../store/auth/authSelectors";
 import { generateAvatar } from "../../utils/constants/constants";
 import Error from "../error/Error";
 import "./Profile.scss";
@@ -29,12 +31,16 @@ const COMPLETENESS_FIELDS = [
 // ─── Page ─────────────────────────────────────────────────────────────────────
 const Profile = () => {
   const { id } = useParams();
+  const authUser = useSelector(selectAuthUser);
   const {
     user, itineraries, loadingUser, error,
     isMyProfile, loadingItineraries, isAuthenticated,
   } = useProfileData(id);
   const { isFollowing, toggleFollow, isLoadingFollow } = useFollow(id);
   const [showUnfollowModal, setShowUnfollowModal] = useState(false);
+
+  const followsYou = !isMyProfile && isAuthenticated &&
+    user?.followingListIds?.some((u) => String(u.id) === String(authUser?.id));
 
   if (error) return <Error message="We couldn't load the profile info. Please try again later." />;
 
@@ -73,6 +79,7 @@ const Profile = () => {
                 user={user}
                 isMyProfile={isMyProfile}
                 isFollowing={isFollowing}
+                followsYou={followsYou}
                 onFollowToggle={handleFollowToggle}
                 onCopyLink={handleCopyLink}
                 isAuthenticated={isAuthenticated}
@@ -88,8 +95,9 @@ const Profile = () => {
           <ItinerariesSection
             user={user}
             itineraries={itineraries}
-            title="Shared Itineraries"
+            title={isMyProfile ? "My trips" : "Trips"}
             isLoading={loadingItineraries}
+            isOwner={isMyProfile}
             {...(isMyProfile ? { limit: 3 } : {})}
           />
           {user?.totalItineraries > 3 && isMyProfile && (
@@ -119,7 +127,7 @@ export default Profile;
 
 // ─── Header card ──────────────────────────────────────────────────────────────
 const HeaderSection = ({
-  user, isMyProfile, isFollowing, onFollowToggle,
+  user, isMyProfile, isFollowing, followsYou, onFollowToggle,
   onCopyLink, isAuthenticated, isLoadingFollow,
 }) => {
   const followBtnRef = useRef(null);
@@ -168,7 +176,10 @@ const HeaderSection = ({
 
         <div className="profile__info">
           <h1 className="profile__name">{user?.name || user?.username}</h1>
-          <p className="profile__username">@{user?.username}</p>
+          <p className="profile__username">
+            @{user?.username}
+            {followsYou && <span className="profile__follows-you">Follows you</span>}
+          </p>
 
           {user?.bio ? (
             <p className="profile__bio">{user.bio}</p>
@@ -324,16 +335,33 @@ const ProfileCardSkeleton = () => (
     <div className="profile__card-body">
       <div className="profile__avatar skeleton" />
       <div className="profile__card-actions">
+        <div className="skeleton profile__skeleton-icon-btn" />
         <div className="skeleton profile__skeleton-btn" />
       </div>
       <div className="profile__info">
         <div className="skeleton profile__skeleton-name" />
         <div className="skeleton profile__skeleton-username" />
-        <div className="skeleton profile__skeleton-bio" />
+        <div className="profile__skeleton-bio-lines">
+          <div className="skeleton profile__skeleton-bio-line" />
+          <div className="skeleton profile__skeleton-bio-line profile__skeleton-bio-line--short" />
+        </div>
+        <div className="profile__skeleton-meta-row">
+          <div className="skeleton profile__skeleton-meta-item" />
+          <div className="skeleton profile__skeleton-meta-item profile__skeleton-meta-item--short" />
+        </div>
         <div className="profile__stats">
-          <div className="profile__stat"><div className="skeleton profile__skeleton-stat" /></div>
-          <div className="profile__stat"><div className="skeleton profile__skeleton-stat" /></div>
-          <div className="profile__stat"><div className="skeleton profile__skeleton-stat" /></div>
+          <div className="profile__stat">
+            <div className="skeleton profile__skeleton-stat-num" />
+            <div className="skeleton profile__skeleton-stat-lbl" />
+          </div>
+          <div className="profile__stat">
+            <div className="skeleton profile__skeleton-stat-num" />
+            <div className="skeleton profile__skeleton-stat-lbl" />
+          </div>
+          <div className="profile__stat">
+            <div className="skeleton profile__skeleton-stat-num" />
+            <div className="skeleton profile__skeleton-stat-lbl" />
+          </div>
         </div>
       </div>
     </div>
