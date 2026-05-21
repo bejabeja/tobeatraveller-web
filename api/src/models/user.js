@@ -15,12 +15,12 @@ export class User {
         this.avatarUrl = avatarUrl || generateAvatar(username);
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
-        this.name = name || "No name";
+        this.name = name || null;
         this.followersListIds = followersListIds || [];
         this.followingListIds = followingListIds || [];
         this.itineraries = itineraries || [];
-        this.bio = bio || "No bio available";
-        this.about = about || "No about information available";
+        this.bio = bio || null;
+        this.about = about || null;
         this.totalItineraries = totalItineraries || 0;
     }
 

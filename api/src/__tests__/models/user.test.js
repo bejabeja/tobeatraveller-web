@@ -39,19 +39,19 @@ describe('User model', () => {
     });
 
     describe('constructor defaults', () => {
-        it('uses default name when not provided', () => {
+        it('uses null name when not provided', () => {
             const user = new User({ id: '1', username: 'test' });
-            expect(user.name).toBe('No name');
+            expect(user.name).toBeNull();
         });
 
-        it('uses default bio when not provided', () => {
+        it('uses null bio when not provided', () => {
             const user = new User({ id: '1', username: 'test' });
-            expect(user.bio).toBe('No bio available');
+            expect(user.bio).toBeNull();
         });
 
-        it('uses default about when not provided', () => {
+        it('uses null about when not provided', () => {
             const user = new User({ id: '1', username: 'test' });
-            expect(user.about).toBe('No about information available');
+            expect(user.about).toBeNull();
         });
 
         it('initializes followersListIds as empty array', () => {

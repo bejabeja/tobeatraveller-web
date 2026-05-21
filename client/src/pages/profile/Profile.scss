@@ -138,11 +138,20 @@ $avatar-overlap: 44px;
       gap: 0.3rem;
       min-width: 0;
       max-width: 100%;
+      text-decoration: none;
+      color: inherit;
 
       svg {
         font-size: 0.95rem;
         width: auto;
         flex-shrink: 0;
+      }
+
+      &--prompt {
+        color: var(--primary-color);
+        opacity: 0.75;
+
+        &:hover { opacity: 1; }
       }
     }
 
@@ -237,12 +246,17 @@ $avatar-overlap: 44px;
     }
   }
 
-  &__more {
-    text-align: center;
-    padding: 0.5rem 0 1rem;
+  // ── Empty states ─────────────────────────────────────────────
+  &__empty-name {
+    display: inline-block;
+    margin-top: 0.1rem;
+    font-size: 0.8rem;
+    color: var(--primary-color);
+    text-decoration: none;
+
+    &:hover { text-decoration: underline; }
   }
 
-  // ── Empty states ─────────────────────────────────────────────
   &__empty-bio {
     display: inline-block;
     margin-top: 0.5rem;

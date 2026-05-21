@@ -11,6 +11,7 @@ const ItinerariesSection = ({
   isLoading,
   limit,
   isOwner = false,
+  viewAllHref,
 }) => {
   const skeletonCount = 3;
   const displayedItineraries = limit
@@ -18,6 +19,8 @@ const ItinerariesSection = ({
     : itineraries;
 
   const isEmpty = !isLoading && displayedItineraries?.length === 0;
+  const total = user?.totalItineraries ?? itineraries?.length ?? 0;
+  const showViewAll = !isLoading && viewAllHref && limit && total > limit;
 
   return (
     <div className="itineraries-section">
@@ -26,15 +29,24 @@ const ItinerariesSection = ({
       {isEmpty ? (
         <EmptyState isOwner={isOwner} username={user?.username} />
       ) : (
-        <div className="itineraries-section__grid">
-          {isLoading
-            ? Array.from({ length: skeletonCount }).map((_, i) => (
-                <ItineraryCardSkeleton key={i} />
-              ))
-            : displayedItineraries?.map((itinerary, key) => (
-                <ItineraryCard itinerary={itinerary} key={key} user={user} />
-              ))}
-        </div>
+        <>
+          <div className="itineraries-section__grid">
+            {isLoading
+              ? Array.from({ length: skeletonCount }).map((_, i) => (
+                  <ItineraryCardSkeleton key={i} />
+                ))
+              : displayedItineraries?.map((itinerary, key) => (
+                  <ItineraryCard itinerary={itinerary} key={key} user={user} />
+                ))}
+          </div>
+          {showViewAll && (
+            <div className="itineraries-section__footer">
+              <Link to={viewAllHref} className="btn btn__primary-outline">
+                See all {total} trips
+              </Link>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

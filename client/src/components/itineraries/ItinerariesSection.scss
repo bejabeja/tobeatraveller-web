@@ -10,6 +10,12 @@
     letter-spacing: -0.01em;
   }
 
+  &__footer {
+    display: flex;
+    justify-content: center;
+    padding-top: 0.5rem;
+  }
+
   &__empty {
     display: flex;
     flex-direction: column;

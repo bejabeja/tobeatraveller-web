@@ -16,15 +16,15 @@ import "./Profile.scss";
 // ─── Badge definitions ────────────────────────────────────────────────────────
 const TRIP_BADGES = [
   { id: "globetrotter", label: "Globetrotter", Icon: IoEarthOutline, min: 10 },
-  { id: "adventurer",   label: "Adventurer",   Icon: IoAirplaneOutline, min: 5 },
-  { id: "explorer",     label: "Explorer",     Icon: MdExplore, min: 1 },
+  { id: "adventurer", label: "Adventurer", Icon: IoAirplaneOutline, min: 5 },
+  { id: "explorer", label: "Explorer", Icon: MdExplore, min: 1 },
 ];
 
 const COMPLETENESS_FIELDS = [
-  { key: "name",      tip: "Add your name" },
-  { key: "bio",       tip: "Write a bio" },
-  { key: "about",     tip: "Complete your About section" },
-  { key: "location",  tip: "Add your location" },
+  { key: "name", tip: "Add your name" },
+  { key: "bio", tip: "Write a bio" },
+  { key: "about", tip: "Complete your About section" },
+  { key: "location", tip: "Add your location" },
   { key: "avatarUrl", tip: "Set a profile photo" },
 ];
 
@@ -41,6 +41,13 @@ const Profile = () => {
 
   const followsYou = !isMyProfile && isAuthenticated &&
     user?.followingListIds?.some((u) => String(u.id) === String(authUser?.id));
+
+  useEffect(() => {
+    if (!user) return;
+    const display = user.name ? `${user.name} (@${user.username})` : `@${user.username}`;
+    document.title = `${display} — Tobeatraveller`;
+    return () => { document.title = "Tobeatraveller"; };
+  }, [user]);
 
   if (error) return <Error message="We couldn't load the profile info. Please try again later." />;
 
@@ -98,15 +105,8 @@ const Profile = () => {
             title={isMyProfile ? "My trips" : "Trips"}
             isLoading={loadingItineraries}
             isOwner={isMyProfile}
-            {...(isMyProfile ? { limit: 3 } : {})}
+            {...(isMyProfile ? { limit: 3, viewAllHref: "/my-itineraries" } : {})}
           />
-          {user?.totalItineraries > 3 && isMyProfile && (
-            <div className="profile__more">
-              <Link to="/my-itineraries" className="btn btn__primary">
-                See all {user.totalItineraries} trips
-              </Link>
-            </div>
-          )}
         </div>
       </div>
 
@@ -175,7 +175,14 @@ const HeaderSection = ({
         </div>
 
         <div className="profile__info">
-          <h1 className="profile__name">{user?.name || user?.username}</h1>
+          {user?.name
+            ? <h1 className="profile__name">{user.name}</h1>
+            : isMyProfile && (
+              <Link to={`/profile/edit/${user?.id}`} className="profile__empty-name">
+                + Add your name
+              </Link>
+            )
+          }
           <p className="profile__username">
             @{user?.username}
             {followsYou && <span className="profile__follows-you">Follows you</span>}
@@ -191,15 +198,20 @@ const HeaderSection = ({
 
           <ProfileBadges user={user} />
 
-          {(user?.location || user?.createdAt) && (
+          {(user?.location || user?.createdAt || isMyProfile) && (
             <div className="profile__meta">
-              {user.location && (
+              {user?.location ? (
                 <span className="profile__meta-item">
                   <IoLocationOutline aria-hidden="true" />
                   <span className="profile__meta-text">{user.location}</span>
                 </span>
+              ) : isMyProfile && (
+                <Link to={`/profile/edit/${user?.id}`} className="profile__meta-item profile__meta-item--prompt">
+                  <IoLocationOutline aria-hidden="true" />
+                  <span className="profile__meta-text">Add your location</span>
+                </Link>
               )}
-              {user.createdAt && (
+              {user?.createdAt && (
                 <span className="profile__meta-item">
                   <MdOutlineCalendarMonth aria-hidden="true" />
                   <span className="profile__meta-text">Joined {user.createdAt}</span>
@@ -290,32 +302,14 @@ const ProfileCompleteness = ({ user }) => {
   );
 };
 
-// ─── Animated stat number ─────────────────────────────────────────────────────
+// ─── Stat numbers
 const StatNumber = ({ value }) => {
-  const [display, setDisplay] = useState(0);
   const [flash, setFlash] = useState(false);
   const isFirstValue = useRef(true);
-  const rafRef = useRef(null);
 
   useEffect(() => {
     if (value == null) return;
-
-    if (isFirstValue.current) {
-      isFirstValue.current = false;
-      if (value === 0) { setDisplay(0); return; }
-
-      const duration = 650;
-      const start = performance.now();
-      const tick = (now) => {
-        const t = Math.min((now - start) / duration, 1);
-        setDisplay(Math.round((1 - Math.pow(1 - t, 3)) * value));
-        if (t < 1) rafRef.current = requestAnimationFrame(tick);
-      };
-      rafRef.current = requestAnimationFrame(tick);
-      return () => cancelAnimationFrame(rafRef.current);
-    }
-
-    setDisplay(value);
+    if (isFirstValue.current) { isFirstValue.current = false; return; }
     setFlash(true);
     const t = setTimeout(() => setFlash(false), 400);
     return () => clearTimeout(t);
@@ -323,12 +317,12 @@ const StatNumber = ({ value }) => {
 
   return (
     <strong className={flash ? "profile__stat-number--flash" : undefined}>
-      {display}
+      {value ?? 0}
     </strong>
   );
 };
 
-// ─── Skeleton ─────────────────────────────────────────────────────────────────
+// ─── Skeleton
 const ProfileCardSkeleton = () => (
   <div className="profile__card">
     <div className="profile__banner" />
