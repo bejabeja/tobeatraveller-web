@@ -119,6 +119,164 @@
     font-size: 1rem;
     font-weight: 600;
     color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  &-count {
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--text-secondary-color);
+    width: fit-content;
+  }
+
+  &-empty-warning {
+    font-size: 0.8rem;
+    color: var(--warning-color, #d97706);
+    background: rgba(217, 119, 6, 0.08);
+    border: 1px solid rgba(217, 119, 6, 0.25);
+    border-radius: 6px;
+    padding: 0.4rem 0.75rem;
+  }
+}
+
+.form__place-card {
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1rem;
+
+  &-top {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+
+  &-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 0;
+
+    .form__icon-group--compact {
+      margin: 0.25rem 0;
+    }
+  }
+}
+
+.form__place-move-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding-top: 1.6rem;
+  flex-shrink: 0;
+  width: fit-content;
+}
+
+.form__place-move-btn {
+  width: fit-content;
+  padding: 0.15rem 0.2rem;
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text-secondary-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+
+  svg {
+    width: auto;
+    height: auto;
+    font-size: 1rem;
+  }
+
+  &:hover:not(:disabled) {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+  }
+
+  &:disabled {
+    opacity: 0.25;
+    cursor: not-allowed;
+  }
+}
+
+.form__place-delete-btn {
+  width: fit-content;
+  padding: 0.25rem;
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text-secondary-color);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  margin-top: 1.6rem;
+
+  svg {
+    width: auto;
+    height: auto;
+    font-size: 1rem;
+  }
+
+  &:hover {
+    border-color: var(--error-color, red);
+    color: var(--error-color, red);
+  }
+}
+
+.form__add-description-btn {
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0;
+  text-align: left;
+  width: fit-content;
+  font-family: inherit;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.form__place-move-day {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-top: 0.25rem;
+
+  &-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary-color);
+    width: fit-content;
+  }
+
+  &-btn {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.15rem 0.55rem;
+    border: 1px solid var(--primary-color);
+    border-radius: 999px;
+    background: none;
+    color: var(--primary-color);
+    cursor: pointer;
+    transition: all 0.2s;
+    width: fit-content;
+
+    &:hover {
+      background: var(--primary-color);
+      color: white;
+    }
   }
 }
 

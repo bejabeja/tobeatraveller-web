@@ -26,6 +26,7 @@ const CreateItinerary = () => {
   const navigate = useNavigate();
 
   const [imageFile, setImageFile] = useState(null);
+  const [days, setDays] = useState([1]);
   const userMe = useSelector(selectMe);
 
   const today = new Date().toISOString().split("T")[0];
@@ -60,12 +61,23 @@ const CreateItinerary = () => {
     },
   });
 
-  const { fields, append, remove, replace } = useFieldArray({
+  const { fields, append, remove, replace, move } = useFieldArray({
     control,
     name: "places",
   });
 
   const addItinerary = async (data) => {
+    if (data.isPublic) {
+      const emptyDays = days.filter(
+        (d) => !data.places.some((p) => (p.dayNumber ?? 1) === d)
+      );
+      if (emptyDays.length > 0) {
+        toast.error(
+          `Day ${emptyDays.join(", ")} ${emptyDays.length === 1 ? "has" : "have"} no places. Add places or switch to private.`
+        );
+        return;
+      }
+    }
     const body = {
       userId: userMe.id,
       title: data.title,
@@ -134,7 +146,11 @@ const CreateItinerary = () => {
           append={append}
           remove={remove}
           replace={replace}
+          move={move}
           destination={watch("destination")}
+          days={days}
+          setDays={setDays}
+          isPublic={watch("isPublic")}
         />
         <BudgetForm control={control} errors={errors} />
         <TravellersForm control={control} errors={errors} />

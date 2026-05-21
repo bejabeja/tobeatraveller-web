@@ -30,6 +30,7 @@ const EditItinerary = () => {
   const [itineraryData, setItineraryData] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [imageFile, setImageFile] = useState(null);
+  const [days, setDays] = useState([1]);
 
   const isMyItinerary = () => {
     if (!userMe || !itineraryData) return false;
@@ -69,7 +70,7 @@ const EditItinerary = () => {
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, replace, move } = useFieldArray({
     control,
     name: "places",
   });
@@ -113,11 +114,27 @@ const EditItinerary = () => {
       };
       reset(resetValues);
       setItineraryData(response);
+      const existingDays = response.places.length > 0
+        ? [...new Set(response.places.map((p) => p.dayNumber ?? 1))].sort((a, b) => a - b)
+        : [1];
+      setDays(existingDays);
     };
     fetchItineraryData();
   }, []);
 
   const editItinerary = async (data) => {
+    if (data.isPublic) {
+      const emptyDays = days.filter(
+        (d) => !data.places.some((p) => (p.dayNumber ?? 1) === d)
+      );
+      if (emptyDays.length > 0) {
+        toast.error(
+          `Day ${emptyDays.join(", ")} ${emptyDays.length === 1 ? "has" : "have"} no places. Add places or switch to private.`
+        );
+        return;
+      }
+    }
+
     const body = {
       userId: userMe.id,
       title: data.title,
@@ -182,7 +199,12 @@ const EditItinerary = () => {
           fields={fields}
           append={append}
           remove={remove}
+          replace={replace}
+          move={move}
           destination={watch("destination")}
+          days={days}
+          setDays={setDays}
+          isPublic={watch("isPublic")}
         />
         <BudgetForm control={control} errors={errors} />
         <TravellersForm control={control} errors={errors} />
