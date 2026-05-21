@@ -3,6 +3,7 @@ import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { FaRegComment } from "react-icons/fa6";
 import { Link } from "react-router-dom";
 import { useLike } from "../../../hooks/useLike";
+import OfficialBadge from "../../users/OfficialBadge";
 
 const ItineraryCard = ({ itinerary, user: userProp }) => {
   const {
@@ -18,7 +19,7 @@ const ItineraryCard = ({ itinerary, user: userProp }) => {
   } = itinerary;
 
   const user = userFromItinerary || userProp || {};
-  const { username = "Anonymous", avatarUrl = "" } = user;
+  const { username = "Anonymous", avatarUrl = "", role } = user;
 
   const { isLiked, likesCount, handleToggleLike } = useLike(id, initialLikesCount);
   const cardRef = useRef(null);
@@ -60,6 +61,7 @@ const ItineraryCard = ({ itinerary, user: userProp }) => {
               />
             )}
             <span className="itinerary-card__username">@{username}</span>
+            {role === "official" && <OfficialBadge size={14} />}
           </div>
         </div>
         <div className="itinerary-card__info">

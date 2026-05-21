@@ -10,6 +10,7 @@ import { useFollow } from "../../hooks/useFollow";
 import { useProfileData } from "../../hooks/useProfileData";
 import { selectAuthUser } from "../../store/auth/authSelectors";
 import { generateAvatar } from "../../utils/constants/constants";
+import OfficialBadge from "../../components/users/OfficialBadge";
 import Error from "../error/Error";
 import "./Profile.scss";
 
@@ -184,6 +185,7 @@ const HeaderSection = ({
           }
           <p className="profile__username">
             @{user?.username}
+            {user?.role === "official" && <OfficialBadge size={18} />}
             {followsYou && <span className="profile__follows-you">Follows you</span>}
           </p>
 

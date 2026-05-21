@@ -5,13 +5,18 @@ import config from '../config/config.js'
 
 const { Client } = pkg
 
-const client = new Client({
-    host: config.dbHost,
-    user: config.dbUser,
-    password: config.dbPassword,
-    database: config.dbName,
-    port: config.dbPort,
-});
+const client = config.databaseUrl
+    ? new Client({
+        connectionString: config.databaseUrl,
+        ssl: { rejectUnauthorized: false },
+    })
+    : new Client({
+        host: config.dbHost,
+        user: config.dbUser,
+        password: config.dbPassword,
+        database: config.dbName,
+        port: config.dbPort,
+    });
 
 async function runMigration() {
     try {

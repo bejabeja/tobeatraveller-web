@@ -5,7 +5,7 @@ export class User {
     constructor({
         id, username, email, password, location, avatarUrl, avatarPublicId,
         createdAt, updatedAt, name, followersListIds,
-        followingListIds, itineraries, bio, about, totalItineraries
+        followingListIds, itineraries, bio, about, totalItineraries, role
     }) {
         this.id = id;
         this.username = username;
@@ -14,6 +14,7 @@ export class User {
         this.location = location;
         this.avatarUrl = avatarUrl || generateAvatar(username);
         this.avatarPublicId = avatarPublicId || null;
+        this.role = role || 'user';
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.name = name || null;
@@ -34,6 +35,7 @@ export class User {
             location: row.location,
             avatarUrl: row.avatar_url,
             avatarPublicId: row.avatar_public_id,
+            role: row.role,
             createdAt: row.created_at,
             updatedAt: row.updated_at,
             name: row.name,
@@ -72,6 +74,7 @@ export class User {
             location: this.location,
             avatarUrl: this.avatarUrl,
             avatarPublicId: this.avatarPublicId,
+            role: this.role,
             createdAt: formatDate(this.createdAt),
             updatedAt: formatDate(this.updatedAt),
             name: this.name,
@@ -90,6 +93,7 @@ export class User {
             id: this.id,
             username: this.username,
             avatarUrl: this.avatarUrl,
+            role: this.role,
         };
     }
 

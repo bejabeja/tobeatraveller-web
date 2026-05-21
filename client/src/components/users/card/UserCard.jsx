@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import OfficialBadge from "../OfficialBadge";
 
 const UserCard = ({
   id,
@@ -10,6 +11,7 @@ const UserCard = ({
   isAuthenticated,
   isFollowing,
   onFollowToggle,
+  role,
 }) => {
   const navigate = useNavigate();
   const handleFollow = async () => {
@@ -38,7 +40,7 @@ const UserCard = ({
       </div>
       <div className="user-card__body" onClick={handleProfile}>
         <div className="user-card__name-row">
-          <h3 className="user-card__name">@{username}</h3>
+          <h3 className="user-card__name">@{username}{role === "official" && <OfficialBadge size={14} />}</h3>
           <button
             className={`user-card__follow-btn ${isFollowing ? "following" : ""}`}
             onClick={(e) => { e.stopPropagation(); handleFollow(); }}
