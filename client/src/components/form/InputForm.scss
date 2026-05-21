@@ -36,16 +36,60 @@
     }
   }
 
-  &__error {
+  &__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
     min-height: 1.2rem;
-    font-size: 0.85rem;
     margin-top: 0.4rem;
-    color: red;
-    transition: opacity 0.3s ease;
+    gap: 0.5rem;
+  }
 
-    &:empty {
-      visibility: hidden;
+  &__error {
+    font-size: 0.85rem;
+    color: red;
+    flex: 1;
+    transition: opacity 0.3s ease;
+  }
+
+  &__counter {
+    font-size: 0.75rem;
+    color: var(--text-secondary-color);
+    white-space: nowrap;
+    width: fit-content;
+    flex-shrink: 0;
+
+    &--near-limit {
+      color: #e69500;
     }
+
+    &--at-limit {
+      color: var(--error-color, red);
+    }
+  }
+
+  &__prefix-wrapper {
+    display: flex;
+    align-items: stretch;
+  }
+
+  &__prefix {
+    display: flex;
+    align-items: center;
+    padding: 0 0.75rem;
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-right: none;
+    border-radius: 10px 0 0 10px;
+    font-size: 1rem;
+    color: var(--text-secondary-color);
+    white-space: nowrap;
+    width: fit-content;
+    flex-shrink: 0;
+  }
+
+  &__field--with-prefix {
+    border-radius: 0 10px 10px 0;
   }
 
   textarea.input__field {

@@ -16,8 +16,9 @@ const BasicInfoForm = ({ control, errors, disabled = false }) => {
           type="text"
           control={control}
           error={errors.title}
+          maxLength={50}
           required
-        ></InputForm>
+        />
         <AutocompleteObjectInput
           name="destination"
           label="Destination"
@@ -31,10 +32,10 @@ const BasicInfoForm = ({ control, errors, disabled = false }) => {
       <TextAreaForm
         name="description"
         label="Description"
-        type="text"
         control={control}
         error={errors.description}
-      ></TextAreaForm>
+        maxLength={500}
+      />
       <TripCategoryForm control={control} />
     </div>
   );

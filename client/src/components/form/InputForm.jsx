@@ -9,6 +9,8 @@ export const InputForm = ({
   type = "text",
   inputProps = {},
   required = false,
+  maxLength,
+  prefix,
 }) => {
   const errorId = `${name}-error`;
 
@@ -21,25 +23,49 @@ export const InputForm = ({
         name={name}
         control={control}
         render={({ field }) => (
-          <input
-            id={name}
-            type={type}
-            {...field}
-            {...inputProps}
-            className={`input__field ${error ? "input__field--invalid" : ""}`}
-            aria-invalid={!!error}
-            aria-describedby={error ? errorId : undefined}
-          />
+          <>
+            {prefix ? (
+              <div className="input__prefix-wrapper">
+                <span className="input__prefix">{prefix}</span>
+                <input
+                  id={name}
+                  type={type}
+                  {...field}
+                  {...inputProps}
+                  maxLength={maxLength}
+                  className={`input__field input__field--with-prefix ${error ? "input__field--invalid" : ""}`}
+                  aria-invalid={!!error}
+                  aria-describedby={error ? errorId : undefined}
+                />
+              </div>
+            ) : (
+              <input
+                id={name}
+                type={type}
+                {...field}
+                {...inputProps}
+                maxLength={maxLength}
+                className={`input__field ${error ? "input__field--invalid" : ""}`}
+                aria-invalid={!!error}
+                aria-describedby={error ? errorId : undefined}
+              />
+            )}
+            <div className="input__footer">
+              <div className="input__error" id={errorId} role="alert" aria-live="assertive">
+                {error ? error.message : "\u00A0"}
+              </div>
+              {maxLength && (
+                <span className={`input__counter${
+                  (field.value?.length || 0) >= maxLength ? " input__counter--at-limit" :
+                  (field.value?.length || 0) >= maxLength * 0.85 ? " input__counter--near-limit" : ""
+                }`}>
+                  {field.value?.length || 0}/{maxLength}
+                </span>
+              )}
+            </div>
+          </>
         )}
       />
-      <div
-        className="input__error"
-        id={errorId}
-        role="alert"
-        aria-live="assertive"
-      >
-        {error ? error.message : "\u00A0"}
-      </div>
     </div>
   );
 };
@@ -51,6 +77,7 @@ export const TextAreaForm = ({
   error,
   type = "text",
   required = false,
+  maxLength,
 }) => {
   const errorId = `${name}-error`;
 
@@ -63,24 +90,32 @@ export const TextAreaForm = ({
         name={name}
         control={control}
         render={({ field }) => (
-          <textarea
-            id={name}
-            type={type}
-            {...field}
-            className={`input__field ${error ? "input__field--invalid" : ""}`}
-            aria-invalid={!!error}
-            aria-describedby={error ? errorId : undefined}
-          />
+          <>
+            <textarea
+              id={name}
+              type={type}
+              {...field}
+              maxLength={maxLength}
+              className={`input__field ${error ? "input__field--invalid" : ""}`}
+              aria-invalid={!!error}
+              aria-describedby={error ? errorId : undefined}
+            />
+            <div className="input__footer">
+              <div className="input__error" id={errorId} role="alert" aria-live="assertive">
+                {error ? error.message : "\u00A0"}
+              </div>
+              {maxLength && (
+                <span className={`input__counter${
+                  (field.value?.length || 0) >= maxLength ? " input__counter--at-limit" :
+                  (field.value?.length || 0) >= maxLength * 0.85 ? " input__counter--near-limit" : ""
+                }`}>
+                  {field.value?.length || 0}/{maxLength}
+                </span>
+              )}
+            </div>
+          </>
         )}
       />
-      <div
-        className="input__error"
-        id={errorId}
-        role="alert"
-        aria-live="assertive"
-      >
-        {error ? error.message : "\u00A0"}
-      </div>
     </div>
   );
 };

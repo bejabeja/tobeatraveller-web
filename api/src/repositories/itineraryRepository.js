@@ -117,7 +117,7 @@ export class ItineraryRepository {
   }
 
   async findLastByUserId(userId) {
-    const query = `SELECT * FROM itineraries WHERE user_id = $1 ORDER BY created_at DESC LIMIT 1`;
+    const query = `SELECT * FROM itineraries WHERE user_id = $1 AND is_public = true ORDER BY created_at DESC LIMIT 1`;
     const result = await client.query(query, [userId]);
     return result.rows.length ? Itinerary.fromDb(result.rows[0]) : null;
   }

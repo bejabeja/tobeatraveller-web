@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { InputForm } from "../../../components/form/InputForm";
 
 const DatesForm = ({ control, errors, watch, setValue }) => {
@@ -11,6 +11,12 @@ const DatesForm = ({ control, errors, watch, setValue }) => {
     }
   }, [startDateWatch, endDateWatch, setValue]);
 
+  const tripDays = useMemo(() => {
+    if (!startDateWatch || !endDateWatch) return 1;
+    const diff = Math.round((new Date(endDateWatch) - new Date(startDateWatch)) / 86400000);
+    return Math.max(1, diff + 1);
+  }, [startDateWatch, endDateWatch]);
+
   return (
     <div className="form__dates">
       <h2 className="form__subtitle">Dates</h2>
@@ -22,7 +28,7 @@ const DatesForm = ({ control, errors, watch, setValue }) => {
           control={control}
           error={errors.startDate}
           required
-        ></InputForm>
+        />
         <InputForm
           name="endDate"
           label="End Date"
@@ -31,8 +37,11 @@ const DatesForm = ({ control, errors, watch, setValue }) => {
           error={errors.endDate}
           inputProps={{ min: startDateWatch }}
           required
-        ></InputForm>
+        />
       </div>
+      <span className="form__trip-duration">
+        {tripDays} {tripDays === 1 ? "day" : "days"}
+      </span>
     </div>
   );
 };
