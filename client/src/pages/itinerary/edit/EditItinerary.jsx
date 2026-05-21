@@ -165,17 +165,16 @@ const EditItinerary = () => {
       <h1 className="form__title">Edit Itinerary</h1>
 
       <form className="form__container">
-        <ImageUpload
-          onUpload={(file) => setImageFile(file)}
-          imageUrl={watch("imageUrl")}
-        />
-
         <BasicInfoForm control={control} errors={errors} disabled={true} />
         <DatesForm
           control={control}
           errors={errors}
           watch={watch}
           setValue={setValue}
+        />
+        <ImageUpload
+          onUpload={(file) => setImageFile(file)}
+          imageUrl={watch("imageUrl")}
         />
         <PlacesForm
           control={control}

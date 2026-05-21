@@ -119,7 +119,6 @@ const CreateItinerary = () => {
       <h1 className="form__title">Create Itinerary</h1>
 
       <form className="form__container" onSubmit={handleSubmit(addItinerary)}>
-        <ImageUpload onUpload={(file) => setImageFile(file)} />
         <BasicInfoForm control={control} errors={errors} />
         <DatesForm
           control={control}
@@ -127,6 +126,7 @@ const CreateItinerary = () => {
           watch={watch}
           setValue={setValue}
         />
+        <ImageUpload onUpload={(file) => setImageFile(file)} />
         <PlacesForm
           control={control}
           errors={errors}
