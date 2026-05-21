@@ -1,19 +1,38 @@
+const GEOAPIFY_KEY = import.meta.env.VITE_GEOAPIFY_KEY;
+
 export const useGeocodeSearch = () => {
     const searchPlaces = async (query, cityContext = "") => {
         const fullQuery = cityContext.name ? `${query} ${cityContext.label}` : query;
+
+        const params = new URLSearchParams({
+            text: fullQuery,
+            apiKey: GEOAPIFY_KEY,
+            limit: 5,
+            lang: "en",
+        });
+
         const response = await fetch(
-            `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(fullQuery)}&format=json&accept-language=en&limit=5`
+            `https://api.geoapify.com/v1/geocode/autocomplete?${params}`
         );
 
+        if (!response.ok) {
+            console.error("Geoapify error:", response.status, await response.text());
+            return [];
+        }
+
         const data = await response.json();
-        return data.map((item) => ({
-            label: item.display_name,
-            coordinates: {
-                lat: parseFloat(item.lat),
-                lon: parseFloat(item.lon),
-            },
-            name: item.name
-        }));
+
+        return (data.features ?? []).map((item) => {
+            const p = item.properties;
+            return {
+                name: p.city ?? p.county ?? p.state ?? p.country ?? p.name,
+                label: p.formatted,
+                coordinates: {
+                    lat: p.lat,
+                    lon: p.lon,
+                },
+            };
+        });
     };
 
     return { searchPlaces };

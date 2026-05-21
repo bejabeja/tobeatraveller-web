@@ -103,8 +103,8 @@ describe('ItineraryRepository.buildFilters()', () => {
             budgetMax: 1500,
         });
 
-        // Default + category + destination + budgetMin + budgetMax = 5 conditions
-        expect(conditions).toHaveLength(5);
+        // Default (role + is_public) + category + destination + budgetMin + budgetMax = 6 conditions
+        expect(conditions).toHaveLength(6);
         expect(values).toContain('beach');
         expect(values).toContain('%Bali%');
         expect(values).toContain(200);
