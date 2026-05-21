@@ -4,13 +4,13 @@ import AutocompletePlaceInput from "../../../components/form/AutocompletePlaceIn
 import { TextAreaForm } from "../../../components/form/InputForm";
 import { placeCategories } from "../../../utils/constants/constants";
 
-const PlacesForm = ({ control, errors, fields, append, remove, destination }) => {
+const PlacesForm = ({ control, errors, fields, append, remove, replace, destination }) => {
   const days =
     fields.length > 0
       ? [...new Set(fields.map((f) => f.dayNumber ?? 1))].sort((a, b) => a - b)
       : [1];
 
-  const maxDay = Math.max(...days);
+  const maxDay = fields.length > 0 ? Math.max(...days) : 0;
 
   const handleAddPlace = (dayNumber) => {
     append({ description: "", infoPlace: {}, category: "other", dayNumber });
@@ -20,13 +20,14 @@ const PlacesForm = ({ control, errors, fields, append, remove, destination }) =>
     append({ description: "", infoPlace: {}, category: "other", dayNumber: maxDay + 1 });
   };
 
-  const handleRemoveDay = (day) => {
-    const indices = fields
-      .map((f, i) => ({ dayNumber: f.dayNumber ?? 1, i }))
-      .filter((f) => f.dayNumber === day)
-      .map((f) => f.i)
-      .reverse();
-    indices.forEach((i) => remove(i));
+  const handleRemoveDay = (dayToRemove) => {
+    const remaining = fields
+      .filter((f) => (f.dayNumber ?? 1) !== dayToRemove)
+      .map((f) => {
+        const dn = f.dayNumber ?? 1;
+        return { ...f, dayNumber: dn > dayToRemove ? dn - 1 : dn };
+      });
+    replace(remaining);
   };
 
   return (
@@ -75,11 +76,13 @@ const PlacesForm = ({ control, errors, fields, append, remove, destination }) =>
         );
       })}
 
-      <div className="form__cta">
-        <button type="button" className="btn btn__primary" onClick={handleAddDay}>
-          + Add Day {maxDay + 1}
-        </button>
-      </div>
+      {fields.length > 0 && (
+        <div className="form__cta">
+          <button type="button" className="btn btn__primary" onClick={handleAddDay}>
+            + Add Day {maxDay + 1}
+          </button>
+        </div>
+      )}
     </div>
   );
 };

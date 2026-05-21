@@ -60,7 +60,7 @@ const CreateItinerary = () => {
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, replace } = useFieldArray({
     control,
     name: "places",
   });
@@ -133,6 +133,7 @@ const CreateItinerary = () => {
           fields={fields}
           append={append}
           remove={remove}
+          replace={replace}
           destination={watch("destination")}
         />
         <BudgetForm control={control} errors={errors} />
