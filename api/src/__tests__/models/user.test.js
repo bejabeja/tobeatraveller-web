@@ -131,7 +131,7 @@ describe('User model', () => {
             const user = User.fromDb(baseRow);
             const dto = user.toSimpleDTO();
 
-            expect(Object.keys(dto)).toEqual(['id', 'username', 'avatarUrl']);
+            expect(Object.keys(dto)).toEqual(['id', 'username', 'avatarUrl', 'role']);
         });
     });
 

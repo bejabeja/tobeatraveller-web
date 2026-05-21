@@ -87,6 +87,17 @@ export const updateUser = async (data) => {
 }
 
 
+export const deleteMyAccount = async () => {
+    const response = await fetch(`${baseUrl}/me`, {
+        method: 'DELETE',
+        credentials: 'include',
+    });
+    if (!response.ok) {
+        await parseError(response, 'Failed to delete account');
+    }
+    return response.json();
+};
+
 export const getAllUsers = async ({ searchName = '', page = 1, limit = 9 } = {}) => {
     const params = new URLSearchParams();
     if (searchName) params.append("searchName", searchName);

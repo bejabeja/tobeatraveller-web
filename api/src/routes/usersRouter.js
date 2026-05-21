@@ -20,6 +20,7 @@ export const createUsersRouter = () => {
     router.get("/", authenticate, userController.getAllUsers.bind(userController));
     router.get("/me", authenticate, userController.getUserMe.bind(userController));
     router.put("/me", authenticate, upload.single("avatar"), userController.updateUserMe.bind(userController));
+    router.delete("/me", authenticate, userController.deleteUserMe.bind(userController));
     router.get("/featured", userController.getFeaturedUsers.bind(userController));
     router.get("/all", userController.getAllUsersFiltered.bind(userController));
     router.get("/check-username", userController.checkUsernameAvailable.bind(userController));

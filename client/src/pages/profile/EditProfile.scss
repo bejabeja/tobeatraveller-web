@@ -487,3 +487,54 @@
     }
   }
 }
+
+// ── Danger zone ────────────────────────────────────────────────────────────────
+.edit-profile__danger-zone {
+  border: 1px solid var(--error-color);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: color-mix(in srgb, var(--error-color) 4%, transparent);
+}
+
+.edit-profile__danger-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--error-color);
+
+  svg {
+    flex-shrink: 0;
+    width: auto;
+  }
+}
+
+.edit-profile__danger-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--error-color);
+  margin: 0;
+}
+
+.edit-profile__danger-desc {
+  font-size: 0.875rem;
+  color: var(--text-secondary, #6b7280);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.edit-profile__delete-input {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--error-color);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  outline: none;
+  margin-top: 0.25rem;
+
+  &:focus {
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--error-color) 25%, transparent);
+  }
+}

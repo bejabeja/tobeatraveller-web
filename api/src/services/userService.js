@@ -126,6 +126,13 @@ export class UserService {
         return users.map(user => user.toFeaturedDTO());
     }
 
+    async deleteUser(id) {
+        const user = await this.userRepository.getUserById(id);
+        if (!user) throw new NotFoundError("User not found");
+        await this.userRepository.deleteUser(id);
+        return user;
+    }
+
     async isUsernameAvailable(username) {
         if (!username || username.length < 2) return false;
         const existing = await this.userRepository.findByName(username);

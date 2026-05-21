@@ -98,6 +98,18 @@ export class UserController {
         }
     }
 
+    async deleteUserMe(req, res, next) {
+        const { id } = req.user;
+        try {
+            const user = await this.userService.deleteUser(id);
+            const publicId = extractCloudinaryPublicId(user.avatarUrl);
+            if (publicId) await this.cloudinaryService.deleteImage(publicId).catch(() => {});
+            res.status(200).json({ message: "Account deleted" });
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async getAllUsersFiltered(req, res, next) {
         try {
             const { searchName = '', page = 1, limit = 9 } = req.query;

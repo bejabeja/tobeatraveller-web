@@ -74,6 +74,10 @@ export class UserRepository {
         return User.fromDb(result.rows[0]);
     }
 
+    async deleteUser(id) {
+        await db.query("DELETE FROM users WHERE id = $1", [id]);
+    }
+
     async findByFilters({ searchName, offset = 0, limit = 9 }) {
         const searchTerm = `%${searchName}%`;
 

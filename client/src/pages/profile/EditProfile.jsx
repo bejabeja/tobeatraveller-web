@@ -2,14 +2,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import toast from "react-hot-toast";
-import { IoCameraOutline, IoTrashOutline, IoCheckmarkCircle, IoArrowBackOutline, IoLocationOutline } from "react-icons/io5";
+import { IoCameraOutline, IoTrashOutline, IoCheckmarkCircle, IoArrowBackOutline, IoLocationOutline, IoWarningOutline } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { InputForm, TextAreaForm } from "../../components/form/InputForm";
 import Modal from "../../components/modal/Modal";
 import { useAvatarUpload } from "../../hooks/useAvatarUpload";
-import { checkUsernameAvailable, updateUser } from "../../services/users";
-import { initAuthUser } from "../../store/auth/authActions";
+import { checkUsernameAvailable, deleteMyAccount, updateUser } from "../../services/users";
+import { initAuthUser, logoutUser } from "../../store/auth/authActions";
 import { setUserInfo } from "../../store/user/userInfoActions";
 import { selectMe } from "../../store/user/userInfoSelectors";
 import { generateAvatar } from "../../utils/constants/constants";
@@ -23,6 +23,9 @@ const EditProfile = () => {
 
   const [errorSubmit, setErrorSubmit] = useState(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmInput, setDeleteConfirmInput] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
   const [usernameStatus, setUsernameStatus] = useState(null);
   const { avatarFile, avatarPreview, removeAvatar, handleAvatarChange, handleRemoveAvatar, handleUndoRemove } = useAvatarUpload();
   const navigate = useNavigate();
@@ -102,6 +105,19 @@ const EditProfile = () => {
   const handleCancel = () => {
     if (isDirty || avatarFile || removeAvatar) setShowCancelModal(true);
     else navigate(-1);
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmInput !== userMe?.username) return;
+    setIsDeleting(true);
+    try {
+      await deleteMyAccount();
+      dispatch(logoutUser());
+      navigate("/");
+    } catch {
+      toast.error("Failed to delete account. Please try again.");
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -222,6 +238,23 @@ const EditProfile = () => {
         </div>
       </form>
 
+      <div className="edit-profile__danger-zone">
+        <div className="edit-profile__danger-header">
+          <IoWarningOutline size={18} aria-hidden="true" />
+          <h2 className="edit-profile__danger-title">Danger zone</h2>
+        </div>
+        <p className="edit-profile__danger-desc">
+          Once you delete your account, all your data — itineraries, likes, and followers — will be permanently removed. This action cannot be undone.
+        </p>
+        <button
+          type="button"
+          className="btn btn__danger-outline"
+          onClick={() => { setDeleteConfirmInput(""); setShowDeleteModal(true); }}
+        >
+          Delete my account
+        </button>
+      </div>
+
       <Modal
         isOpen={showCancelModal}
         onClose={() => setShowCancelModal(false)}
@@ -231,6 +264,42 @@ const EditProfile = () => {
         confirmText="Discard"
         type="warning"
       />
+
+      {showDeleteModal && (
+        <div className="modal__backdrop">
+          <div className="modal">
+            <h2>Delete account?</h2>
+            <p>
+              This will permanently delete your account and all your data.
+              Type <strong>{userMe?.username}</strong> to confirm.
+            </p>
+            <input
+              className="edit-profile__delete-input"
+              type="text"
+              placeholder={userMe?.username}
+              value={deleteConfirmInput}
+              onChange={(e) => setDeleteConfirmInput(e.target.value)}
+              autoFocus
+            />
+            <div className="modal__actions">
+              <button
+                className="btn btn__secondary"
+                onClick={() => setShowDeleteModal(false)}
+                disabled={isDeleting}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn__danger"
+                onClick={handleDeleteAccount}
+                disabled={deleteConfirmInput !== userMe?.username || isDeleting}
+              >
+                {isDeleting ? "Deleting…" : "Delete account"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };
