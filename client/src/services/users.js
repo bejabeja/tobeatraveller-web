@@ -73,13 +73,12 @@ export const getUserById = async (id) => {
 }
 
 export const updateUser = async (data) => {
+    const isFormData = data instanceof FormData;
     const response = await fetch(`${baseUrl}/me`, {
         method: 'PUT',
         credentials: 'include',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
+        ...(isFormData ? {} : { headers: { 'Content-Type': 'application/json' } }),
+        body: isFormData ? data : JSON.stringify(data),
     });
     if (!response.ok) {
         await parseError(response, 'Failed to update user');

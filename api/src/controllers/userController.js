@@ -1,8 +1,11 @@
 import { updateUserSchema } from "../utils/schemasValidation.js";
 
+const MAX_AVATAR_SIZE = 5 * 1024 * 1024; // 5 MB
+
 export class UserController {
-    constructor(userService) {
+    constructor(userService, cloudinaryService) {
         this.userService = userService;
+        this.cloudinaryService = cloudinaryService;
     }
 
     async getAllUsers(req, res, next) {
@@ -28,7 +31,17 @@ export class UserController {
         const { id } = req.user;
 
         try {
-            const validatedData = updateUserSchema.parse(req.body);
+            const rawBody = req.body.user ? JSON.parse(req.body.user) : req.body;
+            const validatedData = updateUserSchema.parse(rawBody);
+
+            if (req.file) {
+                if (req.file.size > MAX_AVATAR_SIZE) {
+                    return res.status(400).json({ message: "Image must be under 5 MB" });
+                }
+                const result = await this.cloudinaryService.uploadImageFromBuffer(req.file.buffer, "avatars");
+                validatedData.avatarUrl = result.secure_url;
+            }
+
             const updatedUser = await this.userService.updateUser(id, validatedData);
             res.status(200).json(updatedUser);
         } catch (error) {

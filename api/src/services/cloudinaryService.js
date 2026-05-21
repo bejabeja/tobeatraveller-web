@@ -7,10 +7,10 @@ cloudinary.config({
 });
 
 export class CloudinaryService {
-    async uploadImageFromBuffer(fileBuffer) {
+    async uploadImageFromBuffer(fileBuffer, folder = "itineraries") {
         return new Promise((resolve, reject) => {
             cloudinary.uploader.upload_stream(
-                { resource_type: "image", folder: "itineraries" },
+                { resource_type: "image", folder },
                 (error, result) => {
                     if (error) reject(error);
                     else resolve(result);

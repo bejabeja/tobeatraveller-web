@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import toast from "react-hot-toast";
 import { IoCameraOutline, IoArrowBackOutline, IoLocationOutline } from "react-icons/io5";
@@ -23,6 +23,8 @@ const EditProfile = () => {
   const [errorSubmit, setErrorSubmit] = useState(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [usernameStatus, setUsernameStatus] = useState(null);
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
   const navigate = useNavigate();
 
   const {
@@ -38,7 +40,6 @@ const EditProfile = () => {
       bio: "",
       location: "",
       about: "",
-      avatarUrl: "",
     },
   });
 
@@ -53,15 +54,18 @@ const EditProfile = () => {
   useEffect(() => {
     if (userMe) {
       reset({
-        username:  userMe.username  ?? "",
-        name:      userMe.name      ?? "",
-        bio:       userMe.bio       ?? "",
-        location:  userMe.location  ?? "",
-        about:     userMe.about     ?? "",
-        avatarUrl: userMe.avatarUrl ?? "",
+        username: userMe.username ?? "",
+        name:     userMe.name     ?? "",
+        bio:      userMe.bio      ?? "",
+        location: userMe.location ?? "",
+        about:    userMe.about    ?? "",
       });
     }
   }, [userMe, reset]);
+
+  useEffect(() => {
+    return () => { if (avatarPreview) URL.revokeObjectURL(avatarPreview); };
+  }, [avatarPreview]);
 
   useEffect(() => {
     if (!usernameValue || usernameValue.length < 2 || /\s/.test(usernameValue)) {
@@ -83,9 +87,18 @@ const EditProfile = () => {
 
   if (!userMe) return <EditProfileSkeleton />;
 
+  const handleAvatarChange = (file) => {
+    if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+    setAvatarFile(file);
+    setAvatarPreview(URL.createObjectURL(file));
+  };
+
   const saveUser = async (data) => {
     try {
-      await updateUser(data);
+      const formData = new FormData();
+      formData.append("user", JSON.stringify(data));
+      if (avatarFile) formData.append("avatar", avatarFile);
+      await updateUser(formData);
       dispatch(initAuthUser());
       dispatch(setUserInfo(id));
       toast.success("Profile updated!");
@@ -98,13 +111,12 @@ const EditProfile = () => {
   };
 
   const handleCancel = () => {
-    if (isDirty) setShowCancelModal(true);
+    if (isDirty || avatarFile) setShowCancelModal(true);
     else navigate(-1);
   };
 
   return (
     <section className="edit-profile section__container">
-      {/* Page header */}
       <div className="edit-profile__header">
         <button
           type="button"
@@ -119,11 +131,14 @@ const EditProfile = () => {
 
       <form onSubmit={handleSubmit(saveUser)} className="edit-profile__form">
 
-        {/* Identity card */}
         <div className="edit-profile__card">
           <div className="edit-profile__banner" />
           <div className="edit-profile__card-body">
-            <AvatarSection userMe={userMe} control={control} errors={errors} />
+            <AvatarSection
+              userMe={userMe}
+              avatarPreview={avatarPreview}
+              onAvatarChange={handleAvatarChange}
+            />
             <div className="edit-profile__fields">
               <InputForm
                 name="name"
@@ -170,7 +185,6 @@ const EditProfile = () => {
           </div>
         </div>
 
-        {/* Location & About card */}
         <div className="edit-profile__card edit-profile__card--padded">
           <div className="edit-profile__section-header">
             <IoLocationOutline aria-hidden="true" />
@@ -247,7 +261,6 @@ const EditProfileSkeleton = () => (
       <div className="edit-profile-skeleton__card-body">
         <div className="edit-profile-skeleton__avatar-row">
           <div className="skeleton edit-profile-skeleton__avatar" />
-          <div className="skeleton edit-profile-skeleton__avatar-url" />
         </div>
         <div className="edit-profile-skeleton__fields">
           <div className="skeleton edit-profile-skeleton__field" />
@@ -273,33 +286,51 @@ const EditProfileSkeleton = () => (
   </div>
 );
 
-const AvatarSection = ({ userMe, control, errors }) => {
-  const avatarUrl = useWatch({ control, name: "avatarUrl" });
+const AvatarSection = ({ userMe, avatarPreview, onAvatarChange }) => {
+  const inputRef = useRef(null);
+  const preview = avatarPreview || userMe?.avatarUrl || generateAvatar(userMe?.username);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be under 5 MB");
+      return;
+    }
+    onAvatarChange(file);
+  };
 
   return (
     <div className="edit-profile__avatar-section">
-      <div className="edit-profile__avatar-wrapper">
+      <div
+        className="edit-profile__avatar-wrapper"
+        onClick={() => inputRef.current?.click()}
+        role="button"
+        tabIndex={0}
+        aria-label="Change profile photo"
+        onKeyDown={(e) => e.key === "Enter" && inputRef.current?.click()}
+      >
         <img
           className="edit-profile__avatar"
-          src={avatarUrl || generateAvatar(userMe?.username)}
+          src={preview}
           alt="Avatar preview"
           onError={(e) => { e.currentTarget.src = generateAvatar(userMe?.username); }}
         />
-        <span className="edit-profile__avatar-badge" aria-hidden="true">
+        <div className="edit-profile__avatar-overlay" aria-hidden="true">
           <IoCameraOutline />
-        </span>
-      </div>
-      <div className="edit-profile__avatar-url">
-        <InputForm
-          name="avatarUrl"
-          label="Profile photo URL"
-          control={control}
-          type="url"
-          placeholder="https://example.com/photo.jpg"
-          error={errors.avatarUrl}
+        </div>
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          className="edit-profile__avatar-input"
+          onChange={handleFileChange}
+          tabIndex={-1}
         />
-        <p className="edit-profile__avatar-hint">Paste a direct link to an image</p>
       </div>
+      <p className={`edit-profile__avatar-hint ${avatarPreview ? "edit-profile__avatar-hint--selected" : ""}`}>
+        {avatarPreview ? "✓ New photo selected" : "Click to change"}
+      </p>
     </div>
   );
 };
