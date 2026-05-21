@@ -5,10 +5,13 @@ import AutocompleteObjectInput from "../../../components/form/AutocompleteObject
 import { InputForm, TextAreaForm } from "../../../components/form/InputForm";
 import { itineraryCategories } from "../../../utils/constants/constants";
 
-const BasicInfoForm = ({ control, errors, disabled = false }) => {
+const BasicInfoForm = ({ control, errors, disabled = false, isComplete }) => {
   return (
     <div className="form__basic-info">
-      <h2 className="form__subtitle">Basic Information</h2>
+      <h2 className="form__subtitle">
+        Basic Information
+        {isComplete && <span className="form__section-check">✓</span>}
+      </h2>
       <div className="form__row-group">
         <InputForm
           name="title"
@@ -19,14 +22,19 @@ const BasicInfoForm = ({ control, errors, disabled = false }) => {
           maxLength={50}
           required
         />
-        <AutocompleteObjectInput
-          name="destination"
-          label="Destination"
-          control={control}
-          error={errors.destination}
-          disabled={disabled}
-          required
-        />
+        <div>
+          <AutocompleteObjectInput
+            name="destination"
+            label="Destination"
+            control={control}
+            error={errors.destination}
+            disabled={disabled}
+            required
+          />
+          {disabled && (
+            <p className="form__field-note">Destination cannot be changed after creation.</p>
+          )}
+        </div>
       </div>
 
       <TextAreaForm

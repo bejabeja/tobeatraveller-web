@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { InputForm } from "../../../components/form/InputForm";
 
-const DatesForm = ({ control, errors, watch, setValue }) => {
+const DatesForm = ({ control, errors, watch, setValue, isComplete }) => {
   const startDateWatch = watch("startDate");
   const endDateWatch = watch("endDate");
 
@@ -19,7 +19,10 @@ const DatesForm = ({ control, errors, watch, setValue }) => {
 
   return (
     <div className="form__dates">
-      <h2 className="form__subtitle">Dates</h2>
+      <h2 className="form__subtitle">
+        Dates
+        {isComplete && <span className="form__section-check">✓</span>}
+      </h2>
       <div className="form__row-group">
         <InputForm
           name="startDate"

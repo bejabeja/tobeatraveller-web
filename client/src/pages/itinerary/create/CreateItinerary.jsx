@@ -33,6 +33,7 @@ const CreateItinerary = () => {
   const {
     control,
     handleSubmit,
+    setFocus,
     formState: { errors },
     watch,
     setValue,
@@ -44,27 +45,53 @@ const CreateItinerary = () => {
       destination: {
         name: "",
         label: "",
-        coordinates: {
-          lat: 0,
-          lon: 0,
-        },
+        coordinates: { lat: 0, lon: 0 },
       },
       description: "",
       startDate: today,
       endDate: today,
       places: [],
-      budget: "0",
+      budget: "",
       currency: "",
       numberOfTravellers: "1",
       category: "other",
-      isPublic: true,
+      isPublic: false, // #8 — default to private
     },
   });
+
+  const startDate = watch("startDate");
+  const endDate = watch("endDate");
+  const tripDays =
+    startDate && endDate
+      ? Math.max(1, Math.round((new Date(endDate) - new Date(startDate)) / 86400000) + 1)
+      : 1;
+
+  // #3 — scroll/focus to first field with a validation error
+  const onError = (errs) => {
+    const firstKey = Object.keys(errs)[0];
+    try {
+      setFocus(firstKey);
+    } catch {
+      document.querySelector(`[name="${firstKey}"]`)
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  };
 
   const { fields, append, remove, replace, move } = useFieldArray({
     control,
     name: "places",
   });
+
+  // #6 — section completion signals
+  const titleVal = watch("title");
+  const destVal = watch("destination");
+  const budgetVal = watch("budget");
+  const currencyVal = watch("currency");
+
+  const isBasicInfoComplete = (titleVal?.length ?? 0) >= 2 && !!destVal?.name;
+  const isDatesComplete = !!(startDate && endDate);
+  const isPlacesComplete = fields.length > 0 && fields.every((f) => !!f.infoPlace?.name);
+  const isBudgetComplete = !!(parseFloat(budgetVal) > 0 && currencyVal);
 
   const addItinerary = async (data) => {
     if (data.isPublic) {
@@ -78,6 +105,7 @@ const CreateItinerary = () => {
         return;
       }
     }
+
     const body = {
       userId: userMe.id,
       title: data.title,
@@ -125,20 +153,24 @@ const CreateItinerary = () => {
       navigate(`/profile/${userMe.id}`);
     } catch (error) {}
   };
-  
+
   return (
     <section className="create-itinerary section__container">
       <h1 className="form__title">Create Itinerary</h1>
 
-      <form className="form__container" onSubmit={handleSubmit(addItinerary)}>
-        <BasicInfoForm control={control} errors={errors} />
+      <form className="form__container" onSubmit={handleSubmit(addItinerary, onError)}>
+        <BasicInfoForm control={control} errors={errors} isComplete={isBasicInfoComplete} />
         <DatesForm
           control={control}
           errors={errors}
           watch={watch}
           setValue={setValue}
+          isComplete={isDatesComplete}
         />
-        <ImageUpload onUpload={(file) => setImageFile(file)} />
+        <ImageUpload
+          onUpload={(file) => setImageFile(file)}
+          isComplete={!!imageFile}
+        />
         <PlacesForm
           control={control}
           errors={errors}
@@ -151,16 +183,14 @@ const CreateItinerary = () => {
           days={days}
           setDays={setDays}
           isPublic={watch("isPublic")}
+          tripDays={tripDays}
+          isComplete={isPlacesComplete}
         />
-        <BudgetForm control={control} errors={errors} />
+        <BudgetForm control={control} errors={errors} isComplete={isBudgetComplete} />
         <TravellersForm control={control} errors={errors} />
         <VisibilityForm control={control} />
         <div className="form__cta">
-          <Link
-            to={`/my-itineraries`}
-            type="button"
-            className="btn btn__tertiary"
-          >
+          <Link to="/my-itineraries" type="button" className="btn btn__tertiary">
             Cancel
           </Link>
           <SubmitButton label="Create itinerary" />

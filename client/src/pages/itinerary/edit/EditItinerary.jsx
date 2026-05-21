@@ -75,6 +75,14 @@ const EditItinerary = () => {
     name: "places",
   });
 
+  // #2 — sync days/dates nudge (same as Create)
+  const startDate = watch("startDate");
+  const endDate = watch("endDate");
+  const tripDays =
+    startDate && endDate
+      ? Math.max(1, Math.round((new Date(endDate) - new Date(startDate)) / 86400000) + 1)
+      : 1;
+
   useEffect(() => {
     const fetchItineraryData = async () => {
       const response = await getItineraryById(id);
@@ -181,7 +189,7 @@ const EditItinerary = () => {
     <section className="create-itinerary section__container">
       <h1 className="form__title">Edit Itinerary</h1>
 
-      <form className="form__container">
+      <form className="form__container" onSubmit={(e) => e.preventDefault()}>
         <BasicInfoForm control={control} errors={errors} disabled={true} />
         <DatesForm
           control={control}
@@ -205,6 +213,7 @@ const EditItinerary = () => {
           days={days}
           setDays={setDays}
           isPublic={watch("isPublic")}
+          tripDays={tripDays}
         />
         <BudgetForm control={control} errors={errors} />
         <TravellersForm control={control} errors={errors} />
