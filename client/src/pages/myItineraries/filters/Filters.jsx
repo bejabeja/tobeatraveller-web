@@ -17,6 +17,15 @@ const categoryEmojis = {
   other: "🗺️",
 };
 
+const travelersOptions = [
+  { value: "solo",   label: "🧍 Solo" },
+  { value: "couple", label: "👫 Couple" },
+  { value: "group",  label: "👥 Group (3–5)" },
+  { value: "large",  label: "🏕️ Large (6+)" },
+];
+
+const currencyOptions = ["EUR", "USD", "GBP", "JPY", "CHF", "AUD"];
+
 const initialState = {
   category: "",
   budgetMin: "",
@@ -26,6 +35,8 @@ const initialState = {
   durationMax: "",
   startDateMin: "",
   startDateMax: "",
+  travelersCount: "",
+  currency: "",
 };
 
 const Filters = ({ onChange, defaultValues = {}, hideDates = false }) => {
@@ -38,10 +49,7 @@ const Filters = ({ onChange, defaultValues = {}, hideDates = false }) => {
     const handler = setTimeout(() => {
       setDebouncedFilters(filters);
     }, 400);
-
-    return () => {
-      clearTimeout(handler);
-    };
+    return () => clearTimeout(handler);
   }, [filters]);
 
   useEffect(() => {
@@ -53,15 +61,18 @@ const Filters = ({ onChange, defaultValues = {}, hideDates = false }) => {
     setFilters((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleToggle = (field, value) => {
+    setFilters((prev) => ({
+      ...prev,
+      [field]: prev[field] === value ? "" : value,
+    }));
+  };
+
   const handleCategorySelect = (value) => {
-    if (value === "") {
-      setFilters((prev) => ({ ...prev, category: "" }));
-    } else {
-      setFilters((prev) => ({
-        ...prev,
-        category: prev.category === value ? "" : value,
-      }));
-    }
+    setFilters((prev) => ({
+      ...prev,
+      category: value === "" ? "" : prev.category === value ? "" : value,
+    }));
   };
 
   const resetFilters = () => {
@@ -102,9 +113,7 @@ const Filters = ({ onChange, defaultValues = {}, hideDates = false }) => {
           <button
             type="button"
             key={cat.value}
-            className={`filter-chip ${
-              filters.category === cat.value ? "filter-chip--active" : ""
-            }`}
+            className={`filter-chip ${filters.category === cat.value ? "filter-chip--active" : ""}`}
             onClick={() => handleCategorySelect(cat.value)}
           >
             {categoryEmojis[cat.value]} {cat.label}
@@ -187,6 +196,38 @@ const Filters = ({ onChange, defaultValues = {}, hideDates = false }) => {
                 </div>
               </div>
             )}
+
+            <div className="filter-group filter-group--full">
+              <label>Travelers</label>
+              <div className="filter-chips-row">
+                {travelersOptions.map((opt) => (
+                  <button
+                    type="button"
+                    key={opt.value}
+                    className={`filter-chip ${filters.travelersCount === opt.value ? "filter-chip--active" : ""}`}
+                    onClick={() => handleToggle("travelersCount", opt.value)}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="filter-group filter-group--full">
+              <label>Currency</label>
+              <div className="filter-chips-row">
+                {currencyOptions.map((cur) => (
+                  <button
+                    type="button"
+                    key={cur}
+                    className={`filter-chip filter-chip--currency ${filters.currency === cur ? "filter-chip--active" : ""}`}
+                    onClick={() => handleToggle("currency", cur)}
+                  >
+                    {cur}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           <button className="btn btn__reset" onClick={resetFilters}>

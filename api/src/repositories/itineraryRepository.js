@@ -189,6 +189,33 @@ export class ItineraryRepository {
       values.push(filters.startDateMax);
     }
 
+    if (filters.travelersCount) {
+      switch (filters.travelersCount) {
+        case 'solo':
+          conditions.push(`number_of_people = $${i++}`);
+          values.push(1);
+          break;
+        case 'couple':
+          conditions.push(`number_of_people = $${i++}`);
+          values.push(2);
+          break;
+        case 'group':
+          conditions.push(`number_of_people BETWEEN $${i} AND $${i + 1}`);
+          i += 2;
+          values.push(3, 5);
+          break;
+        case 'large':
+          conditions.push(`number_of_people >= $${i++}`);
+          values.push(6);
+          break;
+      }
+    }
+
+    if (filters.currency) {
+      conditions.push(`UPPER(currency) = UPPER($${i++})`);
+      values.push(filters.currency);
+    }
+
     return { conditions, values, nextIndex: i };
   }
 
@@ -197,12 +224,18 @@ export class ItineraryRepository {
     const whereClause = `WHERE ${conditions.join(" AND ")}`;
     const offset = (filters.page - 1) * filters.limit;
 
+    const orderBy = {
+      liked:     'ORDER BY likes_count DESC',
+      commented: 'ORDER BY comments_count DESC',
+      recent:    'ORDER BY created_at DESC',
+    }[filters.sortBy] ?? 'ORDER BY created_at DESC';
+
     const query = `
             SELECT itineraries.*
             FROM itineraries
             JOIN users ON itineraries.user_id = users.id
             ${whereClause}
-            ORDER BY start_date DESC
+            ${orderBy}
             LIMIT $${nextIndex} OFFSET $${nextIndex + 1}
         `;
 

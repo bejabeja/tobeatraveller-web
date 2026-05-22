@@ -104,6 +104,16 @@
     letter-spacing: 0.02em;
     text-transform: uppercase;
   }
+
+  &--full {
+    flex-basis: 100%;
+  }
+}
+
+.filter-chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .filter-pair {
@@ -199,6 +209,23 @@
       border-color: #005f92;
       color: white;
     }
+  }
+
+  &--sort {
+    font-size: 0.78rem;
+    padding: 0.3rem 0.75rem;
+    border-style: dashed;
+
+    &.filter-chip--active {
+      border-style: solid;
+    }
+  }
+
+  &--currency {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    padding: 0.3rem 0.65rem;
   }
 }
 

@@ -24,6 +24,12 @@ import {
 
 import "./Explore.scss";
 
+const SORT_OPTIONS = [
+  { value: "recent",    label: "Most recent" },
+  { value: "liked",     label: "❤️ Most liked" },
+  { value: "commented", label: "💬 Most discussed" },
+];
+
 const Explore = () => {
   const dispatch = useDispatch();
   const loadMoreRef = useRef(null);
@@ -40,15 +46,16 @@ const Explore = () => {
   const [filters, setFilters] = useState(
     initialDestination ? { destination: initialDestination } : {}
   );
+  const [sortBy, setSortBy] = useState("recent");
 
   useEffect(() => {
-    dispatch(initExploreItineraries({ page: 1, ...filters }));
-  }, [dispatch, filters]);
+    dispatch(initExploreItineraries({ page: 1, ...filters, sortBy }));
+  }, [dispatch, filters, sortBy]);
 
   const loadMore = () => {
     const nextPage = page + 1;
     dispatch(setExplorePagination(nextPage));
-    dispatch(loadMoreExploreItineraries({ page: nextPage, ...filters })).then(
+    dispatch(loadMoreExploreItineraries({ page: nextPage, ...filters, sortBy })).then(
       () => {
         if (loadMoreRef.current) {
           loadMoreRef.current.scrollIntoView({
@@ -61,7 +68,7 @@ const Explore = () => {
   };
 
   const handleRetry = () => {
-    dispatch(initExploreItineraries({ page: 1, ...filters }));
+    dispatch(initExploreItineraries({ page: 1, ...filters, sortBy }));
   };
 
   const hasMore = page < totalPages;
@@ -84,13 +91,26 @@ const Explore = () => {
 
       <div className="explore__results">
         <div className="explore__results-header">
-          <h2 className="explore__results-title">Itineraries</h2>
+          <div className="explore__results-header-top">
+            <h2 className="explore__results-title">Itineraries</h2>
+            <div className="explore__sort">
+              {SORT_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  className={`explore__sort-chip ${sortBy === opt.value ? "explore__sort-chip--active" : ""}`}
+                  onClick={() => setSortBy(opt.value)}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {(locationLabel || filters.category) && (
             <div className="explore__active-filters">
               {locationLabel && (
-                <span className="explore__filter-tag">
-                  📍 {locationLabel}
-                </span>
+                <span className="explore__filter-tag">📍 {locationLabel}</span>
               )}
               {filters.category && (
                 <span className="explore__filter-tag explore__filter-tag--category">

@@ -5,10 +5,11 @@ export class ItinerariesController {
 
     async filterItinerariesBy(req, res, next) {
         try {
-            const { category = 'all', destination = '', page = 1, limit = 10, ...restFilters } = req.query;
+            const { category = 'all', destination = '', page = 1, limit = 10, sortBy = 'recent', ...restFilters } = req.query;
             const filters = {
                 category,
                 destination,
+                sortBy,
                 page: parseInt(page),
                 limit: parseInt(limit),
                 ...restFilters
