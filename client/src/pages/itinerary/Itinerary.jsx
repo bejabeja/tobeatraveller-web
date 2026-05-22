@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   FaBookmark,
   FaCity,
@@ -7,7 +7,7 @@ import {
   FaTrashAlt,
 } from "react-icons/fa";
 import { GoPeople } from "react-icons/go";
-import { MdOutlineAttachMoney, MdOutlineCalendarMonth, MdOutlineLocationOn } from "react-icons/md";
+import { MdArrowBack, MdOutlineAttachMoney, MdOutlineCalendarMonth, MdOutlineLocationOn, MdOutlineShare } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { getCategoryIcon } from "../../assets/icons.js";
@@ -47,6 +47,17 @@ const Itinerary = () => {
   const [userItinerary, setUserItinerary] = useState(null);
   const [isFavorite, setIsFavorite] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [hoveredPlaceIndex, setHoveredPlaceIndex] = useState(null);
+  const [selectedPlaceIndex, setSelectedPlaceIndex] = useState(null);
+  const mapPanToRef = useRef(null);
+
+  const handlePlaceClick = useCallback((index) => {
+    setSelectedPlaceIndex((prev) => (prev === index ? null : index));
+    mapPanToRef.current?.(index);
+    if (window.innerWidth < 768) {
+      document.querySelector(".map")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -106,14 +117,14 @@ const Itinerary = () => {
               </div>
             )}
 
-            <Stats itinerary={itinerary} />
-            <Places itinerary={itinerary} />
+            <Stats itinerary={itinerary} hasDescription={!!itinerary.description} />
+            <Places itinerary={itinerary} onHoverPlace={setHoveredPlaceIndex} onPlaceClick={handlePlaceClick} selectedPlaceIndex={selectedPlaceIndex} />
           </div>
 
           <aside className="itinerary__sidebar">
             <div className="itinerary__sidebar-sticky">
               <h2 className="itinerary__section-title">Trip area</h2>
-              <Map location={itinerary?.location} />
+              <Map location={itinerary?.location} places={itinerary?.places} hoveredPlaceIndex={hoveredPlaceIndex ?? selectedPlaceIndex} panToRef={mapPanToRef} />
             </div>
           </aside>
         </div>
@@ -161,6 +172,16 @@ const Hero = ({
   isMyItinerary,
   setIsModalOpen,
 }) => {
+  const handleShare = async () => {
+    const url = window.location.href;
+    if (navigator.share) {
+      try { await navigator.share({ title: itinerary.title, url }); } catch {}
+    } else {
+      await navigator.clipboard.writeText(url);
+      toast.success("Link copied!");
+    }
+  };
+
   const handleSave = async () => {
     if (!isAuthenticated) { navigate("/login"); return; }
     try {
@@ -184,6 +205,12 @@ const Hero = ({
     >
       <div className="itinerary__hero-overlay" />
 
+      <div className="itinerary__hero-back">
+        <button className="action-icon-btn" onClick={() => navigate(-1)} title="Go back">
+          <MdArrowBack />
+        </button>
+      </div>
+
       <div className="itinerary__hero-content">
         {itinerary.category !== "other" && (
           <span className="itinerary__badge">{itinerary.category}</span>
@@ -191,7 +218,13 @@ const Hero = ({
         <h1 className="itinerary__hero-title">{itinerary.title}</h1>
         <div className="itinerary__hero-meta">
           <Link to={`/profile/${userItinerary?.id}`} className="itinerary__hero-author">
-            <img src={userItinerary?.avatarUrl} alt={userItinerary?.username} className="itinerary__hero-avatar" />
+            {userItinerary?.avatarUrl ? (
+              <img src={userItinerary.avatarUrl} alt={userItinerary.username} className="itinerary__hero-avatar" />
+            ) : (
+              <span className="itinerary__hero-avatar itinerary__hero-avatar--fallback">
+                {userItinerary?.username?.charAt(0).toUpperCase()}
+              </span>
+            )}
             <span>@{userItinerary?.username}</span>
           </Link>
           {itinerary.tripDates && (
@@ -204,6 +237,9 @@ const Hero = ({
       </div>
 
       <div className="itinerary__hero-actions">
+        <button className="action-icon-btn" onClick={handleShare} title="Share">
+          <MdOutlineShare />
+        </button>
         {isMyItinerary ? (
           <>
             <Link to={`/itinerary/edit/${itinerary.id}`} className="action-icon-btn" title="Edit">
@@ -239,10 +275,15 @@ const formatBudget = (budget) => {
     : n.toLocaleString(undefined, { maximumFractionDigits: 2 });
 };
 
-const Stats = ({ itinerary }) => {
+const Stats = ({ itinerary, hasDescription }) => {
   const currencySymbol = getCurrencySymbol(itinerary.currency);
+  const budget = parseFloat(itinerary.budget);
+  const perPerson =
+    itinerary.numberOfPeople > 1 && !isNaN(budget)
+      ? formatBudget(budget / itinerary.numberOfPeople)
+      : null;
   return (
-    <div className="itinerary__stats">
+    <div className={`itinerary__stats${hasDescription ? " itinerary__stats--separated" : ""}`}>
       {itinerary.location?.name && (
         <div className="itinerary__stat">
           <div className="itinerary__stat-icon"><MdOutlineLocationOn /></div>
@@ -257,10 +298,17 @@ const Stats = ({ itinerary }) => {
       </div>
       <div className="itinerary__stat">
         <div className="itinerary__stat-icon">
-          {currencySymbol ? <span style={{ fontWeight: 700 }}>{currencySymbol}</span> : <MdOutlineAttachMoney />}
+          {currencySymbol ? <span style={{ fontWeight: 700, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>{currencySymbol}</span> : <MdOutlineAttachMoney />}
         </div>
         <span className="itinerary__stat-label">Budget</span>
-        <span className="itinerary__stat-value">{formatBudget(itinerary.budget)} {itinerary.currency}</span>
+        <span className="itinerary__stat-value">
+          {formatBudget(itinerary.budget)}{currencySymbol ? "" : ` ${itinerary.currency}`}
+          {perPerson && (
+            <span className="itinerary__stat-subvalue">
+              {` · ${currencySymbol || ""}${perPerson}/pp`}
+            </span>
+          )}
+        </span>
       </div>
       <div className="itinerary__stat">
         <div className="itinerary__stat-icon"><GoPeople /></div>
@@ -271,26 +319,39 @@ const Stats = ({ itinerary }) => {
   );
 };
 
-const Places = ({ itinerary }) => {
+const Places = ({ itinerary, onHoverPlace, onPlaceClick, selectedPlaceIndex }) => {
   if (!itinerary.places?.length) return null;
 
   return (
     <div className="itinerary__places">
-      <h2 className="itinerary__section-title">Places</h2>
+      <h2 className="itinerary__section-title">Places ({itinerary.places.length})</h2>
       <div className="itinerary__places-list">
         {itinerary.places.map((place, index) => (
-          <Place key={index} place={place} index={index} />
+          <Place
+            key={index}
+            place={place}
+            index={index}
+            isSelected={selectedPlaceIndex === index}
+            onMouseEnter={() => onHoverPlace(index)}
+            onMouseLeave={() => onHoverPlace(null)}
+            onClick={() => onPlaceClick(index)}
+          />
         ))}
       </div>
     </div>
   );
 };
 
-const Place = ({ place, index }) => {
+const Place = ({ place, index, onMouseEnter, onMouseLeave, onClick, isSelected }) => {
   const Icon = getCategoryIcon(place.category) || FaCity;
   const hasBody = place.description || place.address;
   return (
-    <div className={`place${hasBody ? "" : " place--compact"}`}>
+    <div
+      className={`place${hasBody ? "" : " place--compact"}${isSelected ? " place--selected" : ""}`}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      onClick={onClick}
+    >
       <div className="place__header">
         <span className="place__number">{index + 1}</span>
         <Icon className="place__icon" />
@@ -300,7 +361,7 @@ const Place = ({ place, index }) => {
         <p className="place__description">{place.description}</p>
       )}
       {place.address && (
-        <p className="place__address"><strong>Address:</strong> {place.address}</p>
+        <p className="place__address">{place.address}</p>
       )}
     </div>
   );

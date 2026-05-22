@@ -1,40 +1,120 @@
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import React from "react";
-import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
+import { useCallback, useEffect, useRef } from "react";
+import { MdOutlineFilterCenterFocus } from "react-icons/md";
+import { MapContainer, Marker, Polyline, Popup, TileLayer, useMap } from "react-leaflet";
 import "./Map.scss";
 
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-});
+const createNumberedIcon = (number, highlighted = false) =>
+  L.divIcon({
+    className: "",
+    html: highlighted
+      ? `<div style="width:32px;height:32px;background:#fff;color:#0077b6;border:2.5px solid #0077b6;border-radius:50%;box-shadow:0 0 0 4px rgba(0,119,182,0.2),0 2px 8px rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;font-family:inherit;line-height:1;transition:all 0.15s;">${number}</div>`
+      : `<div style="width:26px;height:26px;background:#0077b6;color:#fff;border:2.5px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:inherit;line-height:1;">${number}</div>`,
+    iconSize: highlighted ? [32, 32] : [26, 26],
+    iconAnchor: highlighted ? [16, 16] : [13, 13],
+    popupAnchor: [0, -16],
+  });
 
-const Map = ({ location }) => {
-  const coordinates = [location.lat, location.lon];
+const createLocationIcon = () =>
+  L.divIcon({
+    className: "",
+    html: `<div style="font-size:1.4rem;line-height:1;">📍</div>`,
+    iconSize: [28, 28],
+    iconAnchor: [14, 28],
+    popupAnchor: [0, -28],
+  });
 
-  if (!coordinates) {
+const MapController = ({ coords, resetRef, panToRef }) => {
+  const map = useMap();
+
+  const reset = useCallback(() => {
+    if (coords.length === 0) return;
+    if (coords.length === 1) {
+      map.setView(coords[0], 13, { animate: true });
+    } else {
+      map.fitBounds(L.latLngBounds(coords), { padding: [36, 36], maxZoom: 14, animate: true });
+    }
+  }, [coords, map]);
+
+  useEffect(() => { resetRef.current = reset; }, [reset, resetRef]);
+  useEffect(() => { reset(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!panToRef) return;
+    panToRef.current = (index) => {
+      if (index === null || index === undefined || !coords[index]) return;
+      map.setView(coords[index], Math.max(map.getZoom(), 14), { animate: true });
+    };
+  }, [coords, map, panToRef]);
+
+  return null;
+};
+
+const Map = ({ location, places = [], hoveredPlaceIndex = null, panToRef = null }) => {
+  const resetRef = useRef(null);
+
+  if (!location?.lat || !location?.lon) {
     return <p className="map__error">No map available</p>;
   }
+
+  const center = [parseFloat(location.lat), parseFloat(location.lon)];
+
+  const placeMarkers = places
+    .filter((p) => p.latitude && p.longitude)
+    .map((p, i) => ({
+      lat: parseFloat(p.latitude),
+      lng: parseFloat(p.longitude),
+      name: p.name,
+      number: i + 1,
+    }));
+
+  const fitCoords =
+    placeMarkers.length > 0 ? placeMarkers.map((m) => [m.lat, m.lng]) : [center];
+
+  const routeCoords = placeMarkers.map((m) => [m.lat, m.lng]);
+
   return (
     <div className="map">
-      <MapContainer
-        center={coordinates}
-        zoom={13}
-        // scrollWheelZoom={false}
-        // zoomControl={false}
-        className="map__container"
-      >
+      <MapContainer center={center} zoom={12} className="map__container">
         <TileLayer
-          attribution='&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
+          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
         />
-        <Marker position={coordinates}>
-          <Popup>Trip location</Popup>
-        </Marker>
+
+        {routeCoords.length > 1 && (
+          <Polyline
+            positions={routeCoords}
+            pathOptions={{ color: "#0077b6", weight: 1.5, opacity: 0.5 }}
+          />
+        )}
+
+        {placeMarkers.length > 0 ? (
+          placeMarkers.map((m) => (
+            <Marker
+              key={m.number}
+              position={[m.lat, m.lng]}
+              icon={createNumberedIcon(m.number, hoveredPlaceIndex === m.number - 1)}
+            >
+              <Popup><strong>{m.number}. {m.name}</strong></Popup>
+            </Marker>
+          ))
+        ) : (
+          <Marker position={center} icon={createLocationIcon()}>
+            <Popup>{location.name}</Popup>
+          </Marker>
+        )}
+
+        <MapController coords={fitCoords} resetRef={resetRef} panToRef={panToRef} />
       </MapContainer>
+
+      <button
+        className="map__reset-btn"
+        onClick={() => resetRef.current?.()}
+        title="Reset view"
+      >
+        <MdOutlineFilterCenterFocus />
+      </button>
     </div>
   );
 };

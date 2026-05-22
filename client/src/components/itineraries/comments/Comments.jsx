@@ -58,7 +58,7 @@ const Comments = ({ itineraryId, isAuthenticated }) => {
 
   return (
     <div className="comments">
-      <h1 className="comments__title">Comments</h1>
+      <h2 className="comments__title">Comments</h2>
 
       <div className="comments__list">
         {comments.length > 0 ? (
@@ -88,30 +88,52 @@ const Comments = ({ itineraryId, isAuthenticated }) => {
               </div>
             </div>
           ))
-        ) : (
-          <p>No comments yet.</p>
-        )}
+        ) : isAuthenticated ? (
+          <p className="comments__empty">Be the first to leave a comment!</p>
+        ) : null}
       </div>
 
       {isAuthenticated ? (
         <div className="comments__form">
-          <textarea
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            placeholder="Add a comment..."
-          />
-          <button
-            onClick={handleAddComment}
-            disabled={loading}
-            className="btn btn__primary"
-          >
-            {loading ? "Posting..." : "Post Comment"}
-          </button>
+          <div className="comments__form-avatar">
+            {userMe?.avatarUrl ? (
+              <img src={userMe.avatarUrl} alt={userMe.username} />
+            ) : (
+              <span>{userMe?.username?.charAt(0).toUpperCase()}</span>
+            )}
+          </div>
+          <div className="comments__form-input">
+            <textarea
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="Add a comment..."
+              rows={1}
+              enterKeyHint="send"
+              onInput={(e) => {
+                e.target.style.height = "auto";
+                e.target.style.height = e.target.scrollHeight + "px";
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleAddComment();
+                }
+              }}
+            />
+            {newComment.trim() && (
+              <div className="comments__form-actions">
+                <button className="btn__link" onClick={() => setNewComment("")}>Cancel</button>
+                <button onClick={handleAddComment} disabled={loading} className="btn btn__primary btn--sm">
+                  {loading ? "Posting..." : "Post"}
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       ) : (
         <div className="comments__login-message">
           <p>
-            You must <Link to="/login">log in</Link> to post a comment.
+            <Link to="/login">Log in</Link> to share your thoughts on this trip.
           </p>
         </div>
       )}

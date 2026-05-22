@@ -529,7 +529,7 @@ $avatar-overlap: 44px;
 
       // Prevent the 1024px rule from forcing 3 narrow columns
       .itineraries-section__grid {
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
       }
     }
   }
