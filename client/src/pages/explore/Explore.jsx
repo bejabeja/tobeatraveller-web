@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { IoSearchOutline } from "react-icons/io5";
 
 import LoadingButton from "../../components/LoadingButton.jsx";
 import ItinerariesSection from "../../components/itineraries/ItinerariesSection.jsx";
@@ -35,10 +36,10 @@ const Explore = () => {
   const page = useSelector(selectExplorePage);
 
   const [searchParams] = useSearchParams();
-  const [filters, setFilters] = useState(() => {
-    const location = searchParams.get("location");
-    return location ? { locationName: location } : {};
-  });
+  const initialDestination = searchParams.get("location") ?? "";
+  const [filters, setFilters] = useState(
+    initialDestination ? { destination: initialDestination } : {}
+  );
 
   useEffect(() => {
     dispatch(initExploreItineraries({ page: 1, ...filters }));
@@ -60,32 +61,45 @@ const Explore = () => {
   };
 
   const handleRetry = () => {
-    dispatch(initExploreItineraries({ page: 1, filters }));
+    dispatch(initExploreItineraries({ page: 1, ...filters }));
   };
 
   const hasMore = page < totalPages;
+  const locationLabel = filters.destination;
 
   return (
     <section className="explore section__container">
-      <Filters onChange={setFilters} />
+      <div className="explore__hero">
+        <h1 className="explore__hero-title">Explore the world</h1>
+        <p className="explore__hero-subtitle">
+          Discover travel itineraries shared by explorers around the globe
+        </p>
+      </div>
+
+      <Filters
+        onChange={setFilters}
+        defaultValues={initialDestination ? { destination: initialDestination } : {}}
+        hideDates
+      />
 
       <div className="explore__results">
-        <p>
-          Showing itineraries
-          {filters.category && (
-            <>
-              {" "}
-              for <strong>{filters.category}</strong>
-            </>
+        <div className="explore__results-header">
+          <h2 className="explore__results-title">Itineraries</h2>
+          {(locationLabel || filters.category) && (
+            <div className="explore__active-filters">
+              {locationLabel && (
+                <span className="explore__filter-tag">
+                  📍 {locationLabel}
+                </span>
+              )}
+              {filters.category && (
+                <span className="explore__filter-tag explore__filter-tag--category">
+                  {filters.category}
+                </span>
+              )}
+            </div>
           )}
-          {filters.locationName && (
-            <>
-              {" "}
-              in <strong>{filters.locationName}</strong>
-            </>
-          )}
-          {!filters.category && !filters.locationName && <> anywhere</>}
-        </p>
+        </div>
 
         {error ? (
           <div className="explore__error">
@@ -98,8 +112,13 @@ const Explore = () => {
           </div>
         ) : itineraries.length === 0 && !loading ? (
           <div className="explore__no-results">
-            <p>No itineraries found for these filters.</p>
-            <p>Try adjusting your search criteria.</p>
+            <div className="explore__no-results-icon">
+              <IoSearchOutline />
+            </div>
+            <p className="explore__no-results-title">No itineraries found</p>
+            <p className="explore__no-results-sub">
+              Try adjusting your search or filters
+            </p>
           </div>
         ) : (
           <>

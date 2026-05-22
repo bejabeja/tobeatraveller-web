@@ -15,7 +15,7 @@
   background-color: #f9f9f9;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.25rem;
   padding: 1.5rem;
   margin-bottom: 2rem;
   border: 1px solid #e2e8f0;
@@ -29,6 +29,34 @@
     align-items: stretch;
   }
 
+  &__search {
+    position: relative;
+    flex: 1;
+    width: auto;
+    min-width: 0;
+
+    &-icon {
+      position: absolute;
+      left: 0.875rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-secondary-color);
+      font-size: 1rem;
+      pointer-events: none;
+      width: auto;
+    }
+
+    input {
+      width: 100%;
+    }
+  }
+
+  &__categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
   &__more {
     display: flex;
     flex-direction: column;
@@ -38,20 +66,29 @@
 
   input,
   select {
-    margin-top: 0.5rem;
-    padding: 0.6rem 1rem;
-    border: 1px solid var(--secondary-color, #d1d5db);
-    border-radius: 8px;
-    font-size: 1rem;
+    padding: 0.65rem 1rem;
+    border: 1px solid var(--border-color, #e8ecf0);
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-family: inherit;
     background-color: var(--white-color, #fff);
-    transition: all 0.3s ease;
+    color: var(--text-color);
+    transition: all 0.25s;
     max-width: 100%;
+
+    &::placeholder {
+      color: #9ca3af;
+    }
 
     &:focus {
       outline: none;
-      border-color: var(--primary-color, #0077ff);
-      box-shadow: 0 0 0 3px rgba(0, 119, 255, 0.1);
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(0, 119, 182, 0.15);
     }
+  }
+
+  &__search input {
+    padding-left: 2.5rem;
   }
 }
 
@@ -61,9 +98,11 @@
   gap: 0.5rem;
 
   label {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     font-weight: 600;
-    color: #4b5563;
+    color: var(--text-secondary-color);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
   }
 }
 
@@ -76,12 +115,43 @@
     width: 100%;
   }
 
-  span {
+  &__sep {
     display: none;
+    color: var(--text-secondary-color);
+    font-weight: 300;
+    font-size: 1rem;
+    flex-shrink: 0;
+    width: auto;
   }
 }
 
+.filter-prefix-wrapper {
+  display: flex;
+  align-items: stretch;
+  flex: 1;
+
+  input {
+    border-radius: 0 10px 10px 0 !important;
+  }
+}
+
+.filter-prefix {
+  display: flex;
+  align-items: center;
+  padding: 0 0.65rem;
+  background: var(--surface-color, #f8fafc);
+  border: 1px solid var(--border-color, #e8ecf0);
+  border-right: none;
+  border-radius: 10px 0 0 10px;
+  font-size: 0.9rem;
+  color: var(--text-secondary-color);
+  white-space: nowrap;
+  width: auto;
+  flex-shrink: 0;
+}
+
 .btn-toggle-filters {
+  width: auto;
   background: transparent;
   border: none;
   color: var(--primary-color);
@@ -89,9 +159,46 @@
   cursor: pointer;
   font-size: 0.9rem;
   transition: color 0.2s ease;
+  font-family: inherit;
+  white-space: nowrap;
 
   &:hover {
     color: var(--primary-color-hover);
+  }
+}
+
+.filter-chip {
+  width: auto;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.85rem;
+  border: 1.5px solid var(--border-color, #e8ecf0);
+  border-radius: 999px;
+  background: var(--white-color, #fff);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-color);
+  white-space: nowrap;
+  font-family: inherit;
+
+  &:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background: rgba(0, 119, 182, 0.05);
+  }
+
+  &--active {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+
+    &:hover {
+      background: #005f92;
+      border-color: #005f92;
+      color: white;
+    }
   }
 }
 
@@ -112,6 +219,12 @@
       justify-content: flex-end;
     }
   }
+
+  .filters__main {
+    flex-direction: row;
+    align-items: center;
+  }
+
   .filters__more {
     flex-direction: row;
     flex-wrap: wrap;
@@ -121,11 +234,8 @@
     flex-direction: row;
     align-items: center;
 
-    span {
-      width: fit-content;
+    &__sep {
       display: inline;
-      font-weight: bold;
-      color: var(--primary-color);
     }
   }
 
