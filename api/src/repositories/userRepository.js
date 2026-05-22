@@ -78,14 +78,18 @@ export class UserRepository {
         await db.query("DELETE FROM users WHERE id = $1", [id]);
     }
 
-    async findByFilters({ searchName, offset = 0, limit = 9 }) {
+    async findByFilters({ searchName, offset = 0, limit = 9, sortBy = 'username' }) {
         const searchTerm = `%${searchName}%`;
+
+        const orderClause = sortBy === 'itineraries'
+            ? '(SELECT COUNT(*) FROM itineraries WHERE itineraries.user_id = users.id) DESC, username ASC'
+            : 'username ASC';
 
         const result = await db.query(
             `
             SELECT * FROM users
             WHERE username ILIKE $1 AND role != 'test'
-            ORDER BY username ASC
+            ORDER BY ${orderClause}
             LIMIT $2 OFFSET $3
             `,
             [searchTerm, limit, offset]

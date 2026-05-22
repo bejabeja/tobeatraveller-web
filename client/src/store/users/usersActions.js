@@ -4,9 +4,9 @@ export const initAllUsers = (filters) => async (dispatch) => {
     dispatch({ type: "@users/all/start" });
     try {
         const response = await getAllUsers(filters);
-        const { users, totalPages, currentPage } = response;
+        const { users, totalPages, currentPage, totalCount } = response;
         dispatch({
-            type: "@users/all/success", payload: { users, totalPages, currentPage }
+            type: "@users/all/success", payload: { users, totalPages, currentPage, totalCount }
         });
     } catch (err) {
         dispatch({ type: "@users/all/fail", payload: err.message });
@@ -23,10 +23,10 @@ export const initFeaturedUsers = () => async (dispatch) => {
     }
 };
 
-export const loadMoreUsers = (page, searchName = '') => async (dispatch) => {
+export const loadMoreUsers = (page, searchName = '', sortBy = 'username') => async (dispatch) => {
     dispatch({ type: "@users/all/loadMoreStart" });
     try {
-        const result = await getAllUsers({ page, searchName });
+        const result = await getAllUsers({ page, searchName, sortBy });
         dispatch({
             type: "@users/all/loadMoreSuccess",
             payload: {

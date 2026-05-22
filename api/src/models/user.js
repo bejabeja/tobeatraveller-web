@@ -105,6 +105,7 @@ export class User {
             totalItineraries: this.countItineraries(),
             avatarUrl: this.avatarUrl,
             lastItinerary: this.lastItinerary || null,
+            role: this.role,
         };
     }
 }

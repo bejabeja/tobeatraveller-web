@@ -40,23 +40,30 @@ export class UserService {
         return users.map(user => user.toSimpleDTO());
     }
 
-    async getFilteredAllUsers({ searchName, page, limit }) {
+    async getFilteredAllUsers({ searchName, page, limit, sortBy }) {
         const offset = (page - 1) * limit;
 
         const { users, total } = await this.userRepository.findByFilters({
             searchName,
             offset,
             limit,
+            sortBy,
         });
 
         await Promise.all(users.map(async (user) => {
-            user.totalItineraries = await this.itinerariesRepository.getTotalByUserId(user.id);
+            const [totalItineraries, lastItinerary] = await Promise.all([
+                this.itinerariesRepository.getTotalByUserId(user.id),
+                this.itinerariesRepository.findLastByUserId(user.id),
+            ]);
+            user.totalItineraries = totalItineraries;
+            user.lastItinerary = lastItinerary ? lastItinerary.toSimpleDTO() : null;
         }));
 
         return {
             users: users.map(user => user.toFeaturedDTO()),
             totalPages: Math.ceil(total / limit),
             currentPage: page,
+            totalCount: total,
         };
     }
 

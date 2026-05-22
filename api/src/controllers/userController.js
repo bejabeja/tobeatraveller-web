@@ -112,14 +112,15 @@ export class UserController {
 
     async getAllUsersFiltered(req, res, next) {
         try {
-            const { searchName = '', page = 1, limit = 9 } = req.query;
+            const { searchName = '', page = 1, limit = 9, sortBy = 'username' } = req.query;
             const filters = {
                 searchName,
                 page: parseInt(page),
                 limit: parseInt(limit),
+                sortBy,
             };
-            const { users, totalPages, currentPage } = await this.userService.getFilteredAllUsers(filters);
-            res.status(200).json({ users, totalPages, currentPage });
+            const { users, totalPages, currentPage, totalCount } = await this.userService.getFilteredAllUsers(filters);
+            res.status(200).json({ users, totalPages, currentPage, totalCount });
         } catch (error) {
             next(error);
         }

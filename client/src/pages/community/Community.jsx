@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { RiUserCommunityLine } from "react-icons/ri";
 import LoadingButton from "../../components/LoadingButton.jsx";
 import UsersSection from "../../components/users/UsersSection.jsx";
 import useDebouncedEffect from "../../hooks/useDebounced.js";
@@ -12,9 +13,16 @@ import {
   selectAllUsersError,
   selectAllUsersLoading,
   selectAllUsersLoadingMore,
+  selectAllUsersTotalCount,
   selectAllUsersTotalPages,
 } from "../../store/users/usersSelectors";
 import Error from "../error/Error.jsx";
+import "./Community.scss";
+
+const SORT_OPTIONS = [
+  { value: "username", label: "A-Z" },
+  { value: "itineraries", label: "Most itineraries" },
+];
 
 const Community = () => {
   const dispatch = useDispatch();
@@ -27,28 +35,34 @@ const Community = () => {
   const error = useSelector(selectAllUsersError);
   const currentPage = useSelector(selectAllUsersCurrentPage);
   const totalPages = useSelector(selectAllUsersTotalPages);
+  const totalCount = useSelector(selectAllUsersTotalCount);
 
   const [searchName, setSearchName] = useState("");
+  const [sortBy, setSortBy] = useState("username");
   const loadMoreRef = useRef(null);
   const hasMore = currentPage < totalPages;
 
   const handleLoadMore = () => {
     if (hasMore) {
-      dispatch(loadMoreUsers(currentPage + 1));
+      dispatch(loadMoreUsers(currentPage + 1, searchName, sortBy));
     }
   };
 
-  const handleRetry = () => dispatch(initAllUsers({ searchName, page: 1 }));
+  const handleRetry = () => dispatch(initAllUsers({ searchName, sortBy, page: 1 }));
   const handleFilterChange = (e) => setSearchName(e.target.value);
-  const handleReset = () => setSearchName("");
+  const handleSortChange = (e) => setSortBy(e.target.value);
+  const handleReset = () => {
+    setSearchName("");
+    setSortBy("username");
+  };
 
   useDebouncedEffect(
     () => {
       if (isAuthenticated) {
-        dispatch(initAllUsers({ searchName, page: 1 }));
+        dispatch(initAllUsers({ searchName, sortBy, page: 1 }));
       }
     },
-    [searchName],
+    [searchName, sortBy],
     400
   );
 
@@ -60,17 +74,31 @@ const Community = () => {
 
   if (!isAuthenticated) {
     return (
-      <section className="explore section__container">
-        <div className="explore__results">
-          <UsersSection users={users} isLoading={loading} />
-          <div className="explore__results-ctas">
-            <p>Join the community to see more users.</p>
-            <button
-              className="btn btn__secondary"
-              onClick={() => navigate("/login")}
-            >
-              Log in
-            </button>
+      <section className="community section__container">
+        <div className="community__hero">
+          <RiUserCommunityLine className="community__hero-icon" />
+          <h1 className="community__hero-title">Community</h1>
+          <p className="community__hero-subtitle">
+            Discover travellers from around the world
+          </p>
+        </div>
+
+        <div className="community__guest">
+          <div className="community__guest-preview">
+            <UsersSection users={users} isLoading={loading} />
+            <div className="community__guest-blur" />
+          </div>
+          <div className="community__guest-cta">
+            <h2>Join the community</h2>
+            <p>Sign up to see all travellers, follow people you like, and get inspired for your next trip.</p>
+            <div className="community__guest-cta-buttons">
+              <button className="btn btn__primary" onClick={() => navigate("/register")}>
+                Create account
+              </button>
+              <button className="btn btn__secondary" onClick={() => navigate("/login")}>
+                Log in
+              </button>
+            </div>
           </div>
         </div>
       </section>
@@ -82,35 +110,38 @@ const Community = () => {
       <Error message="We couldn't load the community page. Please try again later." />
     );
   }
-  
+
   return (
-    <section className="explore section__container">
+    <section className="community section__container">
+      <div className="community__hero">
+        <RiUserCommunityLine className="community__hero-icon" />
+        <h1 className="community__hero-title">Community</h1>
+        <p className="community__hero-subtitle">
+          Discover travellers from around the world
+        </p>
+        {totalCount > 0 && (
+          <span className="community__hero-count">{totalCount} members</span>
+        )}
+      </div>
+
       <Filters
         searchName={searchName}
+        sortBy={sortBy}
         handleFilterChange={handleFilterChange}
+        handleSortChange={handleSortChange}
         handleReset={handleReset}
       />
 
-      <div className="explore__results">
-        <p>
-          Showing users{" "}
-          {searchName ? `matching "${searchName}"` : "from the community"}
-        </p>
-
-        {error && (
-          <div className="explore__error">
-            <p className="error-message">
-              Oops! Something went wrong while loading users.
-            </p>
-            <button className="btn btn__danger-outline" onClick={handleRetry}>
-              Try again
-            </button>
-          </div>
+      <div className="community__results">
+        {searchName && (
+          <p className="community__results-label">
+            Results for &quot;{searchName}&quot;
+          </p>
         )}
 
-        {!users?.length && !loading && !error && (
-          <div className="explore__no-results">
-            <p>No users found with that name.</p>
+        {!users?.length && !loading && (
+          <div className="community__no-results">
+            <p>No travellers found with that name.</p>
             <p>Try adjusting your search.</p>
           </div>
         )}
@@ -118,9 +149,9 @@ const Community = () => {
         <UsersSection users={users} isLoading={loading && !users?.length} />
 
         {hasMore && (
-          <div ref={loadMoreRef} className="explore__results-ctas">
+          <div ref={loadMoreRef} className="community__results-ctas">
             <LoadingButton onClick={handleLoadMore} isLoading={loadingMore}>
-              Load More
+              Load more
             </LoadingButton>
           </div>
         )}
@@ -131,21 +162,32 @@ const Community = () => {
 
 export default Community;
 
-const Filters = ({ searchName, handleFilterChange, handleReset }) => (
-  <div className="explore__filters">
+const Filters = ({ searchName, sortBy, handleFilterChange, handleSortChange, handleReset }) => (
+  <div className="community__filters">
     <label>
-      Search by username:
+      Search
       <input
         type="text"
         name="searchName"
         value={searchName}
-        placeholder="Search users..."
+        placeholder="Search by username..."
         onChange={handleFilterChange}
       />
     </label>
 
-    <button onClick={handleReset} className="btn btn__primary">
-      Reset Filters
+    <label>
+      Sort by
+      <select name="sortBy" value={sortBy} onChange={handleSortChange}>
+        {SORT_OPTIONS.map((opt) => (
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
+      </select>
+    </label>
+
+    <button onClick={handleReset} className="btn btn__secondary">
+      Reset
     </button>
   </div>
 );

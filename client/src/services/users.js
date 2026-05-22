@@ -98,11 +98,12 @@ export const deleteMyAccount = async () => {
     return response.json();
 };
 
-export const getAllUsers = async ({ searchName = '', page = 1, limit = 9 } = {}) => {
+export const getAllUsers = async ({ searchName = '', page = 1, limit = 9, sortBy = 'username' } = {}) => {
     const params = new URLSearchParams();
     if (searchName) params.append("searchName", searchName);
-    params.append('page', page)
-    params.append('limit', limit)
+    params.append('page', page);
+    params.append('limit', limit);
+    params.append('sortBy', sortBy);
 
     const response = await fetch(`${baseUrl}/all?${params.toString()}`, {
         method: "GET",

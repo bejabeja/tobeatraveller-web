@@ -6,6 +6,7 @@ const initialState = {
         error: null,
         currentPage: 1,
         totalPages: 1,
+        totalCount: 0,
         loadingMore: true,
     },
     featured: {
@@ -33,6 +34,7 @@ export const usersReducer = (state = initialState, action) => {
                     error: null,
                     currentPage: action.payload.currentPage,
                     totalPages: action.payload.totalPages,
+                    totalCount: action.payload.totalCount ?? state.all.totalCount,
                 },
             };
 
