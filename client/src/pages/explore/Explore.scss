@@ -44,8 +44,6 @@
   }
 
   &__filters-sticky {
-    position: sticky;
-    top: 1rem;
     z-index: 10;
   }
 
@@ -242,6 +240,11 @@
 
     &__hero {
       padding: 4rem 3rem;
+    }
+
+    &__filters-sticky {
+      position: sticky;
+      top: 1rem;
     }
   }
 }
