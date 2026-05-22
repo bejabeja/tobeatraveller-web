@@ -39,11 +39,18 @@ const initialState = {
   currency: "",
 };
 
+const MORE_FILTER_KEYS = [
+  "budgetMin", "budgetMax", "durationMin", "durationMax",
+  "travelersCount", "currency", "startDateMin", "startDateMax",
+];
+
 const Filters = ({ onChange, defaultValues = {}, hideDates = false }) => {
   const merged = { ...initialState, ...defaultValues };
   const [filters, setFilters] = useState(merged);
   const [debouncedFilters, setDebouncedFilters] = useState(merged);
   const [showFilters, setShowFilters] = useState(false);
+
+  const activeMoreCount = MORE_FILTER_KEYS.filter((k) => filters[k] !== "").length;
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -97,7 +104,13 @@ const Filters = ({ onChange, defaultValues = {}, hideDates = false }) => {
           className="btn-toggle-filters"
           onClick={() => setShowFilters((prev) => !prev)}
         >
-          {showFilters ? "Less filters ▲" : "More filters ▼"}
+          {showFilters ? "Less filters ▲" : (
+            <>
+              More filters{activeMoreCount > 0 && (
+                <span className="filters__badge">{activeMoreCount}</span>
+              )} ▼
+            </>
+          )}
         </button>
       </div>
 

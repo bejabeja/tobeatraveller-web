@@ -43,6 +43,12 @@
     position: relative;
   }
 
+  &__filters-sticky {
+    position: sticky;
+    top: 1rem;
+    z-index: 10;
+  }
+
   &__results {
     display: flex;
     flex-direction: column;
@@ -63,10 +69,24 @@
     }
   }
 
+  &__results-title-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+  }
+
   &__results-title {
+    width: auto;
     font-size: 1.1rem;
     font-weight: 700;
     color: var(--text-color);
+  }
+
+  &__results-count {
+    font-size: 0.8rem;
+    color: var(--text-secondary-color);
+    font-weight: 400;
+    width: auto;
   }
 
   &__sort {
@@ -114,6 +134,26 @@
     gap: 0.4rem;
     flex-wrap: wrap;
     align-items: center;
+  }
+
+  &__clear-all {
+    width: auto;
+    background: none;
+    border: none;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-secondary-color);
+    cursor: pointer;
+    font-family: inherit;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    transition: color 0.15s ease;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+
+    &:hover {
+      color: var(--error-color);
+    }
   }
 
   &__filter-tag {

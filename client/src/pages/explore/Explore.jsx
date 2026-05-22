@@ -19,6 +19,7 @@ import {
   selectExploreItinerariesLoading,
   selectExploreItinerariesLoadingMore,
   selectExplorePage,
+  selectExploreTotalItems,
   selectExploreTotalPages,
 } from "../../store/itineraries/itinerariesSelectors.js";
 
@@ -28,6 +29,7 @@ const SORT_OPTIONS = [
   { value: "recent",    label: "Most recent" },
   { value: "liked",     label: "❤️ Most liked" },
   { value: "commented", label: "💬 Most discussed" },
+  { value: "cheapest",  label: "💰 Cheapest" },
 ];
 
 const Explore = () => {
@@ -39,14 +41,17 @@ const Explore = () => {
   const loadingMore = useSelector(selectExploreItinerariesLoadingMore);
   const error = useSelector(selectExploreItinerariesError);
   const totalPages = useSelector(selectExploreTotalPages);
+  const totalItems = useSelector(selectExploreTotalItems);
   const page = useSelector(selectExplorePage);
 
   const [searchParams] = useSearchParams();
   const initialDestination = searchParams.get("location") ?? "";
+
   const [filters, setFilters] = useState(
     initialDestination ? { destination: initialDestination } : {}
   );
   const [sortBy, setSortBy] = useState("recent");
+  const [filterResetKey, setFilterResetKey] = useState(0);
 
   useEffect(() => {
     dispatch(initExploreItineraries({ page: 1, ...filters, sortBy }));
@@ -58,10 +63,7 @@ const Explore = () => {
     dispatch(loadMoreExploreItineraries({ page: nextPage, ...filters, sortBy })).then(
       () => {
         if (loadMoreRef.current) {
-          loadMoreRef.current.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
-          });
+          loadMoreRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
         }
       }
     );
@@ -71,8 +73,16 @@ const Explore = () => {
     dispatch(initExploreItineraries({ page: 1, ...filters, sortBy }));
   };
 
+  const clearAllFilters = () => {
+    setFilters({});
+    setFilterResetKey((k) => k + 1);
+  };
+
   const hasMore = page < totalPages;
   const locationLabel = filters.destination;
+  const hasActiveFilters =
+    locationLabel || filters.category || filters.budgetMin || filters.budgetMax ||
+    filters.durationMin || filters.durationMax || filters.travelersCount || filters.currency;
 
   return (
     <section className="explore section__container">
@@ -83,16 +93,24 @@ const Explore = () => {
         </p>
       </div>
 
-      <Filters
-        onChange={setFilters}
-        defaultValues={initialDestination ? { destination: initialDestination } : {}}
-        hideDates
-      />
+      <div className="explore__filters-sticky">
+        <Filters
+          key={filterResetKey}
+          onChange={setFilters}
+          defaultValues={initialDestination ? { destination: initialDestination } : {}}
+          hideDates
+        />
+      </div>
 
       <div className="explore__results">
         <div className="explore__results-header">
           <div className="explore__results-header-top">
-            <h2 className="explore__results-title">Itineraries</h2>
+            <div className="explore__results-title-row">
+              <h2 className="explore__results-title">Itineraries</h2>
+              {!loading && totalItems > 0 && (
+                <span className="explore__results-count">{totalItems.toLocaleString()} found</span>
+              )}
+            </div>
             <div className="explore__sort">
               {SORT_OPTIONS.map((opt) => (
                 <button
@@ -107,7 +125,7 @@ const Explore = () => {
             </div>
           </div>
 
-          {(locationLabel || filters.category) && (
+          {(hasActiveFilters) && (
             <div className="explore__active-filters">
               {locationLabel && (
                 <span className="explore__filter-tag">📍 {locationLabel}</span>
@@ -117,6 +135,9 @@ const Explore = () => {
                   {filters.category}
                 </span>
               )}
+              <button className="explore__clear-all" onClick={clearAllFilters}>
+                Clear all
+              </button>
             </div>
           )}
         </div>
