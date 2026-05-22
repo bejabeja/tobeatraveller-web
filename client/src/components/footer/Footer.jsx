@@ -1,21 +1,26 @@
 import React from "react";
-import { FaEnvelope, FaGithub } from "react-icons/fa";
+import { FaEnvelope, FaGithub, FaLinkedin } from "react-icons/fa";
 import "./Footer.scss";
 
 const Footer = () => {
   return (
     <footer className="footer">
       <div className="footer__socials">
-        {/* <a href="https://instagram.com/tobeatraveller" target="_blank" rel="noopener noreferrer">
-          <FaInstagram />
-        </a> */}
         <a
-          href="https://github.com/bejabeja/tfm"
+          href="https://github.com/bejabeja/tobeatraveller-web"
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Visit our GitHub"
         >
           <FaGithub />
+        </a>
+        <a
+          href="https://www.linkedin.com/in/miriamabella/"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="LinkedIn"
+        >
+          <FaLinkedin />
         </a>
         <a href="mailto:tobeatravellercompany@gmail.com" aria-label="Email us">
           <FaEnvelope />
