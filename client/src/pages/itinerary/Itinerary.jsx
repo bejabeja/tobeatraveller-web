@@ -7,7 +7,7 @@ import {
   FaTrashAlt,
 } from "react-icons/fa";
 import { GoPeople } from "react-icons/go";
-import { MdOutlineAttachMoney, MdOutlineCalendarMonth } from "react-icons/md";
+import { MdOutlineAttachMoney, MdOutlineCalendarMonth, MdOutlineLocationOn } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { getCategoryIcon } from "../../assets/icons.js";
@@ -46,7 +46,6 @@ const Itinerary = () => {
   const [loading, setLoading] = useState(true);
   const [userItinerary, setUserItinerary] = useState(null);
   const [isFavorite, setIsFavorite] = useState(false);
-
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
@@ -63,13 +62,11 @@ const Itinerary = () => {
         setLoading(false);
       }
     };
-
     fetchData();
   }, [id]);
 
   useEffect(() => {
     if (!isAuthenticated || !itinerary?.id) return;
-
     const fetchIsFavorite = async () => {
       try {
         const response = await checkIsFavorite(itinerary.id);
@@ -78,37 +75,13 @@ const Itinerary = () => {
         console.error("Error checking favorite:", error);
       }
     };
-
     fetchIsFavorite();
   }, [itinerary, isAuthenticated]);
 
-  if (loading) {
-    return <Spinner />;
-  }
+  if (loading) return <Spinner />;
+  if (error) return <Error message="We couldn't load the itinerary page. Please try again later." />;
 
-  if (error) {
-    return (
-      <Error message="We couldn't load the itinerary page. Please try again later." />
-    );
-  }
-
-  const handleRemove = async () => {
-    try {
-      await deleteItinerary(itinerary.id);
-      toast.success("Itinerary deleted successfully");
-      navigate(`/profile/${userMe?.id}`);
-      dispatch(setUserInfo(itinerary?.userId));
-      dispatch(setUserInfoItineraries(itinerary?.userId));
-    } catch (error) {
-      toast.error("Failed to delete itinerary");
-    }
-  };
-
-  const isMyItinerary = () => {
-    if (!userMe || !itinerary) return false;
-
-    return userMe.id === itinerary.userId;
-  };
+  const isMyItinerary = userMe?.id === itinerary?.userId;
 
   return (
     <section className="itinerary break-text">
@@ -122,26 +95,31 @@ const Itinerary = () => {
         isMyItinerary={isMyItinerary}
         setIsModalOpen={setIsModalOpen}
       />
+
       <div className="section__container">
-        <div className="itinerary__container">
-          <div className="itinerary__container-primary">
-            <h1 className="itinerary__title">Description</h1>
-            <p className="itinerary__description">{itinerary.description}</p>
+        <div className="itinerary__body">
+          <div className="itinerary__main">
+            {itinerary.description && (
+              <div className="itinerary__section">
+                <h2 className="itinerary__section-title">About this trip</h2>
+                <p className="itinerary__description">{itinerary.description}</p>
+              </div>
+            )}
+
             <Stats itinerary={itinerary} />
             <Places itinerary={itinerary} />
           </div>
-          <div className="itinerary__container-secondary">
-            <h1 className="itinerary__title">Trip Area</h1>
-            <Map location={itinerary?.location}></Map>
-          </div>
+
+          <aside className="itinerary__sidebar">
+            <div className="itinerary__sidebar-sticky">
+              <h2 className="itinerary__section-title">Trip area</h2>
+              <Map location={itinerary?.location} />
+            </div>
+          </aside>
         </div>
-        <div className="itinerary__container">
-          <div className="itinerary__container-primary">
-            <Comments
-              itineraryId={itinerary.id}
-              isAuthenticated={isAuthenticated}
-            />
-          </div>
+
+        <div className="itinerary__comments">
+          <Comments itineraryId={itinerary.id} isAuthenticated={isAuthenticated} />
         </div>
       </div>
 
@@ -159,53 +137,18 @@ const Itinerary = () => {
       />
     </section>
   );
-};
-const Places = ({ itinerary }) => {
-  if (itinerary.places.length === 0) {
-    return (
-      <div className="itinerary__container-primary-places">
-        <h1 className="itinerary__title">Places</h1>
-        <p className="itinerary__description">
-          No places have been added to this itinerary yet.
-        </p>
-      </div>
-    );
-  }
-  return (
-    <div className="itinerary__container-primary-places">
-      <h1 className="itinerary__title">Places</h1>
-      {itinerary.places?.map((place, index) => (
-        <Place key={index} place={place} index={index} />
-      ))}
-    </div>
-  );
-};
 
-const Place = ({ place, index }) => {
-  const Icon = getCategoryIcon(place.category) || FaCity;
-  return (
-    <div className="place">
-      <h3 className="place__title ">
-        Place {index + 1} : {place.name}
-      </h3>
-      <div className="place__info">
-        <div className="place__info-left">
-          <Icon className="icon" />
-        </div>
-        <div className="place__info-right">
-          <p className="place__description">{place.description}</p>
-        </div>
-      </div>
-      {place.address && (
-        <p className="place__address">
-          <span className="place__address-title">
-            <strong>Address: </strong>
-          </span>
-          {place.address}
-        </p>
-      )}
-    </div>
-  );
+  async function handleRemove() {
+    try {
+      await deleteItinerary(itinerary.id);
+      toast.success("Itinerary deleted successfully");
+      navigate(`/profile/${userMe?.id}`);
+      dispatch(setUserInfo(itinerary?.userId));
+      dispatch(setUserInfoItineraries(itinerary?.userId));
+    } catch (error) {
+      toast.error("Failed to delete itinerary");
+    }
+  }
 };
 
 const Hero = ({
@@ -219,119 +162,146 @@ const Hero = ({
   setIsModalOpen,
 }) => {
   const handleSave = async () => {
-    if (!isAuthenticated) {
-      navigate("/login");
-      return;
-    }
+    if (!isAuthenticated) { navigate("/login"); return; }
     try {
       if (!isFavorite) {
         await addFavorite(itinerary.id);
-        toast.success("Itinerary added to favorites!");
+        toast.success("Added to favourites!");
       } else {
         await removeFavorite(itinerary.id);
-        toast.success("Itinerary removed from favorites!");
+        toast.success("Removed from favourites!");
       }
       setIsFavorite(!isFavorite);
-    } catch (error) {
-      toast.error("Error updating favorites");
+    } catch {
+      toast.error("Error updating favourites");
     }
   };
+
   return (
     <div
       className="itinerary__hero"
-      style={{
-        backgroundImage: `url(${itinerary?.photoUrl || "/images/hero.jpg"})`,
-      }}
+      style={{ backgroundImage: `url(${itinerary?.photoUrl || "/images/hero.jpg"})` }}
     >
       <div className="itinerary__hero-overlay" />
-      <div className="itinerary__hero-content">
-        <h1 className="itinerary__title">
-          {itinerary.title}
-          {"   "}
-          {itinerary.category !== "other" && (
-            <span className="itinerary__badge">{itinerary.category}</span>
-          )}
-        </h1>
-        <div className="itinerary__hero-content-stats">
-          <div className="itinerary__hero-content-stats-row">
-            <img
-              src={userItinerary?.avatarUrl}
-              alt={userItinerary?.location?.name}
-              className="itinerary__hero-image"
-            />
-            <span>
-              <Link
-                to={`/profile/${userItinerary?.id}`}
-                className="itinerary__link "
-              >
-                @{userItinerary?.username}{" "}
-              </Link>
-            </span>
-          </div>
 
-          <div className="itinerary__hero-content-stats-row">
-            <MdOutlineCalendarMonth className="nav-icon" />
-            <span>{itinerary.tripDates}</span>
-          </div>
+      <div className="itinerary__hero-content">
+        {itinerary.category !== "other" && (
+          <span className="itinerary__badge">{itinerary.category}</span>
+        )}
+        <h1 className="itinerary__hero-title">{itinerary.title}</h1>
+        <div className="itinerary__hero-meta">
+          <Link to={`/profile/${userItinerary?.id}`} className="itinerary__hero-author">
+            <img src={userItinerary?.avatarUrl} alt={userItinerary?.username} className="itinerary__hero-avatar" />
+            <span>@{userItinerary?.username}</span>
+          </Link>
+          {itinerary.tripDates && (
+            <span className="itinerary__hero-date">
+              <MdOutlineCalendarMonth />
+              {itinerary.tripDates}
+            </span>
+          )}
         </div>
       </div>
-      {isMyItinerary() ? (
-        <div className="itinerary__hero-actions">
-          <Link
-            to={`/itinerary/edit/${itinerary.id}`}
-            className="action-icon-btn"
-            title="Edit itinerary"
-          >
-            <FaEdit />
-          </Link>
+
+      <div className="itinerary__hero-actions">
+        {isMyItinerary ? (
+          <>
+            <Link to={`/itinerary/edit/${itinerary.id}`} className="action-icon-btn" title="Edit">
+              <FaEdit />
+            </Link>
+            <button
+              className="action-icon-btn danger"
+              onClick={(e) => { e.preventDefault(); setIsModalOpen(true); }}
+              title="Delete"
+            >
+              <FaTrashAlt />
+            </button>
+          </>
+        ) : (
           <button
-            className="action-icon-btn danger"
-            onClick={(e) => {
-              e.preventDefault();
-              setIsModalOpen(true);
-            }}
-            title="Delete itinerary"
-          >
-            <FaTrashAlt />
-          </button>
-        </div>
-      ) : (
-        <div className="itinerary__hero-actions">
-          <button
-            className="action-icon-btn"
+            className={`action-icon-btn ${isFavorite ? "saved" : ""}`}
             onClick={handleSave}
-            title={isFavorite ? "Remove from favorites" : "Add to favorites"}
+            title={isFavorite ? "Remove from favourites" : "Save"}
           >
             {isFavorite ? <FaBookmark /> : <FaRegBookmark />}
           </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
 
+const formatBudget = (budget) => {
+  const n = parseFloat(budget);
+  if (isNaN(n)) return budget;
+  return n % 1 === 0
+    ? n.toLocaleString()
+    : n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+};
+
 const Stats = ({ itinerary }) => {
+  const currencySymbol = getCurrencySymbol(itinerary.currency);
   return (
-    <div className="itinerary__container-primary-stats">
-      <div className="itinerary__container-stats-budget">
-        {getCurrencySymbol(itinerary.currency) || (
-          <MdOutlineAttachMoney className="icon" />
-        )}
-        <strong className="itinerary__title">Budget</strong>
-        <p className="itinerary__description">
-          {itinerary.budget} {itinerary.currency}
-        </p>
+    <div className="itinerary__stats">
+      {itinerary.location?.name && (
+        <div className="itinerary__stat">
+          <div className="itinerary__stat-icon"><MdOutlineLocationOn /></div>
+          <span className="itinerary__stat-label">Destination</span>
+          <span className="itinerary__stat-value">{itinerary.location.name}</span>
+        </div>
+      )}
+      <div className="itinerary__stat">
+        <div className="itinerary__stat-icon"><MdOutlineCalendarMonth /></div>
+        <span className="itinerary__stat-label">Duration</span>
+        <span className="itinerary__stat-value">{itinerary.tripTotalDays} {itinerary.tripTotalDays === 1 ? "day" : "days"}</span>
       </div>
-      <div className="itinerary__container-stats-days">
-        <MdOutlineCalendarMonth className="icon" />
-        <strong className="itinerary__title">Travel days</strong>
-        <p className="itinerary__description">{itinerary.tripTotalDays}</p>
+      <div className="itinerary__stat">
+        <div className="itinerary__stat-icon">
+          {currencySymbol ? <span style={{ fontWeight: 700 }}>{currencySymbol}</span> : <MdOutlineAttachMoney />}
+        </div>
+        <span className="itinerary__stat-label">Budget</span>
+        <span className="itinerary__stat-value">{formatBudget(itinerary.budget)} {itinerary.currency}</span>
       </div>
-      <div className="itinerary__container-stats-people">
-        <GoPeople className="icon" />
-        <strong className="itinerary__title">People</strong>
-        <p className="itinerary__description">{itinerary.numberOfPeople}</p>
+      <div className="itinerary__stat">
+        <div className="itinerary__stat-icon"><GoPeople /></div>
+        <span className="itinerary__stat-label">Travellers</span>
+        <span className="itinerary__stat-value">{itinerary.numberOfPeople} {itinerary.numberOfPeople === 1 ? "person" : "people"}</span>
       </div>
+    </div>
+  );
+};
+
+const Places = ({ itinerary }) => {
+  if (!itinerary.places?.length) return null;
+
+  return (
+    <div className="itinerary__places">
+      <h2 className="itinerary__section-title">Places</h2>
+      <div className="itinerary__places-list">
+        {itinerary.places.map((place, index) => (
+          <Place key={index} place={place} index={index} />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const Place = ({ place, index }) => {
+  const Icon = getCategoryIcon(place.category) || FaCity;
+  const hasBody = place.description || place.address;
+  return (
+    <div className={`place${hasBody ? "" : " place--compact"}`}>
+      <div className="place__header">
+        <span className="place__number">{index + 1}</span>
+        <Icon className="place__icon" />
+        <h3 className="place__name">{place.name}</h3>
+      </div>
+      {place.description && (
+        <p className="place__description">{place.description}</p>
+      )}
+      {place.address && (
+        <p className="place__address"><strong>Address:</strong> {place.address}</p>
+      )}
     </div>
   );
 };

@@ -90,18 +90,19 @@
   }
 
   &__login-message {
-    background-color: #fff3cd;
-    color: #856404;
-    padding: 1rem;
-    border: 1px solid #ffeeba;
-    border-radius: 8px;
-    font-size: 0.95rem;
+    background: rgba(0, 119, 182, 0.06);
+    color: var(--text-secondary-color);
+    padding: 1rem 1.25rem;
+    border: 1px solid rgba(0, 119, 182, 0.15);
+    border-radius: 10px;
+    font-size: 0.9rem;
     margin-top: 1rem;
 
     a {
       color: var(--primary-color);
       font-weight: 600;
       text-decoration: underline;
+      text-underline-offset: 2px;
 
       &:hover {
         text-decoration: none;
