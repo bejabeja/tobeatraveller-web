@@ -11,6 +11,7 @@ const AutocompleteObjectInput = ({
   error,
   disabled = false,
   required = false,
+  placeholder,
 }) => {
   const [suggestions, setSuggestions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -88,14 +89,17 @@ const AutocompleteObjectInput = ({
               }
               className={`input__field ${error ? "input__field--invalid" : ""}`}
               autoComplete="off"
+              placeholder={placeholder}
               aria-invalid={!!error}
               ref={inputRef}
               disabled={disabled}
             />
-            <div className="input__error">
-              {error?.label
-                ? "Please select a valid destination from the list"
-                : error?.message || "\u00A0"}
+            <div className="input__footer">
+              <div className="input__error">
+                {error?.label
+                  ? "Please select a valid destination from the list"
+                  : error?.message || "\u00A0"}
+              </div>
             </div>
 
             {shouldShowDropdown && (

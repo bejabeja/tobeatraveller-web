@@ -1,6 +1,12 @@
 import { useEffect, useMemo } from "react";
 import { InputForm } from "../../../components/form/InputForm";
 
+const QUICK_DURATIONS = [
+  { label: "Weekend", days: 2 },
+  { label: "1 week", days: 7 },
+  { label: "2 weeks", days: 14 },
+];
+
 const DatesForm = ({ control, errors, watch, setValue, isComplete }) => {
   const startDateWatch = watch("startDate");
   const endDateWatch = watch("endDate");
@@ -17,12 +23,32 @@ const DatesForm = ({ control, errors, watch, setValue, isComplete }) => {
     return Math.max(1, diff + 1);
   }, [startDateWatch, endDateWatch]);
 
+  const handleDurationPreset = (days) => {
+    const start = startDateWatch || new Date().toISOString().split("T")[0];
+    const end = new Date(start);
+    end.setDate(end.getDate() + days - 1);
+    if (!startDateWatch) setValue("startDate", start, { shouldValidate: true });
+    setValue("endDate", end.toISOString().split("T")[0], { shouldValidate: true });
+  };
+
   return (
     <div className="form__dates">
       <h2 className="form__subtitle">
         Dates
         {isComplete && <span className="form__section-check">✓</span>}
       </h2>
+      <div className="form__date-presets">
+        {QUICK_DURATIONS.map(({ label, days }) => (
+          <button
+            key={label}
+            type="button"
+            className="form__budget-preset-chip"
+            onClick={() => handleDurationPreset(days)}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
       <div className="form__row-group">
         <InputForm
           name="startDate"

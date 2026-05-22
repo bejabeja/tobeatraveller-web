@@ -154,9 +154,24 @@ const CreateItinerary = () => {
     } catch (error) {}
   };
 
+  const sectionsDone = [isBasicInfoComplete, isDatesComplete, !!imageFile, isPlacesComplete, isBudgetComplete].filter(Boolean).length;
+  const progress = Math.round((sectionsDone / 5) * 100);
+
   return (
     <section className="create-itinerary section__container">
       <h1 className="form__title">Create Itinerary</h1>
+      {destVal?.name ? (
+        <p className="form__hero-subtitle">Planning your trip to <strong>{destVal.label || destVal.name}</strong></p>
+      ) : (
+        <p className="form__hero-subtitle">Share your journey with the world</p>
+      )}
+
+      <div className="form__progress">
+        <div className="form__progress-bar">
+          <div className="form__progress-fill" style={{ width: `${progress}%` }} />
+        </div>
+        <span className="form__progress-label">{progress}% complete</span>
+      </div>
 
       <form className="form__container" onSubmit={handleSubmit(addItinerary, onError)}>
         <BasicInfoForm control={control} errors={errors} isComplete={isBasicInfoComplete} />
@@ -186,14 +201,30 @@ const CreateItinerary = () => {
           tripDays={tripDays}
           isComplete={isPlacesComplete}
         />
-        <BudgetForm control={control} errors={errors} isComplete={isBudgetComplete} />
+        <BudgetForm control={control} errors={errors} isComplete={isBudgetComplete} tripDays={tripDays} setValue={setValue} />
         <TravellersForm control={control} errors={errors} />
         <VisibilityForm control={control} />
         <div className="form__cta">
           <Link to="/my-itineraries" type="button" className="btn btn__tertiary">
             Cancel
           </Link>
-          <SubmitButton label="Create itinerary" />
+          <div className="form__cta-submit">
+            {sectionsDone < 5 && (
+              <span className="form__cta-hint">
+                {(() => {
+                  const missing = [
+                    !isBasicInfoComplete && "basic info",
+                    !isDatesComplete && "dates",
+                    !imageFile && "cover photo",
+                    !isPlacesComplete && "places",
+                    !isBudgetComplete && "budget",
+                  ].filter(Boolean);
+                  return `Still needed: ${missing.join(", ")}`;
+                })()}
+              </span>
+            )}
+            <SubmitButton label="Create itinerary" />
+          </div>
         </div>
       </form>
     </section>

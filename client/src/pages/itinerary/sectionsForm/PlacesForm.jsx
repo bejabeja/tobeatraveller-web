@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Controller, useWatch } from "react-hook-form";
-import { MdClose, MdKeyboardArrowDown, MdKeyboardArrowUp } from "react-icons/md";
+import { MdClose, MdKeyboardArrowDown, MdKeyboardArrowUp, MdOutlineExplore } from "react-icons/md";
 import { getCategoryIcon } from "../../../assets/icons";
 import AutocompletePlaceInput from "../../../components/form/AutocompletePlaceInput";
 import { TextAreaForm } from "../../../components/form/InputForm";
@@ -91,6 +91,14 @@ const PlacesForm = ({
         </div>
       )}
 
+      {fields.length === 0 && (
+        <div className="form__places-empty">
+          <MdOutlineExplore className="form__places-empty-icon" />
+          <p className="form__places-empty-text">Start building your itinerary</p>
+          <p className="form__places-empty-hint">Add the places you want to visit, day by day</p>
+        </div>
+      )}
+
       {days.map((day) => {
         const dayFields = fields
           .map((field, index) => ({ ...field, index }))
@@ -113,7 +121,7 @@ const PlacesForm = ({
                     <span>{dayFields.length} place{dayFields.length !== 1 ? "s" : ""} will be lost.</span>
                     <button
                       type="button"
-                      className="btn btn__danger-text"
+                      className="form__day-remove-btn"
                       onClick={() => handleRemoveDay(day)}
                     >
                       Remove
@@ -129,7 +137,7 @@ const PlacesForm = ({
                 ) : (
                   <button
                     type="button"
-                    className="btn btn__danger-text"
+                    className="form__day-remove-btn"
                     onClick={() =>
                       dayFields.length > 0
                         ? setConfirmRemoveDay(day)

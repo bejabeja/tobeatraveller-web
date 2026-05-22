@@ -1,4 +1,3 @@
-import React from "react";
 import { Controller } from "react-hook-form";
 import { getCategoryIcon } from "../../../assets/icons";
 import AutocompleteObjectInput from "../../../components/form/AutocompleteObjectInput";
@@ -21,6 +20,7 @@ const BasicInfoForm = ({ control, errors, disabled = false, isComplete }) => {
           error={errors.title}
           maxLength={50}
           required
+          inputProps={{ placeholder: "A weekend in Rome..." }}
         />
         <div>
           <AutocompleteObjectInput
@@ -30,6 +30,7 @@ const BasicInfoForm = ({ control, errors, disabled = false, isComplete }) => {
             error={errors.destination}
             disabled={disabled}
             required
+            placeholder="Where are you heading?"
           />
           {disabled && (
             <p className="form__field-note">Destination cannot be changed after creation.</p>
@@ -43,6 +44,7 @@ const BasicInfoForm = ({ control, errors, disabled = false, isComplete }) => {
         control={control}
         error={errors.description}
         maxLength={500}
+        placeholder="What makes this trip special?"
       />
       <TripCategoryForm control={control} />
     </div>

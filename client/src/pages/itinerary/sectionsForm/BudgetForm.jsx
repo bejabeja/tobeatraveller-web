@@ -1,15 +1,19 @@
-import React from "react";
 import { useWatch } from "react-hook-form";
 import { DropdownForm, InputForm } from "../../../components/form/InputForm";
 import { currencyOptions, getCurrencySymbol } from "../../../utils/constants/currencies";
 
-const BudgetForm = ({ control, errors, isComplete }) => {
+const PRESETS = [
+  { label: "Backpacker", dailyRate: 50 },
+  { label: "Mid-range", dailyRate: 150 },
+  { label: "Luxury", dailyRate: 400 },
+];
+
+const BudgetForm = ({ control, errors, isComplete, tripDays, setValue }) => {
   const currency = useWatch({ control, name: "currency" });
   const budget = useWatch({ control, name: "budget" });
   const numberOfTravellers = useWatch({ control, name: "numberOfTravellers" });
   const symbol = getCurrencySymbol(currency);
 
-  // #4 — per-person cost
   const perPerson = (() => {
     const b = parseFloat(budget);
     const n = parseInt(numberOfTravellers);
@@ -17,12 +21,36 @@ const BudgetForm = ({ control, errors, isComplete }) => {
     return (b / n).toFixed(2);
   })();
 
+  const handlePreset = (dailyRate) => {
+    if (!setValue) return;
+    const days = tripDays || 1;
+    setValue("budget", (dailyRate * days).toString(), { shouldValidate: true });
+    if (!currency) setValue("currency", "EUR", { shouldValidate: true });
+  };
+
   return (
     <div className="form__budget">
       <h2 className="form__subtitle">
         Budget
         {isComplete && <span className="form__section-check">✓</span>}
       </h2>
+
+      {setValue && (
+        <div className="form__budget-presets">
+          {PRESETS.map((preset) => (
+            <button
+              key={preset.label}
+              type="button"
+              className="form__budget-preset-chip"
+              onClick={() => handlePreset(preset.dailyRate)}
+              title={`~${preset.label} budget — €${preset.dailyRate}/day × ${tripDays || 1} days`}
+            >
+              {preset.label}
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="form__row-group">
         <InputForm
           name="budget"

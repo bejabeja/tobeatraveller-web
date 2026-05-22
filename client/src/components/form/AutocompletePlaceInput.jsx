@@ -98,10 +98,12 @@ const AutocompletePlaceInput = ({
               ref={inputRef}
               disabled={!destination?.name || disabled}
             />
-            <div className="input__error">
-              {error?.label
-                ? "Please select a valid place from the list"
-                : error?.message || "\u00A0"}
+            <div className="input__footer">
+              <div className="input__error">
+                {error?.label
+                  ? "Please select a valid place from the list"
+                  : error?.message || "\u00A0"}
+              </div>
             </div>
 
             {shouldShowDropdown && (

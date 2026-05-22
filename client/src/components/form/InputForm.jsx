@@ -78,6 +78,7 @@ export const TextAreaForm = ({
   type = "text",
   required = false,
   maxLength,
+  placeholder,
 }) => {
   const errorId = `${name}-error`;
 
@@ -95,6 +96,7 @@ export const TextAreaForm = ({
               id={name}
               type={type}
               {...field}
+              placeholder={placeholder}
               maxLength={maxLength}
               className={`input__field ${error ? "input__field--invalid" : ""}`}
               aria-invalid={!!error}

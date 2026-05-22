@@ -185,6 +185,14 @@ const EditItinerary = () => {
     navigate(`/profile/${userMe.id}`);
   };
 
+  if (!itineraryData) {
+    return (
+      <section className="create-itinerary section__container">
+        <p style={{ color: "var(--text-secondary-color)", padding: "2rem 0" }}>Loading itinerary...</p>
+      </section>
+    );
+  }
+
   return (
     <section className="create-itinerary section__container">
       <h1 className="form__title">Edit Itinerary</h1>
@@ -215,7 +223,7 @@ const EditItinerary = () => {
           isPublic={watch("isPublic")}
           tripDays={tripDays}
         />
-        <BudgetForm control={control} errors={errors} />
+        <BudgetForm control={control} errors={errors} tripDays={tripDays} setValue={setValue} />
         <TravellersForm control={control} errors={errors} />
         <VisibilityForm control={control} />
         {isMyItinerary() && (
