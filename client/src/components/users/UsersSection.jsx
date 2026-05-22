@@ -7,7 +7,7 @@ import UserCardSkeleton from "./card/UserCardSkeleton";
 
 const UsersSection = ({ users, isLoading }) => {
   const isAuthenticated = useSelector(selectIsAuthenticated);
-  const skeletonCount = 3;
+  const skeletonCount = 8;
 
   return (
     <div className="user-section">

@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { IoSearchOutline } from "react-icons/io5";
 
 import LoadingButton from "../../components/LoadingButton.jsx";
 import ItinerariesSection from "../../components/itineraries/ItinerariesSection.jsx";
 import Filters from "../myItineraries/filters/Filters.jsx";
+import { selectIsAuthenticated } from "../../store/auth/authSelectors.js";
 
 import {
   initExploreItineraries,
@@ -34,8 +35,10 @@ const SORT_OPTIONS = [
 
 const Explore = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const loadMoreRef = useRef(null);
 
+  const isAuthenticated = useSelector(selectIsAuthenticated);
   const itineraries = useSelector(selectExploreItineraries);
   const loading = useSelector(selectExploreItinerariesLoading);
   const loadingMore = useSelector(selectExploreItinerariesLoadingMore);
@@ -85,7 +88,7 @@ const Explore = () => {
     filters.durationMin || filters.durationMax || filters.travelersCount || filters.currency;
 
   return (
-    <section className="explore section__container">
+    <div className="explore">
       <div className="explore__hero">
         <h1 className="explore__hero-title">Explore the world</h1>
         <p className="explore__hero-subtitle">
@@ -93,6 +96,7 @@ const Explore = () => {
         </p>
       </div>
 
+      <div className="explore__content section__container">
       <div className="explore__filters-sticky">
         <Filters
           key={filterResetKey}
@@ -167,6 +171,22 @@ const Explore = () => {
               itineraries={itineraries}
               isLoading={loading && itineraries.length === 0}
             />
+            {!isAuthenticated && itineraries.length > 0 && (
+              <div className="explore__guest-banner">
+                <p className="explore__guest-banner-text">
+                  <strong>Save trips, like itineraries and follow travellers</strong>
+                  <span>Create a free account to get the most out of ToBeATraveller.</span>
+                </p>
+                <div className="explore__guest-banner-actions">
+                  <button className="btn btn__primary" onClick={() => navigate("/register")}>
+                    Create account
+                  </button>
+                  <button className="btn btn__secondary" onClick={() => navigate("/login")}>
+                    Log in
+                  </button>
+                </div>
+              </div>
+            )}
             <div className="explore__results-ctas" ref={loadMoreRef}>
               {hasMore && (
                 <LoadingButton onClick={loadMore} isLoading={loadingMore}>
@@ -177,7 +197,8 @@ const Explore = () => {
           </>
         )}
       </div>
-    </section>
+      </div>
+    </div>
   );
 };
 

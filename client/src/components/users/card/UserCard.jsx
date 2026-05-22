@@ -31,14 +31,14 @@ const UserCard = ({
   };
 
   return (
-    <div className="user-card">
+    <div className="user-card" onClick={handleProfile}>
       <div className="user-card__banner">
         {lastItinerary?.photoUrl && (
           <img src={lastItinerary.photoUrl} alt="" className="user-card__banner-img" />
         )}
         <img src={avatarUrl} alt={username} className="user-card__image" />
       </div>
-      <div className="user-card__body" onClick={handleProfile}>
+      <div className="user-card__body">
         <div className="user-card__name-row">
           <h3 className="user-card__name">@{username}{role === "official" && <OfficialBadge size={14} />}</h3>
           <button

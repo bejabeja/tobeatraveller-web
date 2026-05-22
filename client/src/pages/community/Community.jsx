@@ -72,36 +72,40 @@ const Community = () => {
     }
   }, [isAuthenticated, dispatch]);
 
+  const hero = (
+    <div className="community__hero">
+      <RiUserCommunityLine className="community__hero-icon" />
+      <h1 className="community__hero-title">Community</h1>
+      <p className="community__hero-subtitle">
+        Discover travellers from around the world
+      </p>
+      {totalCount > 0 && (
+        <span className="community__hero-count">{totalCount} members</span>
+      )}
+    </div>
+  );
+
   if (!isAuthenticated) {
     return (
-      <section className="community section__container">
-        <div className="community__hero">
-          <RiUserCommunityLine className="community__hero-icon" />
-          <h1 className="community__hero-title">Community</h1>
-          <p className="community__hero-subtitle">
-            Discover travellers from around the world
-          </p>
+      <div className="community">
+        {hero}
+        <div className="community__guest-preview section__container">
+          <UsersSection users={users} isLoading={loading} />
+          <div className="community__guest-blur" />
         </div>
-
-        <div className="community__guest">
-          <div className="community__guest-preview">
-            <UsersSection users={users} isLoading={loading} />
-            <div className="community__guest-blur" />
-          </div>
-          <div className="community__guest-cta">
-            <h2>Join the community</h2>
-            <p>Sign up to see all travellers, follow people you like, and get inspired for your next trip.</p>
-            <div className="community__guest-cta-buttons">
-              <button className="btn btn__primary" onClick={() => navigate("/register")}>
-                Create account
-              </button>
-              <button className="btn btn__secondary" onClick={() => navigate("/login")}>
-                Log in
-              </button>
-            </div>
+        <div className="community__guest-cta">
+          <h2>Join the community</h2>
+          <p>Sign up to see all travellers, follow people you like, and get inspired for your next trip.</p>
+          <div className="community__guest-cta-buttons">
+            <button className="btn btn__primary" onClick={() => navigate("/register")}>
+              Create account
+            </button>
+            <button className="btn btn__secondary" onClick={() => navigate("/login")}>
+              Log in
+            </button>
           </div>
         </div>
-      </section>
+      </div>
     );
   }
 
@@ -112,51 +116,43 @@ const Community = () => {
   }
 
   return (
-    <section className="community section__container">
-      <div className="community__hero">
-        <RiUserCommunityLine className="community__hero-icon" />
-        <h1 className="community__hero-title">Community</h1>
-        <p className="community__hero-subtitle">
-          Discover travellers from around the world
-        </p>
-        {totalCount > 0 && (
-          <span className="community__hero-count">{totalCount} members</span>
-        )}
+    <div className="community">
+      {hero}
+      <div className="community__content section__container">
+        <Filters
+          searchName={searchName}
+          sortBy={sortBy}
+          handleFilterChange={handleFilterChange}
+          handleSortChange={handleSortChange}
+          handleReset={handleReset}
+        />
+
+        <div className="community__results">
+          {searchName && (
+            <p className="community__results-label">
+              Results for &quot;{searchName}&quot;
+            </p>
+          )}
+
+          {!users?.length && !loading && (
+            <div className="community__no-results">
+              <p>No travellers found with that name.</p>
+              <p>Try adjusting your search.</p>
+            </div>
+          )}
+
+          <UsersSection users={users} isLoading={loading && !users?.length} />
+
+          {hasMore && (
+            <div ref={loadMoreRef} className="community__results-ctas">
+              <LoadingButton onClick={handleLoadMore} isLoading={loadingMore}>
+                Load more
+              </LoadingButton>
+            </div>
+          )}
+        </div>
       </div>
-
-      <Filters
-        searchName={searchName}
-        sortBy={sortBy}
-        handleFilterChange={handleFilterChange}
-        handleSortChange={handleSortChange}
-        handleReset={handleReset}
-      />
-
-      <div className="community__results">
-        {searchName && (
-          <p className="community__results-label">
-            Results for &quot;{searchName}&quot;
-          </p>
-        )}
-
-        {!users?.length && !loading && (
-          <div className="community__no-results">
-            <p>No travellers found with that name.</p>
-            <p>Try adjusting your search.</p>
-          </div>
-        )}
-
-        <UsersSection users={users} isLoading={loading && !users?.length} />
-
-        {hasMore && (
-          <div ref={loadMoreRef} className="community__results-ctas">
-            <LoadingButton onClick={handleLoadMore} isLoading={loadingMore}>
-              Load more
-            </LoadingButton>
-          </div>
-        )}
-      </div>
-    </section>
+    </div>
   );
 };
 
