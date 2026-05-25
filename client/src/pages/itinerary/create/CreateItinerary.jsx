@@ -205,7 +205,7 @@ const CreateItinerary = () => {
         <TravellersForm control={control} errors={errors} />
         <VisibilityForm control={control} />
         <div className="form__cta">
-          <Link to="/my-itineraries" type="button" className="btn btn__tertiary">
+          <Link to="/my-itineraries" type="button" className="btn btn--ghost">
             Cancel
           </Link>
           <div className="form__cta-submit">

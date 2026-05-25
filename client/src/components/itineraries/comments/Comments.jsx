@@ -122,8 +122,8 @@ const Comments = ({ itineraryId, isAuthenticated }) => {
             />
             {newComment.trim() && (
               <div className="comments__form-actions">
-                <button className="btn__link" onClick={() => setNewComment("")}>Cancel</button>
-                <button onClick={handleAddComment} disabled={loading} className="btn btn__primary btn--sm">
+                <button className="btn btn--ghost btn--sm" onClick={() => setNewComment("")}>Cancel</button>
+                <button onClick={handleAddComment} disabled={loading} className="btn btn--primary btn--sm">
                   {loading ? "Posting..." : "Post"}
                 </button>
               </div>

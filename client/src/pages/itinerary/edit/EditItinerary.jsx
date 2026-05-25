@@ -231,13 +231,13 @@ const EditItinerary = () => {
             <Link
               to={`/my-itineraries`}
               type="button"
-              className="btn btn__tertiary"
+              className="btn btn--ghost"
             >
               Cancel
             </Link>
             <button
               type="button"
-              className="btn btn__primary"
+              className="btn btn--primary"
               onClick={async () => {
                 const isValid = await trigger();
                 if (isValid) {

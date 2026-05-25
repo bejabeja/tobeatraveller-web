@@ -8,7 +8,7 @@ const Error = ({ message }) => {
       <MdErrorOutline size={48} className="error__icon" />
       <h2>Something went wrong</h2>
       <p>{message || "Please try again later."}</p>
-      <Link to="/" className="btn btn__danger">
+      <Link to="/" className="btn btn--secondary">
         Go Back Home
       </Link>
     </div>

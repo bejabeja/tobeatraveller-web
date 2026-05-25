@@ -35,7 +35,7 @@ const MyItineraries = () => {
   return (
     <section className="my-itineraries section__container">
       <div className="my-itineraries__section-ctas">
-        <Link to="/create-itinerary" className="btn btn__secondary">
+        <Link to="/create-itinerary" className="btn btn--primary">
           Plan a trip
         </Link>
       </div>
@@ -47,7 +47,7 @@ const MyItineraries = () => {
           <p className="error-message">
             Oops! Something went wrong while loading itineraries.
           </p>
-          <button className="btn btn__danger-outline" onClick={handleRetry}>
+          <button className="btn btn--ghost" onClick={handleRetry}>
             Try again
           </button>
         </div>

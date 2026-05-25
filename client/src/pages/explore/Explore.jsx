@@ -151,7 +151,7 @@ const Explore = () => {
             <p className="error-message">
               Oops! Something went wrong while loading itineraries.
             </p>
-            <button className="btn btn__danger-outline" onClick={handleRetry}>
+            <button className="btn btn--ghost" onClick={handleRetry}>
               Try again
             </button>
           </div>
@@ -178,10 +178,10 @@ const Explore = () => {
                   <span>Create a free account to get the most out of ToBeATraveller.</span>
                 </p>
                 <div className="explore__guest-banner-actions">
-                  <button className="btn btn__primary" onClick={() => navigate("/register")}>
+                  <button className="btn btn--primary" onClick={() => navigate("/register")}>
                     Create account
                   </button>
-                  <button className="btn btn__secondary" onClick={() => navigate("/login")}>
+                  <button className="btn btn--secondary" onClick={() => navigate("/login")}>
                     Log in
                   </button>
                 </div>

@@ -243,7 +243,7 @@ const Filters = ({ onChange, defaultValues = {}, hideDates = false }) => {
             </div>
           </div>
 
-          <button className="btn btn__reset" onClick={resetFilters}>
+          <button className="btn btn--ghost" onClick={resetFilters}>
             Reset filters
           </button>
         </>

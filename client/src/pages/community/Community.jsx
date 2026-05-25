@@ -97,10 +97,10 @@ const Community = () => {
           <h2>Join the community</h2>
           <p>Sign up to see all travellers, follow people you like, and get inspired for your next trip.</p>
           <div className="community__guest-cta-buttons">
-            <button className="btn btn__primary" onClick={() => navigate("/register")}>
+            <button className="btn btn--primary" onClick={() => navigate("/register")}>
               Create account
             </button>
-            <button className="btn btn__secondary" onClick={() => navigate("/login")}>
+            <button className="btn btn--secondary" onClick={() => navigate("/login")}>
               Log in
             </button>
           </div>
@@ -182,7 +182,7 @@ const Filters = ({ searchName, sortBy, handleFilterChange, handleSortChange, han
       </select>
     </label>
 
-    <button onClick={handleReset} className="btn btn__secondary">
+    <button onClick={handleReset} className="btn btn--ghost">
       Reset
     </button>
   </div>

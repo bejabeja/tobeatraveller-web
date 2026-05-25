@@ -158,14 +158,14 @@ const HeaderSection = ({
             <IoLinkOutline aria-hidden="true" />
           </button>
           {isMyProfile ? (
-            <Link to={`/profile/edit/${user?.id}`} className="btn btn__primary-outline profile__btn">
+            <Link to={`/profile/edit/${user?.id}`} className="btn btn--secondary profile__btn">
               <MdOutlineEdit aria-hidden="true" />
               Edit profile
             </Link>
           ) : (
             <button
               ref={followBtnRef}
-              className={`btn profile__btn ${isFollowing ? "btn__primary-outline" : "btn__primary"}`}
+              className={`btn profile__btn ${isFollowing ? "btn--secondary" : "btn--primary"}`}
               onClick={onFollowToggle}
               disabled={isLoadingFollow}
             >

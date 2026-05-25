@@ -41,7 +41,7 @@ const ItinerariesSection = ({
           </div>
           {showViewAll && (
             <div className="itineraries-section__footer">
-              <Link to={viewAllHref} className="btn btn__primary-outline">
+              <Link to={viewAllHref} className="btn btn--secondary">
                 See all {total} trips
               </Link>
             </div>
@@ -63,7 +63,7 @@ const EmptyState = ({ isOwner, username }) => (
         <p className="itineraries-section__empty-sub">
           Share your first itinerary with the community
         </p>
-        <Link to="/create-itinerary" className="btn btn__primary itineraries-section__empty-cta">
+        <Link to="/create-itinerary" className="btn btn--primary itineraries-section__empty-cta">
           + Create a trip
         </Link>
       </>

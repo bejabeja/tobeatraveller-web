@@ -180,7 +180,7 @@ const PlacesForm = ({
 
             <button
               type="button"
-              className="btn btn__secondary"
+              className="btn btn--secondary"
               onClick={() => handleAddPlace(day)}
             >
               + Add place to Day {day}
@@ -192,7 +192,7 @@ const PlacesForm = ({
       {/* #4 — hide "Add Day X" until Day 1 has at least one place */}
       {(fields.length > 0 || days.length > 1) && (
         <div className="form__cta">
-          <button type="button" className="btn btn__primary" onClick={handleAddDay}>
+          <button type="button" className="btn btn--primary" onClick={handleAddDay}>
             + Add Day {maxDay + 1}
           </button>
         </div>

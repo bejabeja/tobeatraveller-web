@@ -108,7 +108,7 @@ const Navbar = () => {
 
           {!isAuthenticated && (
             <div className="nav-auth">
-              <Link to="/register" className="nav-auth__register">Create account</Link>
+              <Link to="/register" className="btn btn--primary nav-auth__register">Create account</Link>
               <Link to="/login" className="nav-auth__login">Already a member? <span>Sign in</span></Link>
             </div>
           )}

@@ -60,7 +60,7 @@ const ImageUpload = ({ onUpload, imageUrl: initialImageUrl, isComplete }) => {
         <div className="form__dropzone-preview">
           <img src={previewUrl} alt="Cover preview" className="image-upload-preview" />
           <div className="form__dropzone-actions">
-            <label htmlFor="image-upload-input" className="btn btn__secondary">
+            <label htmlFor="image-upload-input" className="btn btn--secondary">
               Change
             </label>
             <button type="button" className="image-upload-clear" onClick={handleClear}>

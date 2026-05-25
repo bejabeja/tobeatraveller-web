@@ -480,37 +480,6 @@
   }
 }
 
-.btn__secondary {
-  background-color: transparent;
-  border: 1px solid var(--primary-color);
-  color: var(--primary-color);
-  padding: 0.4rem 1rem;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  width: fit-content;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: var(--primary-color);
-    color: var(--white-color);
-  }
-}
-
-.btn__danger-text {
-  background: none;
-  border: none;
-  color: var(--danger-color, #e53e3e);
-  cursor: pointer;
-  font-size: 0.85rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-
-  &:hover {
-    text-decoration: underline;
-  }
-}
-
 .form__day-remove-btn {
   font-size: 0.78rem;
   padding: 0.2rem 0.6rem;

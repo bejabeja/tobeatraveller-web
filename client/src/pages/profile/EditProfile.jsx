@@ -223,14 +223,14 @@ const EditProfile = () => {
         <div className="edit-profile__actions">
           <button
             type="button"
-            className="btn btn__primary-outline"
+            className="btn btn--ghost"
             onClick={handleCancel}
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="btn btn__primary"
+            className="btn btn--primary"
             disabled={isSubmitting || usernameStatus === "taken"}
           >
             {isSubmitting ? "Saving…" : "Save profile"}
@@ -248,7 +248,7 @@ const EditProfile = () => {
         </p>
         <button
           type="button"
-          className="btn btn__danger-outline"
+          className="btn btn--danger"
           onClick={() => { setDeleteConfirmInput(""); setShowDeleteModal(true); }}
         >
           Delete my account
@@ -283,14 +283,14 @@ const EditProfile = () => {
             />
             <div className="modal__actions">
               <button
-                className="btn btn__secondary"
+                className="btn btn--ghost"
                 onClick={() => setShowDeleteModal(false)}
                 disabled={isDeleting}
               >
                 Cancel
               </button>
               <button
-                className="btn btn__danger"
+                className="btn btn--danger"
                 onClick={handleDeleteAccount}
                 disabled={deleteConfirmInput !== userMe?.username || isDeleting}
               >

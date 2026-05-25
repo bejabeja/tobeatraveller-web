@@ -55,11 +55,11 @@ const UserCard = ({ user }) => {
       </Link>
       {!isMyUser &&
         (isFollowing ? (
-          <button className="btn btn__danger-outline" onClick={handleFollow}>
+          <button className="btn btn--secondary" onClick={handleFollow}>
             Unfollow
           </button>
         ) : (
-          <button className="btn btn__primary" onClick={handleFollow}>
+          <button className="btn btn--primary" onClick={handleFollow}>
             Follow
           </button>
         ))}

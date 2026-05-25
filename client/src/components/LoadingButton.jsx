@@ -4,7 +4,7 @@ import "./LoadingButton.scss";
 const LoadingButton = ({ isLoading, children, ...props }) => {
   return (
     <button
-      className="btn btn__secondary loading-button"
+      className="btn btn--secondary loading-button"
       disabled={isLoading}
       {...props}
     >

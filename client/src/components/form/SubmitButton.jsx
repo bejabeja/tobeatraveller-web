@@ -3,7 +3,7 @@ const SubmitButton = ({ label, loading = false, disabled = false }) => {
   return (
     <button
       type="submit"
-      className="btn btn__primary"
+      className="btn btn--primary"
       disabled={isDisabled}
       aria-busy={loading}
       aria-disabled={isDisabled}

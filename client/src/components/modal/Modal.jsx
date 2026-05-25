@@ -14,7 +14,7 @@ const Modal = ({
   if (!isOpen) return null;
 
   const confirmClass =
-    type === "danger" ? "btn btn__danger" : "btn btn__primary";
+    type === "danger" ? "btn btn--danger" : "btn btn--primary";
 
   return (
     <div className="modal__backdrop" onClick={onClose}>
@@ -22,7 +22,7 @@ const Modal = ({
         <h2 className="modal__title">{title}</h2>
         {description && <p className="modal__description">{description}</p>}
         <div className="modal__actions">
-          <button className="btn btn__secondary" onClick={onClose}>
+          <button className="btn btn--ghost" onClick={onClose}>
             {cancelText}
           </button>
           <button className={confirmClass} onClick={onConfirm}>
