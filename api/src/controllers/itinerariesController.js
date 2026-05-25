@@ -56,6 +56,15 @@ export class ItinerariesController {
         }
     }
 
+    async getDestinations(req, res, next) {
+        try {
+            const destinations = await this.itinerariesService.getDestinations();
+            res.status(200).json(destinations);
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async getItinerariesByUserId(req, res, next) {
         try {
             const { id } = req.params;

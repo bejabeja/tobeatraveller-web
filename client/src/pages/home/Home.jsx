@@ -17,8 +17,8 @@ import {
   selectFeaturedUsers,
   selectFeaturedUsersLoading,
 } from "../../store/users/usersSelectors.js";
+import WorldMap from "../../components/home/WorldMap.jsx";
 import { FEATURES } from "../../utils/constants/constants.js";
-import { getImagesInfo } from "../../utils/constants/images.js";
 import "./Home.scss";
 
 const Home = () => {
@@ -90,24 +90,10 @@ const Home = () => {
         </div>
         <div className="home__destinations">
           <div className="home__section-header">
-            <h2>Popular Destinations</h2>
-            <p>Where our community loves to go.</p>
+            <h2>Explore the World</h2>
+            <p>Click any destination to discover itineraries from the community.</p>
           </div>
-          <div className="destinations-grid">
-            {["paris", "tokyo", "newYork", "barcelona"].map((city) => {
-              const cityInfo = getImagesInfo(city);
-              return (
-                <Link
-                  className="destination-card"
-                  key={city}
-                  to={`/explore?location=${encodeURIComponent(cityInfo.city)}`}
-                >
-                  <img src={cityInfo.photoUrl} alt={cityInfo.city} />
-                  <span>{cityInfo.city}</span>
-                </Link>
-              );
-            })}
-          </div>
+          <WorldMap />
         </div>
         {!isAuthenticated && (
           <div className="home__cta">

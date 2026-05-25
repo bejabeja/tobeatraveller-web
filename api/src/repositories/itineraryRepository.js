@@ -122,6 +122,28 @@ export class ItineraryRepository {
     return result.rows.length ? Itinerary.fromDb(result.rows[0]) : null;
   }
 
+  async getDestinations() {
+    const result = await client.query(`
+      SELECT
+        location_name AS name,
+        ROUND(AVG(latitude)::numeric, 6) AS lat,
+        ROUND(AVG(longitude)::numeric, 6) AS lon,
+        COUNT(*)::int AS count
+      FROM itineraries
+      JOIN users ON itineraries.user_id = users.id
+      WHERE itineraries.is_public = true
+        AND users.role != 'test'
+        AND latitude IS NOT NULL
+        AND longitude IS NOT NULL
+        AND latitude != 0
+        AND longitude != 0
+      GROUP BY location_name
+      ORDER BY count DESC
+      LIMIT 300
+    `);
+    return result.rows;
+  }
+
   async getStats() {
     const result = await client.query(`
       SELECT

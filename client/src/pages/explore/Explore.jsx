@@ -47,9 +47,10 @@ const Explore = () => {
   const totalItems = useSelector(selectExploreTotalItems);
   const page = useSelector(selectExplorePage);
 
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const initialDestination = searchParams.get("location") ?? "";
 
+  const [defaultDestination, setDefaultDestination] = useState(initialDestination);
   const [filters, setFilters] = useState(
     initialDestination ? { destination: initialDestination } : {}
   );
@@ -78,6 +79,8 @@ const Explore = () => {
 
   const clearAllFilters = () => {
     setFilters({});
+    setSearchParams({});
+    setDefaultDestination("");
     setFilterResetKey((k) => k + 1);
   };
 
@@ -101,7 +104,7 @@ const Explore = () => {
         <Filters
           key={filterResetKey}
           onChange={setFilters}
-          defaultValues={initialDestination ? { destination: initialDestination } : {}}
+          defaultValues={defaultDestination ? { destination: defaultDestination } : {}}
           hideDates
         />
       </div>

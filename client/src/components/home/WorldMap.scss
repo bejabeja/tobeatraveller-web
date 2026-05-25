@@ -1,0 +1,68 @@
+.world-map {
+  width: 100%;
+  border-radius: 1.25rem;
+  overflow: hidden;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.1);
+
+  &__container {
+    width: 100%;
+    height: 420px;
+
+    .leaflet-container {
+      width: 100%;
+      height: 100%;
+      font-family: inherit;
+    }
+  }
+
+}
+
+.world-map__pin {
+  width: 36px;
+  height: 36px;
+  background: var(--primary-color);
+  color: white;
+  border: 2.5px solid white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: inherit;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+
+  &:hover {
+    transform: scale(1.2);
+  }
+}
+
+.leaflet-control-zoom {
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !important;
+  border-radius: 8px !important;
+  overflow: hidden;
+}
+
+.leaflet-tooltip {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-radius: 8px !important;
+  border: none !important;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15) !important;
+  padding: 0.4rem 0.65rem !important;
+  pointer-events: none;
+
+  strong {
+    font-size: 0.85rem;
+    color: var(--text-color);
+  }
+
+  span {
+    font-size: 0.75rem;
+    color: var(--text-secondary-color);
+  }
+}

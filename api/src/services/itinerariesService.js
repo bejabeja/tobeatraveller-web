@@ -45,6 +45,10 @@ export class ItinerariesService {
         return this.itinerariesRepository.getStats();
     }
 
+    async getDestinations() {
+        return this.itinerariesRepository.getDestinations();
+    }
+
     async getItinerariesByUserId(userId) {
         const itineraries = await this.itinerariesRepository.findByUserId(userId);
         if (!itineraries.length) {

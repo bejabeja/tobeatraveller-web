@@ -58,6 +58,12 @@ export const generateSmartItinerary = async ({ destination, days, category, numb
     return response.json();
 };
 
+export const getDestinations = async () => {
+    const response = await fetch(`${baseUrl}/destinations`);
+    if (!response.ok) throw new Error('Failed to fetch destinations');
+    return response.json();
+};
+
 export const getItinerariesByUserId = async (id) => {
     const response = await fetch(`${baseUrl}/${id}`, {
         method: 'GET',
