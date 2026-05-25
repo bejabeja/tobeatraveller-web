@@ -7,7 +7,8 @@ import {
     SET_STATS,
     START_LOADING_EXPLORE_ITINERARIES,
     START_LOADING_FEATURED_ITINERARIES,
-    START_LOADING_MORE_ITINERARIES
+    START_LOADING_MORE_ITINERARIES,
+    UPDATE_COMMENTS_COUNT,
 } from './itinerariesActions';
 
 const initialState = {
@@ -102,6 +103,17 @@ export const itinerariesReducer = (state = initialState, action) => {
 
         case SET_STATS:
             return { ...state, stats: action.payload };
+
+        case UPDATE_COMMENTS_COUNT: {
+            const patch = (list) => list.map((it) =>
+                it.id === action.payload.id ? { ...it, commentsCount: action.payload.count } : it
+            );
+            return {
+                ...state,
+                featuredItineraries: { ...state.featuredItineraries, data: patch(state.featuredItineraries.data) },
+                exploreItineraries: { ...state.exploreItineraries, data: patch(state.exploreItineraries.data) },
+            };
+        }
 
         default:
             return state;

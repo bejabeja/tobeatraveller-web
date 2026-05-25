@@ -9,6 +9,12 @@ export const SET_EXPLORE_ITINERARIES_ERROR = "@exploreItineraries/setError";
 export const SET_EXPLORE_PAGINATION = "@exploreItineraries/setPagination";
 export const START_LOADING_MORE_ITINERARIES = "@exploreItineraries/startLoadingMore";
 export const SET_STATS = "@stats/set";
+export const UPDATE_COMMENTS_COUNT = "@itinerary/updateCommentsCount";
+
+export const updateCommentsCount = (id, count) => ({
+    type: UPDATE_COMMENTS_COUNT,
+    payload: { id, count },
+});
 
 export const initFeaturedItineraries = () => {
     return async (dispatch) => {

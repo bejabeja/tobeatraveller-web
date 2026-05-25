@@ -5,14 +5,15 @@ import { Comment } from '../models/comment.js';
 export class CommentsRepository {
   async addComment(userId, itineraryId, content) {
     const id = uuidv4();
-    const query = `
-          INSERT INTO itinerary_comments (id, user_id, itinerary_id, content)
-          VALUES ($1, $2, $3, $4)
-          RETURNING *;
-        `;
-    const values = [id, userId, itineraryId, content];
-
-    const result = await client.query(query, values);
+    const result = await client.query(
+      `INSERT INTO itinerary_comments (id, user_id, itinerary_id, content)
+       VALUES ($1, $2, $3, $4) RETURNING *;`,
+      [id, userId, itineraryId, content]
+    );
+    await client.query(
+      `UPDATE itineraries SET comments_count = comments_count + 1 WHERE id = $1`,
+      [itineraryId]
+    );
     return Comment.fromDB(result.rows[0]);
   }
 
@@ -35,8 +36,16 @@ export class CommentsRepository {
   }
 
   async deleteComment(commentId) {
-    const query = `DELETE FROM itinerary_comments WHERE id = $1;`;
-    await client.query(query, [commentId]);
+    const result = await client.query(
+      `DELETE FROM itinerary_comments WHERE id = $1 RETURNING itinerary_id;`,
+      [commentId]
+    );
+    if (result.rows[0]) {
+      await client.query(
+        `UPDATE itineraries SET comments_count = GREATEST(comments_count - 1, 0) WHERE id = $1`,
+        [result.rows[0].itinerary_id]
+      );
+    }
   }
 
   async getCommentById(commentId) {

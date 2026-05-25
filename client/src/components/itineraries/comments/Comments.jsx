@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import {
   addComment,
   deleteComment,
   getCommentsByItineraryId,
 } from "../../../services/comments";
+import { updateCommentsCount } from "../../../store/itineraries/itinerariesActions";
 import { selectMe } from "../../../store/user/userInfoSelectors";
 import Modal from "../../modal/Modal";
 import "./Comments.scss";
@@ -18,12 +19,14 @@ const Comments = ({ itineraryId, isAuthenticated }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState(null);
 
+  const dispatch = useDispatch();
   const userMe = useSelector(selectMe);
 
   const fetchComments = async () => {
     try {
       const response = await getCommentsByItineraryId(itineraryId);
       setComments(response);
+      dispatch(updateCommentsCount(itineraryId, response.length));
     } catch (error) {
       console.error("Failed to fetch comments", error);
     }
