@@ -5,6 +5,7 @@ export const errorHandler = (err, req, res, next) => {
         return next(err);
     }
     const status = err instanceof BaseError ? err.statusCode : 500;
+    if (status >= 500) console.error('[ERROR]', err);
     Sentry.captureException(err);
     res.status(status).json({
         error: err.message || "Internal server error",

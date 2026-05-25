@@ -46,6 +46,18 @@ export const getfeaturedItineraries = async () => {
     return response.json();
 }
 
+export const generateSmartItinerary = async ({ destination, days, category, numberOfTravellers, budget, currency }) => {
+    const itineraryBase = `${import.meta.env.VITE_API_URL}/itinerary`;
+    const response = await fetch(`${itineraryBase}/generate-smart`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ destination, days, category, numberOfTravellers, budget, currency }),
+    });
+    if (!response.ok) throw new Error('Failed to generate itinerary');
+    return response.json();
+};
+
 export const getItinerariesByUserId = async (id) => {
     const response = await fetch(`${baseUrl}/${id}`, {
         method: 'GET',

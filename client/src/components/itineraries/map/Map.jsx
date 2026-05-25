@@ -25,7 +25,7 @@ const createLocationIcon = () =>
     popupAnchor: [0, -28],
   });
 
-const MapController = ({ coords, resetRef, panToRef }) => {
+const MapController = ({ coords, coordsByIndex, resetRef, panToRef }) => {
   const map = useMap();
 
   const reset = useCallback(() => {
@@ -43,10 +43,11 @@ const MapController = ({ coords, resetRef, panToRef }) => {
   useEffect(() => {
     if (!panToRef) return;
     panToRef.current = (index) => {
-      if (index === null || index === undefined || !coords[index]) return;
-      map.setView(coords[index], Math.max(map.getZoom(), 14), { animate: true });
+      const coord = coordsByIndex?.[index];
+      if (!coord) return;
+      map.setView(coord, Math.max(map.getZoom(), 14), { animate: true });
     };
-  }, [coords, map, panToRef]);
+  }, [coordsByIndex, map, panToRef]);
 
   return null;
 };
@@ -61,13 +62,19 @@ const Map = ({ location, places = [], hoveredPlaceIndex = null, panToRef = null 
   const center = [parseFloat(location.lat), parseFloat(location.lon)];
 
   const placeMarkers = places
-    .filter((p) => p.latitude && p.longitude)
-    .map((p, i) => ({
+    .map((p, originalIndex) => ({
       lat: parseFloat(p.latitude),
       lng: parseFloat(p.longitude),
       name: p.name,
-      number: i + 1,
-    }));
+      originalIndex,
+      number: originalIndex + 1,
+    }))
+    .filter((m) => m.lat && m.lng);
+
+  // indexed by originalIndex so panTo(index) always resolves correctly
+  const coordsByIndex = places.map((p) =>
+    p.latitude && p.longitude ? [parseFloat(p.latitude), parseFloat(p.longitude)] : null
+  );
 
   const fitCoords =
     placeMarkers.length > 0 ? placeMarkers.map((m) => [m.lat, m.lng]) : [center];
@@ -78,8 +85,9 @@ const Map = ({ location, places = [], hoveredPlaceIndex = null, panToRef = null 
     <div className="map">
       <MapContainer center={center} zoom={12} className="map__container">
         <TileLayer
-          attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
-          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          maxZoom={19}
         />
 
         {routeCoords.length > 1 && (
@@ -94,7 +102,7 @@ const Map = ({ location, places = [], hoveredPlaceIndex = null, panToRef = null 
             <Marker
               key={m.number}
               position={[m.lat, m.lng]}
-              icon={createNumberedIcon(m.number, hoveredPlaceIndex === m.number - 1)}
+              icon={createNumberedIcon(m.number, hoveredPlaceIndex === m.originalIndex)}
             >
               <Popup><strong>{m.number}. {m.name}</strong></Popup>
             </Marker>
@@ -105,7 +113,7 @@ const Map = ({ location, places = [], hoveredPlaceIndex = null, panToRef = null 
           </Marker>
         )}
 
-        <MapController coords={fitCoords} resetRef={resetRef} panToRef={panToRef} />
+        <MapController coords={fitCoords} coordsByIndex={coordsByIndex} resetRef={resetRef} panToRef={panToRef} />
       </MapContainer>
 
       <button

@@ -208,10 +208,27 @@
 }
 
 // #6 — section completion checkmark
+.form__subtitle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
 .form__subtitle {
   display: flex;
   align-items: center;
   gap: 0.4rem;
+}
+
+.form__ai-btn {
+  gap: 0.4rem;
+
+  svg {
+    font-size: 1rem;
+    margin-right: 0;
+  }
 }
 
 .form__section-check {

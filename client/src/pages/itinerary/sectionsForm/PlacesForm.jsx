@@ -1,19 +1,24 @@
 import { useEffect, useRef, useState } from "react";
 import { Controller, useWatch } from "react-hook-form";
 import { MdClose, MdKeyboardArrowDown, MdKeyboardArrowUp, MdOutlineExplore } from "react-icons/md";
+import { RiSparklingLine } from "react-icons/ri";
+import toast from "react-hot-toast";
 import { getCategoryIcon } from "../../../assets/icons";
 import AutocompletePlaceInput from "../../../components/form/AutocompletePlaceInput";
 import { TextAreaForm } from "../../../components/form/InputForm";
 import { placeCategories } from "../../../utils/constants/constants";
+import { generateSmartItinerary } from "../../../services/itineraries";
 
 const PlacesForm = ({
   control, errors, fields, append, remove, replace, move,
   destination, days, setDays, isPublic, tripDays, isComplete,
+  category, numberOfTravellers, budget, currency,
 }) => {
   const maxDay = days.length > 0 ? Math.max(...days) : 0;
   const prevIsPublic = useRef(isPublic);
   const justAddedRef = useRef(false);
   const [confirmRemoveDay, setConfirmRemoveDay] = useState(null);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   // #7 — scroll to first empty day when switching to Public
   useEffect(() => {
@@ -68,18 +73,67 @@ const PlacesForm = ({
     setDays(Array.from({ length: tripDays }, (_, i) => i + 1));
   };
 
+  const handleGenerateWithAI = async () => {
+    if (!destination?.name) return;
+    const totalDays = tripDays || days.length || 1;
+    setIsGenerating(true);
+    try {
+      const data = await generateSmartItinerary({
+        destination: destination.name,
+        days: totalDays,
+        category,
+        numberOfTravellers,
+        budget,
+        currency,
+      });
+      const generatedPlaces = data.places.map((p) => ({
+        description: p.description,
+        category: p.category ?? "other",
+        dayNumber: p.dayNumber ?? 1,
+        infoPlace: {
+          name: p.title,
+          label: p.label ?? p.title,
+          coordinates: {
+            lat: parseFloat(p.latitude ?? p.lat ?? 0),
+            lon: parseFloat(p.longitude ?? p.lng ?? 0),
+          },
+        },
+      }));
+      replace(generatedPlaces);
+      const uniqueDays = [...new Set(generatedPlaces.map((p) => p.dayNumber))].sort((a, b) => a - b);
+      setDays(uniqueDays);
+      toast.success("Itinerary generated!");
+    } catch {
+      toast.error("Couldn't generate itinerary. Try again.");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   return (
     <div className="form__places">
       {/* #5 — total places in section header */}
-      <h2 className="form__subtitle">
-        Places
-        {fields.length > 0 && (
-          <span className="form__places-summary">
-            {fields.length} {fields.length === 1 ? "place" : "places"} · {days.length} {days.length === 1 ? "day" : "days"}
-          </span>
-        )}
-        {isComplete && <span className="form__section-check">✓</span>}
-      </h2>
+      <div className="form__subtitle-row">
+        <h2 className="form__subtitle">
+          Places
+          {fields.length > 0 && (
+            <span className="form__places-summary">
+              {fields.length} {fields.length === 1 ? "place" : "places"} · {days.length} {days.length === 1 ? "day" : "days"}
+            </span>
+          )}
+          {isComplete && <span className="form__section-check">✓</span>}
+        </h2>
+        <button
+          type="button"
+          className="btn btn--secondary btn--sm form__ai-btn"
+          onClick={handleGenerateWithAI}
+          disabled={isGenerating || !destination?.name}
+          title={!destination?.name ? "Set a destination first" : "Generate itinerary with AI"}
+        >
+          <RiSparklingLine />
+          {isGenerating ? "Generating..." : "Generate with AI"}
+        </button>
+      </div>
 
       {/* #1 — days/dates sync nudge */}
       {tripDays > days.length && (

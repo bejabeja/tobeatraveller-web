@@ -108,8 +108,8 @@ export class ItineraryService {
         await this.itinerariesRepository.update(id, itineraryData);
     }
 
-    async generateSmartItinerary(destination, totalDays) {
-        const rawText = await this.aiService.generateTextPrompt(destination, totalDays)
+    async generateSmartItinerary(destination, totalDays, context = {}) {
+        const rawText = await this.aiService.generateTextPrompt(destination, totalDays, context)
         try {
             return JSON.parse(rawText)
         } catch {

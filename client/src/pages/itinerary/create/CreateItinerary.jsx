@@ -200,6 +200,10 @@ const CreateItinerary = () => {
           isPublic={watch("isPublic")}
           tripDays={tripDays}
           isComplete={isPlacesComplete}
+          category={watch("category")}
+          numberOfTravellers={watch("numberOfTravellers")}
+          budget={watch("budget")}
+          currency={watch("currency")}
         />
         <BudgetForm control={control} errors={errors} isComplete={isBudgetComplete} tripDays={tripDays} setValue={setValue} />
         <TravellersForm control={control} errors={errors} />

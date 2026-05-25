@@ -1,73 +1,64 @@
-import { CohereClient } from 'cohere-ai';
+import Groq from 'groq-sdk';
 
 export class AIService {
   constructor() {
-    this.client = new CohereClient({
-      token: process.env.COHERE_API_KEY
-    })
+    this.client = new Groq({ apiKey: process.env.GROQ_API_KEY });
   }
 
-  async generateTextPrompt(destination, totalDays) {
-    const prompt = `Create a JSON itinerary for a ${totalDays}-day trip to ${destination}. 
-      Include exactly 3 places per day (so ${totalDays * 3} total).
+  async generateTextPrompt(destination, totalDays, context = {}) {
+    const { category, numberOfTravellers, budget, currency } = context;
 
-      Each place must have these fields:
-      - title (string)
-      - address (string)
-      - description (string)
-      - label (string)
-      - latitude (string)
-      - longitude (string)
-      - category (one single value from this list: nature, beach, city, park, monument, camping, island, sport, vineyard, other)
+    const contextLines = [
+      category && category !== 'other' ? `- Trip style: ${category}` : null,
+      numberOfTravellers ? `- Number of travellers: ${numberOfTravellers}` : null,
+      budget && currency ? `- Budget: ${budget} ${currency} total` : null,
+    ].filter(Boolean).join('\n');
 
-      Output ONLY a valid JSON like this:
+    const prompt = `Create a JSON travel itinerary for a ${totalDays}-day trip to ${destination}.
+Include exactly 3 places per day (${totalDays * 3} total), spread evenly across all ${totalDays} days.
+${contextLines ? `\nTrip context:\n${contextLines}\nTailor the place suggestions to this context.\n` : ''}
+Each place must have:
+- title (string): name of the place
+- description (string): 1-2 engaging sentences about it
+- label (string): very short label, max 3 words
+- latitude (number): real decimal latitude
+- longitude (number): real decimal longitude
+- category (exactly one from: nature, beach, city, park, monument, camping, island, sport, vineyard, other)
+- dayNumber (number): which day (1 to ${totalDays})
 
-      {
-        "destination": "${destination}",
-        "totalDays": ${totalDays},
-        "latitude": "${destination} latitude",
-        "longitude": "${destination} longitude",
-        "places": [
-          {
-            "title": "Example Title",
-            "address": "Example Street, City",
-            "description": "Short engaging text.",
-            "label": "Short label",
-            "latitude": "41.4036",
-            "longitude": "2.1744",
-            "category": "city"
-          }
-        ]
-      }
+Output ONLY raw valid JSON, no markdown, no explanation:
 
-      Do not use multiple categories. Use only one valid category per place. 
-      Do not return any text, explanation, or formatting, just raw JSON.
-      `;
+{
+  "destination": "${destination}",
+  "totalDays": ${totalDays},
+  "places": [
+    {
+      "title": "Place Name",
+      "description": "Short engaging description.",
+      "label": "Short label",
+      "latitude": 41.4036,
+      "longitude": 2.1744,
+      "category": "monument",
+      "dayNumber": 1
+    }
+  ]
+}`;
 
     try {
-      const response = await this.client.generate({
-        model: 'command-r-plus', // o command-light if plan free//o command-r-plus pay plan(xlarge?xmedium?)
-        prompt,
-        maxTokens: 1300,
-        temperature: 0.8, //random grade for answers
-        k: 0,
-        p: 1,
-        frequencyPenalty: 0,
-        presencePenalty: 0,
-        stopSequences: [],
-        returnLikelihoods: 'NONE'
-      })
+      const response = await this.client.chat.completions.create({
+        model: 'llama-3.1-8b-instant',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.7,
+        max_tokens: 2000,
+      });
 
-
-      const text = response.generations?.[0]?.text
-      const jsonMatch = text.match(/\{[\s\S]*\}/)
-      if (!jsonMatch) {
-        throw new Error('No valid JSON found in response text')
-      }
+      const text = response.choices[0]?.message?.content;
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error('No valid JSON found in response');
       return jsonMatch[0];
     } catch (error) {
-      console.error('Error generating itinerary text:', error)
-      throw error
+      console.error('Error generating itinerary:', error);
+      throw error;
     }
   }
 }

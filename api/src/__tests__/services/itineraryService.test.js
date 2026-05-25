@@ -316,7 +316,7 @@ describe('ItineraryService', () => {
 
       const result = await service.generateSmartItinerary('Tokyo', 3);
 
-      expect(aiService.generateTextPrompt).toHaveBeenCalledWith('Tokyo', 3);
+      expect(aiService.generateTextPrompt).toHaveBeenCalledWith('Tokyo', 3, {});
       expect(result).toEqual([{ day: 1, activities: ['Visit museum'] }]);
     });
 
