@@ -15,6 +15,10 @@ export class LikesService {
     }
 
     async isLiked(itineraryId, userId) {
-        return this.likesRepository.isLiked(itineraryId, userId);
+        const [isLiked, likesCount] = await Promise.all([
+            this.likesRepository.isLiked(itineraryId, userId),
+            this.likesRepository.getLikesCount(itineraryId),
+        ]);
+        return { isLiked, likesCount };
     }
 }

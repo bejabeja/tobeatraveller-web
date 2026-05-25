@@ -14,7 +14,10 @@ export const useLike = (itineraryId, initialLikesCount = 0) => {
     useEffect(() => {
         if (!isAuthenticated || !itineraryId) return;
         checkIsLiked(itineraryId)
-            .then(({ isLiked }) => setIsLiked(isLiked))
+            .then(({ isLiked, likesCount }) => {
+                setIsLiked(isLiked);
+                setLikesCount(likesCount);
+            })
             .catch(() => {});
     }, [itineraryId, isAuthenticated]);
 

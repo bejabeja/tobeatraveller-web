@@ -18,8 +18,8 @@ export class LikesController {
         try {
             const { itineraryId } = req.params;
             const userId = req.user.id;
-            const liked = await this.likesService.isLiked(itineraryId, userId);
-            return res.status(200).json({ isLiked: liked });
+            const result = await this.likesService.isLiked(itineraryId, userId);
+            return res.status(200).json(result);
         } catch (error) {
             next(error);
         }
