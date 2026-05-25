@@ -12,7 +12,6 @@ import { RiUserCommunityLine } from "react-icons/ri";
 import { useSelector } from "react-redux";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import {
-  selectAuthLoading,
   selectIsAuthenticated,
 } from "../../store/auth/authSelectors";
 import { selectMe } from "../../store/user/userInfoSelectors";
@@ -21,7 +20,6 @@ import "./Navbar.scss";
 
 const Navbar = () => {
   const isAuthenticated = useSelector(selectIsAuthenticated);
-  const authLoading = useSelector(selectAuthLoading);
   const userMe = useSelector(selectMe);
   const [meOpen, setMeOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(
@@ -73,20 +71,14 @@ const Navbar = () => {
           </NavLink>
         </div>
 
-        {isAuthenticated && !authLoading && (
+        {isAuthenticated && (
           <NavLink to="/create-itinerary" className="nav-create" title="Create trip">
             <IoAddOutline className="nav-icon" />
             <span>Create trip</span>
           </NavLink>
         )}
 
-        {authLoading ? (
-          <div className="loading-placeholder nav-section">
-            <h3>Your space</h3>
-            <p><GoBook className="nav-icon" /><span>Loading...</span></p>
-            <p><GoBook className="nav-icon" /><span>Loading...</span></p>
-          </div>
-        ) : isAuthenticated ? (
+        {isAuthenticated && (
           <div className="nav-section">
             <h3>Your Space</h3>
             <NavLink to="/my-itineraries" className="nav-item" title="My trips">
@@ -98,7 +90,7 @@ const Navbar = () => {
               <span>Saved trips</span>
             </NavLink>
           </div>
-        ) : null}
+        )}
 
         <div className="navbar__bottom">
           <button
@@ -114,7 +106,7 @@ const Navbar = () => {
             <span>Collapse</span>
           </button>
 
-          {!isAuthenticated && !authLoading && (
+          {!isAuthenticated && (
             <div className="nav-auth">
               <Link to="/register" className="nav-auth__register">Create account</Link>
               <Link to="/login" className="nav-auth__login">Already a member? <span>Sign in</span></Link>

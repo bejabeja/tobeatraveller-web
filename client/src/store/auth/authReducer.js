@@ -1,11 +1,19 @@
+const getHint = () => {
+    try {
+        const h = localStorage.getItem('user_hint');
+        return h ? JSON.parse(h) : null;
+    } catch { return null; }
+};
+
+const hint = getHint();
+
 const initialState = {
-    user: null,
-    isAuthenticated: false,
-    authLoading: true,
+    user: hint,
+    isAuthenticated: !!hint,
     error: null,
     imageHeroLoaded: false,
     imageAuthLoaded: false,
-  };
+};
   
   export const authReducer = (state = initialState, action) => {
     switch (action.type) {
@@ -15,7 +23,6 @@ const initialState = {
           ...state,
           user: action.payload,
           isAuthenticated: !!action.payload,
-          authLoading: false,
           error: action.error || null,
         };
   
@@ -30,7 +37,6 @@ const initialState = {
           ...state,
           user: null,
           isAuthenticated: false,
-          authLoading: false,
         };
   
       case "@auth/clearError":

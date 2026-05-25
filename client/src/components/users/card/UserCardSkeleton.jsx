@@ -1,20 +1,18 @@
-import React from "react";
-import "./UserCardSkeleton.scss"; 
+import "./UserCardSkeleton.scss";
 
 const UserCardSkeleton = () => {
   return (
     <div className="user-card user-card--skeleton">
-      <div className="user-card__header skeleton-header">
-        <div className="user-card__image skeleton skeleton--avatar" />
-        <div className="user-card__header--info skeleton-info">
-          <div className="skeleton skeleton--text skeleton--username" />
-          <div className="skeleton skeleton--text skeleton--location" />
-        </div>
+      <div className="user-card__banner skeleton">
+        <div className="skeleton skeleton--card-avatar" />
       </div>
-      <div className="skeleton skeleton--text skeleton--trips" />
-      <div className="user-card__buttons">
-        <div className="skeleton skeleton--button" />
-        <div className="skeleton skeleton--button" />
+      <div className="user-card__body">
+        <div className="user-card__name-row">
+          <div className="skeleton skeleton--text skeleton--username" />
+          <div className="skeleton skeleton--follow-badge" />
+        </div>
+        <div className="skeleton skeleton--text skeleton--location" />
+        <div className="skeleton skeleton--text skeleton--trips" />
       </div>
     </div>
   );

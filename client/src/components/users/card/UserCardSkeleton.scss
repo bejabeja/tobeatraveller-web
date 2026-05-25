@@ -1,19 +1,27 @@
 @use "../../SkeletonBase.scss";
 
 .user-card--skeleton {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-  justify-content: space-between;
+  pointer-events: none;
+
+  .user-card__banner {
+    background: var(--secondary-color);
+  }
 }
 
-.user-card__header {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+.skeleton--card-avatar {
+  position: absolute;
+  bottom: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 3px solid var(--background-color);
 }
 
-.user-card__buttons {
-  display: flex;
-  gap: 0.5rem;
+.skeleton--follow-badge {
+  width: 60px;
+  height: 22px;
+  border-radius: 999px;
+  flex-shrink: 0;
 }

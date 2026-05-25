@@ -3,6 +3,14 @@ import { createNewUser, login, logout } from "../../services/auth";
 import { getUserForAuth } from "../../services/users";
 import { resetUserInfo } from "../user/userInfoActions";
 
+const saveHint = (user) => {
+    if (user) {
+        localStorage.setItem('user_hint', JSON.stringify({ id: user.id, username: user.username, avatarUrl: user.avatarUrl }));
+    } else {
+        localStorage.removeItem('user_hint');
+    }
+};
+
 export const createUser = (user, onSuccess) => {
     return async (dispatch) => {
         try {
@@ -15,6 +23,7 @@ export const createUser = (user, onSuccess) => {
                 }
             );
             const newUser = await login(user);
+            saveHint(newUser);
             dispatch({ type: "@auth/login", payload: newUser });
             if (onSuccess) onSuccess();
         } catch (error) {
@@ -34,6 +43,7 @@ export const loginUser = (user, onSuccess) => {
                     error: (err) => err.message || "Login failed",
                 }
             );
+            saveHint(newUser);
             dispatch({ type: "@auth/login", payload: newUser });
             if (onSuccess) onSuccess();
         } catch (error) {
@@ -46,9 +56,9 @@ export const logoutUser = () => {
     return async (dispatch) => {
         try {
             await logout();
+            saveHint(null);
             dispatch({ type: "@auth/logout" });
             dispatch(resetUserInfo());
-
             toast.success("Session closed successfully");
         } catch (error) {
             toast.error("Failed to log out");
@@ -60,9 +70,12 @@ export const initAuthUser = () => {
     return async (dispatch) => {
         try {
             const user = await getUserForAuth();
+            saveHint(user);
             dispatch({ type: "@auth/init", payload: user });
-        } catch (error) {
-            dispatch({ type: "@auth/init", payload: null, error: null });
+        } catch {
+            saveHint(null);
+            dispatch({ type: "@auth/init", payload: null });
+            dispatch(resetUserInfo());
         }
     };
 };
