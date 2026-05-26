@@ -1,0 +1,30 @@
+export const currencyOptions = [
+    { value: "AED", label: "AED - UAE Dirham", symbol: "د.إ" },
+    { value: "ARS", label: "ARS - Argentine Peso", symbol: "$" },
+    { value: "AUD", label: "AUD - Australian Dollar", symbol: "$" },
+    { value: "BRL", label: "BRL - Brazilian Real", symbol: "R$" },
+    { value: "CAD", label: "CAD - Canadian Dollar", symbol: "$" },
+    { value: "CHF", label: "CHF - Swiss Franc", symbol: "CHF" },
+    { value: "CLP", label: "CLP - Chilean Peso", symbol: "$" },
+    { value: "CNY", label: "CNY - Chinese Yuan", symbol: "¥" },
+    { value: "DKK", label: "DKK - Danish Krone", symbol: "kr" },
+    { value: "EUR", label: "EUR - Euro", symbol: "€" },
+    { value: "GBP", label: "GBP - British Pound", symbol: "£" },
+    { value: "HKD", label: "HKD - Hong Kong Dollar", symbol: "$" },
+    { value: "INR", label: "INR - Indian Rupee", symbol: "₹" },
+    { value: "JPY", label: "JPY - Japanese Yen", symbol: "¥" },
+    { value: "KRW", label: "KRW - South Korean Won", symbol: "₩" },
+    { value: "MXN", label: "MXN - Mexican Peso", symbol: "$" },
+    { value: "NOK", label: "NOK - Norwegian Krone", symbol: "kr" },
+    { value: "NZD", label: "NZD - New Zealand Dollar", symbol: "$" },
+    { value: "RUB", label: "RUB - Russian Ruble", symbol: "₽" },
+    { value: "SEK", label: "SEK - Swedish Krona", symbol: "kr" },
+    { value: "SGD", label: "SGD - Singapore Dollar", symbol: "$" },
+    { value: "THB", label: "THB - Thai Baht", symbol: "฿" },
+    { value: "TRY", label: "TRY - Turkish Lira", symbol: "₺" },
+    { value: "USD", label: "USD - US Dollar", symbol: "$" },
+    { value: "ZAR", label: "ZAR - South African Rand", symbol: "R" },
+];
+
+export const getCurrencySymbol = (code) =>
+    currencyOptions.find(c => c.value === code)?.symbol;

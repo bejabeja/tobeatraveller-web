@@ -1,8 +1,15 @@
 {
   "name": "tobeatraveller-app",
   "private": true,
+  "workspaces": [
+    "client",
+    "api",
+    "mobile",
+    "shared"
+  ],
   "scripts": {
-    "dev": "concurrently -n api,client -c blue,green \"npm run dev --prefix api\" \"npm run dev --prefix client\"",
+    "dev": "concurrently -n api,web -c blue,green \"npm run dev --prefix api\" \"npm run dev --prefix client\"",
+    "dev:mobile": "npm start --prefix mobile",
     "build": "npm test --prefix api && npm run build --prefix client"
   },
   "devDependencies": {

@@ -26,24 +26,13 @@ export class AuthController {
         if (!result.success) {
             return next(new ValidationError("Login validation failed"));
         }
-        const userAgent = req.headers['user-agent'];
-        const isMobile = /Mobi|Android/i.test(userAgent);
-
         try {
             const { email, password } = result.data;
             const user = await this.authService.login({ email, password });
             const accessToken = this.authService.generateAccessToken(user);
             const refreshToken = this.authService.generateRefreshToken(user);
-            this.authService.setAuthCookies(res, accessToken, refreshToken)
-            if (isMobile) {
-                return res.status(200).json({
-                    user,
-                    accessToken,
-                    refreshToken
-                });
-            }
-
-            return res.status(200).json({ user });
+            this.authService.setAuthCookies(res, accessToken, refreshToken);
+            return res.status(200).json({ user, accessToken, refreshToken });
 
         } catch (error) {
             console.error("Login error:", error);
