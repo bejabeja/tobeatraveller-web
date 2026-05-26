@@ -5,7 +5,8 @@ import * as SecureStore from 'expo-secure-store';
 import { store, setApiUrl, setTokenStorage, initAuthUser } from '@tobeatraveller/shared';
 import Navigation from './src/navigation';
 
-setApiUrl(process.env.EXPO_PUBLIC_API_URL ?? '');
+const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+setApiUrl(apiUrl);
 
 setTokenStorage({
   getItem: (key) => SecureStore.getItemAsync(key),
