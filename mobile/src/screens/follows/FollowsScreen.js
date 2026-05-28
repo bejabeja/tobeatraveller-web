@@ -7,8 +7,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   followUser, getAllFollowers, getAllFollowing, unfollowUser,
-  selectMe, selectAuthUser, setUserInfo,
+  selectIsAuthenticated, selectMe, selectAuthUser, setUserInfo,
 } from '@tobeatraveller/shared';
+import { UserRowSkeleton } from '../../components/Skeleton';
 import { shadow } from '../../utils/styles';
 
 // type: 'followers' | 'following'
@@ -16,12 +17,18 @@ const FollowsScreen = ({ route, navigation }) => {
   const { userId, type } = route.params;
   const insets = useSafeAreaInsets();
   const dispatch = useDispatch();
+  const isAuthenticated = useSelector(selectIsAuthenticated);
   const meDetail = useSelector(selectMe);
   const authUser = useSelector(selectAuthUser);
   const me = meDetail ?? authUser;
 
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  if (!isAuthenticated) {
+    navigation.replace('Tabs', { screen: 'Profile' });
+    return null;
+  }
 
   useEffect(() => {
     (async () => {
@@ -50,7 +57,9 @@ const FollowsScreen = ({ route, navigation }) => {
       </View>
 
       {loading ? (
-        <ActivityIndicator size="large" color="#0077b6" style={{ marginTop: 48 }} />
+        <View style={{ paddingHorizontal: 16, paddingTop: 8 }}>
+          {Array.from({ length: 8 }, (_, i) => <UserRowSkeleton key={i} />)}
+        </View>
       ) : (
         <FlatList
           data={users}

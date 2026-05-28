@@ -10,6 +10,7 @@ import {
   selectMe, selectMyItineraries, selectMyItinerariesLoading,
 } from '@tobeatraveller/shared';
 import ItineraryCard from '../../components/ItineraryCard';
+import { ItineraryCardSkeleton } from '../../components/Skeleton';
 import { shadow } from '../../utils/styles';
 
 const CATEGORY_EMOJI = {
@@ -112,7 +113,10 @@ const MyItinerariesScreen = ({ navigation }) => {
 
       {/* Grid */}
       <FlatList
-        data={filtered.length % 2 !== 0 ? [...filtered, { id: '__filler__' }] : filtered}
+        data={loading && !filtered.length
+          ? Array.from({ length: 6 }, (_, i) => ({ id: `sk-${i}`, _skeleton: true }))
+          : filtered.length % 2 !== 0 ? [...filtered, { id: '__filler__' }] : filtered
+        }
         keyExtractor={item => item.id}
         numColumns={2}
         columnWrapperStyle={styles.row}
@@ -145,17 +149,14 @@ const MyItinerariesScreen = ({ navigation }) => {
             </View>
           ) : null
         }
-        renderItem={({ item }) => {
-          if (item.id === '__filler__') return <View style={styles.gridItem} />;
-          return (
-            <View style={styles.gridItem}>
-              <ItineraryCard
-                itinerary={item}
-                onPress={() => navigation.navigate('Itinerary', { id: item.id })}
-              />
-            </View>
-          );
-        }}
+        renderItem={({ item }) => (
+          <View style={styles.gridItem}>
+            {item._skeleton ? <ItineraryCardSkeleton />
+              : item.id === '__filler__' ? null
+              : <ItineraryCard itinerary={item} onPress={() => navigation.navigate('Itinerary', { id: item.id })} />
+            }
+          </View>
+        )}
       />
     </View>
   );

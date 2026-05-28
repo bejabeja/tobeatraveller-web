@@ -10,6 +10,7 @@ import { useSelector } from 'react-redux';
 // Map only on native — react-native-maps doesn't support web
 const MapView = Platform.OS !== 'web' ? require('react-native-maps').default : null;
 const Marker  = Platform.OS !== 'web' ? require('react-native-maps').Marker  : null;
+import { ItineraryDetailSkeleton } from '../../components/Skeleton';
 import { shadow, textShadow } from '../../utils/styles';
 import {
   addComment, addFavorite, checkIsFavorite, deleteComment,
@@ -67,7 +68,7 @@ const ItineraryScreen = ({ route, navigation }) => {
     }
   }, [itinerary?.id, isAuthenticated]);
 
-  if (loading) return <ActivityIndicator size="large" color="#0077b6" style={styles.loader} />;
+  if (loading) return <ScrollView style={styles.container}><ItineraryDetailSkeleton /></ScrollView>;
   if (!itinerary) return <Text style={styles.errorText}>Itinerary not found.</Text>;
 
   const isMyItinerary = me?.id === itinerary.userId;
@@ -84,7 +85,7 @@ const ItineraryScreen = ({ route, navigation }) => {
   };
 
   const handleFavorite = async () => {
-    if (!isAuthenticated) { navigation.navigate('Login'); return; }
+    if (!isAuthenticated) { navigation.navigate('Tabs', { screen: 'Profile' }); return; }
     try {
       if (isFavorite) await removeFavorite(itinerary.id);
       else await addFavorite(itinerary.id);
@@ -185,7 +186,11 @@ const ItineraryScreen = ({ route, navigation }) => {
           )}
           <Text style={styles.heroTitle}>{itinerary.title}</Text>
           <View style={styles.heroMeta}>
-            <View style={styles.authorRow}>
+            <TouchableOpacity
+              style={styles.authorRow}
+              onPress={() => !isMyItinerary && navigation.navigate('UserProfile', { id: author?.id })}
+              activeOpacity={isMyItinerary ? 1 : 0.7}
+            >
               <View style={styles.authorAvatar}>
                 {author?.avatarUrl
                   ? <Image source={{ uri: author.avatarUrl }} style={styles.authorAvatarImg} />
@@ -193,7 +198,7 @@ const ItineraryScreen = ({ route, navigation }) => {
                 }
               </View>
               {author?.username && <Text style={styles.authorName}>@{author.username}</Text>}
-            </View>
+            </TouchableOpacity>
             {itinerary.tripDates && (
               <Text style={styles.heroDate}>📅 {itinerary.tripDates}</Text>
             )}

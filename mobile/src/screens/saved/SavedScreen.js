@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { getUserFavorites, selectIsAuthenticated } from '@tobeatraveller/shared';
 import ItineraryCard from '../../components/ItineraryCard';
+import { ItineraryCardSkeleton } from '../../components/Skeleton';
 
 const SavedScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
@@ -66,20 +67,16 @@ const SavedScreen = ({ navigation }) => {
     );
   }
 
-  if (loading) {
-    return (
-      <View style={[styles.container, { paddingTop: insets.top }]}>
-        <Header />
-        <ActivityIndicator size="large" color="#0077b6" style={{ marginTop: 40 }} />
-      </View>
-    );
-  }
+  // Skeletons injected into FlatList data when loading
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <Header count={itineraries.length} />
       <FlatList
-        data={itineraries.length % 2 !== 0 ? [...itineraries, { id: '__filler__' }] : itineraries}
+        data={loading && !itineraries.length
+          ? Array.from({ length: 6 }, (_, i) => ({ id: `sk-${i}`, _skeleton: true }))
+          : itineraries.length % 2 !== 0 ? [...itineraries, { id: '__filler__' }] : itineraries
+        }
         keyExtractor={item => item.id}
         numColumns={2}
         columnWrapperStyle={styles.row}
@@ -97,17 +94,14 @@ const SavedScreen = ({ navigation }) => {
             </Text>
           </View>
         }
-        renderItem={({ item }) => {
-          if (item.id === '__filler__') return <View style={styles.cardWrapper} />;
-          return (
-            <View style={styles.cardWrapper}>
-              <ItineraryCard
-                itinerary={item}
-                onPress={() => navigation.navigate('Itinerary', { id: item.id })}
-              />
-            </View>
-          );
-        }}
+        renderItem={({ item }) => (
+          <View style={styles.cardWrapper}>
+            {item._skeleton ? <ItineraryCardSkeleton />
+              : item.id === '__filler__' ? null
+              : <ItineraryCard itinerary={item} onPress={() => navigation.navigate('Itinerary', { id: item.id })} />
+            }
+          </View>
+        )}
       />
     </View>
   );

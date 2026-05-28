@@ -12,6 +12,7 @@ import {
   setUserInfo, unfollowUser,
 } from '@tobeatraveller/shared';
 import ItineraryCard from '../../components/ItineraryCard';
+import { ItineraryCardSkeleton, ProfileSkeleton } from '../../components/Skeleton';
 import { shadow } from '../../utils/styles';
 
 const TRIP_BADGES = [
@@ -89,7 +90,7 @@ const ProfileScreen = ({ route, navigation }) => {
   };
 
   const handleFollowToggle = async () => {
-    if (!isAuthenticated) { navigation.navigate('Login'); return; }
+    if (!isAuthenticated) { navigation.navigate('Tabs', { screen: 'Profile' }); return; }
     setFollowLoading(true);
     try {
       if (isFollowing) {
@@ -109,9 +110,24 @@ const ProfileScreen = ({ route, navigation }) => {
     return <UnauthView navigation={navigation} insets={insets} />;
   }
 
-  if (loading) {
-    return <ActivityIndicator size="large" color="#0077b6" style={styles.loader} />;
+  // Block access to other users' profiles when not authenticated
+  // → send to Profile tab so they see the app value proposition first
+  if (!isAuthenticated && !isOwnProfile) {
+    navigation.replace('Tabs', { screen: 'Profile' });
+    return null;
   }
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { paddingTop: insets.top }]}>
+        <ProfileSkeleton />
+      </View>
+    );
+  }
+
+  // Does the profile user follow the logged-in user?
+  const followsYou = !isOwnProfile && isAuthenticated && me &&
+    user?.followingListIds?.some(f => String(f.id) === String(me.id));
 
   const tripBadge = TRIP_BADGES.find(b => (user?.totalItineraries ?? 0) >= b.min);
   const popularBadge = (user?.followers ?? 0) >= 50 ? { id: 'popular', label: 'Popular', emoji: '⭐' } : null;
@@ -199,6 +215,11 @@ const ProfileScreen = ({ route, navigation }) => {
             <Text style={styles.username}>@{user?.username}</Text>
             {user?.role === 'official' && (
               <View style={styles.officialBadge}><Text style={styles.officialText}>✓</Text></View>
+            )}
+            {followsYou && (
+              <View style={styles.followsYouBadge}>
+                <Text style={styles.followsYouText}>Follows you</Text>
+              </View>
             )}
           </View>
 
@@ -342,7 +363,11 @@ const ProfileScreen = ({ route, navigation }) => {
             )}
           </View>
           {savedLoading ? (
-            <ActivityIndicator size="small" color="#0077b6" />
+            <View style={styles.grid}>
+              {Array.from({ length: 2 }, (_, i) => (
+                <View key={i} style={styles.gridItem}><ItineraryCardSkeleton /></View>
+              ))}
+            </View>
           ) : savedTrips.length === 0 ? (
             <Text style={styles.emptyTrips}>No saved trips yet. Bookmark itineraries you love!</Text>
           ) : (
@@ -363,17 +388,60 @@ const ProfileScreen = ({ route, navigation }) => {
   );
 };
 
+
+const BENEFITS = [
+  { emoji: '✈️', title: 'Share your journeys',    desc: 'Create and publish itineraries for the world to discover.' },
+  { emoji: '🔖', title: 'Save inspiring trips',   desc: 'Bookmark itineraries you love and find them anytime.' },
+  { emoji: '👥', title: 'Connect with travellers', desc: 'Follow people, get inspired and build your travel community.' },
+];
+
 const UnauthView = ({ navigation, insets }) => (
-  <View style={[styles.unauthContainer, { paddingTop: insets.top + 40 }]}>
-    <Text style={styles.unauthEmoji}>🌍</Text>
-    <Text style={styles.unauthTitle}>Your profile awaits</Text>
-    <Text style={styles.unauthSubtitle}>Sign in to track your trips and connect with travellers.</Text>
-    <TouchableOpacity style={styles.primaryBtn} onPress={() => navigation.navigate('Login')}>
-      <Text style={styles.primaryBtnText}>Sign in</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={[styles.secondaryBtn, { marginTop: 10 }]} onPress={() => navigation.navigate('Register')}>
-      <Text style={styles.secondaryBtnText}>Create account</Text>
-    </TouchableOpacity>
+  <View style={styles.unauthRoot}>
+    {/* Hero */}
+    <LinearGradient
+      colors={['#0077b6', '#005a8a']}
+      start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+      style={[styles.unauthHero, { paddingTop: insets.top + 24 }]}
+    >
+      <Text style={styles.unauthHeroEmoji}>🌍</Text>
+      <Text style={styles.unauthHeroTitle}>Tobeatraveller</Text>
+      <Text style={styles.unauthHeroTagline}>
+        Discover the world,{'\n'}one journey at a time.
+      </Text>
+    </LinearGradient>
+
+    {/* Benefits */}
+    <View style={styles.unauthBody}>
+      <Text style={styles.unauthBodyTitle}>Join the community</Text>
+      {BENEFITS.map((b, i) => (
+        <View key={i} style={styles.unauthBenefit}>
+          <Text style={styles.unauthBenefitEmoji}>{b.emoji}</Text>
+          <View style={styles.unauthBenefitText}>
+            <Text style={styles.unauthBenefitTitle}>{b.title}</Text>
+            <Text style={styles.unauthBenefitDesc}>{b.desc}</Text>
+          </View>
+        </View>
+      ))}
+
+      {/* CTAs */}
+      <TouchableOpacity
+        style={styles.unauthPrimaryBtn}
+        onPress={() => navigation.navigate('Register')}
+        activeOpacity={0.85}
+      >
+        <Text style={styles.unauthPrimaryBtnText}>Get started — it's free</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.unauthSecondaryBtn}
+        onPress={() => navigation.navigate('Login')}
+        activeOpacity={0.7}
+      >
+        <Text style={styles.unauthSecondaryBtnText}>
+          Already have an account? <Text style={styles.unauthSignInAccent}>Sign in</Text>
+        </Text>
+      </TouchableOpacity>
+    </View>
   </View>
 );
 
@@ -434,6 +502,12 @@ const styles = StyleSheet.create({
   displayName: { fontSize: 20, fontWeight: '800', color: '#111827' },
   usernameRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 },
   username: { fontSize: 14, color: '#6b7280' },
+  followsYouBadge: {
+    backgroundColor: '#f3f4f6', borderRadius: 999,
+    paddingVertical: 2, paddingHorizontal: 8,
+    borderWidth: 1, borderColor: '#e5e7eb',
+  },
+  followsYouText: { fontSize: 11, color: '#6b7280', fontWeight: '500' },
   officialBadge: {
     width: 18, height: 18, borderRadius: 9,
     backgroundColor: '#0077b6', alignItems: 'center', justifyContent: 'center',
@@ -502,13 +576,45 @@ const styles = StyleSheet.create({
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   gridItem: { width: '47.5%' },
 
-  unauthContainer: {
-    flex: 1, alignItems: 'center', padding: 32,
-    backgroundColor: '#fff',
+  // Unauth
+  unauthRoot: { flex: 1, backgroundColor: '#fff' },
+  unauthHero: {
+    paddingHorizontal: 28, paddingBottom: 32,
+    alignItems: 'flex-start',
   },
-  unauthEmoji: { fontSize: 52, marginBottom: 16 },
-  unauthTitle: { fontSize: 22, fontWeight: '800', color: '#111827', marginBottom: 8 },
-  unauthSubtitle: { fontSize: 14, color: '#6b7280', textAlign: 'center', marginBottom: 28, lineHeight: 21 },
+  unauthHeroEmoji: { fontSize: 36, marginBottom: 10 },
+  unauthHeroTitle: {
+    fontSize: 20, fontWeight: '800', color: '#fff',
+    letterSpacing: -0.3, marginBottom: 10,
+  },
+  unauthHeroTagline: {
+    fontSize: 28, fontWeight: '800', color: '#fff',
+    lineHeight: 34, letterSpacing: -0.5,
+  },
+  unauthBody: {
+    flex: 1, paddingHorizontal: 24, paddingTop: 28,
+  },
+  unauthBodyTitle: {
+    fontSize: 18, fontWeight: '800', color: '#111827',
+    marginBottom: 20,
+  },
+  unauthBenefit: {
+    flexDirection: 'row', gap: 14,
+    marginBottom: 20, alignItems: 'flex-start',
+  },
+  unauthBenefitEmoji: { fontSize: 26, marginTop: 1 },
+  unauthBenefitText: { flex: 1 },
+  unauthBenefitTitle: { fontSize: 15, fontWeight: '700', color: '#111827', marginBottom: 2 },
+  unauthBenefitDesc: { fontSize: 13, color: '#6b7280', lineHeight: 19 },
+  unauthPrimaryBtn: {
+    backgroundColor: '#0077b6', borderRadius: 999,
+    paddingVertical: 15, alignItems: 'center',
+    marginTop: 12,
+  },
+  unauthPrimaryBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
+  unauthSecondaryBtn: { paddingVertical: 14, alignItems: 'center' },
+  unauthSecondaryBtnText: { fontSize: 14, color: '#6b7280' },
+  unauthSignInAccent: { color: '#0077b6', fontWeight: '600' },
 });
 
 export default ProfileScreen;

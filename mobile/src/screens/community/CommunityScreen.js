@@ -11,6 +11,7 @@ import {
   selectAllUsersLoadingMore, selectAllUsersTotalCount, selectAllUsersTotalPages,
   selectIsAuthenticated, selectMe, selectAuthUser, setUserInfo,
 } from '@tobeatraveller/shared';
+import { UserCardSkeleton } from '../../components/Skeleton';
 import { shadow } from '../../utils/styles';
 
 const SORT_OPTIONS = [
@@ -125,12 +126,12 @@ const CommunityScreen = ({ navigation }) => {
       )}
 
       <FlatList
-        data={
-          // Pad to even count so the last item never stretches full-width
-          (users ?? []).length % 2 !== 0
-            ? [...(users ?? []), { id: '__filler__' }]
-            : (users ?? [])
-        }
+        data={(() => {
+          if (loading && !(users ?? []).length)
+            return Array.from({ length: 6 }, (_, i) => ({ id: `sk-${i}`, _skeleton: true }));
+          const arr = users ?? [];
+          return arr.length % 2 !== 0 ? [...arr, { id: '__filler__' }] : arr;
+        })()}
         keyExtractor={item => item.id}
         numColumns={2}
         columnWrapperStyle={styles.row}
@@ -159,24 +160,23 @@ const CommunityScreen = ({ navigation }) => {
             ? <ActivityIndicator color="#0077b6" style={{ marginVertical: 16 }} />
             : null
         }
-        renderItem={({ item }) => {
-          if (item.id === '__filler__') return <View style={styles.cardWrapper} />;
-          return (
-            <View style={styles.cardWrapper}>
-              <UserCard
-                user={item}
-                me={me}
-                isAuthenticated={isAuthenticated}
-                onPress={() => navigation.navigate('UserProfile', { id: item.id })}
-              />
-            </View>
-          );
-        }}
+        renderItem={({ item }) => (
+          <View style={styles.cardWrapper}>
+            {item._skeleton ? <UserCardSkeleton />
+              : item.id === '__filler__' ? null
+              : <UserCard
+                  user={item} me={me} isAuthenticated={isAuthenticated}
+                  onPress={() => isAuthenticated
+                    ? navigation.navigate('UserProfile', { id: item.id })
+                    : navigation.navigate('Tabs', { screen: 'Profile' })
+                  }
+                />
+            }
+          </View>
+        )}
       />
 
-      {loading && !users?.length && (
-        <ActivityIndicator size="large" color="#0077b6" style={styles.fullLoader} />
-      )}
+      {/* Skeleton handles initial load via FlatList data */}
     </View>
   );
 };

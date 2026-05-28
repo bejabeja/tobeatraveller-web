@@ -22,6 +22,7 @@ export * from './store/users/usersSelectors.js';
 
 // Utils
 export { filterItineraries } from './utils/filterItineraries.js';
+export { getDestinations } from './services/itineraries.js';
 export { setApiUrl } from './utils/apiConfig.js';
 export { setTokenStorage } from './utils/tokenStorage.js';
 export { setNotifier } from './utils/notifier.js';

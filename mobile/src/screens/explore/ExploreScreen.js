@@ -1,9 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator, FlatList, RefreshControl, ScrollView,
+  ActivityIndicator, FlatList, Modal, RefreshControl, ScrollView,
   StyleSheet, Text, TextInput, TouchableOpacity, View,
 } from 'react-native';
+import { useSafeAreaInsets as useSAI } from 'react-native-safe-area-context';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+const TRAVELERS_OPTIONS = [
+  { value: 'solo',   label: '🧍 Solo'    },
+  { value: 'couple', label: '👫 Couple'  },
+  { value: 'group',  label: '👥 Group'   },
+  { value: 'large',  label: '🏕️ Large (6+)' },
+];
 import { useDispatch, useSelector } from 'react-redux';
 import {
   initExploreItineraries, itineraryCategories,
@@ -12,6 +19,7 @@ import {
   selectExplorePage, selectExploreTotalItems, selectExploreTotalPages,
 } from '@tobeatraveller/shared';
 import ItineraryCard from '../../components/ItineraryCard';
+import { ItineraryCardSkeleton } from '../../components/Skeleton';
 import { shadow } from '../../utils/styles';
 
 const CATEGORY_EMOJI = {
@@ -27,7 +35,7 @@ const SORT_OPTIONS = [
   { value: 'cheapest',  label: '💰 Cheapest' },
 ];
 
-const ExploreScreen = ({ navigation }) => {
+const ExploreScreen = ({ navigation, route }) => {
   const dispatch = useDispatch();
   const insets = useSafeAreaInsets();
 
@@ -38,47 +46,71 @@ const ExploreScreen = ({ navigation }) => {
   const totalPages   = useSelector(selectExploreTotalPages);
   const currentPage  = useSelector(selectExplorePage);
 
-  const [search, setSearch]     = useState('');
-  const [category, setCategory] = useState('');
-  const [sortBy, setSortBy]     = useState('recent');
+  const [search, setSearch]           = useState(route?.params?.destination ?? '');
+  const [category, setCategory]       = useState('');
+  const [sortBy, setSortBy]           = useState('recent');
+  const [showFilters, setShowFilters] = useState(false);
+  // Advanced filters
+  const [budgetMin, setBudgetMin]         = useState('');
+  const [budgetMax, setBudgetMax]         = useState('');
+  const [durationMin, setDurationMin]     = useState('');
+  const [durationMax, setDurationMax]     = useState('');
+  const [travelersCount, setTravelersCount] = useState('');
+  // Draft state (edited inside modal, applied on "Apply")
+  const [draft, setDraft] = useState({});
 
   const searchTimer = useRef(null);
   const hasMore = currentPage < totalPages;
-  const activeFilters = !!(search || category);
+  const advancedCount = [budgetMin, budgetMax, durationMin, durationMax, travelersCount].filter(Boolean).length;
+  const activeFilters = !!(search || category || advancedCount);
+
+  const buildFilters = () => ({
+    destination: search, category, sortBy,
+    budgetMin, budgetMax, durationMin, durationMax, travelersCount,
+  });
 
   // Debounced fetch on filter changes
   useEffect(() => {
     clearTimeout(searchTimer.current);
     searchTimer.current = setTimeout(() => {
-      dispatch(initExploreItineraries({
-        page: 1,
-        destination: search,
-        category,
-        sortBy,
-      }));
+      dispatch(initExploreItineraries({ page: 1, ...buildFilters() }));
     }, search ? 400 : 0);
     return () => clearTimeout(searchTimer.current);
-  }, [search, category, sortBy]);
+  }, [search, category, sortBy, budgetMin, budgetMax, durationMin, durationMax, travelersCount]);
 
   const handleLoadMore = () => {
     if (hasMore && !loadingMore) {
-      dispatch(loadMoreExploreItineraries({
-        page: currentPage + 1,
-        destination: search,
-        category,
-        sortBy,
-      }));
+      dispatch(loadMoreExploreItineraries({ page: currentPage + 1, ...buildFilters() }));
     }
   };
 
   const handleRefresh = () => {
-    dispatch(initExploreItineraries({ page: 1, destination: search, category, sortBy }));
+    dispatch(initExploreItineraries({ page: 1, ...buildFilters() }));
   };
 
   const clearFilters = () => {
-    setSearch('');
-    setCategory('');
-    setSortBy('recent');
+    setSearch(''); setCategory(''); setSortBy('recent');
+    setBudgetMin(''); setBudgetMax('');
+    setDurationMin(''); setDurationMax('');
+    setTravelersCount('');
+  };
+
+  const openFilters = () => {
+    setDraft({ budgetMin, budgetMax, durationMin, durationMax, travelersCount });
+    setShowFilters(true);
+  };
+
+  const applyFilters = () => {
+    setBudgetMin(draft.budgetMin ?? '');
+    setBudgetMax(draft.budgetMax ?? '');
+    setDurationMin(draft.durationMin ?? '');
+    setDurationMax(draft.durationMax ?? '');
+    setTravelersCount(draft.travelersCount ?? '');
+    setShowFilters(false);
+  };
+
+  const clearAdvanced = () => {
+    setDraft({ budgetMin: '', budgetMax: '', durationMin: '', durationMax: '', travelersCount: '' });
   };
 
   return (
@@ -90,6 +122,14 @@ const ExploreScreen = ({ navigation }) => {
           {!loading && totalItems > 0 && (
             <Text style={styles.count}>{totalItems.toLocaleString()} trips</Text>
           )}
+          <TouchableOpacity onPress={openFilters} style={styles.filterBtn}>
+            <Text style={styles.filterBtnText}>⚙️ Filters</Text>
+            {advancedCount > 0 && (
+              <View style={styles.filterBadge}>
+                <Text style={styles.filterBadgeText}>{advancedCount}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
           {activeFilters && (
             <TouchableOpacity onPress={clearFilters} style={styles.clearBtn}>
               <Text style={styles.clearBtnText}>Clear ✕</Text>
@@ -158,7 +198,12 @@ const ExploreScreen = ({ navigation }) => {
 
       {/* Results */}
       <FlatList
-        data={(itineraries ?? []).length % 2 !== 0 ? [...(itineraries ?? []), { id: '__filler__' }] : (itineraries ?? [])}
+        data={(() => {
+          if (loading && !(itineraries ?? []).length)
+            return Array.from({ length: 6 }, (_, i) => ({ id: `sk-${i}`, _skeleton: true }));
+          const arr = itineraries ?? [];
+          return arr.length % 2 !== 0 ? [...arr, { id: '__filler__' }] : arr;
+        })()}
         keyExtractor={item => item.id}
         numColumns={2}
         columnWrapperStyle={styles.row}
@@ -184,9 +229,7 @@ const ExploreScreen = ({ navigation }) => {
                 </TouchableOpacity>
               )}
             </View>
-          ) : (
-            <ActivityIndicator size="large" color="#0077b6" style={{ marginTop: 40 }} />
-          )
+          ) : null
         }
         ListFooterComponent={
           loadingMore
@@ -199,18 +242,98 @@ const ExploreScreen = ({ navigation }) => {
               )
               : null
         }
-        renderItem={({ item }) => {
-          if (item.id === '__filler__') return <View style={styles.gridItem} />;
-          return (
-            <View style={styles.gridItem}>
-              <ItineraryCard
-                itinerary={item}
-                onPress={() => navigation.navigate('Itinerary', { id: item.id })}
-              />
-            </View>
-          );
-        }}
+        renderItem={({ item }) => (
+          <View style={styles.gridItem}>
+            {item._skeleton
+              ? <ItineraryCardSkeleton />
+              : item.id === '__filler__'
+                ? null
+                : <ItineraryCard itinerary={item} onPress={() => navigation.navigate('Itinerary', { id: item.id })} />
+            }
+          </View>
+        )}
       />
+
+      {/* Advanced filters modal */}
+      <Modal visible={showFilters} animationType="slide" transparent onRequestClose={() => setShowFilters(false)}>
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalSheet}>
+            <View style={styles.modalHandle} />
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Filters</Text>
+              <TouchableOpacity onPress={clearAdvanced}>
+                <Text style={styles.modalClearText}>Clear all</Text>
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+              {/* Budget */}
+              <Text style={styles.filterLabel}>Budget</Text>
+              <View style={styles.rangeRow}>
+                <TextInput
+                  style={[styles.rangeInput, { flex: 1 }]}
+                  value={draft.budgetMin ?? ''}
+                  onChangeText={v => setDraft(d => ({ ...d, budgetMin: v }))}
+                  placeholder="Min"
+                  placeholderTextColor="#9ca3af"
+                  keyboardType="decimal-pad"
+                />
+                <Text style={styles.rangeSep}>–</Text>
+                <TextInput
+                  style={[styles.rangeInput, { flex: 1 }]}
+                  value={draft.budgetMax ?? ''}
+                  onChangeText={v => setDraft(d => ({ ...d, budgetMax: v }))}
+                  placeholder="Max"
+                  placeholderTextColor="#9ca3af"
+                  keyboardType="decimal-pad"
+                />
+              </View>
+
+              {/* Duration */}
+              <Text style={styles.filterLabel}>Duration (days)</Text>
+              <View style={styles.rangeRow}>
+                <TextInput
+                  style={[styles.rangeInput, { flex: 1 }]}
+                  value={draft.durationMin ?? ''}
+                  onChangeText={v => setDraft(d => ({ ...d, durationMin: v }))}
+                  placeholder="Min"
+                  placeholderTextColor="#9ca3af"
+                  keyboardType="number-pad"
+                />
+                <Text style={styles.rangeSep}>–</Text>
+                <TextInput
+                  style={[styles.rangeInput, { flex: 1 }]}
+                  value={draft.durationMax ?? ''}
+                  onChangeText={v => setDraft(d => ({ ...d, durationMax: v }))}
+                  placeholder="Max"
+                  placeholderTextColor="#9ca3af"
+                  keyboardType="number-pad"
+                />
+              </View>
+
+              {/* Travelers */}
+              <Text style={styles.filterLabel}>Travelers</Text>
+              <View style={styles.travelersRow}>
+                {TRAVELERS_OPTIONS.map(opt => (
+                  <TouchableOpacity
+                    key={opt.value}
+                    style={[styles.travelerChip, draft.travelersCount === opt.value && styles.travelerChipActive]}
+                    onPress={() => setDraft(d => ({ ...d, travelersCount: d.travelersCount === opt.value ? '' : opt.value }))}
+                  >
+                    <Text style={[styles.travelerChipText, draft.travelersCount === opt.value && styles.travelerChipTextActive]}>
+                      {opt.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </ScrollView>
+
+            <TouchableOpacity style={styles.applyBtn} onPress={applyFilters}>
+              <Text style={styles.applyBtnText}>Apply filters</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -235,6 +358,52 @@ const styles = StyleSheet.create({
     paddingVertical: 2, paddingHorizontal: 8,
     flex: 1,
   },
+  filterBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    paddingVertical: 5, paddingHorizontal: 10,
+    borderRadius: 999, borderWidth: 1, borderColor: '#e5e7eb',
+    backgroundColor: '#f9fafb',
+  },
+  filterBtnText: { fontSize: 13, color: '#374151', fontWeight: '500' },
+  filterBadge: {
+    backgroundColor: '#0077b6', borderRadius: 999,
+    width: 18, height: 18, alignItems: 'center', justifyContent: 'center',
+  },
+  filterBadgeText: { color: '#fff', fontSize: 10, fontWeight: '700' },
+
+  // Modal
+  modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
+  modalSheet: {
+    backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24,
+    padding: 20, maxHeight: '80%',
+    ...shadow(-4, 0.15, 20, 16),
+  },
+  modalHandle: { width: 36, height: 4, borderRadius: 2, backgroundColor: '#e5e7eb', alignSelf: 'center', marginBottom: 16 },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+  modalTitle: { fontSize: 18, fontWeight: '700', color: '#111827' },
+  modalClearText: { fontSize: 14, color: '#dc2626', fontWeight: '600' },
+  filterLabel: { fontSize: 13, fontWeight: '600', color: '#374151', marginBottom: 8, marginTop: 12 },
+  rangeRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  rangeInput: {
+    borderWidth: 1.5, borderColor: '#dde3ec', borderRadius: 10,
+    backgroundColor: '#f7f9fc', paddingVertical: 10, paddingHorizontal: 12,
+    fontSize: 14, color: '#111827',
+  },
+  rangeSep: { fontSize: 16, color: '#9ca3af' },
+  travelersRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  travelerChip: {
+    paddingVertical: 7, paddingHorizontal: 14, borderRadius: 999,
+    borderWidth: 1.5, borderColor: '#e5e7eb', backgroundColor: '#f9fafb',
+  },
+  travelerChipActive: { borderColor: '#0077b6', backgroundColor: '#eff6ff' },
+  travelerChipText: { fontSize: 13, color: '#6b7280', fontWeight: '500' },
+  travelerChipTextActive: { color: '#0077b6', fontWeight: '600' },
+  applyBtn: {
+    backgroundColor: '#0077b6', borderRadius: 999,
+    paddingVertical: 14, alignItems: 'center', marginTop: 20,
+  },
+  applyBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
+
   clearBtn: {
     paddingVertical: 4, paddingHorizontal: 10,
     backgroundColor: '#fef2f2', borderRadius: 999,
