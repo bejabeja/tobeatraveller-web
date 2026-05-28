@@ -1,4 +1,5 @@
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { shadow } from '../utils/styles';
 
 const ItineraryCard = ({ itinerary, onPress }) => (
   <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.85}>
@@ -26,7 +27,7 @@ const ItineraryCard = ({ itinerary, onPress }) => (
 );
 
 const styles = StyleSheet.create({
-  card: { backgroundColor: '#fff', borderRadius: 12, overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 },
+  card: { backgroundColor: '#fff', borderRadius: 12, overflow: 'hidden', ...shadow(2, 0.06, 8, 2) },
   image: { width: '100%', height: 160 },
   body: { padding: 12 },
   title: { fontSize: 15, fontWeight: '700', color: '#111827' },

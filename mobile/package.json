@@ -12,6 +12,7 @@
     "@tobeatraveller/shared": "*",
     "expo": "~56.0.4",
     "expo-dev-client": "~56.0.16",
+    "expo-linear-gradient": "~56.0.4",
     "expo-secure-store": "^56.0.4",
     "expo-status-bar": "~56.0.4",
     "react": "^19.2.6",

@@ -10,6 +10,7 @@
   "scripts": {
     "dev": "concurrently -n api,web -c blue,green \"npm run dev --prefix api\" \"npm run dev --prefix client\"",
     "dev:mobile": "npm start --prefix mobile",
+    "dev:app": "concurrently -n api,mobile -c blue,magenta \"npm run dev --prefix api\" \"npm run web --prefix mobile\"",
     "build": "npm test --prefix api && npm run build --prefix client"
   },
   "devDependencies": {
