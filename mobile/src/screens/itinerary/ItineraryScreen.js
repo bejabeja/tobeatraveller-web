@@ -1,11 +1,15 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator, Alert, Image, ScrollView, Share,
+  ActivityIndicator, Alert, Image, Platform, ScrollView, Share,
   StyleSheet, Text, TextInput, TouchableOpacity, View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
+
+// Map only on native — react-native-maps doesn't support web
+const MapView = Platform.OS !== 'web' ? require('react-native-maps').default : null;
+const Marker  = Platform.OS !== 'web' ? require('react-native-maps').Marker  : null;
 import { shadow, textShadow } from '../../utils/styles';
 import {
   addComment, addFavorite, checkIsFavorite, deleteComment,
@@ -155,9 +159,17 @@ const ItineraryScreen = ({ route, navigation }) => {
             <Text style={styles.actionIcon}>⤴</Text>
           </TouchableOpacity>
           {isMyItinerary ? (
-            <TouchableOpacity style={[styles.actionBtn, styles.actionBtnDanger]} onPress={handleDelete}>
-              <Text style={styles.actionIcon}>🗑</Text>
-            </TouchableOpacity>
+            <>
+              <TouchableOpacity
+                style={styles.actionBtn}
+                onPress={() => navigation.navigate('EditItinerary', { id: itinerary.id })}
+              >
+                <Text style={styles.actionIcon}>✏️</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.actionBtn, styles.actionBtnDanger]} onPress={handleDelete}>
+                <Text style={styles.actionIcon}>🗑</Text>
+              </TouchableOpacity>
+            </>
           ) : (
             <TouchableOpacity style={[styles.actionBtn, isFavorite && styles.actionBtnSaved]} onPress={handleFavorite}>
               <Text style={styles.actionIcon}>{isFavorite ? '🔖' : '📌'}</Text>
@@ -243,6 +255,11 @@ const ItineraryScreen = ({ route, navigation }) => {
           </View>
         )}
 
+        {/* Map — native only */}
+        {Platform.OS !== 'web' && itinerary.places?.some(p => p.latitude && p.longitude) && (
+          <ItineraryMap places={itinerary.places} location={itinerary.location} />
+        )}
+
         {/* Comments */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Comments ({comments.length})</Text>
@@ -321,6 +338,81 @@ const ItineraryScreen = ({ route, navigation }) => {
   );
 };
 
+// ─── Map component (native only) ─────────────────────────────────────────────
+const ItineraryMap = ({ places, location }) => {
+  const mapRef = useRef(null);
+  const validPlaces = places.filter(p => p.latitude && p.longitude);
+
+  const initialRegion = (() => {
+    if (validPlaces.length === 0) return null;
+    const lats = validPlaces.map(p => parseFloat(p.latitude));
+    const lons = validPlaces.map(p => parseFloat(p.longitude));
+    const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+    const minLon = Math.min(...lons), maxLon = Math.max(...lons);
+    return {
+      latitude: (minLat + maxLat) / 2,
+      longitude: (minLon + maxLon) / 2,
+      latitudeDelta: Math.max(maxLat - minLat, 0.02) * 1.4,
+      longitudeDelta: Math.max(maxLon - minLon, 0.02) * 1.4,
+    };
+  })();
+
+  if (!initialRegion || !MapView) return null;
+
+  return (
+    <View style={mapStyles.section}>
+      <Text style={mapStyles.title}>Trip area</Text>
+      <View style={mapStyles.container}>
+        <MapView
+          ref={mapRef}
+          style={mapStyles.map}
+          initialRegion={initialRegion}
+          onMapReady={() => {
+            if (validPlaces.length > 1) {
+              mapRef.current?.fitToCoordinates(
+                validPlaces.map(p => ({
+                  latitude: parseFloat(p.latitude),
+                  longitude: parseFloat(p.longitude),
+                })),
+                { edgePadding: { top: 40, right: 40, bottom: 40, left: 40 }, animated: false }
+              );
+            }
+          }}
+        >
+          {validPlaces.map((place, i) => (
+            <Marker
+              key={i}
+              coordinate={{
+                latitude: parseFloat(place.latitude),
+                longitude: parseFloat(place.longitude),
+              }}
+              title={place.name}
+            >
+              <View style={mapStyles.marker}>
+                <Text style={mapStyles.markerText}>{i + 1}</Text>
+              </View>
+            </Marker>
+          ))}
+        </MapView>
+      </View>
+    </View>
+  );
+};
+
+const mapStyles = StyleSheet.create({
+  section: { marginBottom: 28 },
+  title: { fontSize: 16, fontWeight: '700', color: '#111827', marginBottom: 10 },
+  container: { borderRadius: 14, overflow: 'hidden', ...shadow(2, 0.08, 8, 2) },
+  map: { width: '100%', height: 240 },
+  marker: {
+    width: 28, height: 28, borderRadius: 14,
+    backgroundColor: '#0077b6', borderWidth: 2, borderColor: '#fff',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  markerText: { color: '#fff', fontSize: 11, fontWeight: '700' },
+});
+
+// ─── StatCard ─────────────────────────────────────────────────────────────────
 const StatCard = ({ icon, label, value, subvalue }) => (
   <View style={styles.statCard}>
     <Text style={styles.statIcon}>{icon}</Text>

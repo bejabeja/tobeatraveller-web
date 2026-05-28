@@ -16,7 +16,7 @@ const ItineraryCard = ({ itinerary, onPress }) => (
         {itinerary.tripTotalDays && (
           <Text style={styles.metaItem}>🗓 {itinerary.tripTotalDays}d</Text>
         )}
-        {itinerary.budget > 0 && (
+        {parseFloat(itinerary.budget) > 0 && (
           <Text style={styles.metaItem}>💰 {itinerary.budget} {itinerary.currency}</Text>
         )}
         <Text style={styles.metaItem}>❤️ {itinerary.likesCount ?? 0}</Text>

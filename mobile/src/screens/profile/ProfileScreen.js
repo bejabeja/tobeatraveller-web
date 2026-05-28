@@ -1,55 +1,514 @@
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useEffect, useState } from 'react';
+import {
+  ActivityIndicator, Alert, FlatList, Image, ScrollView,
+  Share, StyleSheet, Text, TouchableOpacity, View,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
-import { selectIsAuthenticated, selectAuthUser, logoutUser } from '@tobeatraveller/shared';
+import {
+  followUser, getItinerariesByUserId, getUserById, getUserFavorites, logoutUser,
+  selectAuthUser, selectIsAuthenticated, selectMe, selectMyItineraries,
+  setUserInfo, unfollowUser,
+} from '@tobeatraveller/shared';
+import ItineraryCard from '../../components/ItineraryCard';
+import { shadow } from '../../utils/styles';
 
-const ProfileScreen = ({ navigation }) => {
+const TRIP_BADGES = [
+  { id: 'globetrotter', label: 'Globetrotter', emoji: '🌍', min: 10 },
+  { id: 'adventurer',   label: 'Adventurer',   emoji: '✈️',  min: 5  },
+  { id: 'explorer',     label: 'Explorer',     emoji: '🗺️',  min: 1  },
+];
+const COMPLETENESS_FIELDS = [
+  { key: 'name',      tip: 'Add your name' },
+  { key: 'bio',       tip: 'Write a bio' },
+  { key: 'about',     tip: 'Complete your About section' },
+  { key: 'location',  tip: 'Add your location' },
+  { key: 'avatarUrl', tip: 'Set a profile photo' },
+];
+
+const ProfileScreen = ({ route, navigation }) => {
+  const insets = useSafeAreaInsets();
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(selectIsAuthenticated);
-  const user = useSelector(selectAuthUser);
+  const meDetail = useSelector(selectMe);
+  const authUser = useSelector(selectAuthUser);
+  // selectMe is populated by initAuthUser; fall back to selectAuthUser right after login
+  const me = meDetail ?? authUser;
+  const myItineraries = useSelector(selectMyItineraries);
 
-  if (!isAuthenticated) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.title}>My Profile</Text>
-        <Text style={styles.subtitle}>Sign in to access your profile and itineraries.</Text>
-        <TouchableOpacity style={styles.btn} onPress={() => navigation.navigate('Login')}>
-          <Text style={styles.btnText}>Sign in</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.btnSecondary} onPress={() => navigation.navigate('Register')}>
-          <Text style={styles.btnSecondaryText}>Create account</Text>
-        </TouchableOpacity>
-      </View>
-    );
+  const profileId = route.params?.id;
+  const isOwnProfile = !profileId || (me && String(profileId) === String(me.id));
+
+  const [otherUser, setOtherUser] = useState(null);
+  const [otherItineraries, setOtherItineraries] = useState([]);
+  const [loading, setLoading] = useState(!!profileId && !isOwnProfile);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
+  const [savedTrips, setSavedTrips] = useState([]);
+  const [savedLoading, setSavedLoading] = useState(false);
+
+  const user = isOwnProfile ? me : otherUser;
+  const itineraries = isOwnProfile ? (myItineraries ?? []) : otherItineraries;
+  const canGoBack = navigation.canGoBack();
+
+  useEffect(() => { setAvatarError(false); }, [user?.avatarUrl]);
+
+  // Load saved trips (own profile only)
+  useEffect(() => {
+    if (!isOwnProfile || !isAuthenticated) return;
+    setSavedLoading(true);
+    getUserFavorites()
+      .then(data => setSavedTrips(Array.isArray(data) ? data : []))
+      .catch(() => setSavedTrips([]))
+      .finally(() => setSavedLoading(false));
+  }, [isOwnProfile, isAuthenticated]);
+
+  useEffect(() => {
+    if (isOwnProfile || !profileId) return;
+    (async () => {
+      try {
+        const [u, its] = await Promise.all([
+          getUserById(profileId),
+          getItinerariesByUserId(profileId),
+        ]);
+        setOtherUser(u);
+        setOtherItineraries(its ?? []);
+        const following = me?.followingListIds?.some(f => String(f.id) === String(profileId));
+        setIsFollowing(!!following);
+      } catch {}
+      finally { setLoading(false); }
+    })();
+  }, [profileId, isOwnProfile]);
+
+  const handleShare = async () => {
+    try {
+      await Share.share({ message: `Check out @${user?.username} on Tobeatraveller`, title: user?.username });
+    } catch {}
+  };
+
+  const handleFollowToggle = async () => {
+    if (!isAuthenticated) { navigation.navigate('Login'); return; }
+    setFollowLoading(true);
+    try {
+      if (isFollowing) {
+        await unfollowUser(profileId);
+        setIsFollowing(false);
+      } else {
+        await followUser(profileId);
+        setIsFollowing(true);
+      }
+      // Refresh me so followingListIds stays accurate across screens
+      if (me?.id) dispatch(setUserInfo(me.id));
+    } catch {}
+    finally { setFollowLoading(false); }
+  };
+
+  if (!isAuthenticated && isOwnProfile) {
+    return <UnauthView navigation={navigation} insets={insets} />;
   }
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.avatar}>
-        <Text style={styles.avatarText}>{user?.username?.charAt(0).toUpperCase()}</Text>
-      </View>
-      <Text style={styles.username}>@{user?.username}</Text>
-      {user?.name && <Text style={styles.name}>{user.name}</Text>}
+  if (loading) {
+    return <ActivityIndicator size="large" color="#0077b6" style={styles.loader} />;
+  }
 
-      <TouchableOpacity style={styles.btnDanger} onPress={() => dispatch(logoutUser())}>
-        <Text style={styles.btnText}>Sign out</Text>
-      </TouchableOpacity>
-    </View>
+  const tripBadge = TRIP_BADGES.find(b => (user?.totalItineraries ?? 0) >= b.min);
+  const popularBadge = (user?.followers ?? 0) >= 50 ? { id: 'popular', label: 'Popular', emoji: '⭐' } : null;
+  const badges = [tripBadge, popularBadge].filter(Boolean);
+
+  const completenessCount = COMPLETENESS_FIELDS.filter(f => !!user?.[f.key]).length;
+  const completenessPct = Math.round((completenessCount / COMPLETENESS_FIELDS.length) * 100);
+  const nextTip = COMPLETENESS_FIELDS.find(f => !user?.[f.key])?.tip;
+
+  return (
+    <ScrollView
+      style={styles.container}
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
+    >
+      {/* Banner */}
+      <LinearGradient
+        colors={['#0077b6', '#005a8a']}
+        start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+        style={[styles.banner, canGoBack && { paddingTop: insets.top + 8 }]}
+      >
+        {canGoBack && (
+          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+            <Text style={styles.backBtnText}>←</Text>
+          </TouchableOpacity>
+        )}
+      </LinearGradient>
+
+      {/* Card: avatar + actions + info */}
+      <View style={styles.card}>
+        <View style={styles.cardTop}>
+          <View style={styles.avatarWrapper}>
+            {user?.avatarUrl && !avatarError ? (
+              <Image
+                source={{ uri: user.avatarUrl }}
+                style={styles.avatar}
+                resizeMode="cover"
+                onError={() => setAvatarError(true)}
+              />
+            ) : (
+              <View style={styles.avatarFallback}>
+                <Text style={styles.avatarInitial}>
+                  {user?.username?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || '?'}
+                </Text>
+              </View>
+            )}
+          </View>
+
+          <View style={styles.cardActions}>
+            <TouchableOpacity style={styles.iconBtn} onPress={handleShare}>
+              <Text style={styles.iconBtnText}>⤴</Text>
+            </TouchableOpacity>
+            {isOwnProfile ? (
+              <TouchableOpacity
+                style={styles.secondaryBtn}
+                onPress={() => navigation.navigate('EditProfile')}
+              >
+                <Text style={styles.secondaryBtnText}>✏️  Edit profile</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={[styles.primaryBtn, isFollowing && styles.secondaryBtn, followLoading && styles.btnDisabled]}
+                onPress={handleFollowToggle}
+                disabled={followLoading}
+              >
+                <Text style={[styles.primaryBtnText, isFollowing && styles.secondaryBtnText]}>
+                  {followLoading ? '…' : isFollowing ? 'Unfollow' : 'Follow'}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+
+        <View style={styles.userInfo}>
+          {user?.name
+            ? <Text style={styles.displayName}>{user.name}</Text>
+            : isOwnProfile && (
+              <TouchableOpacity onPress={() => navigation.navigate('EditProfile')}>
+                <Text style={styles.emptyPrompt}>+ Add your name</Text>
+              </TouchableOpacity>
+            )
+          }
+
+          <View style={styles.usernameRow}>
+            <Text style={styles.username}>@{user?.username}</Text>
+            {user?.role === 'official' && (
+              <View style={styles.officialBadge}><Text style={styles.officialText}>✓</Text></View>
+            )}
+          </View>
+
+          {user?.bio ? (
+            <Text style={styles.bio}>{user.bio}</Text>
+          ) : isOwnProfile && (
+            <TouchableOpacity onPress={() => navigation.navigate('EditProfile')}>
+              <Text style={styles.emptyPrompt}>+ Add a bio</Text>
+            </TouchableOpacity>
+          )}
+
+          {badges.length > 0 && (
+            <View style={styles.badges}>
+              {badges.map(b => (
+                <View key={b.id} style={styles.badge}>
+                  <Text style={styles.badgeEmoji}>{b.emoji}</Text>
+                  <Text style={styles.badgeLabel}>{b.label}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+
+          <View style={styles.meta}>
+            {user?.location ? (
+              <Text style={styles.metaItem}>📍 {user.location}</Text>
+            ) : isOwnProfile && (
+              <TouchableOpacity onPress={() => navigation.navigate('EditProfile')}>
+                <Text style={[styles.metaItem, styles.emptyPrompt]}>📍 Add location</Text>
+              </TouchableOpacity>
+            )}
+            {user?.createdAt && (
+              <Text style={styles.metaItem}>📅 Joined {user.createdAt}</Text>
+            )}
+          </View>
+
+          <View style={styles.stats}>
+            <TouchableOpacity
+              style={styles.stat}
+              onPress={() => navigation.navigate('Follows', { userId: user?.id, type: 'followers' })}
+            >
+              <Text style={styles.statNumber}>{user?.followers ?? 0}</Text>
+              <Text style={styles.statLabel}>Followers</Text>
+            </TouchableOpacity>
+            <View style={styles.statDivider} />
+            <TouchableOpacity
+              style={styles.stat}
+              onPress={() => navigation.navigate('Follows', { userId: user?.id, type: 'following' })}
+            >
+              <Text style={styles.statNumber}>{user?.following ?? 0}</Text>
+              <Text style={styles.statLabel}>Following</Text>
+            </TouchableOpacity>
+            <View style={styles.statDivider} />
+            <TouchableOpacity
+              style={styles.stat}
+              onPress={() => isOwnProfile && navigation.navigate('MyItineraries')}
+            >
+              <Text style={styles.statNumber}>{user?.totalItineraries ?? 0}</Text>
+              <Text style={styles.statLabel}>Trips</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Completeness bar (own profile, < 100%) */}
+        {isOwnProfile && completenessPct < 100 && (
+          <View style={styles.completeness}>
+            <View style={styles.completenessHeader}>
+              <Text style={styles.completenessLabel}>Profile strength</Text>
+              <Text style={styles.completenessPct}>{completenessPct}%</Text>
+            </View>
+            <View style={styles.completenessTrack}>
+              <View style={[styles.completenessFill, { width: `${completenessPct}%` }]} />
+            </View>
+            {nextTip && (
+              <TouchableOpacity onPress={() => navigation.navigate('EditProfile')}>
+                <Text style={styles.completenessTip}>→ {nextTip}</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
+
+        {/* Logout (own profile) */}
+        {isOwnProfile && (
+          <TouchableOpacity
+            style={styles.logoutBtn}
+            onPress={() => dispatch(logoutUser())}
+          >
+            <Text style={styles.logoutText}>Sign out</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {/* About */}
+      {user?.about && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>About</Text>
+          <Text style={styles.aboutText}>{user.about}</Text>
+        </View>
+      )}
+
+      {/* Itineraries */}
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>
+            {isOwnProfile ? 'My trips' : 'Trips'} ({itineraries.length})
+          </Text>
+          {isOwnProfile && itineraries.length > 0 && (
+            <TouchableOpacity onPress={() => navigation.navigate('MyItineraries')}>
+              <Text style={styles.seeAll}>See all →</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+        {itineraries.length === 0 ? (
+          <Text style={styles.emptyTrips}>
+            {isOwnProfile ? 'No trips yet. Start creating!' : 'No public trips yet.'}
+          </Text>
+        ) : (
+          <View style={styles.grid}>
+            {itineraries.map(it => (
+              <View key={it.id} style={styles.gridItem}>
+                <ItineraryCard
+                  itinerary={it}
+                  onPress={() => navigation.navigate('Itinerary', { id: it.id })}
+                />
+              </View>
+            ))}
+          </View>
+        )}
+      </View>
+
+      {/* Saved trips (own profile only) */}
+      {isOwnProfile && isAuthenticated && (
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>
+              Saved trips {savedTrips.length > 0 ? `(${savedTrips.length})` : ''}
+            </Text>
+            {savedTrips.length > 0 && (
+              <TouchableOpacity onPress={() => navigation.navigate('Saved')}>
+                <Text style={styles.seeAll}>See all →</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+          {savedLoading ? (
+            <ActivityIndicator size="small" color="#0077b6" />
+          ) : savedTrips.length === 0 ? (
+            <Text style={styles.emptyTrips}>No saved trips yet. Bookmark itineraries you love!</Text>
+          ) : (
+            <View style={styles.grid}>
+              {savedTrips.slice(0, 4).map(it => (
+                <View key={it.id} style={styles.gridItem}>
+                  <ItineraryCard
+                    itinerary={it}
+                    onPress={() => navigation.navigate('Itinerary', { id: it.id })}
+                  />
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
+      )}
+    </ScrollView>
   );
 };
 
+const UnauthView = ({ navigation, insets }) => (
+  <View style={[styles.unauthContainer, { paddingTop: insets.top + 40 }]}>
+    <Text style={styles.unauthEmoji}>🌍</Text>
+    <Text style={styles.unauthTitle}>Your profile awaits</Text>
+    <Text style={styles.unauthSubtitle}>Sign in to track your trips and connect with travellers.</Text>
+    <TouchableOpacity style={styles.primaryBtn} onPress={() => navigation.navigate('Login')}>
+      <Text style={styles.primaryBtnText}>Sign in</Text>
+    </TouchableOpacity>
+    <TouchableOpacity style={[styles.secondaryBtn, { marginTop: 10 }]} onPress={() => navigation.navigate('Register')}>
+      <Text style={styles.secondaryBtnText}>Create account</Text>
+    </TouchableOpacity>
+  </View>
+);
+
 const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24, backgroundColor: '#fff' },
-  title: { fontSize: 22, fontWeight: '700', color: '#111827', marginBottom: 8 },
-  subtitle: { fontSize: 14, color: '#6b7280', textAlign: 'center', marginBottom: 24 },
-  avatar: { width: 72, height: 72, borderRadius: 36, backgroundColor: '#0077b6', alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
-  avatarText: { color: '#fff', fontSize: 28, fontWeight: '700' },
-  username: { fontSize: 18, fontWeight: '700', color: '#111827' },
-  name: { fontSize: 14, color: '#6b7280', marginTop: 4, marginBottom: 24 },
-  btn: { backgroundColor: '#0077b6', borderRadius: 999, paddingVertical: 13, paddingHorizontal: 32, marginTop: 8 },
-  btnSecondary: { borderWidth: 1.5, borderColor: '#e5e7eb', borderRadius: 999, paddingVertical: 13, paddingHorizontal: 32, marginTop: 10 },
-  btnSecondaryText: { color: '#111827', fontWeight: '600', fontSize: 15 },
-  btnDanger: { backgroundColor: '#ef4444', borderRadius: 999, paddingVertical: 13, paddingHorizontal: 32, marginTop: 24 },
-  btnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
+  container: { flex: 1, backgroundColor: '#f8fafc' },
+  loader: { flex: 1, marginTop: 60 },
+
+  banner: { height: 110 },
+  backBtn: {
+    position: 'absolute', top: 8, left: 16,
+    backgroundColor: 'rgba(0,0,0,0.25)', borderRadius: 18,
+    width: 36, height: 36, alignItems: 'center', justifyContent: 'center',
+  },
+  backBtnText: { color: '#fff', fontSize: 18 },
+
+  card: {
+    backgroundColor: '#fff', marginHorizontal: 16,
+    borderRadius: 16, marginTop: -24, paddingBottom: 16,
+    ...shadow(4, 0.08, 12, 4),
+  },
+  cardTop: {
+    flexDirection: 'row', justifyContent: 'space-between',
+    alignItems: 'flex-end', paddingHorizontal: 16, paddingTop: 12,
+  },
+  avatarWrapper: {
+    marginTop: -36,
+    borderWidth: 4, borderColor: '#fff', borderRadius: 44,
+    ...shadow(2, 0.1, 8, 3),
+  },
+  avatar: { width: 80, height: 80, borderRadius: 40 },
+  avatarFallback: {
+    width: 80, height: 80, borderRadius: 40,
+    backgroundColor: '#0077b6', alignItems: 'center', justifyContent: 'center',
+  },
+  avatarInitial: { color: '#fff', fontSize: 32, fontWeight: '700' },
+
+  cardActions: { flexDirection: 'row', gap: 8, alignItems: 'center' },
+  iconBtn: {
+    width: 36, height: 36, borderRadius: 18,
+    borderWidth: 1.5, borderColor: '#e5e7eb',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  iconBtnText: { fontSize: 16, color: '#374151' },
+  primaryBtn: {
+    backgroundColor: '#0077b6', borderRadius: 999,
+    paddingVertical: 9, paddingHorizontal: 20,
+  },
+  primaryBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
+  secondaryBtn: {
+    borderWidth: 1.5, borderColor: '#e5e7eb', borderRadius: 999,
+    paddingVertical: 9, paddingHorizontal: 20,
+    backgroundColor: '#fff',
+  },
+  secondaryBtnText: { color: '#374151', fontWeight: '600', fontSize: 14 },
+  btnDisabled: { opacity: 0.5 },
+
+  userInfo: { paddingHorizontal: 16, paddingTop: 12 },
+  displayName: { fontSize: 20, fontWeight: '800', color: '#111827' },
+  usernameRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 },
+  username: { fontSize: 14, color: '#6b7280' },
+  officialBadge: {
+    width: 18, height: 18, borderRadius: 9,
+    backgroundColor: '#0077b6', alignItems: 'center', justifyContent: 'center',
+  },
+  officialText: { color: '#fff', fontSize: 10, fontWeight: '700' },
+  bio: { fontSize: 14, color: '#374151', marginTop: 8, lineHeight: 20 },
+  emptyPrompt: { fontSize: 14, color: '#0077b6', marginTop: 6 },
+
+  badges: { flexDirection: 'row', gap: 6, marginTop: 10, flexWrap: 'wrap' },
+  badge: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    backgroundColor: '#eff6ff', borderRadius: 999,
+    paddingVertical: 3, paddingHorizontal: 10,
+    borderWidth: 1, borderColor: '#bfdbfe',
+  },
+  badgeEmoji: { fontSize: 12 },
+  badgeLabel: { fontSize: 12, color: '#1d4ed8', fontWeight: '600' },
+
+  meta: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginTop: 10 },
+  metaItem: { fontSize: 13, color: '#6b7280' },
+
+  stats: {
+    flexDirection: 'row', alignItems: 'center',
+    marginTop: 16, paddingTop: 14,
+    borderTopWidth: 1, borderTopColor: '#f3f4f6',
+  },
+  stat: { flex: 1, alignItems: 'center' },
+  statDivider: { width: 1, height: 28, backgroundColor: '#f3f4f6' },
+  statNumber: { fontSize: 18, fontWeight: '800', color: '#111827' },
+  statLabel: { fontSize: 12, color: '#6b7280', marginTop: 1 },
+
+  completeness: {
+    marginHorizontal: 16, marginTop: 14,
+    padding: 12, backgroundColor: '#f8fafc',
+    borderRadius: 10, borderWidth: 1, borderColor: '#e5e7eb',
+  },
+  completenessHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
+  completenessLabel: { fontSize: 13, color: '#374151', fontWeight: '600' },
+  completenessPct: { fontSize: 13, color: '#0077b6', fontWeight: '700' },
+  completenessTrack: {
+    height: 6, backgroundColor: '#e5e7eb', borderRadius: 3, overflow: 'hidden',
+  },
+  completenessFill: { height: '100%', backgroundColor: '#0077b6', borderRadius: 3 },
+  completenessTip: { fontSize: 12, color: '#0077b6', marginTop: 6 },
+
+  createBtn: {
+    marginHorizontal: 16, marginTop: 14,
+    backgroundColor: '#0077b6', borderRadius: 10,
+    paddingVertical: 11, alignItems: 'center',
+  },
+  createBtnText: { color: '#fff', fontSize: 14, fontWeight: '700' },
+  logoutBtn: {
+    marginHorizontal: 16, marginTop: 14,
+    borderWidth: 1, borderColor: '#fecaca',
+    borderRadius: 10, paddingVertical: 10, alignItems: 'center',
+  },
+  logoutText: { color: '#ef4444', fontSize: 14, fontWeight: '600' },
+
+  section: { marginHorizontal: 16, marginTop: 16 },
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  sectionTitle: { fontSize: 16, fontWeight: '700', color: '#111827' },
+  seeAll: { fontSize: 13, color: '#0077b6', fontWeight: '600' },
+  aboutText: { fontSize: 14, color: '#374151', lineHeight: 22 },
+  emptyTrips: { color: '#9ca3af', fontSize: 14 },
+
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  gridItem: { width: '47.5%' },
+
+  unauthContainer: {
+    flex: 1, alignItems: 'center', padding: 32,
+    backgroundColor: '#fff',
+  },
+  unauthEmoji: { fontSize: 52, marginBottom: 16 },
+  unauthTitle: { fontSize: 22, fontWeight: '800', color: '#111827', marginBottom: 8 },
+  unauthSubtitle: { fontSize: 14, color: '#6b7280', textAlign: 'center', marginBottom: 28, lineHeight: 21 },
 });
 
 export default ProfileScreen;

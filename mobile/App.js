@@ -3,11 +3,16 @@ import { Platform } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Provider, useDispatch } from 'react-redux';
 import * as SecureStore from 'expo-secure-store';
-import { store, setApiUrl, setTokenStorage, initAuthUser } from '@tobeatraveller/shared';
+import {
+  store, setApiUrl, setTokenStorage, initAuthUser,
+  selectIsAuthenticated, selectAuthUser,
+  setUserInfo, setUserInfoItineraries,
+} from '@tobeatraveller/shared';
+import { useSelector } from 'react-redux';
 import Navigation from './src/navigation';
+import { API_URL } from './src/utils/config';
 
-const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
-setApiUrl(apiUrl);
+setApiUrl(API_URL);
 
 setTokenStorage(
   Platform.OS === 'web'
@@ -25,10 +30,21 @@ setTokenStorage(
 
 function AppContent() {
   const dispatch = useDispatch();
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  const authUser = useSelector(selectAuthUser);
 
+  // Bootstrap auth state on launch
   useEffect(() => {
     dispatch(initAuthUser());
   }, [dispatch]);
+
+  // After login, fetch full profile (includes followers/following/totalItineraries)
+  useEffect(() => {
+    if (isAuthenticated && authUser?.id) {
+      dispatch(setUserInfo(authUser.id));
+      dispatch(setUserInfoItineraries(authUser.id));
+    }
+  }, [isAuthenticated, authUser?.id, dispatch]);
 
   return (
     <>
