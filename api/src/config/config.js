@@ -17,6 +17,11 @@ const config = {
     dbPassword: process.env.DB_PASSWORD,
     dbName: process.env.DB_NAME,
     dbPort: process.env.DB_PORT,
+
+    brevoApiKey: process.env.BREVO_API_KEY,
+    brevoSenderEmail: process.env.BREVO_SENDER_EMAIL || 'tobeatravellercompany@gmail.com',
+    brevoSenderName: process.env.BREVO_SENDER_NAME || 'ToBeATraveller',
+    appUrl: process.env.APP_URL || 'http://localhost:5173',
 };
 
 export default config;

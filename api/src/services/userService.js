@@ -5,10 +5,11 @@ import { NotFoundError } from "../errors/NotFoundError.js";
 import { generateAvatar } from "../utils/avatar.js";
 
 export class UserService {
-    constructor(userRepository, itinerariesRepository, followRepository) {
+    constructor(userRepository, itinerariesRepository, followRepository, emailService = null) {
         this.userRepository = userRepository;
         this.itinerariesRepository = itinerariesRepository;
         this.followRepository = followRepository;
+        this.emailService = emailService;
     }
 
     async create(userData) {
@@ -28,7 +29,12 @@ export class UserService {
             avatarUrl: generateAvatar(username),
         };
 
-        return await this.userRepository.save(userToSave);
+        const savedUser = await this.userRepository.save(userToSave);
+
+        this.emailService?.sendWelcome({ username, email })
+            .catch(err => console.error('[email] welcome failed:', err));
+
+        return savedUser;
     }
 
     async getAllUsers() {

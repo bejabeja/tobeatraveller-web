@@ -23,6 +23,7 @@ import Community from "./pages/community/Community";
 import Favorites from "./pages/favorites/Favorites";
 import FollowersList from "./pages/follows/FollowersList";
 import FollowingList from "./pages/follows/FollowingList";
+import Contact from "./pages/legal/Contact";
 import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
 import Terms from "./pages/legal/Terms";
 import {
@@ -53,7 +54,7 @@ const App = () => {
     dispatch(clearError());
   }, [dispatch, location]);
 
-  const publicRoutes = ["/", "/explore", "/community", "/privacy-policy", "/terms"];
+  const publicRoutes = ["/", "/explore", "/community", "/privacy-policy", "/terms", "/contact"];
 
   const isAuthRoute = ["/login", "/register"].includes(location.pathname);
 
@@ -80,6 +81,7 @@ const App = () => {
             <Route path="/community" element={<Community />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<Terms />} />
+            <Route path="/contact" element={<Contact />} />
 
             {/* routes to decide if private or not */}
             <Route path="/friend-profile/:id" element={<Profile />} />

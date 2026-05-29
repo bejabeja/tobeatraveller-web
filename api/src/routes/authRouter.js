@@ -4,6 +4,7 @@ import { FollowRepository } from "../repositories/followRepository.js";
 import { ItineraryRepository } from "../repositories/itineraryRepository.js";
 import { UserRepository } from "../repositories/userRepository.js";
 import { AuthService } from "../services/authService.js";
+import { EmailService } from "../services/emailService.js";
 import { UserService } from "../services/userService.js";
 
 export const createAuthRouter = () => {
@@ -11,7 +12,8 @@ export const createAuthRouter = () => {
     const userRepository = new UserRepository();
     const itinerariesRepository = new ItineraryRepository();
     const followRepository = new FollowRepository();
-    const userService = new UserService(userRepository, itinerariesRepository, followRepository);
+    const emailService = new EmailService();
+    const userService = new UserService(userRepository, itinerariesRepository, followRepository, emailService);
     const authService = new AuthService(userRepository);
     const authController = new AuthController(userService, authService);
 

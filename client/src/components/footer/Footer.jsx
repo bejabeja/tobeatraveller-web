@@ -26,7 +26,7 @@ const Footer = () => (
         </div>
         <div className="footer__nav-group">
           <span className="footer__nav-label">Contact</span>
-          <a href="mailto:tobeatravellercompany@gmail.com">Get in touch</a>
+          <Link to="/contact">Get in touch</Link>
         </div>
       </nav>
     </div>

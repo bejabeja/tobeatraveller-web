@@ -8,6 +8,8 @@ import { authenticate } from "./src/middlewares/authenticate.js";
 import { corsMiddleware } from './src/middlewares/cors.js';
 import { errorHandler } from './src/middlewares/errorHandler.js';
 import { createAuthRouter } from './src/routes/authRouter.js';
+import { createDevRouter } from './src/routes/devRouter.js';
+import { createEmailRouter } from './src/routes/emailRouter.js';
 import { createCloudinaryRouter } from "./src/routes/cloudinaryRouter.js";
 import { createCommentsRouter } from "./src/routes/commentsRouter.js";
 import { createFavoritesRouter } from "./src/routes/favoritesRouter.js";
@@ -35,11 +37,13 @@ app.use('/favorites', authenticate, createFavoritesRouter());
 app.use('/likes', authenticate, createLikesRouter());
 app.use('/comments', createCommentsRouter());
 
+app.use('/', createEmailRouter());
+if (config.nodeEnv !== 'production') app.use('/dev', createDevRouter());
 app.use('/api', healthCheckRouter());
 
 Sentry.setupExpressErrorHandler(app);
 
-app.use((req, res) => {
+app.use((_req, res) => {
     res.status(404).json({ error: 'Route not found' });
 });
 
