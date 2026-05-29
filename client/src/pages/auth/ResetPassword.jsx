@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { IoEarth } from "react-icons/io5";
+
 import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { PasswordInputForm } from "../../components/form/PasswordInputForm";
 import SubmitButton from "../../components/form/SubmitButton";
@@ -53,7 +53,7 @@ const ResetPassword = () => {
       <div className="auth__panel" style={{ width: "100%" }}>
         <form onSubmit={handleSubmit(onSubmit)} className="auth__form">
           <Link to="/" className="auth__form-logo">
-            <IoEarth />Tobeatraveller
+            <img src="/logo.svg" alt="ToBeATraveller" height="28" />
           </Link>
 
           <div className="auth__form-header">

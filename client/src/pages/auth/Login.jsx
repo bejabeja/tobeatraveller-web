@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { IoEarth } from "react-icons/io5";
+
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { InputForm } from "../../components/form/InputForm";
@@ -54,7 +54,7 @@ const Login = () => {
 
       <div className={`auth__visual ${imageAuthLoaded ? "auth__visual--loaded" : ""}`}>
         <Link to="/" className="auth__brand">
-          <IoEarth /><span>Tobeatraveller</span>
+          <img src="/logo-white.svg" alt="ToBeATraveller" height="28" />
         </Link>
         <div className="auth__tagline">
           <h2>Discover the world,<br />one journey at a time.</h2>
@@ -65,7 +65,7 @@ const Login = () => {
       <div className="auth__panel">
         <form onSubmit={handleSubmit(checkUser)} className="auth__form">
           <Link to="/" className="auth__form-logo">
-            <IoEarth />Tobeatraveller
+            <img src="/logo.svg" alt="ToBeATraveller" height="28" />
           </Link>
 
           <div className="auth__form-header">

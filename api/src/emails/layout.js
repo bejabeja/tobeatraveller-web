@@ -27,17 +27,6 @@ export const layout = ({ title, preheader = '', content, footerNote }) => `
       <td align="center" style="padding:40px 16px;">
         <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="max-width:600px;width:100%;">
 
-          <!-- Logo row -->
-          <tr>
-            <td align="center" style="padding-bottom:20px;">
-              <a href="${config.appUrl}" style="text-decoration:none;display:inline-block;">
-                <img src="${config.appUrl}/logo3.png" alt="ToBeATraveller" width="140" height="auto"
-                     style="display:block;border:0;height:auto;line-height:100%;outline:none;text-decoration:none;"
-                     onerror="this.style.display='none'" />
-              </a>
-            </td>
-          </tr>
-
           <!-- Card -->
           <tr>
             <td style="background-color:${CARD};border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
@@ -48,8 +37,10 @@ export const layout = ({ title, preheader = '', content, footerNote }) => `
                   <td style="background:linear-gradient(135deg,${BRAND} 0%,${BRAND_D} 100%);padding:0;">
                     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                       <tr>
-                        <td style="padding:36px 40px 32px;text-align:center;">
-                          <p style="margin:0;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,0.65);">ToBeATraveller</p>
+                        <td style="padding:28px 40px 24px;text-align:center;">
+                          <img src="${config.appUrl}/logo-white.svg" alt="ToBeATraveller" width="160" height="27"
+                               style="display:inline-block;border:0;height:auto;"
+                               onerror="this.outerHTML='<p style=&quot;margin:0;font-size:13px;font-weight:700;letter-spacing:1px;color:white;&quot;>ToBeATraveller</p>'" />
                         </td>
                       </tr>
                     </table>

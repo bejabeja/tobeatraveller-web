@@ -2,17 +2,19 @@
   text-decoration: none;
   display: flex;
   align-items: center;
-  gap: 0.35rem;
-  font-size: 1.25rem;
-  font-weight: bold;
-  color: var(--primary-color);
   width: fit-content;
 }
 
-.logo__icon {
-  font-size: 1.15em;
-  flex-shrink: 0;
+.logo__mark {
+  display: none;
   width: auto;
+  flex-shrink: 0;
+}
+
+.logo__full {
+  display: block;
+  width: auto;
+  flex-shrink: 0;
 }
 
 /* ── Mobile: fixed top header ── */
@@ -174,8 +176,12 @@
     align-items: center;
   }
 
-  .navbar__logo span {
+  .navbar__logo .logo__full {
     display: none;
+  }
+
+  .navbar__logo .logo__mark {
+    display: block;
   }
 
   .nav-section {

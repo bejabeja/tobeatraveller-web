@@ -4,7 +4,6 @@ import {
   IoAddOutline,
   IoChevronBack,
   IoChevronForward,
-  IoEarth,
   IoSaveOutline,
   IoSearch,
 } from "react-icons/io5";
@@ -43,7 +42,7 @@ const Navbar = () => {
       {!isAuthRoute && (
         <div className="mobile-header">
           <Link to="/" className="logo">
-            <IoEarth className="logo__icon" />Tobeatraveller
+            <img src="/logo.svg" alt="ToBeATraveller" className="logo__full" height="28" />
           </Link>
         </div>
       )}
@@ -51,8 +50,8 @@ const Navbar = () => {
       {/* Desktop: fixed left sidebar */}
       <nav className="navbar">
         <Link to="/" className="logo navbar__logo">
-          <IoEarth className="logo__icon" />
-          <span>Tobeatraveller</span>
+          <img src="/logo-mark.svg" alt="ToBeATraveller" className="logo__mark" width="26" height="26" />
+          <img src="/logo.svg" alt="ToBeATraveller" className="logo__full" height="28" />
         </Link>
 
         <div className="nav-section">
