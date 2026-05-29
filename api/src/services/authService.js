@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import config from '../config/config.js';
 import { AuthError } from '../errors/AuthError.js';
@@ -6,8 +7,10 @@ import { NotFoundError } from '../errors/NotFoundError.js';
 
 const isProduction = config.nodeEnv === 'production';
 export class AuthService {
-    constructor(userRepository) {
+    constructor(userRepository, emailService = null, passwordResetRepository = null) {
         this.userRepository = userRepository;
+        this.emailService = emailService;
+        this.passwordResetRepository = passwordResetRepository;
     }
 
     async login({ email, password }) {
@@ -85,5 +88,34 @@ export class AuthService {
             secure: isProduction,
             sameSite: isProduction ? 'None' : 'Lax',
         });
+    }
+
+    async forgotPassword(email) {
+        const user = await this.userRepository.findByEmail(email);
+        // Return silently if user not found — do not reveal whether the email exists
+        if (!user) return;
+
+        const token = crypto.randomBytes(32).toString('hex');
+        const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+        const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+        await this.passwordResetRepository.save({ userId: user.id, tokenHash, expiresAt });
+
+        this.emailService?.sendPasswordReset({ username: user.username, email: user.email, token })
+            .catch(err => console.error('[email] password reset failed:', err));
+    }
+
+    async resetPassword(token, newPassword) {
+        const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+        const record = await this.passwordResetRepository.findByTokenHash(tokenHash);
+
+        if (!record) {
+            throw new NotFoundError('Invalid or expired token');
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        await this.userRepository.updatePassword(record.user_id, hashedPassword);
+        await this.passwordResetRepository.markAsUsed(record.id);
     }
 }

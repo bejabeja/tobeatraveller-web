@@ -74,7 +74,21 @@ const Login = () => {
           </div>
 
           <InputForm name="email" label="Email" type="email" control={control} error={errors.email} />
-          <PasswordInputForm name="password" label="Password" control={control} error={errors.password} />
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <PasswordInputForm name="password" label="Password" control={control} error={errors.password} />
+            <Link
+              to="/forgot-password"
+              style={{
+                alignSelf: "flex-end",
+                fontSize: "0.75rem",
+                color: "var(--text-secondary-color)",
+                textDecoration: "none",
+                marginTop: "0.2rem",
+              }}
+            >
+              Forgot your password?
+            </Link>
+          </div>
 
           <div className="auth__form-error" role="alert" aria-live="assertive">
             {errorInAuth && Object.keys(errors).length === 0 ? errorInAuth : " "}

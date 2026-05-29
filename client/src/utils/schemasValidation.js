@@ -45,6 +45,18 @@ export const loginSchema = z.object({
     password: z.string().min(6, "Password must be at least 6 characters long"),
 });
 
+export const forgotPasswordSchema = z.object({
+    email: z.string().email("Invalid email address").min(1, "Email is required"),
+});
+
+export const resetPasswordSchema = z.object({
+    newPassword: z.string().min(6, "Password must be at least 6 characters"),
+    confirmPassword: z.string(),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+});
+
 export const createItinerarySchema = z
     .object({
         imageUrl: z.string().optional(),

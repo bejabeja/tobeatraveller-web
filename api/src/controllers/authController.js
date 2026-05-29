@@ -1,6 +1,16 @@
+import { z } from 'zod';
 import { AuthError } from '../errors/AuthError.js';
 import { ValidationError } from '../errors/ValidationError.js';
 import { loginSchema, signupSchema } from '../utils/schemasValidation.js';
+
+const forgotPasswordSchema = z.object({
+    email: z.string().email(),
+});
+
+const resetPasswordSchema = z.object({
+    token: z.string().min(64),
+    newPassword: z.string().min(6),
+});
 
 export class AuthController {
     constructor(userService, authService) {
@@ -44,6 +54,33 @@ export class AuthController {
         try {
             this.authService.clearAuthCookies(res)
             return res.status(200).json({ message: "Logged out successfully" });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async forgotPassword(req, res, next) {
+        const result = forgotPasswordSchema.safeParse(req.body);
+        if (!result.success) {
+            return next(new ValidationError("Please provide a valid email address"));
+        }
+        try {
+            await this.authService.forgotPassword(result.data.email);
+            // Always return 200 — do not reveal whether the email exists
+            return res.status(200).json({ message: "If an account with that email exists, a reset link has been sent." });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async resetPassword(req, res, next) {
+        const result = resetPasswordSchema.safeParse(req.body);
+        if (!result.success) {
+            return next(new ValidationError("Invalid token or password too short"));
+        }
+        try {
+            await this.authService.resetPassword(result.data.token, result.data.newPassword);
+            return res.status(200).json({ message: "Password updated successfully" });
         } catch (error) {
             next(error);
         }

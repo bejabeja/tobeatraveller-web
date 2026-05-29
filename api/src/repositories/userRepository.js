@@ -78,6 +78,13 @@ export class UserRepository {
         await db.query("DELETE FROM users WHERE id = $1", [id]);
     }
 
+    async updatePassword(id, hashedPassword) {
+        await db.query(
+            "UPDATE users SET password = $1, updated_at = NOW() WHERE id = $2",
+            [hashedPassword, id]
+        );
+    }
+
     async findByFilters({ searchName, offset = 0, limit = 9, sortBy = 'username' }) {
         const searchTerm = `%${searchName}%`;
 
