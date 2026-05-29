@@ -28,6 +28,7 @@ import FollowingList from "./pages/follows/FollowingList";
 import Contact from "./pages/legal/Contact";
 import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
 import Terms from "./pages/legal/Terms";
+import Notifications from "./pages/notifications/Notifications";
 import {
   selectAuthUser,
   selectIsAuthenticated,
@@ -95,6 +96,7 @@ const App = () => {
 
             {/* private routes */}
             <Route element={<PrivateLayout />}>
+              <Route path="/notifications" element={<Notifications />} />
               <Route path="/my-itineraries" element={<MyItineraries />} />
               <Route path="/itineraries/saved" element={<Favorites />} />
               <Route path="/profile/:id" element={<Profile />} />

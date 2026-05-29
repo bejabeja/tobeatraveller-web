@@ -1,0 +1,125 @@
+.notifications {
+  max-width: 640px;
+  padding-top: 2rem;
+  padding-bottom: 3rem;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  &__title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text-color);
+    margin: 0;
+    width: auto;
+  }
+
+  &__count {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    background: #eff6ff;
+    border-radius: 999px;
+    padding: 2px 10px;
+    width: fit-content;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 4rem 2rem;
+    text-align: center;
+    color: var(--text-secondary-color);
+
+    p { font-size: 1rem; font-weight: 600; margin: 0; width: auto; }
+    span { font-size: 0.875rem; max-width: 320px; line-height: 1.5; width: auto; }
+  }
+
+  &__empty-icon {
+    font-size: 3rem;
+    color: var(--border-color);
+    width: auto;
+    margin-bottom: 0.5rem;
+  }
+}
+
+.notif-item {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.875rem 1rem;
+  border-radius: 12px;
+  text-decoration: none;
+  color: var(--text-color);
+  transition: background 0.1s;
+  position: relative;
+
+  &:hover { background: var(--surface-color); }
+
+  &--unread { background: #eff6ff; }
+  &--unread:hover { background: #dbeafe; }
+
+  &__avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__text {
+    font-size: 0.875rem;
+    color: var(--text-color);
+    margin: 0 0 2px;
+    line-height: 1.4;
+    width: auto;
+
+    strong { color: var(--text-color); font-weight: 700; }
+    em { font-style: normal; color: var(--text-secondary-color); }
+  }
+
+  &__time {
+    font-size: 0.75rem;
+    color: var(--text-secondary-color);
+    width: auto;
+  }
+
+  &__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    flex-shrink: 0;
+    width: 8px;
+  }
+}
+
+.notif-skeleton {
+  height: 64px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

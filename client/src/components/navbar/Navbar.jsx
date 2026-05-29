@@ -2,14 +2,16 @@ import { useEffect, useState } from "react";
 import { GoBook, GoHome, GoPerson, GoSignIn, GoSignOut } from "react-icons/go";
 import {
   IoAddOutline,
+  IoNotificationsOutline,
   IoChevronBack,
   IoChevronForward,
   IoSaveOutline,
   IoSearch,
 } from "react-icons/io5";
 import { RiUserCommunityLine } from "react-icons/ri";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Link, NavLink, useLocation } from "react-router-dom";
+import { refreshUnreadCount, selectUnreadCount } from "@tobeatraveller/shared";
 import {
   selectIsAuthenticated,
 } from "../../store/auth/authSelectors";
@@ -18,9 +20,18 @@ import { generateAvatar } from "../../utils/constants/constants";
 import "./Navbar.scss";
 
 const Navbar = () => {
+  const dispatch = useDispatch();
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const userMe = useSelector(selectMe);
+  const unreadCount = useSelector(selectUnreadCount);
   const [meOpen, setMeOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    dispatch(refreshUnreadCount());
+    const interval = setInterval(() => dispatch(refreshUnreadCount()), 30000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated, dispatch]);
   const [isCollapsed, setIsCollapsed] = useState(
     () => localStorage.getItem("sidebar-collapsed") === "true"
   );
@@ -80,6 +91,15 @@ const Navbar = () => {
         {isAuthenticated && (
           <div className="nav-section">
             <h3>Your Space</h3>
+            <NavLink to="/notifications" className="nav-item nav-item--notif" title="Notifications">
+              <span className="nav-item__icon-wrap">
+                <IoNotificationsOutline className="nav-icon" />
+                {unreadCount > 0 && (
+                  <span className="nav-badge">{unreadCount > 99 ? "99+" : unreadCount}</span>
+                )}
+              </span>
+              <span>Notifications</span>
+            </NavLink>
             <NavLink to="/my-itineraries" className="nav-item" title="My trips">
               <GoBook className="nav-icon" />
               <span>My trips</span>

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { selectIsAuthenticated } from "../../store/auth/authSelectors.js";
 
@@ -6,49 +6,49 @@ import { Link } from "react-router-dom";
 import Hero from "../../components/hero/Hero.jsx";
 import ItinerariesSection from "../../components/itineraries/ItinerariesSection.jsx";
 import UsersSection from "../../components/users/UsersSection.jsx";
-import { initFeaturedItineraries, initStats } from "../../store/itineraries/itinerariesActions.js";
 import {
-  selectFeaturedItineraries,
-  selectFeaturedItinerariesLoading,
+  initFeaturedItineraries, initFeed, initStats,
+  selectFeaturedItineraries, selectFeaturedItinerariesLoading,
+  selectFeed, selectFeedLoading, selectFeedPage, selectFeedTotalPages,
   selectStats,
-} from "../../store/itineraries/itinerariesSelectors.js";
+} from "@tobeatraveller/shared";
 import { initFeaturedUsers } from "../../store/users/usersActions.js";
 import {
   selectFeaturedUsers,
   selectFeaturedUsersLoading,
 } from "../../store/users/usersSelectors.js";
 import WorldMap from "../../components/home/WorldMap.jsx";
+import LoadingButton from "../../components/LoadingButton.jsx";
 import { FEATURES } from "../../utils/constants/constants.js";
 import "./Home.scss";
 
 const Home = () => {
   const dispatch = useDispatch();
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  const [tab, setTab] = useState("featured");
 
   const featuredItineraries = useSelector(selectFeaturedItineraries);
-  const featuredItinerariesLoading = useSelector(
-    selectFeaturedItinerariesLoading
-  );
+  const featuredItinerariesLoading = useSelector(selectFeaturedItinerariesLoading);
   const featuredUsers = useSelector(selectFeaturedUsers);
   const featuredUsersLoading = useSelector(selectFeaturedUsersLoading);
   const stats = useSelector(selectStats);
-  const isAuthenticated = useSelector(selectIsAuthenticated);
 
-  useEffect(() => {
-    dispatch(initStats());
-  }, [dispatch]);
+  const feed = useSelector(selectFeed);
+  const feedLoading = useSelector(selectFeedLoading);
+  const feedPage = useSelector(selectFeedPage);
+  const feedTotalPages = useSelector(selectFeedTotalPages);
 
+  useEffect(() => { dispatch(initStats()); }, [dispatch]);
   useEffect(() => {
-    if (!featuredItineraries || featuredItineraries.length === 0) {
-      dispatch(initFeaturedItineraries());
-    }
+    if (!featuredItineraries?.length) dispatch(initFeaturedItineraries());
   }, [dispatch]);
+  useEffect(() => {
+    if (!featuredUsers?.length) dispatch(initFeaturedUsers());
+  }, [dispatch]);
+  useEffect(() => {
+    if (isAuthenticated && tab === "following") dispatch(initFeed(1));
+  }, [isAuthenticated, tab, dispatch]);
 
-  useEffect(() => {
-    if (!featuredUsers || featuredUsers.length === 0) {
-      dispatch(initFeaturedUsers());
-    }
-  }, [dispatch]);
-  
   return (
     <section className="home">
       <Hero />
@@ -70,44 +70,94 @@ const Home = () => {
           </div>
         </div>
       )}
+
       <div className="section__container home__container">
-        <div className="home__users">
-          <div className="home__section-header">
-            <h2>Featured Travel Journeys</h2>
-            <Link to="/explore" className="home__see-all">See all →</Link>
-            <p>Where will your next adventure take you?</p>
+
+        {/* Feed tabs — only for authenticated users */}
+        {isAuthenticated && (
+          <div className="home__tabs">
+            <button
+              className={`home__tab${tab === "featured" ? " home__tab--active" : ""}`}
+              onClick={() => setTab("featured")}
+            >
+              ✨ Discover
+            </button>
+            <button
+              className={`home__tab${tab === "following" ? " home__tab--active" : ""}`}
+              onClick={() => setTab("following")}
+            >
+              👥 Following
+            </button>
           </div>
-          <ItinerariesSection
-            itineraries={featuredItineraries}
-            isLoading={featuredItinerariesLoading}
-          />
-        </div>
-        <div className="home__users">
-          <div className="home__section-header">
-            <h2>People You May Like</h2>
-            <Link to="/community" className="home__see-all">See all →</Link>
-            <p>Discover fellow travelers who share your passion.</p>
+        )}
+
+        {/* Following feed */}
+        {isAuthenticated && tab === "following" && (
+          <div className="home__users">
+            {feed.length === 0 && !feedLoading ? (
+              <div className="home__feed-empty">
+                <p>No trips from people you follow yet.</p>
+                <Link to="/community" className="btn btn--secondary">
+                  Find travellers to follow →
+                </Link>
+              </div>
+            ) : (
+              <>
+                <ItinerariesSection itineraries={feed} isLoading={feedLoading} />
+                {feedPage < feedTotalPages && (
+                  <div style={{ marginTop: "1rem", display: "flex", justifyContent: "center" }}>
+                    <LoadingButton
+                      onClick={() => dispatch(initFeed(feedPage + 1))}
+                      isLoading={feedLoading}
+                    >
+                      Load more
+                    </LoadingButton>
+                  </div>
+                )}
+              </>
+            )}
           </div>
-          <UsersSection
-            users={featuredUsers}
-            isLoading={featuredUsersLoading}
-          />
-        </div>
-        <div className="home__destinations">
-          <div className="home__section-header">
-            <h2>Explore the World</h2>
-            <p>Click any destination to discover itineraries from the community.</p>
-          </div>
-          <WorldMap />
-        </div>
-        {!isAuthenticated && (
-          <div className="home__cta">
-            <h2>Join the Community</h2>
-            <p>Share your journeys, discover inspiring itineraries, and connect with travelers from around the world.</p>
-            <Link to="/register" className="home__cta-btn btn">
-              Get Started — It's Free
-            </Link>
-          </div>
+        )}
+
+        {/* Featured / Discover tab */}
+        {(!isAuthenticated || tab === "featured") && (
+          <>
+            <div className="home__users">
+              <div className="home__section-header">
+                <h2>Featured Travel Journeys</h2>
+                <Link to="/explore" className="home__see-all">See all →</Link>
+                <p>Where will your next adventure take you?</p>
+              </div>
+              <ItinerariesSection
+                itineraries={featuredItineraries}
+                isLoading={featuredItinerariesLoading}
+              />
+            </div>
+            <div className="home__users">
+              <div className="home__section-header">
+                <h2>People You May Like</h2>
+                <Link to="/community" className="home__see-all">See all →</Link>
+                <p>Discover fellow travelers who share your passion.</p>
+              </div>
+              <UsersSection users={featuredUsers} isLoading={featuredUsersLoading} />
+            </div>
+            <div className="home__destinations">
+              <div className="home__section-header">
+                <h2>Explore the World</h2>
+                <p>Click any destination to discover itineraries from the community.</p>
+              </div>
+              <WorldMap />
+            </div>
+            {!isAuthenticated && (
+              <div className="home__cta">
+                <h2>Join the Community</h2>
+                <p>Share your journeys, discover inspiring itineraries, and connect with travelers from around the world.</p>
+                <Link to="/register" className="home__cta-btn btn">
+                  Get Started — It's Free
+                </Link>
+              </div>
+            )}
+          </>
         )}
       </div>
     </section>
