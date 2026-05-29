@@ -121,25 +121,25 @@ const RegisterScreen = ({ navigation }) => {
                 error={errors.email}
               />
 
-              <View>
-                <Field
-                  label="Username"
-                  value={username}
-                  onChangeText={v => { setUsername(v); clearError('username'); }}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  error={errors.username}
-                />
-                {usernameStatus && (
-                  <View style={[styles.usernamePill, styles[`pill_${usernameStatus}`]]}>
-                    <Text style={[styles.usernameText, styles[`pillText_${usernameStatus}`]]}>
-                      {usernameStatus === 'checking' && '…'}
-                      {usernameStatus === 'available' && '✓ Available'}
-                      {usernameStatus === 'taken' && '✗ Already taken'}
-                    </Text>
-                  </View>
-                )}
-              </View>
+              <Field
+                label="Username"
+                value={username}
+                onChangeText={v => { setUsername(v); clearError('username'); }}
+                autoCapitalize="none"
+                autoCorrect={false}
+                error={errors.username}
+                right={
+                  usernameStatus && (
+                    <View style={[styles.usernamePill, styles[`pill_${usernameStatus}`]]}>
+                      <Text style={[styles.usernameText, styles[`pillText_${usernameStatus}`]]}>
+                        {usernameStatus === 'checking'  && '…'}
+                        {usernameStatus === 'available' && '✓ Available'}
+                        {usernameStatus === 'taken'     && '✗ Taken'}
+                      </Text>
+                    </View>
+                  )
+                }
+              />
 
               <Field
                 label="Password"
@@ -314,8 +314,9 @@ const styles = StyleSheet.create({
   browse: { textAlign: 'center', color: '#9ca3af', fontSize: 13 },
 
   usernamePill: {
-    alignSelf: 'flex-end', borderRadius: 999,
-    paddingVertical: 3, paddingHorizontal: 10, marginTop: 4, marginBottom: 4,
+    borderRadius: 999,
+    paddingVertical: 3, paddingHorizontal: 8,
+    marginRight: 10, flexShrink: 0,
   },
   pill_checking: { backgroundColor: '#f1f5f9' },
   pill_available: { backgroundColor: '#f0fdf4' },

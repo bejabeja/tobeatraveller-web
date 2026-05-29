@@ -112,6 +112,7 @@ const HomeScreen = ({ navigation }) => {
                     <ItineraryCard
                       itinerary={item}
                       onPress={() => navigation.navigate('Itinerary', { id: item.id })}
+                      onRequestLogin={() => navigation.navigate('Login')}
                     />
                   </View>
                 ))

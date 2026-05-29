@@ -247,7 +247,11 @@ const ExploreScreen = ({ navigation, route }) => {
               ? <ItineraryCardSkeleton />
               : item.id === '__filler__'
                 ? null
-                : <ItineraryCard itinerary={item} onPress={() => navigation.navigate('Itinerary', { id: item.id })} />
+                : <ItineraryCard
+                    itinerary={item}
+                    onPress={() => navigation.navigate('Itinerary', { id: item.id })}
+                    onRequestLogin={() => navigation.navigate('Login')}
+                  />
             }
           </View>
         )}
