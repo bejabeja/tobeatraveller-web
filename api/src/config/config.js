@@ -21,6 +21,7 @@ const config = {
     brevoApiKey: process.env.BREVO_API_KEY,
     brevoSenderEmail: process.env.BREVO_SENDER_EMAIL || 'tobeatravellercompany@gmail.com',
     brevoSenderName: process.env.BREVO_SENDER_NAME || 'ToBeATraveller',
+    contactRecipientEmail: process.env.CONTACT_RECIPIENT_EMAIL || process.env.BREVO_SENDER_EMAIL || 'tobeatravellercompany@gmail.com',
     appUrl: process.env.APP_URL || 'http://localhost:5173',
 };
 

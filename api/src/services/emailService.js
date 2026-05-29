@@ -1,5 +1,6 @@
 import config from '../config/config.js';
 import { accountDeletedTemplate } from '../emails/templates/accountDeleted.js';
+import { contactConfirmationTemplate } from '../emails/templates/contactConfirmation.js';
 import { contactTemplate } from '../emails/templates/contact.js';
 import { passwordResetTemplate } from '../emails/templates/passwordReset.js';
 import { welcomeTemplate } from '../emails/templates/welcome.js';
@@ -9,6 +10,7 @@ export class EmailService {
         this.apiKey = config.brevoApiKey;
         this.senderEmail = config.brevoSenderEmail;
         this.senderName = config.brevoSenderName;
+        this.contactRecipientEmail = config.contactRecipientEmail;
     }
 
     async _send({ to, subject, html, replyTo }) {
@@ -46,7 +48,13 @@ export class EmailService {
 
     async sendContactNotification({ name, email, subject, message }) {
         const { subject: emailSubject, html } = contactTemplate({ name, email, subject, message });
-        await this._send({ to: this.senderEmail, subject: emailSubject, html, replyTo: email });
+        // Notification goes to the contact recipient (inbox), not the sender address
+        await this._send({ to: this.contactRecipientEmail, subject: emailSubject, html, replyTo: email });
+    }
+
+    async sendContactConfirmation({ name, email }) {
+        const { subject, html } = contactConfirmationTemplate({ name });
+        await this._send({ to: email, subject, html, replyTo: this.contactRecipientEmail });
     }
 
     async sendPasswordReset({ username, email, token }) {

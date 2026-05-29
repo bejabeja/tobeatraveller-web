@@ -8,7 +8,7 @@ import { authenticate } from "./src/middlewares/authenticate.js";
 import { corsMiddleware } from './src/middlewares/cors.js';
 import { errorHandler } from './src/middlewares/errorHandler.js';
 import { createAuthRouter } from './src/routes/authRouter.js';
-import { createDevRouter } from './src/routes/devRouter.js';
+
 import { createEmailRouter } from './src/routes/emailRouter.js';
 import { createCloudinaryRouter } from "./src/routes/cloudinaryRouter.js";
 import { createCommentsRouter } from "./src/routes/commentsRouter.js";
@@ -38,7 +38,10 @@ app.use('/likes', authenticate, createLikesRouter());
 app.use('/comments', createCommentsRouter());
 
 app.use('/', createEmailRouter());
-if (config.nodeEnv !== 'production') app.use('/dev', createDevRouter());
+if (config.nodeEnv !== 'production') {
+    const { createDevRouter } = await import('./src/routes/devRouter.js');
+    app.use('/dev', createDevRouter());
+}
 app.use('/api', healthCheckRouter());
 
 Sentry.setupExpressErrorHandler(app);

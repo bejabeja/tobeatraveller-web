@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { EmailService } from '../services/emailService.js';
 import { accountDeletedTemplate } from '../emails/templates/accountDeleted.js';
+import { contactConfirmationTemplate } from '../emails/templates/contactConfirmation.js';
 import { contactTemplate } from '../emails/templates/contact.js';
 import { passwordResetTemplate } from '../emails/templates/passwordReset.js';
 import { welcomeTemplate } from '../emails/templates/welcome.js';
@@ -37,6 +38,14 @@ export const createDevRouter = () => {
         res.send(html);
     });
 
+    // Preview: GET /dev/emails/contact-confirmation?name=Jane
+    router.get('/emails/contact-confirmation', (req, res) => {
+        const { html } = contactConfirmationTemplate({
+            name: req.query.name || 'Jane Doe',
+        });
+        res.send(html);
+    });
+
     // Preview: GET /dev/emails/account-deleted?username=miriam
     router.get('/emails/account-deleted', (req, res) => {
         const { html } = accountDeletedTemplate({
@@ -66,10 +75,12 @@ export const createDevRouter = () => {
                     email: to,
                     token: 'dev_test_token_not_real',
                 });
+            } else if (type === 'contact-confirmation') {
+                await emailService.sendContactConfirmation({ name: 'Jane Doe', email: to });
             } else if (type === 'account-deleted') {
                 await emailService.sendAccountDeleted({ username: 'testuser', email: to });
             } else {
-                return res.status(400).json({ error: `Unknown type "${type}". Use welcome, contact, password-reset or account-deleted.` });
+                return res.status(400).json({ error: `Unknown type "${type}". Use welcome, contact, contact-confirmation, password-reset or account-deleted.` });
             }
             res.json({ ok: true, message: `${type} email sent to ${to}` });
         } catch (err) {
@@ -141,10 +152,17 @@ export const createDevRouter = () => {
 
     <div class="template" data-url="/dev/emails/contact?name=Jane+Doe&email=jane@example.com&subject=Question+about+the+app&message=Hi!+I+wanted+to+ask+about+something." data-name="Contact notification" onclick="loadPreview(this)">
       <div class="template-name">Contact notification</div>
-      <div class="template-desc">Sent on contact form submit</div>
+      <div class="template-desc">Internal — sent to the team</div>
     </div>
     <a class="send-btn" onclick="sendTest('contact', this); return false;" href="#">Send test →</a>
     <div class="send-result" id="result-contact"></div>
+
+    <div class="template" data-url="/dev/emails/contact-confirmation?name=Jane+Doe" data-name="Contact confirmation" onclick="loadPreview(this)">
+      <div class="template-name">Contact confirmation</div>
+      <div class="template-desc">Auto-reply to the form submitter</div>
+    </div>
+    <a class="send-btn" onclick="sendTest('contact-confirmation', this); return false;" href="#">Send test →</a>
+    <div class="send-result" id="result-contact-confirmation"></div>
 
     <div class="template" data-url="/dev/emails/password-reset?username=miriam" data-name="Password reset" onclick="loadPreview(this)">
       <div class="template-name">Password reset</div>

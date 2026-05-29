@@ -21,6 +21,9 @@ export class ContactController {
         try {
             const { name, email, subject, message } = result.data;
             await this.emailService.sendContactNotification({ name, email, subject, message });
+            // Confirmation to the sender — fire and forget, doesn't block the response
+            this.emailService.sendContactConfirmation({ name, email })
+                .catch(err => console.error('[email] contact confirmation failed:', err));
             return res.status(200).json({ message: 'Message sent' });
         } catch (error) {
             next(error);

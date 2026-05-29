@@ -74,6 +74,6 @@ export const accountDeletedTemplate = ({ username }) => ({
         `,
         footerNote: `This email was sent because your ToBeATraveller account was deleted.<br/>
                      If you didn't request this, please contact us immediately at
-                     <a href="mailto:tobeatravellercompany@gmail.com" style="color:${BRAND};text-decoration:none;">tobeatravellercompany@gmail.com</a>.`,
+                     <a href="mailto:${config.contactRecipientEmail}" style="color:${BRAND};text-decoration:none;">${config.contactRecipientEmail}</a>.`,
     }),
 });
