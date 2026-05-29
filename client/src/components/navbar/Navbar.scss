@@ -94,16 +94,6 @@
     flex-shrink: 0;
     width: auto;
   }
-
-  &__icon-wrap {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.2rem;
-    height: 1.2rem;
-    flex-shrink: 0;
-  }
 }
 
 .nav-badge {
@@ -315,6 +305,16 @@
     font-size: 1.2rem;
     width: 1em;
     height: 1em;
+    flex-shrink: 0;
+  }
+
+  &__icon-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.2rem;
+    height: 1.2rem;
     flex-shrink: 0;
   }
 }

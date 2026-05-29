@@ -12,6 +12,7 @@
     "cov": "jest --coverage --collectCoverageFrom='src/**/*.{js,jsx}'"
   },
   "dependencies": {
+    "@tobeatraveller/shared": "*",
     "@hookform/resolvers": "^5.0.1",
     "@reduxjs/toolkit": "^2.6.1",
     "leaflet": "^1.9.4",
