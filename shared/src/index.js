@@ -10,15 +10,23 @@ export * from './services/users.js';
 
 // Store
 export * from './store/store.js';
+export * from './store/notifications/notificationsActions.js';
+export * from './store/notifications/notificationsReducer.js';
+export * from './store/notifications/notificationsSelectors.js';
 export { registerUser, loginUser, logoutUser, initAuthUser, clearError, setImageHeroLoaded, setImageAuthLoaded } from './store/auth/authActions.js';
 export * from './store/auth/authReducer.js';
 export * from './store/auth/authSelectors.js';
 export * from './store/user/userInfoActions.js';
+export * from './store/user/userInfoReducer.js';
 export * from './store/user/userInfoSelectors.js';
 export * from './store/itineraries/itinerariesActions.js';
+export * from './store/itineraries/itinerariesReducer.js';
 export * from './store/itineraries/itinerariesSelectors.js';
+export { fetchNotifications, fetchUnreadCount, markNotificationsRead } from './services/notifications.js';
 export * from './store/users/usersActions.js';
+export * from './store/users/usersReducer.js';
 export * from './store/users/usersSelectors.js';
+export * from './store/filters/filterReducer.js';
 
 // Utils
 export { filterItineraries } from './utils/filterItineraries.js';

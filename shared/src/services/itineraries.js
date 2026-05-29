@@ -66,6 +66,12 @@ export const getDestinations = async () => {
     return response.json();
 };
 
+export const getFeedItineraries = async (page = 1) => {
+    const response = await authFetch(`${baseUrl()}/feed?page=${page}`);
+    if (!response.ok) throw new Error('Failed to fetch feed');
+    return response.json();
+};
+
 export const getItinerariesByUserId = async (id) => {
     const response = await fetch(`${baseUrl()}/${id}`, {
         method: 'GET',

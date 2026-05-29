@@ -4,6 +4,7 @@ import {
     SET_EXPLORE_PAGINATION,
     SET_FEATURED_ITINERARIES,
     SET_FEATURED_ITINERARIES_ERROR,
+    SET_FEED, SET_FEED_ERROR, START_LOADING_FEED, START_LOADING_MORE_FEED,
     SET_STATS,
     START_LOADING_EXPLORE_ITINERARIES,
     START_LOADING_FEATURED_ITINERARIES,
@@ -21,6 +22,15 @@ const initialState = {
     exploreItineraries: {
         data: [],
         loading: false,
+        error: null,
+        page: 1,
+        totalPages: 1,
+        totalItems: 0,
+    },
+    feed: {
+        data: [],
+        loading: false,
+        loadingMore: false,
         error: null,
         page: 1,
         totalPages: 1,
@@ -100,6 +110,27 @@ export const itinerariesReducer = (state = initialState, action) => {
                     page: action.payload.page,
                 }
             };
+
+        case START_LOADING_FEED:
+            return { ...state, feed: { ...state.feed, loading: true, loadingMore: false } };
+        case START_LOADING_MORE_FEED:
+            return { ...state, feed: { ...state.feed, loadingMore: true } };
+        case SET_FEED:
+            return {
+                ...state,
+                feed: {
+                    ...state.feed,
+                    data: action.payload.append
+                        ? [...state.feed.data, ...action.payload.itineraries]
+                        : action.payload.itineraries,
+                    loading: false, loadingMore: false, error: null,
+                    page: action.payload.page,
+                    totalPages: action.payload.totalPages,
+                    totalItems: action.payload.totalItems,
+                },
+            };
+        case SET_FEED_ERROR:
+            return { ...state, feed: { ...state.feed, loading: false, loadingMore: false, error: true } };
 
         case SET_STATS:
             return { ...state, stats: action.payload };

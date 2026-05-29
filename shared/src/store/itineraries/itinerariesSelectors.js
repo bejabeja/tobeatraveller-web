@@ -11,3 +11,9 @@ export const selectExploreItinerariesError = (state) => state.itineraries.explor
 export const selectExplorePage = (state) => state.itineraries.exploreItineraries.page;
 export const selectExploreTotalPages = (state) => state.itineraries.exploreItineraries.totalPages;
 export const selectExploreTotalItems = (state) => state.itineraries.exploreItineraries.totalItems;
+
+export const selectFeed = (state) => state.itineraries.feed.data;
+export const selectFeedLoading = (state) => state.itineraries.feed.loading;
+export const selectFeedLoadingMore = (state) => state.itineraries.feed.loadingMore;
+export const selectFeedPage = (state) => state.itineraries.feed.page;
+export const selectFeedTotalPages = (state) => state.itineraries.feed.totalPages;

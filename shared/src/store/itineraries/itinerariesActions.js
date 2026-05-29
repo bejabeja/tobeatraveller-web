@@ -1,4 +1,4 @@
-import { getItinerariesByFilters, getfeaturedItineraries, getStats } from "../../services/itineraries.js";
+import { getItinerariesByFilters, getfeaturedItineraries, getStats, getFeedItineraries } from "../../services/itineraries.js";
 
 export const START_LOADING_FEATURED_ITINERARIES = "@featuredItineraries/init/start";
 export const SET_FEATURED_ITINERARIES = "@featuredItineraries/init/success";
@@ -78,6 +78,22 @@ export const initStats = () => async (dispatch) => {
         dispatch({ type: SET_STATS, payload: stats });
     } catch (error) {
         // stats are non-critical, fail silently
+    }
+};
+
+// ─── Feed (itineraries from followed users) ───────────────────────────────────
+export const START_LOADING_FEED = "@feed/startLoading";
+export const START_LOADING_MORE_FEED = "@feed/startLoadingMore";
+export const SET_FEED = "@feed/set";
+export const SET_FEED_ERROR = "@feed/error";
+
+export const initFeed = (page = 1) => async (dispatch) => {
+    dispatch({ type: page === 1 ? START_LOADING_FEED : START_LOADING_MORE_FEED });
+    try {
+        const { itineraries, totalPages, totalItems, currentPage } = await getFeedItineraries(page);
+        dispatch({ type: SET_FEED, payload: { itineraries, totalPages, totalItems, page: currentPage, append: page > 1 } });
+    } catch {
+        dispatch({ type: SET_FEED_ERROR });
     }
 };
 
