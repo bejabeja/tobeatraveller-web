@@ -8,9 +8,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   getDestinations,
-  initFeaturedItineraries, initFeaturedUsers,
+  initFeaturedItineraries, initFeaturedUsers, initFeed,
   selectFeaturedItineraries, selectFeaturedItinerariesLoading,
   selectFeaturedUsers, selectFeaturedUsersLoading,
+  selectFeed, selectFeedLoading,
   selectIsAuthenticated,
 } from '@tobeatraveller/shared';
 import ItineraryCard from '../../components/ItineraryCard';
@@ -59,10 +60,13 @@ const HomeScreen = ({ navigation }) => {
   const dispatch = useDispatch();
   const insets = useSafeAreaInsets();
   const [destinations, setDestinations] = useState([]);
+  const [tab, setTab] = useState('discover');
   const itineraries = useSelector(selectFeaturedItineraries);
   const itinerariesLoading = useSelector(selectFeaturedItinerariesLoading);
   const users = useSelector(selectFeaturedUsers);
   const usersLoading = useSelector(selectFeaturedUsersLoading);
+  const feed = useSelector(selectFeed);
+  const feedLoading = useSelector(selectFeedLoading);
   const isAuthenticated = useSelector(selectIsAuthenticated);
 
   useEffect(() => {
@@ -70,6 +74,10 @@ const HomeScreen = ({ navigation }) => {
     if (!users?.length) dispatch(initFeaturedUsers());
     getDestinations().then(setDestinations).catch(() => {});
   }, [dispatch]);
+
+  useEffect(() => {
+    if (isAuthenticated && tab === 'following') dispatch(initFeed(1));
+  }, [isAuthenticated, tab, dispatch]);
 
   return (
     <ScrollView
@@ -79,16 +87,82 @@ const HomeScreen = ({ navigation }) => {
     >
       {/* Hero */}
       <View style={[styles.hero, { paddingTop: insets.top + 20 }]}>
-        <Text style={styles.heroTitle}>To Be a Traveller</Text>
-        <Text style={styles.heroSubtitle}>Discover journeys around the world</Text>
+        <View style={styles.heroRow}>
+          <View>
+            <Text style={styles.heroTitle}>To Be a Traveller</Text>
+            <Text style={styles.heroSubtitle}>Discover journeys around the world</Text>
+          </View>
+          {isAuthenticated && (
+            <TouchableOpacity
+              style={styles.bellBtn}
+              onPress={() => navigation.navigate('Notifications')}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.bellIcon}>🔔</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+        {isAuthenticated && (
+          <View style={styles.tabs}>
+            <TouchableOpacity
+              style={[styles.tab, tab === 'discover' && styles.tabActive]}
+              onPress={() => setTab('discover')}
+            >
+              <Text style={[styles.tabText, tab === 'discover' && styles.tabTextActive]}>✨ Discover</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.tab, tab === 'following' && styles.tabActive]}
+              onPress={() => setTab('following')}
+            >
+              <Text style={[styles.tabText, tab === 'following' && styles.tabTextActive]}>👥 Following</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
 
-      {/* World Map */}
-      {destinations.length > 0 && (
+      {/* Following feed */}
+      {isAuthenticated && tab === 'following' && (
+        <View style={styles.section}>
+          {feedLoading ? (
+            <View style={styles.grid}>
+              {Array.from({ length: 4 }, (_, i) => (
+                <View key={`sk-${i}`} style={styles.gridItem}><ItineraryCardSkeleton /></View>
+              ))}
+            </View>
+          ) : feed.length === 0 ? (
+            <View style={styles.feedEmpty}>
+              <Text style={styles.feedEmptyIcon}>🗺️</Text>
+              <Text style={styles.feedEmptyTitle}>No trips yet</Text>
+              <Text style={styles.feedEmptySub}>Follow travellers to see their trips here</Text>
+              <TouchableOpacity
+                style={styles.feedEmptyBtn}
+                onPress={() => navigation.navigate('Community')}
+              >
+                <Text style={styles.feedEmptyBtnText}>Find travellers →</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={styles.grid}>
+              {feed.map(item => (
+                <View key={item.id} style={styles.gridItem}>
+                  <ItineraryCard
+                    itinerary={item}
+                    onPress={() => navigation.navigate('Itinerary', { id: item.id })}
+                  />
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
+      )}
+
+      {/* World Map — only in discover tab */}
+      {(!isAuthenticated || tab === 'discover') && destinations.length > 0 && (
         <WorldMapSection destinations={destinations} navigation={navigation} />
       )}
 
-      {/* Featured Itineraries */}
+      {/* Featured Itineraries — only in discover tab */}
+      {(!isAuthenticated || tab === 'discover') && (
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <View>
@@ -168,6 +242,8 @@ const HomeScreen = ({ navigation }) => {
         </ScrollView>
       </View>
 
+      )} {/* end discover tab */}
+
       {/* CTA for guests */}
       {!isAuthenticated && (
         <View style={styles.cta}>
@@ -193,11 +269,38 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8fafc' },
 
   hero: {
-    paddingHorizontal: 20, paddingBottom: 24,
+    paddingHorizontal: 20, paddingBottom: 0,
     backgroundColor: '#0077b6',
   },
+  heroRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: 20 },
   heroTitle: { fontSize: 26, fontWeight: '800', color: '#fff', letterSpacing: -0.3 },
   heroSubtitle: { fontSize: 14, color: '#bae6fd', marginTop: 4 },
+
+  bellBtn: { padding: 4 },
+  bellIcon: { fontSize: 22 },
+
+  tabs: {
+    flexDirection: 'row', gap: 4,
+    borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.2)',
+    paddingTop: 4,
+  },
+  tab: {
+    paddingVertical: 10, paddingHorizontal: 16,
+    borderBottomWidth: 2, borderBottomColor: 'transparent',
+  },
+  tabActive: { borderBottomColor: '#fff' },
+  tabText: { fontSize: 13, fontWeight: '600', color: 'rgba(255,255,255,0.6)' },
+  tabTextActive: { color: '#fff' },
+
+  feedEmpty: { alignItems: 'center', paddingVertical: 40, gap: 8 },
+  feedEmptyIcon: { fontSize: 40 },
+  feedEmptyTitle: { fontSize: 16, fontWeight: '700', color: '#111827' },
+  feedEmptySub: { fontSize: 13, color: '#6b7280', textAlign: 'center' },
+  feedEmptyBtn: {
+    marginTop: 8, backgroundColor: '#0077b6', borderRadius: 999,
+    paddingVertical: 10, paddingHorizontal: 20,
+  },
+  feedEmptyBtnText: { color: '#fff', fontWeight: '600', fontSize: 13 },
 
   section: { paddingHorizontal: 16, paddingTop: 20 },
   sectionHeader: {

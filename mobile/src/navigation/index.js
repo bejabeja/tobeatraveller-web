@@ -14,6 +14,7 @@ import LoginScreen from '../screens/auth/LoginScreen';
 import RegisterScreen from '../screens/auth/RegisterScreen';
 import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
 import ContactScreen from '../screens/contact/ContactScreen';
+import NotificationsScreen from '../screens/notifications/NotificationsScreen';
 import ProfileScreen from '../screens/profile/ProfileScreen';
 import EditProfileScreen from '../screens/profile/EditProfileScreen';
 import ItineraryScreen from '../screens/itinerary/ItineraryScreen';
@@ -128,6 +129,7 @@ const Navigation = () => {
         <Stack.Screen name="Follows" component={FollowsScreen} />
         <Stack.Screen name="Saved" component={SavedScreen} />
         <Stack.Screen name="Contact" component={ContactScreen} />
+        <Stack.Screen name="Notifications" component={NotificationsScreen} />
         {!isAuthenticated && (
           <>
             <Stack.Screen name="Login" component={LoginScreen} />
