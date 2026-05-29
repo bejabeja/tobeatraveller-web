@@ -307,30 +307,43 @@ const EditProfile = () => {
       />
 
       {showDeleteModal && (
-        <div className="modal__backdrop">
-          <div className="modal">
-            <h2>{t("editProfile.deleteAccountModal")}</h2>
-            <p dangerouslySetInnerHTML={{
-              __html: t("editProfile.deleteAccountDesc", { username: userMe?.username })
-            }} />
-            <input
-              className="edit-profile__delete-input"
-              type="text"
-              placeholder={userMe?.username}
-              value={deleteConfirmInput}
-              onChange={(e) => setDeleteConfirmInput(e.target.value)}
-              autoFocus
+        <div className="modal__backdrop" onClick={() => !isDeleting && setShowDeleteModal(false)}>
+          <div className="modal modal--danger" onClick={(e) => e.stopPropagation()}>
+            <div className="modal__header">
+              <h2 className="modal__title">{t("editProfile.deleteAccountModal")}</h2>
+              <button
+                className="modal__close"
+                onClick={() => setShowDeleteModal(false)}
+                disabled={isDeleting}
+                aria-label={t("common.cancel")}
+              >✕</button>
+            </div>
+            <p
+              className="modal__description"
+              dangerouslySetInnerHTML={{
+                __html: t("editProfile.deleteAccountDesc", { username: userMe?.username })
+              }}
             />
+            <div className="modal__input-wrap">
+              <input
+                className="edit-profile__delete-input"
+                type="text"
+                placeholder={userMe?.username}
+                value={deleteConfirmInput}
+                onChange={(e) => setDeleteConfirmInput(e.target.value)}
+                autoFocus
+              />
+            </div>
             <div className="modal__actions">
               <button
-                className="btn btn--ghost"
+                className="btn btn--ghost modal__btn-cancel"
                 onClick={() => setShowDeleteModal(false)}
                 disabled={isDeleting}
               >
                 {t("common.cancel")}
               </button>
               <button
-                className="btn btn--danger"
+                className="btn btn--danger modal__btn-confirm"
                 onClick={handleDeleteAccount}
                 disabled={deleteConfirmInput !== userMe?.username || isDeleting}
               >
