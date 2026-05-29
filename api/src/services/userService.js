@@ -142,6 +142,10 @@ export class UserService {
     async deleteUser(id) {
         const user = await this.userRepository.getUserById(id);
         if (!user) throw new NotFoundError("User not found");
+
+        this.emailService?.sendAccountDeleted({ username: user.username, email: user.email })
+            .catch(err => console.error('[email] account deleted failed:', err));
+
         await this.userRepository.deleteUser(id);
         return user;
     }
