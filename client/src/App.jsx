@@ -5,8 +5,10 @@ import "./App.scss";
 import Footer from "./components/footer/Footer";
 import Navbar from "./components/navbar/Navbar";
 import PrivateLayout from "./pages/PrivateLayout";
+import ForgotPassword from "./pages/auth/ForgotPassword";
 import Login from "./pages/auth/Login";
 import Logout from "./pages/auth/Logout";
+import ResetPassword from "./pages/auth/ResetPassword";
 import Signup from "./pages/auth/Signup";
 import Explore from "./pages/explore/Explore";
 import Home from "./pages/home/Home";
@@ -56,7 +58,7 @@ const App = () => {
 
   const publicRoutes = ["/", "/explore", "/community", "/privacy-policy", "/terms", "/contact"];
 
-  const isAuthRoute = ["/login", "/register"].includes(location.pathname);
+  const isAuthRoute = ["/login", "/register", "/forgot-password", "/reset-password"].includes(location.pathname);
 
   const isPublicRoute = publicRoutes.some((route) => {
     const regex = new RegExp(`^${route.replace(/:[^\s/]+/g, "[^/]+")}$`);
@@ -76,6 +78,8 @@ const App = () => {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Signup />} />
             <Route path="/logout" element={<Logout />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/" element={<Home />} />
             <Route path="/explore" element={<Explore />} />
             <Route path="/community" element={<Community />} />
