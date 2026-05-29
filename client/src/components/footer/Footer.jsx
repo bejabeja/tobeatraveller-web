@@ -1,42 +1,40 @@
-import React from "react";
-import { FaEnvelope, FaGithub, FaLinkedin } from "react-icons/fa";
+import { IoEarthOutline } from "react-icons/io5";
+import { Link } from "react-router-dom";
 import "./Footer.scss";
 
-const Footer = () => {
-  return (
-    <footer className="footer">
-      <div className="footer__socials">
-        <a
-          href="https://github.com/bejabeja/tobeatraveller-web"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Visit our GitHub"
-        >
-          <FaGithub />
-        </a>
-        <a
-          href="https://www.linkedin.com/in/miriamabella/"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="LinkedIn"
-        >
-          <FaLinkedin />
-        </a>
-        <a href="mailto:tobeatravellercompany@gmail.com" aria-label="Email us">
-          <FaEnvelope />
-        </a>
+const Footer = () => (
+  <footer className="footer">
+    <div className="footer__inner">
+      <div className="footer__brand">
+        <Link to="/" className="footer__logo">
+          <IoEarthOutline aria-hidden="true" />
+          <span>ToBeATraveller</span>
+        </Link>
+        <p className="footer__tagline">Discover journeys around the world.</p>
       </div>
-      <p className="footer__copyright">
-        &copy; {new Date().getFullYear()} ToBeATraveller — Built with 💙 for
-        travelers
-      </p>
-      {/* TODO */}
-      {/* <div className="footer__terms">
-        <a href="/terms-and-conditions">Terms and Conditions</a>
-        <a href="/privacy-policy">Privacy Policy</a>
-      </div> */}
-    </footer>
-  );
-};
+
+      <nav className="footer__nav" aria-label="Footer navigation">
+        <div className="footer__nav-group">
+          <span className="footer__nav-label">Discover</span>
+          <Link to="/explore">Explore trips</Link>
+          <Link to="/community">Community</Link>
+        </div>
+        <div className="footer__nav-group">
+          <span className="footer__nav-label">Legal</span>
+          <Link to="/privacy-policy">Privacy Policy</Link>
+          <Link to="/terms">Terms of Service</Link>
+        </div>
+        <div className="footer__nav-group">
+          <span className="footer__nav-label">Contact</span>
+          <a href="mailto:tobeatravellercompany@gmail.com">Get in touch</a>
+        </div>
+      </nav>
+    </div>
+
+    <div className="footer__bottom">
+      <p>&copy; {new Date().getFullYear()} ToBeATraveller. All rights reserved.</p>
+    </div>
+  </footer>
+);
 
 export default Footer;
