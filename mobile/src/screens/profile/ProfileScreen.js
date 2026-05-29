@@ -180,12 +180,21 @@ const ProfileScreen = ({ route, navigation }) => {
               <Text style={styles.iconBtnText}>⤴</Text>
             </TouchableOpacity>
             {isOwnProfile ? (
-              <TouchableOpacity
-                style={styles.secondaryBtn}
-                onPress={() => navigation.navigate('EditProfile')}
-              >
-                <Text style={styles.secondaryBtnText}>✏️  {t('profile.editProfile')}</Text>
-              </TouchableOpacity>
+              <>
+                <TouchableOpacity
+                  style={styles.secondaryBtn}
+                  onPress={() => navigation.navigate('EditProfile')}
+                >
+                  <Text style={styles.secondaryBtnText}>✏️  {t('profile.editProfile')}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.iconBtn}
+                  onPress={() => navigation.navigate('Settings')}
+                  accessibilityLabel={t('nav.settings') || 'Settings'}
+                >
+                  <Text style={styles.iconBtnText}>⚙️</Text>
+                </TouchableOpacity>
+              </>
             ) : (
               <TouchableOpacity
                 style={[styles.primaryBtn, isFollowing && styles.secondaryBtn, followLoading && styles.btnDisabled]}

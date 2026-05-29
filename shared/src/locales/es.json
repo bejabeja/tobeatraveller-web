@@ -487,6 +487,12 @@
     "noTripsSubtitle": "¡Planifica tu primera aventura!",
     "planTripBtn": "Planificar un viaje"
   },
+  "settings": {
+    "title": "Ajustes",
+    "language": "Idioma",
+    "yourData": "Tus datos",
+    "dangerZone": "⚠️ Zona de peligro"
+  },
   "errors": {
     "profileLoad": "No pudimos cargar el perfil. Por favor, inténtalo más tarde.",
     "itineraryLoad": "No pudimos cargar el itinerario. Por favor, inténtalo más tarde.",

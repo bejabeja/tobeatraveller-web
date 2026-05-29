@@ -18,6 +18,7 @@ import EditItinerary from "./pages/itinerary/edit/EditItinerary";
 import MyItineraries from "./pages/myItineraries/MyItineraries";
 import EditProfile from "./pages/profile/EditProfile";
 import Profile from "./pages/profile/Profile";
+import Settings from "./pages/settings/Settings";
 import { clearError, initAuthUser } from "./store/auth/authActions";
 
 import CustomToaster from "./components/toast/CustomToaster";
@@ -101,6 +102,7 @@ const App = () => {
               <Route path="/itineraries/saved" element={<Favorites />} />
               <Route path="/profile/:id" element={<Profile />} />
               <Route path="/profile/edit/:id" element={<EditProfile />} />
+              <Route path="/settings" element={<Settings />} />
               <Route path="/create-itinerary" element={<CreateItinerary />} />
               <Route path="/itinerary/edit/:id" element={<EditItinerary />} />
             </Route>

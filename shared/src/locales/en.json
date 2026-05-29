@@ -496,6 +496,12 @@
     "noTripsSubtitle": "Plan your first adventure!",
     "planTripBtn": "Plan a trip"
   },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "yourData": "Your data",
+    "dangerZone": "⚠️ Danger zone"
+  },
   "errors": {
     "profileLoad": "We couldn't load the profile info. Please try again later.",
     "itineraryLoad": "We couldn't load the itinerary page. Please try again later.",

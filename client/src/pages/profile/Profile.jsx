@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { IoAirplaneOutline, IoEarthOutline, IoLinkOutline, IoLocationOutline, IoStarOutline } from "react-icons/io5";
+import { IoAirplaneOutline, IoEarthOutline, IoLinkOutline, IoLocationOutline, IoSettingsOutline, IoStarOutline } from "react-icons/io5";
 import { MdExplore, MdOutlineCalendarMonth, MdOutlineEdit } from "react-icons/md";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
@@ -169,10 +169,24 @@ const HeaderSection = ({
             <IoLinkOutline aria-hidden="true" />
           </button>
           {isMyProfile ? (
-            <Link to={`/profile/edit/${user?.id}`} className="btn btn--secondary profile__btn">
-              <MdOutlineEdit aria-hidden="true" />
-              {t("profile.editProfile")}
-            </Link>
+            <>
+              <Link
+                to={`/profile/edit/${user?.id}`}
+                className="btn profile__copy-btn"
+                title={t("profile.editProfile")}
+                aria-label={t("profile.editProfile")}
+              >
+                <MdOutlineEdit aria-hidden="true" />
+              </Link>
+              <Link
+                to="/settings"
+                className="btn profile__copy-btn"
+                title={t("nav.settings") || "Settings"}
+                aria-label={t("nav.settings") || "Settings"}
+              >
+                <IoSettingsOutline aria-hidden="true" />
+              </Link>
+            </>
           ) : (
             <button
               ref={followBtnRef}

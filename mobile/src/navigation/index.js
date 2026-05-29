@@ -17,6 +17,7 @@ import ContactScreen from '../screens/contact/ContactScreen';
 import NotificationsScreen from '../screens/notifications/NotificationsScreen';
 import ProfileScreen from '../screens/profile/ProfileScreen';
 import EditProfileScreen from '../screens/profile/EditProfileScreen';
+import SettingsScreen from '../screens/settings/SettingsScreen';
 import ItineraryScreen from '../screens/itinerary/ItineraryScreen';
 import EditItineraryScreen from '../screens/itinerary/EditItineraryScreen';
 import CreateItineraryScreen from '../screens/itinerary/CreateItineraryScreen';
@@ -122,6 +123,7 @@ const Navigation = () => {
         <Stack.Screen name="Itinerary" component={ItineraryScreen} />
         <Stack.Screen name="UserProfile" component={ProfileScreen} />
         <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+        <Stack.Screen name="Settings" component={SettingsScreen} />
         <Stack.Screen name="EditItinerary" component={EditItineraryScreen} />
         <Stack.Screen name="CreateItinerary" component={CreateItineraryScreen} />
         <Stack.Screen name="Community" component={CommunityScreen} />
