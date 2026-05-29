@@ -90,7 +90,9 @@ const ItineraryScreen = ({ route, navigation }) => {
       if (isFavorite) await removeFavorite(itinerary.id);
       else await addFavorite(itinerary.id);
       setIsFavorite(f => !f);
-    } catch {}
+    } catch {
+      Alert.alert('Error', 'Could not update saved status. Please try again.');
+    }
   };
 
   const handleDelete = () => {
@@ -105,7 +107,9 @@ const ItineraryScreen = ({ route, navigation }) => {
             try {
               await deleteItinerary(itinerary.id);
               navigation.goBack();
-            } catch {}
+            } catch {
+              Alert.alert('Error', 'Could not delete itinerary. Please try again.');
+            }
           },
         },
       ],
@@ -429,7 +433,6 @@ const StatCard = ({ icon, label, value, subvalue }) => (
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
-  loader: { flex: 1, marginTop: 60 },
   errorText: { textAlign: 'center', marginTop: 60, color: '#6b7280', fontSize: 15 },
 
   // Hero

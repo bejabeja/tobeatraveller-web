@@ -34,14 +34,20 @@ const Home = () => {
   const isAuthenticated = useSelector(selectIsAuthenticated);
 
   useEffect(() => {
+    dispatch(initStats());
+  }, [dispatch]);
+
+  useEffect(() => {
     if (!featuredItineraries || featuredItineraries.length === 0) {
       dispatch(initFeaturedItineraries());
     }
+  }, [dispatch]);
+
+  useEffect(() => {
     if (!featuredUsers || featuredUsers.length === 0) {
       dispatch(initFeaturedUsers());
     }
-    dispatch(initStats());
-  }, [dispatch, featuredItineraries, featuredUsers]);
+  }, [dispatch]);
   
   return (
     <section className="home">
@@ -72,7 +78,6 @@ const Home = () => {
             <p>Where will your next adventure take you?</p>
           </div>
           <ItinerariesSection
-            user={featuredItineraries?.user}
             itineraries={featuredItineraries}
             isLoading={featuredItinerariesLoading}
           />

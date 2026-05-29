@@ -6,6 +6,7 @@ const ItineraryCard = ({ itinerary, onPress }) => (
     <Image
       source={{ uri: itinerary.photoUrl || 'https://placehold.co/400x200/e5e7eb/9ca3af?text=No+image' }}
       style={styles.image}
+      resizeMode="cover"
     />
     <View style={styles.body}>
       <Text style={styles.title} numberOfLines={1}>{itinerary.title}</Text>

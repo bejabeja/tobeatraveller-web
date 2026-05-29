@@ -1,7 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useState } from 'react';
 import {
-  ActivityIndicator, Alert, FlatList, Image, ScrollView,
+  Image, ScrollView,
   Share, StyleSheet, Text, TouchableOpacity, View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -67,6 +67,12 @@ const ProfileScreen = ({ route, navigation }) => {
   }, [isOwnProfile, isAuthenticated]);
 
   useEffect(() => {
+    if (!isAuthenticated && !isOwnProfile) {
+      navigation.replace('Tabs', { screen: 'Profile' });
+    }
+  }, [isAuthenticated, isOwnProfile, navigation]);
+
+  useEffect(() => {
     if (isOwnProfile || !profileId) return;
     (async () => {
       try {
@@ -81,7 +87,7 @@ const ProfileScreen = ({ route, navigation }) => {
       } catch {}
       finally { setLoading(false); }
     })();
-  }, [profileId, isOwnProfile]);
+  }, [profileId, isOwnProfile, me?.id]);
 
   const handleShare = async () => {
     try {
@@ -110,12 +116,7 @@ const ProfileScreen = ({ route, navigation }) => {
     return <UnauthView navigation={navigation} insets={insets} />;
   }
 
-  // Block access to other users' profiles when not authenticated
-  // → send to Profile tab so they see the app value proposition first
-  if (!isAuthenticated && !isOwnProfile) {
-    navigation.replace('Tabs', { screen: 'Profile' });
-    return null;
-  }
+  if (!isAuthenticated && !isOwnProfile) return null;
 
   if (loading) {
     return (
@@ -447,7 +448,6 @@ const UnauthView = ({ navigation, insets }) => (
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8fafc' },
-  loader: { flex: 1, marginTop: 60 },
 
   banner: { height: 110 },
   backBtn: {

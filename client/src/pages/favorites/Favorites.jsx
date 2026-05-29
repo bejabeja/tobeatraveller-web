@@ -23,10 +23,17 @@ const Favorites = () => {
     fetchFavorites();
   }, []);
 
+  if (error) {
+    return (
+      <section className="section__container">
+        <p className="error-message">Could not load saved trips. Please try again.</p>
+      </section>
+    );
+  }
+
   return (
     <section className="section__container">
       <ItinerariesSection
-        user={favoritesItineraries?.user}
         itineraries={favoritesItineraries}
         title="Saved trips"
         isLoading={loading}

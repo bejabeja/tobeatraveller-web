@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
-  ActivityIndicator, FlatList, Image, StyleSheet,
+  FlatList, Image, StyleSheet,
   Text, TouchableOpacity, View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -25,12 +25,11 @@ const FollowsScreen = ({ route, navigation }) => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  if (!isAuthenticated) {
-    navigation.replace('Tabs', { screen: 'Profile' });
-    return null;
-  }
-
   useEffect(() => {
+    if (!isAuthenticated) {
+      navigation.replace('Tabs', { screen: 'Profile' });
+      return;
+    }
     (async () => {
       try {
         const data = type === 'followers'
@@ -40,7 +39,9 @@ const FollowsScreen = ({ route, navigation }) => {
       } catch {}
       finally { setLoading(false); }
     })();
-  }, [userId, type]);
+  }, [userId, type, isAuthenticated]);
+
+  if (!isAuthenticated) return null;
 
   const title = type === 'followers' ? 'Followers' : 'Following';
 

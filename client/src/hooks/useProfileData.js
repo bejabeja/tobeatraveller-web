@@ -6,7 +6,7 @@ import { getUserById } from "../services/users";
 import { selectAuthUser, selectIsAuthenticated } from "../store/auth/authSelectors";
 import { selectMe, selectMyFollowers, selectMyFollowing, selectMyItineraries, selectMyItinerariesLoading } from "../store/user/userInfoSelectors";
 
-export const useProfileData = (profileId) => {
+export const useProfileData = (profileId, { withFollows = false } = {}) => {
     const authUser = useSelector(selectAuthUser)
     const userMe = useSelector(selectMe)
     const myItineraries = useSelector(selectMyItineraries)
@@ -21,8 +21,8 @@ export const useProfileData = (profileId) => {
     const [followersData, setFollowersData] = useState(null);
     const [followingData, setFollowingData] = useState(null);
     const [loadingUser, setLoadingUser] = useState(true);
-    const [loadingFollowers, setLoadingFollowers] = useState(true);
-    const [loadingFollowing, setLoadingFollowing] = useState(true);
+    const [loadingFollowers, setLoadingFollowers] = useState(withFollows);
+    const [loadingFollowing, setLoadingFollowing] = useState(withFollows);
     const [loadingItineraries, setLoadingItineraries] = useState(true);
     const [error, setError] = useState(null);
 
@@ -38,12 +38,14 @@ export const useProfileData = (profileId) => {
             if (isAuthenticated && userMe === null) return;
             if (!isMyProfile) {
                 try {
-                    const userRes = await getUserById(profileId);
-                    const itinerariesRes = await getItinerariesByUserId(profileId)
+                    const [userRes, itinerariesRes] = await Promise.all([
+                        getUserById(profileId),
+                        getItinerariesByUserId(profileId),
+                    ]);
                     setUserData(userRes);
-                    setUserItineraries(itinerariesRes)
+                    setUserItineraries(itinerariesRes);
 
-                    if (isAuthenticated) {
+                    if (withFollows && isAuthenticated) {
                         const [followersRes, followingRes] = await Promise.all([
                             getAllFollowers(profileId),
                             getAllFollowing(profileId),
@@ -68,7 +70,7 @@ export const useProfileData = (profileId) => {
         };
 
         fetchData();
-    }, [profileId, isMyProfile, userMe]);
+    }, [profileId, isMyProfile, userMe, withFollows]);
 
 
     return {

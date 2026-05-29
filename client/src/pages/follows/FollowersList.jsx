@@ -3,11 +3,12 @@ import Spinner from "../../components/spinner/Spinner";
 import { useFollow } from "../../hooks/useFollow";
 import { useProfileData } from "../../hooks/useProfileData";
 import Error from "../error/Error";
+import { generateAvatar } from "../../utils/constants/constants";
 import "./Follows.scss";
 
 const FollowersList = () => {
   const { id } = useParams();
-  const { loadingFollowers, error, followers } = useProfileData(id);
+  const { loadingFollowers, error, followers } = useProfileData(id, { withFollows: true });
 
   if (loadingFollowers) return <Spinner />;
   if (error) {
@@ -41,9 +42,10 @@ const UserCard = ({ user }) => {
     <div className="user-card">
       <Link to={`/profile/${user.id}`} className="user-card__link">
         <img
-          src={user.avatarUrl}
-          alt={user.name}
+          src={user.avatarUrl || generateAvatar(user.username)}
+          alt={user.name || user.username}
           className="user-card__avatar"
+          onError={(e) => { e.currentTarget.src = generateAvatar(user.username); }}
         />
         <div className="user-card__info">
           <h3 className="user-card__name">{user.name}</h3>

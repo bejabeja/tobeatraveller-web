@@ -124,6 +124,7 @@ const Navigation = () => {
         <Stack.Screen name="Community" component={CommunityScreen} />
         <Stack.Screen name="MyItineraries" component={MyItinerariesScreen} />
         <Stack.Screen name="Follows" component={FollowsScreen} />
+        <Stack.Screen name="Saved" component={SavedScreen} />
         {!isAuthenticated && (
           <>
             <Stack.Screen name="Login" component={LoginScreen} />

@@ -3,7 +3,6 @@ import {
   ActivityIndicator, FlatList, Modal, RefreshControl, ScrollView,
   StyleSheet, Text, TextInput, TouchableOpacity, View,
 } from 'react-native';
-import { useSafeAreaInsets as useSAI } from 'react-native-safe-area-context';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 const TRAVELERS_OPTIONS = [
   { value: 'solo',   label: '🧍 Solo'    },

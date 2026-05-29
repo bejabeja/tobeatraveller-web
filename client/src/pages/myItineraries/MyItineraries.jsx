@@ -7,6 +7,7 @@ import {
   selectMeError,
   selectMyItineraries,
   selectMyItinerariesError,
+  selectMyItinerariesLoading,
 } from "../../store/user/userInfoSelectors";
 import { filterItineraries } from "../../utils/filterItineraries";
 import "./MyItineraries.scss";
@@ -15,6 +16,7 @@ import Filters from "./filters/Filters";
 const MyItineraries = () => {
   const userMe = useSelector(selectMe);
   const myItineraries = useSelector(selectMyItineraries);
+  const myItinerariesLoading = useSelector(selectMyItinerariesLoading);
   const myItinerariesError = useSelector(selectMyItinerariesError);
   const userMeError = useSelector(selectMeError);
 
@@ -31,6 +33,8 @@ const MyItineraries = () => {
   const filteredItineraries = useMemo(() => {
     return filterItineraries(myItineraries, filters);
   }, [myItineraries, filters]);
+
+  const hasActiveFilters = Object.values(filters).some(Boolean);
 
   return (
     <section className="my-itineraries section__container">
@@ -51,16 +55,28 @@ const MyItineraries = () => {
             Try again
           </button>
         </div>
-      ) : filteredItineraries.length === 0 && !myItineraries.loading ? (
+      ) : filteredItineraries.length === 0 && !myItinerariesLoading ? (
         <div className="explore__no-results">
-          <p>No itineraries found for these filters.</p>
-          <p>Try adjusting your search criteria.</p>
+          {hasActiveFilters ? (
+            <>
+              <p>No itineraries found for these filters.</p>
+              <p>Try adjusting your search criteria.</p>
+            </>
+          ) : (
+            <>
+              <p>You haven&apos;t created any trips yet.</p>
+              <Link to="/create-itinerary" className="btn btn--primary" style={{ marginTop: "12px", display: "inline-block" }}>
+                Plan your first trip
+              </Link>
+            </>
+          )}
         </div>
       ) : (
         <ItinerariesSection
           user={userMe}
           itineraries={filteredItineraries}
-          isLoading={myItineraries.loading}
+          isLoading={myItinerariesLoading}
+          isOwner
         />
       )}
     </section>
