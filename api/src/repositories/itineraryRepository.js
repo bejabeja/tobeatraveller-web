@@ -282,7 +282,7 @@ export class ItineraryRepository {
     const query = `
       SELECT i.*, u.username, u.avatar_url, u.role AS user_role
       FROM itineraries i
-      JOIN user_followers uf ON i.user_id = uf.following_id
+      JOIN user_followers uf ON i.user_id = uf.followed_id
       JOIN users u ON i.user_id = u.id
       WHERE uf.follower_id = $1
         AND i.is_public = true
@@ -301,7 +301,7 @@ export class ItineraryRepository {
     const result = await client.query(
       `SELECT COUNT(*) AS total
        FROM itineraries i
-       JOIN user_followers uf ON i.user_id = uf.following_id
+       JOIN user_followers uf ON i.user_id = uf.followed_id
        WHERE uf.follower_id = $1 AND i.is_public = true`,
       [userId]
     );

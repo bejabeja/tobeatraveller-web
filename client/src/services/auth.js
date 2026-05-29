@@ -18,20 +18,21 @@ export const createNewUser = async (user) => {
 }
 
 export const login = async (user) => {
-    const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-
     try {
         const response = await fetch(`${baseUrl}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(user),
-            credentials: isMobile ? 'omit' : 'include',
+            credentials: 'include',
         });
         if (!response.ok) await parseError(response, 'Login failed');
 
         const data = await response.json();
-        if (isMobile) {
+        // Store token so authFetch (shared services: feed, notifications, etc.) can use it
+        if (data.accessToken) {
             localStorage.setItem('access_token', data.accessToken);
+        }
+        if (data.refreshToken) {
             localStorage.setItem('refresh_token', data.refreshToken);
         }
         return data.user;
@@ -45,19 +46,15 @@ export const logout = async () => {
     const response = await fetch(`${baseUrl}/auth/logout`, {
         method: 'POST',
         credentials: 'include',
-        headers: {
-            'Content-Type': 'application/json'
-        }
+        headers: { 'Content-Type': 'application/json' }
     });
 
     if (!response.ok) {
         await parseError(response, 'Logout failed');
     }
 
-    if (/Mobi|Android/i.test(navigator.userAgent)) {
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-    }
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
 
     return response.json();
 }
