@@ -277,4 +277,34 @@ export class ItineraryRepository {
 
     return parseInt(result.rows[0].total, 10);
   }
+
+  async getFeedByUserId(userId, limit = 20, offset = 0) {
+    const query = `
+      SELECT i.*, u.username, u.avatar_url, u.role AS user_role
+      FROM itineraries i
+      JOIN user_followers uf ON i.user_id = uf.following_id
+      JOIN users u ON i.user_id = u.id
+      WHERE uf.follower_id = $1
+        AND i.is_public = true
+      ORDER BY i.created_at DESC
+      LIMIT $2 OFFSET $3
+    `;
+    const result = await client.query(query, [userId, limit, offset]);
+    return result.rows.map(row => {
+      const itinerary = Itinerary.fromDb(row);
+      itinerary.addUser({ id: row.user_id, username: row.username, avatarUrl: row.avatar_url, role: row.user_role });
+      return itinerary;
+    });
+  }
+
+  async getFeedCountByUserId(userId) {
+    const result = await client.query(
+      `SELECT COUNT(*) AS total
+       FROM itineraries i
+       JOIN user_followers uf ON i.user_id = uf.following_id
+       WHERE uf.follower_id = $1 AND i.is_public = true`,
+      [userId]
+    );
+    return parseInt(result.rows[0].total, 10);
+  }
 }

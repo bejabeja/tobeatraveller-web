@@ -49,6 +49,21 @@ export class ItinerariesService {
         return this.itinerariesRepository.getDestinations();
     }
 
+    async getFeed(userId, page = 1, limit = 20) {
+        const offset = (page - 1) * limit;
+        const [totalItems, itineraries] = await Promise.all([
+            this.itinerariesRepository.getFeedCountByUserId(userId),
+            this.itinerariesRepository.getFeedByUserId(userId, limit, offset),
+        ]);
+
+        return {
+            itineraries: itineraries.map(it => it.toSimpleDTO()),
+            totalPages: Math.ceil(totalItems / limit),
+            currentPage: page,
+            totalItems,
+        };
+    }
+
     async getItinerariesByUserId(userId) {
         const itineraries = await this.itinerariesRepository.findByUserId(userId);
         if (!itineraries.length) {

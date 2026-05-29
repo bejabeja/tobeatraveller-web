@@ -2,13 +2,25 @@ import { AuthError } from "../errors/AuthError.js";
 import { NotFoundError } from "../errors/NotFoundError.js";
 
 export class CommentsService {
-    constructor(commentsRepository, userRepository) {
+    constructor(commentsRepository, userRepository, notificationsService = null, itineraryRepository = null) {
         this.commentsRepository = commentsRepository;
         this.userRepository = userRepository;
+        this.notificationsService = notificationsService;
+        this.itineraryRepository = itineraryRepository;
     }
 
     async addComment(userId, itineraryId, content) {
-        return this.commentsRepository.addComment(userId, itineraryId, content);
+        const result = await this.commentsRepository.addComment(userId, itineraryId, content);
+
+        const itinerary = await this.itineraryRepository?.findById(itineraryId);
+        if (itinerary?.userId && itinerary.userId !== userId) {
+            this.notificationsService?.createNotification({
+                userId: itinerary.userId, actorId: userId, type: 'comment',
+                itineraryId, commentId: result.id
+            }).catch(() => {});
+        }
+
+        return result;
     }
 
     async getCommentsByItinerary(itineraryId) {

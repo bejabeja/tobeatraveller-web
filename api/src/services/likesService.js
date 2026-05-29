@@ -1,6 +1,8 @@
 export class LikesService {
-    constructor(likesRepository) {
+    constructor(likesRepository, notificationsService = null, itineraryRepository = null) {
         this.likesRepository = likesRepository;
+        this.notificationsService = notificationsService;
+        this.itineraryRepository = itineraryRepository;
     }
 
     async toggleLike(itineraryId, userId) {
@@ -9,6 +11,13 @@ export class LikesService {
             await this.likesRepository.removeLike(itineraryId, userId);
         } else {
             await this.likesRepository.addLike(itineraryId, userId);
+
+            const itinerary = await this.itineraryRepository?.findById(itineraryId);
+            if (itinerary?.userId && itinerary.userId !== userId) {
+                this.notificationsService?.createNotification({
+                    userId: itinerary.userId, actorId: userId, type: 'like', itineraryId
+                }).catch(() => {});
+            }
         }
         const likesCount = await this.likesRepository.getLikesCount(itineraryId);
         return { isLiked: !liked, likesCount };

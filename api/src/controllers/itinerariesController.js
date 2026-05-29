@@ -65,6 +65,17 @@ export class ItinerariesController {
         }
     }
 
+    async getFeed(req, res, next) {
+        try {
+            const userId = req.user.id;
+            const page = parseInt(req.query.page) || 1;
+            const result = await this.itinerariesService.getFeed(userId, page);
+            res.status(200).json(result);
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async getItinerariesByUserId(req, res, next) {
         try {
             const { id } = req.params;

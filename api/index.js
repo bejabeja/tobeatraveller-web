@@ -12,6 +12,7 @@ import { createAuthRouter } from './src/routes/authRouter.js';
 import { createEmailRouter } from './src/routes/emailRouter.js';
 import { createCloudinaryRouter } from "./src/routes/cloudinaryRouter.js";
 import { createCommentsRouter } from "./src/routes/commentsRouter.js";
+import { createNotificationsRouter } from "./src/routes/notificationsRouter.js";
 import { createFavoritesRouter } from "./src/routes/favoritesRouter.js";
 import { createLikesRouter } from "./src/routes/likesRouter.js";
 import { createFollowRouter } from "./src/routes/followRouter.js";
@@ -36,6 +37,7 @@ app.use('/cloudinary', createCloudinaryRouter());
 app.use('/favorites', authenticate, createFavoritesRouter());
 app.use('/likes', authenticate, createLikesRouter());
 app.use('/comments', createCommentsRouter());
+app.use('/notifications', authenticate, createNotificationsRouter());
 
 app.use('/', createEmailRouter());
 if (config.nodeEnv !== 'production') {
