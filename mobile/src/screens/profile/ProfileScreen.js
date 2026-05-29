@@ -301,14 +301,22 @@ const ProfileScreen = ({ route, navigation }) => {
           </View>
         )}
 
-        {/* Logout (own profile) */}
+        {/* Contact + Logout (own profile) */}
         {isOwnProfile && (
-          <TouchableOpacity
-            style={styles.logoutBtn}
-            onPress={() => dispatch(logoutUser())}
-          >
-            <Text style={styles.logoutText}>Sign out</Text>
-          </TouchableOpacity>
+          <>
+            <TouchableOpacity
+              style={styles.contactBtn}
+              onPress={() => navigation.navigate('Contact')}
+            >
+              <Text style={styles.contactText}>✉️  Contact us</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.logoutBtn}
+              onPress={() => dispatch(logoutUser())}
+            >
+              <Text style={styles.logoutText}>Sign out</Text>
+            </TouchableOpacity>
+          </>
         )}
       </View>
 
@@ -559,8 +567,14 @@ const styles = StyleSheet.create({
     paddingVertical: 11, alignItems: 'center',
   },
   createBtnText: { color: '#fff', fontSize: 14, fontWeight: '700' },
-  logoutBtn: {
+  contactBtn: {
     marginHorizontal: 16, marginTop: 14,
+    borderWidth: 1, borderColor: '#e5e7eb',
+    borderRadius: 10, paddingVertical: 10, alignItems: 'center',
+  },
+  contactText: { color: '#374151', fontSize: 14, fontWeight: '600' },
+  logoutBtn: {
+    marginHorizontal: 16, marginTop: 10,
     borderWidth: 1, borderColor: '#fecaca',
     borderRadius: 10, paddingVertical: 10, alignItems: 'center',
   },

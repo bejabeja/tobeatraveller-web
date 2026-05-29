@@ -38,9 +38,12 @@ export const layout = ({ title, preheader = '', content, footerNote }) => `
                     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                       <tr>
                         <td style="padding:28px 40px 24px;text-align:center;">
-                          <img src="${config.appUrl}/logo-white.svg" alt="ToBeATraveller" width="160" height="27"
-                               style="display:inline-block;border:0;height:auto;"
-                               onerror="this.outerHTML='<p style=&quot;margin:0;font-size:13px;font-weight:700;letter-spacing:1px;color:white;&quot;>ToBeATraveller</p>'" />
+                          <a href="${config.appUrl}" style="text-decoration:none;display:inline-block;">
+                            <p style="margin:0;line-height:1;">
+                              <span style="display:block;font-size:10px;font-weight:600;letter-spacing:3px;color:rgba(255,255,255,0.6);text-transform:uppercase;font-family:Arial,Helvetica,sans-serif;">TO BE A</span>
+                              <span style="display:block;font-size:20px;font-weight:800;letter-spacing:-0.3px;color:#ffffff;font-family:Arial,Helvetica,sans-serif;margin-top:3px;">TRAVELLER</span>
+                            </p>
+                          </a>
                         </td>
                       </tr>
                     </table>

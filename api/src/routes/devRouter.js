@@ -1,96 +1,96 @@
 import { Router } from 'express';
-import { EmailService } from '../services/emailService.js';
 import { accountDeletedTemplate } from '../emails/templates/accountDeleted.js';
-import { contactConfirmationTemplate } from '../emails/templates/contactConfirmation.js';
 import { contactTemplate } from '../emails/templates/contact.js';
+import { contactConfirmationTemplate } from '../emails/templates/contactConfirmation.js';
 import { passwordResetTemplate } from '../emails/templates/passwordReset.js';
 import { welcomeTemplate } from '../emails/templates/welcome.js';
+import { EmailService } from '../services/emailService.js';
 
 export const createDevRouter = () => {
-    const router = Router();
-    const emailService = new EmailService();
+  const router = Router();
+  const emailService = new EmailService();
 
-    // Preview: GET /dev/emails/welcome?username=miriam
-    router.get('/emails/welcome', (req, res) => {
-        const { html } = welcomeTemplate({
-            username: req.query.username || 'traveller',
+  // Preview: GET /dev/emails/welcome?username=jane
+  router.get('/emails/welcome', (req, res) => {
+    const { html } = welcomeTemplate({
+      username: req.query.username || 'traveller',
+    });
+    res.send(html);
+  });
+
+  // Preview: GET /dev/emails/contact?name=Jane&email=jane@example.com&subject=Hello&message=Test
+  router.get('/emails/contact', (req, res) => {
+    const { html } = contactTemplate({
+      name: req.query.name || 'Jane Doe',
+      email: req.query.email || 'jane@example.com',
+      subject: req.query.subject || 'Question about the app',
+      message: req.query.message || 'Hi! I wanted to ask about...',
+    });
+    res.send(html);
+  });
+
+  // Preview: GET /dev/emails/password-reset?username=jane
+  router.get('/emails/password-reset', (req, res) => {
+    const { html } = passwordResetTemplate({
+      username: req.query.username || 'traveller',
+      token: 'preview_token_not_real_do_not_use',
+    });
+    res.send(html);
+  });
+
+  // Preview: GET /dev/emails/contact-confirmation?name=Jane
+  router.get('/emails/contact-confirmation', (req, res) => {
+    const { html } = contactConfirmationTemplate({
+      name: req.query.name || 'Jane Doe',
+    });
+    res.send(html);
+  });
+
+  // Preview: GET /dev/emails/account-deleted?username=jane
+  router.get('/emails/account-deleted', (req, res) => {
+    const { html } = accountDeletedTemplate({
+      username: req.query.username || 'traveller',
+    });
+    res.send(html);
+  });
+
+  // Send test: GET /dev/emails/send?type=welcome&to=your@email.com
+  router.get('/emails/send', async (req, res) => {
+    const { type = 'welcome', to } = req.query;
+    if (!to) return res.status(400).json({ error: 'Missing ?to= param' });
+
+    try {
+      if (type === 'welcome') {
+        await emailService.sendWelcome({ username: 'testuser', email: to });
+      } else if (type === 'contact') {
+        await emailService.sendContactNotification({
+          name: 'Jane Doe',
+          email: 'jane@example.com',
+          subject: 'Test contact message',
+          message: 'This is a test message sent from the dev email tester.',
         });
-        res.send(html);
-    });
-
-    // Preview: GET /dev/emails/contact?name=Jane&email=jane@example.com&subject=Hello&message=Test
-    router.get('/emails/contact', (req, res) => {
-        const { html } = contactTemplate({
-            name:    req.query.name    || 'Jane Doe',
-            email:   req.query.email   || 'jane@example.com',
-            subject: req.query.subject || 'Question about the app',
-            message: req.query.message || 'Hi! I wanted to ask about...',
+      } else if (type === 'password-reset') {
+        await emailService.sendPasswordReset({
+          username: 'testuser',
+          email: to,
+          token: 'dev_test_token_not_real',
         });
-        res.send(html);
-    });
+      } else if (type === 'contact-confirmation') {
+        await emailService.sendContactConfirmation({ name: 'Jane Doe', email: to });
+      } else if (type === 'account-deleted') {
+        await emailService.sendAccountDeleted({ username: 'testuser', email: to });
+      } else {
+        return res.status(400).json({ error: `Unknown type "${type}". Use welcome, contact, contact-confirmation, password-reset or account-deleted.` });
+      }
+      res.json({ ok: true, message: `${type} email sent to ${to}` });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
 
-    // Preview: GET /dev/emails/password-reset?username=miriam
-    router.get('/emails/password-reset', (req, res) => {
-        const { html } = passwordResetTemplate({
-            username: req.query.username || 'traveller',
-            token: 'preview_token_not_real_do_not_use',
-        });
-        res.send(html);
-    });
-
-    // Preview: GET /dev/emails/contact-confirmation?name=Jane
-    router.get('/emails/contact-confirmation', (req, res) => {
-        const { html } = contactConfirmationTemplate({
-            name: req.query.name || 'Jane Doe',
-        });
-        res.send(html);
-    });
-
-    // Preview: GET /dev/emails/account-deleted?username=miriam
-    router.get('/emails/account-deleted', (req, res) => {
-        const { html } = accountDeletedTemplate({
-            username: req.query.username || 'traveller',
-        });
-        res.send(html);
-    });
-
-    // Send test: GET /dev/emails/send?type=welcome&to=your@email.com
-    router.get('/emails/send', async (req, res) => {
-        const { type = 'welcome', to } = req.query;
-        if (!to) return res.status(400).json({ error: 'Missing ?to= param' });
-
-        try {
-            if (type === 'welcome') {
-                await emailService.sendWelcome({ username: 'testuser', email: to });
-            } else if (type === 'contact') {
-                await emailService.sendContactNotification({
-                    name: 'Jane Doe',
-                    email: 'jane@example.com',
-                    subject: 'Test contact message',
-                    message: 'This is a test message sent from the dev email tester.',
-                });
-            } else if (type === 'password-reset') {
-                await emailService.sendPasswordReset({
-                    username: 'testuser',
-                    email: to,
-                    token: 'dev_test_token_not_real',
-                });
-            } else if (type === 'contact-confirmation') {
-                await emailService.sendContactConfirmation({ name: 'Jane Doe', email: to });
-            } else if (type === 'account-deleted') {
-                await emailService.sendAccountDeleted({ username: 'testuser', email: to });
-            } else {
-                return res.status(400).json({ error: `Unknown type "${type}". Use welcome, contact, contact-confirmation, password-reset or account-deleted.` });
-            }
-            res.json({ ok: true, message: `${type} email sent to ${to}` });
-        } catch (err) {
-            res.status(500).json({ error: err.message });
-        }
-    });
-
-    // Index: GET /dev/emails
-    router.get('/emails', (_req, res) => {
-        res.send(`<!DOCTYPE html>
+  // Index: GET /dev/emails
+  router.get('/emails', (_req, res) => {
+    res.send(`<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -143,7 +143,7 @@ export const createDevRouter = () => {
 
     <div class="section-label">Templates</div>
 
-    <div class="template" data-url="/dev/emails/welcome?username=miriam" data-name="Welcome email" onclick="loadPreview(this)">
+    <div class="template" data-url="/dev/emails/welcome?username=jane" data-name="Welcome email" onclick="loadPreview(this)">
       <div class="template-name">Welcome email</div>
       <div class="template-desc">Sent on registration</div>
     </div>
@@ -164,14 +164,14 @@ export const createDevRouter = () => {
     <a class="send-btn" onclick="sendTest('contact-confirmation', this); return false;" href="#">Send test →</a>
     <div class="send-result" id="result-contact-confirmation"></div>
 
-    <div class="template" data-url="/dev/emails/password-reset?username=miriam" data-name="Password reset" onclick="loadPreview(this)">
+    <div class="template" data-url="/dev/emails/password-reset?username=jane" data-name="Password reset" onclick="loadPreview(this)">
       <div class="template-name">Password reset</div>
       <div class="template-desc">Sent on forgot password request</div>
     </div>
     <a class="send-btn" onclick="sendTest('password-reset', this); return false;" href="#">Send test →</a>
     <div class="send-result" id="result-password-reset"></div>
 
-    <div class="template" data-url="/dev/emails/account-deleted?username=miriam" data-name="Account deleted" onclick="loadPreview(this)">
+    <div class="template" data-url="/dev/emails/account-deleted?username=jane" data-name="Account deleted" onclick="loadPreview(this)">
       <div class="template-name">Account deleted</div>
       <div class="template-desc">Sent on account deletion</div>
     </div>
@@ -218,7 +218,7 @@ export const createDevRouter = () => {
   </script>
 </body>
 </html>`);
-    });
+  });
 
-    return router;
+  return router;
 };

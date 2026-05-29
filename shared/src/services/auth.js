@@ -31,6 +31,36 @@ export const login = async (user) => {
     return data.user;
 };
 
+export const forgotPassword = async (email) => {
+    const response = await fetch(`${baseUrl()}/auth/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+    });
+    if (!response.ok) await parseError(response, 'Forgot password failed');
+    return response.json();
+};
+
+export const resetPassword = async (token, newPassword) => {
+    const response = await fetch(`${baseUrl()}/auth/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, newPassword }),
+    });
+    if (!response.ok) await parseError(response, 'Reset password failed');
+    return response.json();
+};
+
+export const sendContact = async ({ name, email, subject, message }) => {
+    const response = await fetch(`${baseUrl()}/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, subject, message }),
+    });
+    if (!response.ok) await parseError(response, 'Contact failed');
+    return response.json();
+};
+
 export const logout = async () => {
     const token = await tokenStorage.getItem('access_token');
     try {

@@ -12,6 +12,8 @@ import SavedScreen from '../screens/saved/SavedScreen';
 import CommunityScreen from '../screens/community/CommunityScreen';
 import LoginScreen from '../screens/auth/LoginScreen';
 import RegisterScreen from '../screens/auth/RegisterScreen';
+import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
+import ContactScreen from '../screens/contact/ContactScreen';
 import ProfileScreen from '../screens/profile/ProfileScreen';
 import EditProfileScreen from '../screens/profile/EditProfileScreen';
 import ItineraryScreen from '../screens/itinerary/ItineraryScreen';
@@ -125,10 +127,12 @@ const Navigation = () => {
         <Stack.Screen name="MyItineraries" component={MyItinerariesScreen} />
         <Stack.Screen name="Follows" component={FollowsScreen} />
         <Stack.Screen name="Saved" component={SavedScreen} />
+        <Stack.Screen name="Contact" component={ContactScreen} />
         {!isAuthenticated && (
           <>
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="Register" component={RegisterScreen} />
+            <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
           </>
         )}
       </Stack.Navigator>

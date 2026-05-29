@@ -115,6 +115,14 @@ const LoginScreen = ({ navigation }) => {
                 }
               />
 
+              <TouchableOpacity
+                style={styles.forgotBtn}
+                onPress={() => navigation.navigate('ForgotPassword')}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.forgotText}>Forgot your password?</Text>
+              </TouchableOpacity>
+
               {authError && Object.keys(errors).length === 0 && (
                 <Text style={styles.authError}>{authError}</Text>
               )}
@@ -208,6 +216,8 @@ const styles = StyleSheet.create({
   title: { fontSize: 24, fontWeight: '800', color: '#111827', letterSpacing: -0.3, marginBottom: 4 },
   subtitle: { fontSize: 14, color: '#6b7280', marginBottom: 16 },
 
+  forgotBtn: { alignSelf: 'flex-end', paddingVertical: 4, marginTop: 2, marginBottom: 4 },
+  forgotText: { fontSize: 13, color: '#6b7280' },
   authError: { color: '#dc2626', fontSize: 13, textAlign: 'center', marginBottom: 4 },
 
   btn: {
