@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { InputForm } from "../../components/form/InputForm";
 import SubmitButton from "../../components/form/SubmitButton";
@@ -11,6 +11,7 @@ import "./Auth.scss";
 const API_URL = import.meta.env.VITE_API_URL;
 
 const ForgotPassword = () => {
+  const { t } = useTranslation();
   const [successEmail, setSuccessEmail] = useState(null);
   const [serverError, setServerError] = useState(null);
 
@@ -33,12 +34,12 @@ const ForgotPassword = () => {
       });
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
-        setServerError(data.message || "Something went wrong. Please try again.");
+        setServerError(data.message || t("errors.somethingWrong"));
         return;
       }
       setSuccessEmail(email);
     } catch {
-      setServerError("Network error. Please check your connection and try again.");
+      setServerError(t("errors.networkError"));
     }
   };
 
@@ -51,20 +52,19 @@ const ForgotPassword = () => {
           </Link>
 
           <div className="auth__form-header">
-            <h1 className="auth__form-title">Forgot password?</h1>
+            <h1 className="auth__form-title">{t("auth.forgotPasswordTitle")}</h1>
             <p className="auth__form-subtitle">
-              Enter your email and we'll send you a reset link.
+              {t("auth.forgotPasswordSubtitle")}
             </p>
           </div>
 
           {successEmail ? (
             <div style={{ padding: "1rem 0" }}>
               <p style={{ fontSize: "0.9rem", lineHeight: 1.6, color: "var(--text-color)", marginBottom: "0.5rem" }}>
-                Check your inbox — we've sent a reset link to{" "}
-                <strong>{successEmail}</strong>. It expires in 1 hour.
+                {t("auth.checkInbox")} — {t("auth.resetLinkSent", { email: successEmail })}
               </p>
               <p style={{ fontSize: "0.82rem", color: "var(--text-secondary-color)" }}>
-                Didn't receive it? Check your spam folder or{" "}
+                {t("auth.didntReceive")}{" "}
                 <button
                   type="button"
                   onClick={() => setSuccessEmail(null)}
@@ -79,7 +79,7 @@ const ForgotPassword = () => {
                     fontFamily: "inherit",
                   }}
                 >
-                  try again
+                  {t("auth.tryAgain")}
                 </button>
                 .
               </p>
@@ -98,12 +98,12 @@ const ForgotPassword = () => {
                 {serverError || " "}
               </div>
 
-              <SubmitButton label="Send reset link" loading={isSubmitting} />
+              <SubmitButton label={t("auth.sendResetLink")} loading={isSubmitting} />
             </>
           )}
 
           <div className="auth__form-link" style={{ paddingTop: "0.75rem" }}>
-            <Link to="/login">← Back to login</Link>
+            <Link to="/login">{t("auth.backToLogin")}</Link>
           </div>
         </form>
       </div>

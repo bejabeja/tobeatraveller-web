@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { RiUserCommunityLine } from "react-icons/ri";
 import LoadingButton from "../../components/LoadingButton.jsx";
 import UsersSection from "../../components/users/UsersSection.jsx";
@@ -19,12 +20,8 @@ import {
 import Error from "../error/Error.jsx";
 import "./Community.scss";
 
-const SORT_OPTIONS = [
-  { value: "username", label: "A-Z" },
-  { value: "itineraries", label: "Most itineraries" },
-];
-
 const Community = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -41,6 +38,11 @@ const Community = () => {
   const [sortBy, setSortBy] = useState("username");
   const loadMoreRef = useRef(null);
   const hasMore = currentPage < totalPages;
+
+  const SORT_OPTIONS = [
+    { value: "username", label: t("community.sortAZ") },
+    { value: "itineraries", label: t("community.sortMostItineraries") },
+  ];
 
   const handleLoadMore = () => {
     if (hasMore) {
@@ -75,12 +77,12 @@ const Community = () => {
   const hero = (
     <div className="community__hero">
       <RiUserCommunityLine className="community__hero-icon" />
-      <h1 className="community__hero-title">Community</h1>
+      <h1 className="community__hero-title">{t("community.title")}</h1>
       <p className="community__hero-subtitle">
-        Discover travellers from around the world
+        {t("community.subtitle")}
       </p>
       {totalCount > 0 && (
-        <span className="community__hero-count">{totalCount} members</span>
+        <span className="community__hero-count">{t("community.members", { count: totalCount })}</span>
       )}
     </div>
   );
@@ -94,14 +96,14 @@ const Community = () => {
           <div className="community__guest-blur" />
         </div>
         <div className="community__guest-cta">
-          <h2>Join the community</h2>
-          <p>Sign up to see all travellers, follow people you like, and get inspired for your next trip.</p>
+          <h2>{t("community.joinCommunity")}</h2>
+          <p>{t("community.joinCommunityDesc")}</p>
           <div className="community__guest-cta-buttons">
             <button className="btn btn--primary" onClick={() => navigate("/register")}>
-              Create account
+              {t("community.createAccount")}
             </button>
             <button className="btn btn--secondary" onClick={() => navigate("/login")}>
-              Log in
+              {t("community.logIn")}
             </button>
           </div>
         </div>
@@ -111,7 +113,7 @@ const Community = () => {
 
   if (error) {
     return (
-      <Error message="We couldn't load the community page. Please try again later." />
+      <Error message={t("community.errorMsg")} />
     );
   }
 
@@ -125,19 +127,21 @@ const Community = () => {
           handleFilterChange={handleFilterChange}
           handleSortChange={handleSortChange}
           handleReset={handleReset}
+          sortOptions={SORT_OPTIONS}
+          t={t}
         />
 
         <div className="community__results">
           {searchName && (
             <p className="community__results-label">
-              Results for &quot;{searchName}&quot;
+              {t("community.resultsFor", { query: searchName })}
             </p>
           )}
 
           {!users?.length && !loading && (
             <div className="community__no-results">
-              <p>No travellers found with that name.</p>
-              <p>Try adjusting your search.</p>
+              <p>{t("community.noTravelers")}</p>
+              <p>{t("community.tryAdjusting")}</p>
             </div>
           )}
 
@@ -146,7 +150,7 @@ const Community = () => {
           {hasMore && (
             <div ref={loadMoreRef} className="community__results-ctas">
               <LoadingButton onClick={handleLoadMore} isLoading={loadingMore}>
-                Load more
+                {t("community.loadMore")}
               </LoadingButton>
             </div>
           )}
@@ -158,23 +162,23 @@ const Community = () => {
 
 export default Community;
 
-const Filters = ({ searchName, sortBy, handleFilterChange, handleSortChange, handleReset }) => (
+const Filters = ({ searchName, sortBy, handleFilterChange, handleSortChange, handleReset, sortOptions, t }) => (
   <div className="community__filters">
     <label>
-      Search
+      {t("community.search")}
       <input
         type="text"
         name="searchName"
         value={searchName}
-        placeholder="Search by username..."
+        placeholder={t("community.searchPlaceholder")}
         onChange={handleFilterChange}
       />
     </label>
 
     <label>
-      Sort by
+      {t("community.sortBy")}
       <select name="sortBy" value={sortBy} onChange={handleSortChange}>
-        {SORT_OPTIONS.map((opt) => (
+        {sortOptions.map((opt) => (
           <option key={opt.value} value={opt.value}>
             {opt.label}
           </option>
@@ -183,7 +187,7 @@ const Filters = ({ searchName, sortBy, handleFilterChange, handleSortChange, han
     </label>
 
     <button onClick={handleReset} className="btn btn--ghost">
-      Reset
+      {t("community.reset")}
     </button>
   </div>
 );

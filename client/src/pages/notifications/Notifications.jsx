@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { IoNotificationsOutline } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import {
   initNotifications,
@@ -11,13 +12,8 @@ import {
 } from "@tobeatraveller/shared";
 import "./Notifications.scss";
 
-const TYPE_LABELS = {
-  follow:  (n) => <><strong>@{n.actor?.username}</strong> started following you</>,
-  like:    (n) => <><strong>@{n.actor?.username}</strong> liked your trip <em>{n.itinerary?.title}</em></>,
-  comment: (n) => <><strong>@{n.actor?.username}</strong> commented on <em>{n.itinerary?.title}</em></>,
-};
-
 const Notifications = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const notifications = useSelector(selectNotifications);
   const loading = useSelector(selectNotificationsLoading);
@@ -31,10 +27,16 @@ const Notifications = () => {
     if (unreadCount > 0) dispatch(markAllNotificationsRead());
   }, [unreadCount, dispatch]);
 
+  const TYPE_LABELS = {
+    follow:  (n) => <><strong>@{n.actor?.username}</strong>{t("notifications.startedFollowing")}</>,
+    like:    (n) => <><strong>@{n.actor?.username}</strong>{t("notifications.liked")}<em>{n.itinerary?.title}</em></>,
+    comment: (n) => <><strong>@{n.actor?.username}</strong>{t("notifications.commented")}<em>{n.itinerary?.title}</em></>,
+  };
+
   return (
     <div className="notifications section__container">
       <div className="notifications__header">
-        <h1 className="notifications__title">Notifications</h1>
+        <h1 className="notifications__title">{t("notifications.title")}</h1>
         {notifications.length > 0 && (
           <span className="notifications__count">{notifications.length}</span>
         )}
@@ -49,13 +51,13 @@ const Notifications = () => {
       ) : notifications.length === 0 ? (
         <div className="notifications__empty">
           <IoNotificationsOutline className="notifications__empty-icon" />
-          <p>No notifications yet</p>
-          <span>When someone follows you, likes or comments on your trips, you'll see it here.</span>
+          <p>{t("notifications.noNotifications")}</p>
+          <span>{t("notifications.noNotificationsDesc")}</span>
         </div>
       ) : (
         <div className="notifications__list">
           {notifications.map((n) => (
-            <NotificationItem key={n.id} notification={n} />
+            <NotificationItem key={n.id} notification={n} typeLabels={TYPE_LABELS} />
           ))}
         </div>
       )}
@@ -63,8 +65,8 @@ const Notifications = () => {
   );
 };
 
-const NotificationItem = ({ notification: n }) => {
-  const label = TYPE_LABELS[n.type]?.(n);
+const NotificationItem = ({ notification: n, typeLabels }) => {
+  const label = typeLabels[n.type]?.(n);
   const href = n.type === "follow"
     ? `/profile/${n.actor?.id}`
     : n.itinerary?.id ? `/itinerary/${n.itinerary.id}` : "#";

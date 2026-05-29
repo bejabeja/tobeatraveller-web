@@ -3,6 +3,7 @@ import toast from "react-hot-toast";
 import { IoAirplaneOutline, IoEarthOutline, IoLinkOutline, IoLocationOutline, IoStarOutline } from "react-icons/io5";
 import { MdExplore, MdOutlineCalendarMonth, MdOutlineEdit } from "react-icons/md";
 import { useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
 import ItinerariesSection from "../../components/itineraries/ItinerariesSection";
 import Modal from "../../components/modal/Modal";
@@ -16,21 +17,30 @@ import "./Profile.scss";
 
 // ─── Badge definitions ────────────────────────────────────────────────────────
 const TRIP_BADGES = [
-  { id: "globetrotter", label: "Globetrotter", Icon: IoEarthOutline, min: 10 },
-  { id: "adventurer", label: "Adventurer", Icon: IoAirplaneOutline, min: 5 },
-  { id: "explorer", label: "Explorer", Icon: MdExplore, min: 1 },
+  { id: "globetrotter", labelKey: "Globetrotter", Icon: IoEarthOutline, min: 10 },
+  { id: "adventurer",   labelKey: "Adventurer",   Icon: IoAirplaneOutline, min: 5 },
+  { id: "explorer",     labelKey: "Explorer",     Icon: MdExplore, min: 1 },
 ];
 
 const COMPLETENESS_FIELDS = [
-  { key: "name", tip: "Add your name" },
-  { key: "bio", tip: "Write a bio" },
-  { key: "about", tip: "Complete your About section" },
-  { key: "location", tip: "Add your location" },
-  { key: "avatarUrl", tip: "Set a profile photo" },
+  { key: "name",      tipKey: "editProfile.namePlaceholder" },
+  { key: "bio",       tipKey: "editProfile.bioPlaceholder" },
+  { key: "about",     tipKey: "editProfile.aboutPlaceholder" },
+  { key: "location",  tipKey: "editProfile.locationPlaceholder" },
+  { key: "avatarUrl", tipKey: "editProfile.namePlaceholder" },
+];
+
+const COMPLETENESS_TIP_KEYS = [
+  { key: "name",      tipKey: "profile.completenessTipName" },
+  { key: "bio",       tipKey: "profile.completenessTipBio" },
+  { key: "about",     tipKey: "profile.completenessTipAbout" },
+  { key: "location",  tipKey: "profile.completenessTipLocation" },
+  { key: "avatarUrl", tipKey: "profile.completenessTipPhoto" },
 ];
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 const Profile = () => {
+  const { t } = useTranslation();
   const { id } = useParams();
   const authUser = useSelector(selectAuthUser);
   const {
@@ -49,7 +59,7 @@ const Profile = () => {
     return () => { document.title = "Tobeatraveller"; };
   }, [user]);
 
-  if (error) return <Error message="We couldn't load the profile info. Please try again later." />;
+  if (error) return <Error message={t("errors.profileLoad")} />;
 
   const handleFollowToggle = () => {
     if (isFollowing) setShowUnfollowModal(true);
@@ -59,17 +69,17 @@ const Profile = () => {
   const handleCopyLink = () => {
     navigator.clipboard
       .writeText(window.location.href)
-      .then(() => toast.success("Link copied!"))
-      .catch(() => toast.error("Couldn't copy link"));
+      .then(() => toast.success(t("itinerary.linkCopied")))
+      .catch(() => toast.error(t("itinerary.couldntCopyLink")));
   };
 
   const aboutContent = user?.about ? (
-    <AboutSection about={user.about} />
+    <AboutSection about={user.about} t={t} />
   ) : isMyProfile ? (
     <div className="profile__about profile__about--empty">
-      <h2 className="profile__about-title">About</h2>
+      <h2 className="profile__about-title">{t("profile.about")}</h2>
       <Link to={`/profile/edit/${user?.id}`} className="profile__about-prompt">
-        + Tell the community about yourself
+        {t("profile.tellCommunity")}
       </Link>
     </div>
   ) : null;
@@ -91,8 +101,9 @@ const Profile = () => {
                 onCopyLink={handleCopyLink}
                 isAuthenticated={isAuthenticated}
                 isLoadingFollow={isLoadingFollow}
+                t={t}
               />
-              {isMyProfile && <ProfileCompleteness user={user} />}
+              {isMyProfile && <ProfileCompleteness user={user} t={t} />}
               {aboutContent}
             </>
           )}
@@ -102,7 +113,7 @@ const Profile = () => {
           <ItinerariesSection
             user={user}
             itineraries={itineraries}
-            title={isMyProfile ? "My trips" : "Trips"}
+            title={isMyProfile ? t("profile.myTrips") : t("profile.otherTrips")}
             isLoading={loadingItineraries}
             isOwner={isMyProfile}
             {...(isMyProfile ? { limit: 3, viewAllHref: "/my-itineraries" } : {})}
@@ -114,9 +125,9 @@ const Profile = () => {
         isOpen={showUnfollowModal}
         onClose={() => setShowUnfollowModal(false)}
         onConfirm={() => { toggleFollow(); setShowUnfollowModal(false); }}
-        title="Unfollow?"
-        description={`Stop following @${user?.username}?`}
-        confirmText="Unfollow"
+        title={t("profile.unfollowModal")}
+        description={t("profile.unfollowDesc", { username: user?.username })}
+        confirmText={t("profile.unfollow")}
         type="danger"
       />
     </section>
@@ -128,7 +139,7 @@ export default Profile;
 // ─── Header card ──────────────────────────────────────────────────────────────
 const HeaderSection = ({
   user, isMyProfile, isFollowing, followsYou, onFollowToggle,
-  onCopyLink, isAuthenticated, isLoadingFollow,
+  onCopyLink, isAuthenticated, isLoadingFollow, t,
 }) => {
   const followBtnRef = useRef(null);
   const wasLoadingRef = useRef(false);
@@ -152,15 +163,15 @@ const HeaderSection = ({
           <button
             className="btn profile__copy-btn"
             onClick={onCopyLink}
-            aria-label="Copy profile link"
-            title="Copy profile link"
+            aria-label={t("profile.copyLink")}
+            title={t("profile.copyLink")}
           >
             <IoLinkOutline aria-hidden="true" />
           </button>
           {isMyProfile ? (
             <Link to={`/profile/edit/${user?.id}`} className="btn btn--secondary profile__btn">
               <MdOutlineEdit aria-hidden="true" />
-              Edit profile
+              {t("profile.editProfile")}
             </Link>
           ) : (
             <button
@@ -169,7 +180,7 @@ const HeaderSection = ({
               onClick={onFollowToggle}
               disabled={isLoadingFollow}
             >
-              {isLoadingFollow ? "…" : isFollowing ? "Unfollow" : "Follow"}
+              {isLoadingFollow ? "…" : isFollowing ? t("profile.unfollow") : t("profile.follow")}
             </button>
           )}
         </div>
@@ -179,21 +190,21 @@ const HeaderSection = ({
             ? <h1 className="profile__name">{user.name}</h1>
             : isMyProfile && (
               <Link to={`/profile/edit/${user?.id}`} className="profile__empty-name">
-                + Add your name
+                {t("profile.addYourName")}
               </Link>
             )
           }
           <p className="profile__username">
             @{user?.username}
             {user?.role === "official" && <OfficialBadge size={18} />}
-            {followsYou && <span className="profile__follows-you">Follows you</span>}
+            {followsYou && <span className="profile__follows-you">{t("profile.followsYou")}</span>}
           </p>
 
           {user?.bio ? (
             <p className="profile__bio">{user.bio}</p>
           ) : isMyProfile ? (
             <Link to={`/profile/edit/${user?.id}`} className="profile__empty-bio">
-              + Add a bio
+              {t("profile.addBio")}
             </Link>
           ) : null}
 
@@ -209,13 +220,13 @@ const HeaderSection = ({
               ) : isMyProfile && (
                 <Link to={`/profile/edit/${user?.id}`} className="profile__meta-item profile__meta-item--prompt">
                   <IoLocationOutline aria-hidden="true" />
-                  <span className="profile__meta-text">Add your location</span>
+                  <span className="profile__meta-text">{t("profile.addLocation")}</span>
                 </Link>
               )}
               {user?.createdAt && (
                 <span className="profile__meta-item">
                   <MdOutlineCalendarMonth aria-hidden="true" />
-                  <span className="profile__meta-text">Joined {user.createdAt}</span>
+                  <span className="profile__meta-text">{t("profile.joinedOn", { date: user.createdAt })}</span>
                 </span>
               )}
             </div>
@@ -227,18 +238,18 @@ const HeaderSection = ({
               className="profile__stat"
             >
               <StatNumber value={user?.followers} />
-              <span>Followers</span>
+              <span>{t("profile.followers")}</span>
             </Link>
             <Link
               to={isAuthenticated ? `/profile/${user?.id}/following` : "/login"}
               className="profile__stat"
             >
               <StatNumber value={user?.following} />
-              <span>Following</span>
+              <span>{t("profile.following")}</span>
             </Link>
             <span className="profile__stat">
               <StatNumber value={user?.totalItineraries} />
-              <span>Trips</span>
+              <span>{t("profile.trips")}</span>
             </span>
           </div>
         </div>
@@ -248,9 +259,9 @@ const HeaderSection = ({
 };
 
 // ─── About ────────────────────────────────────────────────────────────────────
-const AboutSection = ({ about }) => (
+const AboutSection = ({ about, t }) => (
   <div className="profile__about">
-    <h2 className="profile__about-title">About</h2>
+    <h2 className="profile__about-title">{t("profile.about")}</h2>
     <p className="profile__about-text">{about}</p>
   </div>
 );
@@ -259,7 +270,7 @@ const AboutSection = ({ about }) => (
 const ProfileBadges = ({ user }) => {
   const tripBadge = TRIP_BADGES.find((b) => (user?.totalItineraries || 0) >= b.min);
   const popularBadge = (user?.followers || 0) >= 50
-    ? { id: "popular", label: "Popular", Icon: IoStarOutline }
+    ? { id: "popular", labelKey: "Popular", Icon: IoStarOutline }
     : null;
 
   const badges = [tripBadge, popularBadge].filter(Boolean);
@@ -267,10 +278,10 @@ const ProfileBadges = ({ user }) => {
 
   return (
     <div className="profile__badges">
-      {badges.map(({ id, label, Icon }) => (
-        <span key={id} className="profile__badge" title={label}>
+      {badges.map(({ id, labelKey, Icon }) => (
+        <span key={id} className="profile__badge" title={labelKey}>
           <Icon aria-hidden="true" />
-          {label}
+          {labelKey}
         </span>
       ))}
     </div>
@@ -278,25 +289,25 @@ const ProfileBadges = ({ user }) => {
 };
 
 // ─── Profile completeness ─────────────────────────────────────────────────────
-const ProfileCompleteness = ({ user }) => {
-  const done = COMPLETENESS_FIELDS.filter((f) => !!user?.[f.key]).length;
-  const percent = Math.round((done / COMPLETENESS_FIELDS.length) * 100);
+const ProfileCompleteness = ({ user, t }) => {
+  const done = COMPLETENESS_TIP_KEYS.filter((f) => !!user?.[f.key]).length;
+  const percent = Math.round((done / COMPLETENESS_TIP_KEYS.length) * 100);
   if (percent === 100) return null;
 
-  const nextTip = COMPLETENESS_FIELDS.find((f) => !user?.[f.key])?.tip;
+  const nextTipKey = COMPLETENESS_TIP_KEYS.find((f) => !user?.[f.key])?.tipKey;
 
   return (
     <div className="profile__completeness">
       <div className="profile__completeness-header">
-        <span className="profile__completeness-label">Profile strength</span>
+        <span className="profile__completeness-label">{t("profile.profileStrength")}</span>
         <strong className="profile__completeness-pct">{percent}%</strong>
       </div>
       <div className="profile__completeness-track">
         <div className="profile__completeness-fill" style={{ width: `${percent}%` }} />
       </div>
-      {nextTip && (
+      {nextTipKey && (
         <p className="profile__completeness-tip">
-          <Link to={`/profile/edit/${user?.id}`}>→ {nextTip}</Link>
+          <Link to={`/profile/edit/${user?.id}`}>→ {t(nextTipKey)}</Link>
         </p>
       )}
     </div>

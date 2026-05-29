@@ -6,11 +6,13 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { getUserFavorites, selectIsAuthenticated } from '@tobeatraveller/shared';
 import ItineraryCard from '../../components/ItineraryCard';
 import { ItineraryCardSkeleton } from '../../components/Skeleton';
 
 const SavedScreen = ({ navigation }) => {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const isAuthenticated = useSelector(selectIsAuthenticated);
 
@@ -49,18 +51,18 @@ const SavedScreen = ({ navigation }) => {
   if (!isAuthenticated) {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
-        <Header />
+        <Header t={t} />
         <View style={styles.unauthCenter}>
           <Text style={styles.unauthEmoji}>🔖</Text>
-          <Text style={styles.unauthTitle}>Save trips you love</Text>
+          <Text style={styles.unauthTitle}>{t('favorites.saveTripsYouLove')}</Text>
           <Text style={styles.unauthSubtitle}>
-            Sign in to bookmark itineraries and find them here anytime.
+            {t('favorites.signInToBookmark')}
           </Text>
           <TouchableOpacity style={styles.signInBtn} onPress={() => navigation.navigate('Login')}>
-            <Text style={styles.signInBtnText}>Sign in</Text>
+            <Text style={styles.signInBtnText}>{t('favorites.signIn')}</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-            <Text style={styles.createLink}>New here? <Text style={styles.createLinkAccent}>Create account</Text></Text>
+            <Text style={styles.createLink}>{t('auth.noAccount')} <Text style={styles.createLinkAccent}>{t('auth.createAccountLink')}</Text></Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -71,7 +73,7 @@ const SavedScreen = ({ navigation }) => {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <Header count={itineraries.length} />
+      <Header count={itineraries.length} t={t} />
       <FlatList
         data={loading && !itineraries.length
           ? Array.from({ length: 6 }, (_, i) => ({ id: `sk-${i}`, _skeleton: true }))
@@ -88,9 +90,9 @@ const SavedScreen = ({ navigation }) => {
         ListEmptyComponent={
           <View style={styles.emptyState}>
             <Text style={styles.emptyEmoji}>🔖</Text>
-            <Text style={styles.emptyTitle}>No saved trips yet</Text>
+            <Text style={styles.emptyTitle}>{t('favorites.noSavedTrips')}</Text>
             <Text style={styles.emptySubtitle}>
-              Tap the bookmark icon on any itinerary to save it here.
+              {t('favorites.noSavedTripsDesc')}
             </Text>
           </View>
         }
@@ -107,9 +109,9 @@ const SavedScreen = ({ navigation }) => {
   );
 };
 
-const Header = ({ count }) => (
+const Header = ({ count, t }) => (
   <View style={styles.header}>
-    <Text style={styles.headerTitle}>Saved trips</Text>
+    <Text style={styles.headerTitle}>{t('favorites.title')}</Text>
     {count > 0 && <Text style={styles.headerCount}>{count}</Text>}
   </View>
 );

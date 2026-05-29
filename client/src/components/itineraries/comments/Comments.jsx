@@ -1,6 +1,7 @@
 import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import {
   addComment,
@@ -14,6 +15,7 @@ import "./Comments.scss";
 
 
 const Comments = ({ itineraryId, isAuthenticated }) => {
+  const { t } = useTranslation();
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(false);
@@ -46,7 +48,7 @@ const Comments = ({ itineraryId, isAuthenticated }) => {
       await fetchComments();
     } catch (error) {
       console.error("Failed to add comment", error);
-      toast.error("Could not post comment. Please try again.");
+      toast.error(t("comments.couldNotPost"));
     } finally {
       setLoading(false);
     }
@@ -58,13 +60,13 @@ const Comments = ({ itineraryId, isAuthenticated }) => {
       await fetchComments();
     } catch (error) {
       console.error("Failed to delete comment", error);
-      toast.error("Could not delete comment. Please try again.");
+      toast.error(t("comments.couldNotDelete"));
     }
   };
 
   return (
     <div className="comments">
-      <h2 className="comments__title">Comments</h2>
+      <h2 className="comments__title">{t("comments.title")}</h2>
 
       <div className="comments__list">
         {comments.length > 0 ? (
@@ -87,7 +89,7 @@ const Comments = ({ itineraryId, isAuthenticated }) => {
                         setIsModalOpen(true);
                       }}
                     >
-                      Delete
+                      {t("comments.delete")}
                     </button>
                   </div>
                 )}
@@ -95,7 +97,7 @@ const Comments = ({ itineraryId, isAuthenticated }) => {
             </div>
           ))
         ) : isAuthenticated ? (
-          <p className="comments__empty">Be the first to leave a comment!</p>
+          <p className="comments__empty">{t("comments.beFirst")}</p>
         ) : null}
       </div>
 
@@ -112,7 +114,7 @@ const Comments = ({ itineraryId, isAuthenticated }) => {
             <textarea
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Add a comment..."
+              placeholder={t("comments.addComment")}
               rows={1}
               enterKeyHint="send"
               onInput={(e) => {
@@ -128,9 +130,9 @@ const Comments = ({ itineraryId, isAuthenticated }) => {
             />
             {newComment.trim() && (
               <div className="comments__form-actions">
-                <button className="btn btn--ghost btn--sm" onClick={() => setNewComment("")}>Cancel</button>
+                <button className="btn btn--ghost btn--sm" onClick={() => setNewComment("")}>{t("comments.cancel")}</button>
                 <button onClick={handleAddComment} disabled={loading} className="btn btn--primary btn--sm">
-                  {loading ? "Posting..." : "Post"}
+                  {loading ? t("comments.posting") : t("comments.post")}
                 </button>
               </div>
             )}
@@ -139,7 +141,7 @@ const Comments = ({ itineraryId, isAuthenticated }) => {
       ) : (
         <div className="comments__login-message">
           <p>
-            <Link to="/login">Log in</Link> to share your thoughts on this trip.
+            <Link to="/login">{t("comments.logIn")}</Link> {t("comments.loginToComment")}
           </p>
         </div>
       )}
@@ -157,9 +159,9 @@ const Comments = ({ itineraryId, isAuthenticated }) => {
             setCommentToDelete(null);
           }
         }}
-        title="Confirm Deletion"
-        description="Are you sure you want to delete this comment? This action cannot be undone."
-        confirmText="Delete"
+        title={t("comments.confirmDeletion")}
+        description={t("comments.deleteDesc")}
+        confirmText={t("comments.delete")}
         type="danger"
       />
     </div>

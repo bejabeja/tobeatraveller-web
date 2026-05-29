@@ -6,6 +6,7 @@ import {
 import { WebView } from 'react-native-webview';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import {
   getDestinations,
   initFeaturedItineraries, initFeaturedUsers, initFeed,
@@ -57,6 +58,7 @@ const buildMapHTML = (destinations) => `<!DOCTYPE html>
 </html>`;
 
 const HomeScreen = ({ navigation }) => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const insets = useSafeAreaInsets();
   const [destinations, setDestinations] = useState([]);
@@ -89,8 +91,8 @@ const HomeScreen = ({ navigation }) => {
       <View style={[styles.hero, { paddingTop: insets.top + 20 }]}>
         <View style={styles.heroRow}>
           <View>
-            <Text style={styles.heroTitle}>To Be a Traveller</Text>
-            <Text style={styles.heroSubtitle}>Discover journeys around the world</Text>
+            <Text style={styles.heroTitle}>{t('home.heroTitle')}</Text>
+            <Text style={styles.heroSubtitle}>{t('home.heroSubtitle')}</Text>
           </View>
           {isAuthenticated && (
             <TouchableOpacity
@@ -108,13 +110,13 @@ const HomeScreen = ({ navigation }) => {
               style={[styles.tab, tab === 'discover' && styles.tabActive]}
               onPress={() => setTab('discover')}
             >
-              <Text style={[styles.tabText, tab === 'discover' && styles.tabTextActive]}>✨ Discover</Text>
+              <Text style={[styles.tabText, tab === 'discover' && styles.tabTextActive]}>{t('home.tabDiscover')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.tab, tab === 'following' && styles.tabActive]}
               onPress={() => setTab('following')}
             >
-              <Text style={[styles.tabText, tab === 'following' && styles.tabTextActive]}>👥 Following</Text>
+              <Text style={[styles.tabText, tab === 'following' && styles.tabTextActive]}>{t('home.tabFollowing')}</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -132,13 +134,12 @@ const HomeScreen = ({ navigation }) => {
           ) : feed.length === 0 ? (
             <View style={styles.feedEmpty}>
               <Text style={styles.feedEmptyIcon}>🗺️</Text>
-              <Text style={styles.feedEmptyTitle}>No trips yet</Text>
-              <Text style={styles.feedEmptySub}>Follow travellers to see their trips here</Text>
+              <Text style={styles.feedEmptyTitle}>{t('home.noFeedTrips')}</Text>
               <TouchableOpacity
                 style={styles.feedEmptyBtn}
                 onPress={() => navigation.navigate('Community')}
               >
-                <Text style={styles.feedEmptyBtnText}>Find travellers →</Text>
+                <Text style={styles.feedEmptyBtnText}>{t('home.findTravelers')}</Text>
               </TouchableOpacity>
             </View>
           ) : (
@@ -158,7 +159,7 @@ const HomeScreen = ({ navigation }) => {
 
       {/* World Map — only in discover tab */}
       {(!isAuthenticated || tab === 'discover') && destinations.length > 0 && (
-        <WorldMapSection destinations={destinations} navigation={navigation} />
+        <WorldMapSection destinations={destinations} navigation={navigation} t={t} />
       )}
 
       {/* Featured Itineraries — only in discover tab */}
@@ -166,11 +167,11 @@ const HomeScreen = ({ navigation }) => {
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <View>
-            <Text style={styles.sectionTitle}>Featured trips</Text>
-            <Text style={styles.sectionSubtitle}>Where will your next adventure take you?</Text>
+            <Text style={styles.sectionTitle}>{t('home.featuredTrips')}</Text>
+            <Text style={styles.sectionSubtitle}>{t('home.featuredSubtitle')}</Text>
           </View>
           <TouchableOpacity onPress={() => navigation.navigate('Explore')}>
-            <Text style={styles.seeAll}>See all →</Text>
+            <Text style={styles.seeAll}>{t('common.seeAll')}</Text>
           </TouchableOpacity>
         </View>
 
@@ -180,7 +181,7 @@ const HomeScreen = ({ navigation }) => {
                 <View key={`sk-${i}`} style={styles.gridItem}><ItineraryCardSkeleton /></View>
               ))
             : (itineraries ?? []).length === 0
-              ? <Text style={styles.empty}>No itineraries yet.</Text>
+              ? <Text style={styles.empty}>{t('home.noTripsYet')}</Text>
               : (itineraries ?? []).map(item => (
                   <View key={item.id} style={styles.gridItem}>
                     <ItineraryCard
@@ -198,11 +199,11 @@ const HomeScreen = ({ navigation }) => {
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <View>
-            <Text style={styles.sectionTitle}>People you may like</Text>
-            <Text style={styles.sectionSubtitle}>Discover fellow travellers.</Text>
+            <Text style={styles.sectionTitle}>{t('home.peopleYouMayLike')}</Text>
+            <Text style={styles.sectionSubtitle}>{t('home.peopleSubtitle')}</Text>
           </View>
           <TouchableOpacity onPress={() => navigation.navigate('Community')}>
-            <Text style={styles.seeAll}>See all →</Text>
+            <Text style={styles.seeAll}>{t('common.seeAll')}</Text>
           </TouchableOpacity>
         </View>
 
@@ -234,7 +235,7 @@ const HomeScreen = ({ navigation }) => {
                   </View>
                   <Text style={styles.username} numberOfLines={1}>@{user.username}</Text>
                   {user.totalItineraries > 0 && (
-                    <Text style={styles.userTrips}>{user.totalItineraries} trips</Text>
+                    <Text style={styles.userTrips}>{user.totalItineraries} {t('home.trips')}</Text>
                   )}
                 </TouchableOpacity>
               ))
@@ -248,16 +249,16 @@ const HomeScreen = ({ navigation }) => {
       {!isAuthenticated && (
         <View style={styles.cta}>
           <Text style={styles.ctaEmoji}>✈️</Text>
-          <Text style={styles.ctaTitle}>Join the Community</Text>
+          <Text style={styles.ctaTitle}>{t('home.joinCommunity')}</Text>
           <Text style={styles.ctaSubtitle}>
-            Share your journeys, discover inspiring itineraries, and connect with travellers worldwide.
+            {t('home.joinCommunityDesc')}
           </Text>
           <TouchableOpacity
             style={styles.ctaBtn}
             onPress={() => navigation.navigate('Register')}
             activeOpacity={0.85}
           >
-            <Text style={styles.ctaBtnText}>Get Started — It's Free</Text>
+            <Text style={styles.ctaBtnText}>{t('home.getStarted')}</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -366,7 +367,7 @@ const styles = StyleSheet.create({
 });
 
 // ─── World Map Section ─────────────────────────────────────────────────────────
-const WorldMapSection = ({ destinations, navigation }) => {
+const WorldMapSection = ({ destinations, navigation, t }) => {
   const webViewRef = useRef(null);
 
   const goToDestination = (name) => {
@@ -394,8 +395,8 @@ const WorldMapSection = ({ destinations, navigation }) => {
     <View style={styles.mapSection}>
       <View style={styles.sectionHeader}>
         <View>
-          <Text style={styles.sectionTitle}>Explore the world</Text>
-          <Text style={styles.sectionSubtitle}>{destinations.length} destinations</Text>
+          <Text style={styles.sectionTitle}>{t('home.exploreTheWorld')}</Text>
+          <Text style={styles.sectionSubtitle}>{t('home.destinationsCount', { count: destinations.length })}</Text>
         </View>
       </View>
 

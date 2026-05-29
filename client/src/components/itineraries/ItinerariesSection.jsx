@@ -1,4 +1,5 @@
 import { IoAirplaneOutline } from "react-icons/io5";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import "./ItinerariesSection.scss";
 import ItineraryCard from "./card/ItineraryCard.jsx";
@@ -13,6 +14,7 @@ const ItinerariesSection = ({
   isOwner = false,
   viewAllHref,
 }) => {
+  const { t } = useTranslation();
   const skeletonCount = 3;
   const displayedItineraries = limit
     ? itineraries?.slice(0, limit)
@@ -27,7 +29,7 @@ const ItinerariesSection = ({
       {title && <h2 className="itineraries-section__title">{title}</h2>}
 
       {isEmpty ? (
-        <EmptyState isOwner={isOwner} username={user?.username} />
+        <EmptyState isOwner={isOwner} username={user?.username} t={t} />
       ) : (
         <>
           <div className="itineraries-section__grid">
@@ -42,7 +44,7 @@ const ItinerariesSection = ({
           {showViewAll && (
             <div className="itineraries-section__footer">
               <Link to={viewAllHref} className="btn btn--secondary">
-                See all {total} trips
+                {t("itinerariesSection.seeAll", { total })}
               </Link>
             </div>
           )}
@@ -52,26 +54,28 @@ const ItinerariesSection = ({
   );
 };
 
-const EmptyState = ({ isOwner, username }) => (
+const EmptyState = ({ isOwner, username, t }) => (
   <div className="itineraries-section__empty">
     <div className="itineraries-section__empty-icon" aria-hidden="true">
       <IoAirplaneOutline />
     </div>
     {isOwner ? (
       <>
-        <p className="itineraries-section__empty-title">No trips yet</p>
+        <p className="itineraries-section__empty-title">{t("itinerariesSection.noTripsYet")}</p>
         <p className="itineraries-section__empty-sub">
-          Share your first itinerary with the community
+          {t("itinerariesSection.shareFirst")}
         </p>
         <Link to="/create-itinerary" className="btn btn--primary itineraries-section__empty-cta">
-          + Create a trip
+          {t("itinerariesSection.createTrip")}
         </Link>
       </>
     ) : (
       <>
-        <p className="itineraries-section__empty-title">No trips yet</p>
+        <p className="itineraries-section__empty-title">{t("itinerariesSection.noTripsYet")}</p>
         <p className="itineraries-section__empty-sub">
-          {username ? `@${username} hasn't shared any trips yet` : "No trips shared yet"}
+          {username
+            ? t("itinerariesSection.noTripsUser", { username })
+            : t("itinerariesSection.noTripsShared")}
         </p>
       </>
     )}

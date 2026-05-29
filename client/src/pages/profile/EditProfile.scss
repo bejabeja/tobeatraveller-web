@@ -510,6 +510,52 @@
   line-height: 1.5;
 }
 
+// ── Language selector ──────────────────────────────────────────────────────────
+.edit-profile__lang-section {
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: var(--white-color);
+
+  h2 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin: 0;
+  }
+}
+
+.edit-profile__lang-toggle {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.edit-profile__lang-btn {
+  border-radius: 8px;
+  padding: 0.6rem 1.2rem;
+  border: 1.5px solid var(--border-color);
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: var(--text-color);
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+
+  &:hover {
+    border-color: var(--primary-color);
+  }
+
+  &.active {
+    border-color: var(--primary-color);
+    background: #eff6ff;
+    color: var(--primary-color);
+    font-weight: 600;
+  }
+}
+
 // ── Danger zone ────────────────────────────────────────────────────────────────
 .edit-profile__danger-zone {
   border: 1px solid var(--error-color);

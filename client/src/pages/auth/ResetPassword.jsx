@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-
+import { useTranslation } from "react-i18next";
 import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { PasswordInputForm } from "../../components/form/PasswordInputForm";
 import SubmitButton from "../../components/form/SubmitButton";
@@ -11,6 +11,7 @@ import "./Auth.scss";
 const API_URL = import.meta.env.VITE_API_URL;
 
 const ResetPassword = () => {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
   const [success, setSuccess] = useState(false);
@@ -39,12 +40,12 @@ const ResetPassword = () => {
         body: JSON.stringify({ token, newPassword }),
       });
       if (!response.ok) {
-        setServerError("This link is invalid or has expired.");
+        setServerError(t("errors.invalidLink"));
         return;
       }
       setSuccess(true);
     } catch {
-      setServerError("Network error. Please check your connection and try again.");
+      setServerError(t("errors.networkError"));
     }
   };
 
@@ -57,18 +58,18 @@ const ResetPassword = () => {
           </Link>
 
           <div className="auth__form-header">
-            <h1 className="auth__form-title">Set new password</h1>
-            <p className="auth__form-subtitle">Choose a new password for your account.</p>
+            <h1 className="auth__form-title">{t("auth.setNewPassword")}</h1>
+            <p className="auth__form-subtitle">{t("auth.setNewPasswordSubtitle")}</p>
           </div>
 
           {success ? (
             <div style={{ padding: "1rem 0" }}>
               <p style={{ fontSize: "0.9rem", lineHeight: 1.6, color: "var(--text-color)", marginBottom: "0.75rem" }}>
-                Password updated! You can now sign in with your new password.
+                {t("auth.passwordUpdated")}
               </p>
               <div className="auth__form-link" style={{ paddingTop: "0.75rem" }}>
                 <Link to="/login">
-                  <strong>Sign in →</strong>
+                  <strong>{t("auth.signIn")} →</strong>
                 </Link>
               </div>
             </div>
@@ -92,7 +93,7 @@ const ResetPassword = () => {
                   <>
                     {serverError}{" "}
                     <Link to="/forgot-password" style={{ color: "var(--primary-color)", fontWeight: 600 }}>
-                      Request a new link
+                      {t("auth.requestNewLink")}
                     </Link>
                     .
                   </>
@@ -101,10 +102,10 @@ const ResetPassword = () => {
                 )}
               </div>
 
-              <SubmitButton label="Update password" loading={isSubmitting} />
+              <SubmitButton label={t("auth.updatePassword")} loading={isSubmitting} />
 
               <div className="auth__form-link" style={{ paddingTop: "0.75rem" }}>
-                <Link to="/login">← Back to login</Link>
+                <Link to="/login">{t("auth.backToLogin")}</Link>
               </div>
             </>
           )}

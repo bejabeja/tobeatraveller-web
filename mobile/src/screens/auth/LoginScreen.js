@@ -7,6 +7,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { loginUser, selectAuthError } from '@tobeatraveller/shared';
 import { shadow, textShadow } from '../../utils/styles';
 
@@ -16,6 +17,7 @@ const GUEST_EMAIL = 'test.tobeatraveller@gmail.com';
 const GUEST_PASSWORD = 'testtest';
 
 const LoginScreen = ({ navigation }) => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const insets = useSafeAreaInsets();
   const authError = useSelector(selectAuthError);
@@ -29,10 +31,10 @@ const LoginScreen = ({ navigation }) => {
 
   const validate = () => {
     const e = {};
-    if (!email.trim()) e.email = 'Email is required';
-    else if (!/\S+@\S+\.\S+/.test(email)) e.email = 'Invalid email address';
-    if (!password) e.password = 'Password is required';
-    else if (password.length < 6) e.password = 'Password must be at least 6 characters';
+    if (!email.trim()) e.email = t('errors.emailRequired');
+    else if (!/\S+@\S+\.\S+/.test(email)) e.email = t('errors.invalidEmailAddress');
+    if (!password) e.password = t('errors.passwordRequired');
+    else if (password.length < 6) e.password = t('errors.passwordMin');
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -75,7 +77,7 @@ const LoginScreen = ({ navigation }) => {
         <View style={[styles.branding, { paddingTop: insets.top + 20 }]}>
           <Text style={styles.brandIcon}>🌍</Text>
           <Text style={styles.brandName}>Tobeatraveller</Text>
-          <Text style={styles.tagline}>Discover the world,{'\n'}one journey at a time.</Text>
+          <Text style={styles.tagline}>{t('auth.taglineLogin')}</Text>
         </View>
 
         {/* Sheet — flex:0 sizes to content */}
@@ -89,8 +91,8 @@ const LoginScreen = ({ navigation }) => {
               bounces={false}
             >
               <View style={styles.handle} />
-              <Text style={styles.title}>Welcome back</Text>
-              <Text style={styles.subtitle}>Sign in to continue your journey</Text>
+              <Text style={styles.title}>{t('auth.welcomeBack')}</Text>
+              <Text style={styles.subtitle}>{t('auth.signInSubtitle')}</Text>
 
               <Field
                 label="Email"
@@ -120,7 +122,7 @@ const LoginScreen = ({ navigation }) => {
                 onPress={() => navigation.navigate('ForgotPassword')}
                 activeOpacity={0.7}
               >
-                <Text style={styles.forgotText}>Forgot your password?</Text>
+                <Text style={styles.forgotText}>{t('auth.forgotPassword')}</Text>
               </TouchableOpacity>
 
               {authError && Object.keys(errors).length === 0 && (
@@ -133,7 +135,7 @@ const LoginScreen = ({ navigation }) => {
                 disabled={loading}
                 activeOpacity={0.85}
               >
-                <Text style={styles.btnText}>{loading ? 'Signing in…' : 'Sign in'}</Text>
+                <Text style={styles.btnText}>{loading ? t('auth.signingIn') : t('auth.signIn')}</Text>
               </TouchableOpacity>
 
               {__DEV__ && (
@@ -143,7 +145,7 @@ const LoginScreen = ({ navigation }) => {
                   disabled={guestLoading}
                   activeOpacity={0.8}
                 >
-                  <Text style={styles.guestBtnText}>{guestLoading ? 'Loading…' : 'Continue as guest'}</Text>
+                  <Text style={styles.guestBtnText}>{guestLoading ? t('common.loading') : t('auth.continueAsGuest')}</Text>
                 </TouchableOpacity>
               )}
 
@@ -151,12 +153,12 @@ const LoginScreen = ({ navigation }) => {
 
               <TouchableOpacity onPress={() => navigation.navigate('Register')} activeOpacity={0.7}>
                 <Text style={styles.link}>
-                  New here? <Text style={styles.linkAccent}>Create an account</Text>
+                  {t('auth.noAccount')} <Text style={styles.linkAccent}>{t('auth.createAccountLink')}</Text>
                 </Text>
               </TouchableOpacity>
 
               <TouchableOpacity onPress={() => navigation.navigate('Tabs')} activeOpacity={0.7}>
-                <Text style={styles.browse}>Explore without an account →</Text>
+                <Text style={styles.browse}>{t('auth.exploreWithout')}</Text>
               </TouchableOpacity>
             </ScrollView>
           </View>

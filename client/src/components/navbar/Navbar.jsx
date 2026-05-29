@@ -11,6 +11,7 @@ import {
 import { RiUserCommunityLine } from "react-icons/ri";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, NavLink, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { refreshUnreadCount, selectUnreadCount } from "@tobeatraveller/shared";
 import {
   selectIsAuthenticated,
@@ -20,6 +21,7 @@ import { generateAvatar } from "../../utils/constants/constants";
 import "./Navbar.scss";
 
 const Navbar = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const userMe = useSelector(selectMe);
@@ -66,47 +68,47 @@ const Navbar = () => {
         </Link>
 
         <div className="nav-section">
-          <h3>Discover</h3>
-          <NavLink to="/" className="nav-item" end title="Home">
+          <h3>{t("nav.discover")}</h3>
+          <NavLink to="/" className="nav-item" end title={t("nav.home")}>
             <GoHome className="nav-icon" />
-            <span>Home</span>
+            <span>{t("nav.home")}</span>
           </NavLink>
-          <NavLink to="/explore" className="nav-item" title="Explore">
+          <NavLink to="/explore" className="nav-item" title={t("nav.explore")}>
             <IoSearch className="nav-icon" />
-            <span>Explore</span>
+            <span>{t("nav.explore")}</span>
           </NavLink>
-          <NavLink to="/community" className="nav-item" title="Community">
+          <NavLink to="/community" className="nav-item" title={t("nav.community")}>
             <RiUserCommunityLine className="nav-icon" />
-            <span>Community</span>
+            <span>{t("nav.community")}</span>
           </NavLink>
         </div>
 
         {isAuthenticated && (
-          <NavLink to="/create-itinerary" className="nav-create" title="Create trip">
+          <NavLink to="/create-itinerary" className="nav-create" title={t("nav.createTrip")}>
             <IoAddOutline className="nav-icon" />
-            <span>Create trip</span>
+            <span>{t("nav.createTrip")}</span>
           </NavLink>
         )}
 
         {isAuthenticated && (
           <div className="nav-section">
-            <h3>Your Space</h3>
-            <NavLink to="/notifications" className="nav-item nav-item--notif" title="Notifications">
+            <h3>{t("nav.yourSpace")}</h3>
+            <NavLink to="/notifications" className="nav-item nav-item--notif" title={t("nav.notifications")}>
               <span className="nav-item__icon-wrap">
                 <IoNotificationsOutline className="nav-icon" />
                 {unreadCount > 0 && (
                   <span className="nav-badge">{unreadCount > 99 ? "99+" : unreadCount}</span>
                 )}
               </span>
-              <span>Notifications</span>
+              <span>{t("nav.notifications")}</span>
             </NavLink>
-            <NavLink to="/my-itineraries" className="nav-item" title="My trips">
+            <NavLink to="/my-itineraries" className="nav-item" title={t("nav.myTrips")}>
               <GoBook className="nav-icon" />
-              <span>My trips</span>
+              <span>{t("nav.myTrips")}</span>
             </NavLink>
-            <NavLink to="/itineraries/saved" className="nav-item" title="Saved trips">
+            <NavLink to="/itineraries/saved" className="nav-item" title={t("nav.savedTrips")}>
               <IoSaveOutline className="nav-icon" />
-              <span>Saved trips</span>
+              <span>{t("nav.savedTrips")}</span>
             </NavLink>
           </div>
         )}
@@ -115,20 +117,20 @@ const Navbar = () => {
           <button
             className="navbar__toggle"
             onClick={() => setIsCollapsed((v) => !v)}
-            title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            title={isCollapsed ? t("nav.expandSidebar") : t("nav.collapseSidebar")}
           >
             {isCollapsed ? (
               <IoChevronForward className="nav-icon" />
             ) : (
               <IoChevronBack className="nav-icon" />
             )}
-            <span>Collapse</span>
+            <span>{t("nav.collapse")}</span>
           </button>
 
           {!isAuthenticated && (
             <div className="nav-auth">
-              <Link to="/register" className="btn btn--primary nav-auth__register">Create account</Link>
-              <Link to="/login" className="nav-auth__login">Already a member? <span>Sign in</span></Link>
+              <Link to="/register" className="btn btn--primary nav-auth__register">{t("nav.createAccountBtn")}</Link>
+              <Link to="/login" className="nav-auth__login">{t("auth.alreadyMember")} <span>{t("auth.signInLink")}</span></Link>
             </div>
           )}
 
@@ -142,7 +144,7 @@ const Navbar = () => {
                 />
                 <span className="nav-footer__username">@{userMe.username}</span>
               </Link>
-              <NavLink to="/logout" className="nav-footer__logout" title="Logout">
+              <NavLink to="/logout" className="nav-footer__logout" title={t("auth.logout")}>
                 <GoSignOut />
               </NavLink>
             </div>
@@ -157,20 +159,20 @@ const Navbar = () => {
           <nav className="me-panel">
             <NavLink to={`/profile/${userMe?.id}`} className="me-panel__item">
               <GoPerson className="me-panel__icon" />
-              <span>Profile</span>
+              <span>{t("nav.profile")}</span>
             </NavLink>
             <NavLink to="/my-itineraries" className="me-panel__item">
               <GoBook className="me-panel__icon" />
-              <span>My trips</span>
+              <span>{t("nav.myTrips")}</span>
             </NavLink>
             <NavLink to="/itineraries/saved" className="me-panel__item">
               <IoSaveOutline className="me-panel__icon" />
-              <span>Saved trips</span>
+              <span>{t("nav.savedTrips")}</span>
             </NavLink>
             <div className="me-panel__divider" />
             <NavLink to="/logout" className="me-panel__item me-panel__item--danger">
               <GoSignOut className="me-panel__icon" />
-              <span>Logout</span>
+              <span>{t("auth.logout")}</span>
             </NavLink>
           </nav>
         </>
@@ -180,11 +182,11 @@ const Navbar = () => {
       <nav className="bottom-nav">
         <NavLink to="/" className="bottom-nav__item" end>
           <GoHome className="bottom-nav__icon" />
-          <span>Home</span>
+          <span>{t("nav.home")}</span>
         </NavLink>
         <NavLink to="/explore" className="bottom-nav__item">
           <IoSearch className="bottom-nav__icon" />
-          <span>Explore</span>
+          <span>{t("nav.explore")}</span>
         </NavLink>
         {isAuthenticated && (
           <NavLink to="/create-itinerary" className="bottom-nav__item bottom-nav__item--create">
@@ -195,7 +197,7 @@ const Navbar = () => {
         )}
         <NavLink to="/community" className="bottom-nav__item">
           <RiUserCommunityLine className="bottom-nav__icon" />
-          <span>Community</span>
+          <span>{t("nav.community")}</span>
         </NavLink>
         {isAuthenticated ? (
           <button
@@ -203,12 +205,12 @@ const Navbar = () => {
             onClick={() => setMeOpen(!meOpen)}
           >
             <GoPerson className="bottom-nav__icon" />
-            <span>Me</span>
+            <span>{t("nav.me")}</span>
           </button>
         ) : (
           <NavLink to="/login" className="bottom-nav__item">
             <GoSignIn className="bottom-nav__icon" />
-            <span>Login</span>
+            <span>{t("nav.login")}</span>
           </NavLink>
         )}
       </nav>

@@ -5,10 +5,12 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { selectMe, selectAuthUser, sendContact } from '@tobeatraveller/shared';
 import { shadow } from '../../utils/styles';
 
 const ContactScreen = ({ navigation }) => {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const meDetail = useSelector(selectMe);
   const authUser = useSelector(selectAuthUser);
@@ -31,10 +33,10 @@ const ContactScreen = ({ navigation }) => {
 
   const validate = () => {
     const e = {};
-    if (!fields.name.trim())    e.name    = 'Required';
-    if (!fields.email.trim() || !/\S+@\S+\.\S+/.test(fields.email)) e.email = 'Valid email required';
-    if (!fields.subject.trim()) e.subject = 'Required';
-    if (fields.message.trim().length < 10) e.message = 'At least 10 characters';
+    if (!fields.name.trim())    e.name    = t('common.required');
+    if (!fields.email.trim() || !/\S+@\S+\.\S+/.test(fields.email)) e.email = t('errors.validEmailRequired');
+    if (!fields.subject.trim()) e.subject = t('common.required');
+    if (fields.message.trim().length < 10) e.message = t('errors.messageMin');
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -46,7 +48,7 @@ const ContactScreen = ({ navigation }) => {
       await sendContact(fields);
       setSent(true);
     } catch {
-      Alert.alert('Error', 'Could not send your message. Please try again.');
+      Alert.alert(t('errors.somethingWrong'), t('errors.couldNotSend'));
     } finally {
       setLoading(false);
     }
@@ -58,7 +60,7 @@ const ContactScreen = ({ navigation }) => {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
           <Text style={styles.backText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Get in touch</Text>
+        <Text style={styles.headerTitle}>{t('contact.headerTitle')}</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -66,12 +68,12 @@ const ContactScreen = ({ navigation }) => {
         {sent ? (
           <View style={styles.successBox}>
             <Text style={styles.successIcon}>✉️</Text>
-            <Text style={styles.successTitle}>Message sent!</Text>
+            <Text style={styles.successTitle}>{t('contact.sent')}</Text>
             <Text style={styles.successSub}>
-              Thanks for reaching out. We'll get back to you as soon as possible.
+              {t('contact.sentDesc')}
             </Text>
             <TouchableOpacity style={styles.btn} onPress={() => navigation.goBack()}>
-              <Text style={styles.btnText}>Back</Text>
+              <Text style={styles.btnText}>{t('contact.back')}</Text>
             </TouchableOpacity>
           </View>
         ) : (
@@ -81,27 +83,27 @@ const ContactScreen = ({ navigation }) => {
             showsVerticalScrollIndicator={false}
           >
             <Text style={styles.subtitle}>
-              We'd love to hear from you — feedback, questions, or just to say hello.
+              {t('contact.subtitle')}
             </Text>
 
             <View style={styles.card}>
-              <Field label="Your name" error={errors.name}>
+              <Field label={t('contact.yourName')} error={errors.name}>
                 <TextInput
                   style={[styles.input, errors.name && styles.inputError]}
                   value={fields.name}
                   onChangeText={v => set('name', v)}
-                  placeholder="Jane Doe"
+                  placeholder={t('contact.namePlaceholder')}
                   placeholderTextColor="#9ca3af"
                   autoComplete="name"
                 />
               </Field>
 
-              <Field label="Your email" error={errors.email}>
+              <Field label={t('contact.yourEmail')} error={errors.email}>
                 <TextInput
                   style={[styles.input, errors.email && styles.inputError]}
                   value={fields.email}
                   onChangeText={v => set('email', v)}
-                  placeholder="jane@example.com"
+                  placeholder={t('contact.emailPlaceholder')}
                   placeholderTextColor="#9ca3af"
                   keyboardType="email-address"
                   autoCapitalize="none"
@@ -109,22 +111,22 @@ const ContactScreen = ({ navigation }) => {
                 />
               </Field>
 
-              <Field label="Subject" error={errors.subject}>
+              <Field label={t('contact.subject')} error={errors.subject}>
                 <TextInput
                   style={[styles.input, errors.subject && styles.inputError]}
                   value={fields.subject}
                   onChangeText={v => set('subject', v)}
-                  placeholder="What's on your mind?"
+                  placeholder={t('contact.subjectPlaceholder')}
                   placeholderTextColor="#9ca3af"
                 />
               </Field>
 
-              <Field label="Message" error={errors.message}>
+              <Field label={t('contact.message')} error={errors.message}>
                 <TextInput
                   style={[styles.input, styles.textarea, errors.message && styles.inputError]}
                   value={fields.message}
                   onChangeText={v => set('message', v)}
-                  placeholder="Tell us more…"
+                  placeholder={t('contact.messagePlaceholder')}
                   placeholderTextColor="#9ca3af"
                   multiline
                   maxLength={1000}
@@ -138,7 +140,7 @@ const ContactScreen = ({ navigation }) => {
               onPress={handleSend}
               disabled={loading}
             >
-              <Text style={styles.btnText}>{loading ? 'Sending…' : 'Send message'}</Text>
+              <Text style={styles.btnText}>{loading ? t('contact.sending') : t('contact.send')}</Text>
             </TouchableOpacity>
           </ScrollView>
         )}

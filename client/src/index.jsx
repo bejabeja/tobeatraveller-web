@@ -1,4 +1,5 @@
 import { createRoot } from "react-dom/client";
+import "./i18n";
 import "./index.scss";
 
 import { Provider } from "react-redux";

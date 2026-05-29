@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
-
+import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { InputForm } from "../../components/form/InputForm";
@@ -19,6 +19,7 @@ import { signupSchema } from "../../utils/schemasValidation";
 import "./Auth.scss";
 
 const Signup = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const imageAuthLoaded = useSelector(selectimageAuthLoaded);
@@ -63,8 +64,8 @@ const Signup = () => {
 
   const validateConsent = () => {
     const e = {};
-    if (!ageConfirmed)   e.ageConfirmed   = "You must confirm you are at least 16 years old";
-    if (!termsAccepted)  e.termsAccepted  = "You must accept the Terms of Service and Privacy Policy";
+    if (!ageConfirmed)   e.ageConfirmed   = t("errors.ageConfirmRequired");
+    if (!termsAccepted)  e.termsAccepted  = t("errors.termsRequired");
     setConsentErrors(e);
     return e;
   };
@@ -87,8 +88,8 @@ const Signup = () => {
           <img src="/logo-white.svg" alt="ToBeATraveller" height="28" />
         </Link>
         <div className="auth__tagline">
-          <h2>Your journey starts here.</h2>
-          <p>Create your account and start sharing your adventures with travellers around the world.</p>
+          <h2>{t("auth.taglineRegister")}</h2>
+          <p>{t("auth.taglineRegisterSub")}</p>
         </div>
       </div>
 
@@ -103,8 +104,8 @@ const Signup = () => {
           </Link>
 
           <div className="auth__form-header">
-            <h1 id="signup-form-title" className="auth__form-title">Create account</h1>
-            <p className="auth__form-subtitle">Join the community of travellers</p>
+            <h1 id="signup-form-title" className="auth__form-title">{t("auth.createAccount")}</h1>
+            <p className="auth__form-subtitle">{t("auth.createAccountSubtitle")}</p>
           </div>
 
           <InputForm name="email" label="Email" type="email" control={control} error={errors.email} />
@@ -122,9 +123,9 @@ const Signup = () => {
                   aria-live="polite"
                   aria-atomic="true"
                 >
-                  {usernameStatus === "checking" && "…"}
-                  {usernameStatus === "available" && "✓ Available"}
-                  {usernameStatus === "taken" && "✗ Taken"}
+                  {usernameStatus === "checking" && t("common.checking")}
+                  {usernameStatus === "available" && t("auth.usernameAvailable")}
+                  {usernameStatus === "taken" && t("auth.usernameTaken")}
                 </span>
               )
             }
@@ -140,7 +141,7 @@ const Signup = () => {
                 checked={ageConfirmed}
                 onChange={(e) => { setAgeConfirmed(e.target.checked); setConsentErrors(p => ({ ...p, ageConfirmed: undefined })); }}
               />
-              <span>I confirm I am at least <strong>16 years old</strong></span>
+              <span dangerouslySetInnerHTML={{ __html: t("auth.ageConfirm") }} />
             </label>
             {consentErrors.ageConfirmed && <p className="auth__consent-error">{consentErrors.ageConfirmed}</p>}
 
@@ -151,10 +152,10 @@ const Signup = () => {
                 onChange={(e) => { setTermsAccepted(e.target.checked); setConsentErrors(p => ({ ...p, termsAccepted: undefined })); }}
               />
               <span>
-                I accept the{" "}
-                <a href="/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a>
-                {" "}and{" "}
-                <a href="/privacy-policy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+                {t("auth.termsAccept", {
+                  terms: `<a href="/terms" target="_blank" rel="noopener noreferrer">${t("auth.termsOfService")}</a>`,
+                  privacy: `<a href="/privacy-policy" target="_blank" rel="noopener noreferrer">${t("auth.privacyPolicy")}</a>`,
+                })}
               </span>
             </label>
             {consentErrors.termsAccepted && <p className="auth__consent-error">{consentErrors.termsAccepted}</p>}
@@ -165,10 +166,10 @@ const Signup = () => {
           </div>
 
           <div className="auth__form-link">
-            <SubmitButton label="Create account" loading={isSubmitting} disabled={usernameStatus === "taken"} />
-            <Link to="/login">Already have an account? <strong>Sign in</strong></Link>
+            <SubmitButton label={t("auth.createAccount")} loading={isSubmitting} disabled={usernameStatus === "taken"} />
+            <Link to="/login">{t("auth.alreadyHaveAccount")} <strong>{t("auth.signInLink")}</strong></Link>
             <Link to="/explore" className="auth__form-browse">
-              Explore without an account →
+              {t("auth.exploreWithout")}
             </Link>
           </div>
         </form>

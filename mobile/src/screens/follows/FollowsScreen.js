@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import {
   followUser, getAllFollowers, getAllFollowing, unfollowUser,
   selectIsAuthenticated, selectMe, selectAuthUser, setUserInfo,
@@ -14,6 +15,7 @@ import { shadow } from '../../utils/styles';
 
 // type: 'followers' | 'following'
 const FollowsScreen = ({ route, navigation }) => {
+  const { t } = useTranslation();
   const { userId, type } = route.params;
   const insets = useSafeAreaInsets();
   const dispatch = useDispatch();
@@ -43,7 +45,7 @@ const FollowsScreen = ({ route, navigation }) => {
 
   if (!isAuthenticated) return null;
 
-  const title = type === 'followers' ? 'Followers' : 'Following';
+  const title = type === 'followers' ? t('followers.title') : t('profile.following');
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -71,7 +73,7 @@ const FollowsScreen = ({ route, navigation }) => {
             <View style={styles.empty}>
               <Text style={styles.emptyEmoji}>{type === 'followers' ? '👥' : '🔭'}</Text>
               <Text style={styles.emptyText}>
-                {type === 'followers' ? 'No followers yet.' : 'Not following anyone yet.'}
+                {type === 'followers' ? t('followers.noFollowers') : t('followers.notFollowingAnyone')}
               </Text>
             </View>
           }
@@ -90,6 +92,7 @@ const FollowsScreen = ({ route, navigation }) => {
 };
 
 const UserRow = ({ user, me, dispatch, onPress }) => {
+  const { t } = useTranslation();
   const isMe = me && String(me.id) === String(user.id);
   const [following, setFollowing] = useState(
     !!me?.followingListIds?.some(f => String(f.id) === String(user.id))
@@ -125,7 +128,7 @@ const UserRow = ({ user, me, dispatch, onPress }) => {
         {user.name ? <Text style={styles.userName}>{user.name}</Text> : null}
         <Text style={styles.userHandle}>@{user.username}</Text>
         {user.totalItineraries > 0 && (
-          <Text style={styles.userTrips}>{user.totalItineraries} trips</Text>
+          <Text style={styles.userTrips}>{t('followers.trips', { count: user.totalItineraries })}</Text>
         )}
       </View>
 
@@ -137,7 +140,7 @@ const UserRow = ({ user, me, dispatch, onPress }) => {
           disabled={loading}
         >
           <Text style={[styles.followBtnText, following && styles.followBtnTextActive]}>
-            {loading ? '…' : following ? 'Following' : 'Follow'}
+            {loading ? '…' : following ? t('followers.following') : t('followers.follow')}
           </Text>
         </TouchableOpacity>
       )}

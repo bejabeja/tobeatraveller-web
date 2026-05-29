@@ -1,3 +1,4 @@
+import './src/i18n';
 import { useEffect } from 'react';
 import { Platform } from 'react-native';
 import { StatusBar } from 'expo-status-bar';

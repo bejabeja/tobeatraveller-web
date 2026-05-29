@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import {
   filterItineraries, itineraryCategories,
   selectMe, selectMyItineraries, selectMyItinerariesLoading,
@@ -20,6 +21,7 @@ const CATEGORY_EMOJI = {
 };
 
 const MyItinerariesScreen = ({ navigation }) => {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const me = useSelector(selectMe);
   const itineraries = useSelector(selectMyItineraries);
@@ -51,12 +53,12 @@ const MyItinerariesScreen = ({ navigation }) => {
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
             <Text style={styles.backText}>←</Text>
           </TouchableOpacity>
-          <Text style={styles.title}>My trips</Text>
+          <Text style={styles.title}>{t('myItineraries.title')}</Text>
           <TouchableOpacity
             style={styles.newBtn}
             onPress={() => navigation.navigate('CreateItinerary')}
           >
-            <Text style={styles.newBtnText}>+ New</Text>
+            <Text style={styles.newBtnText}>{t('myItineraries.newBtn')}</Text>
           </TouchableOpacity>
         </View>
 
@@ -65,7 +67,7 @@ const MyItinerariesScreen = ({ navigation }) => {
           <Text style={styles.searchIcon}>🔍</Text>
           <TextInput
             style={styles.searchInput}
-            placeholder="Search by destination…"
+            placeholder={t('myItineraries.searchPlaceholder')}
             value={search}
             onChangeText={handleSearch}
             placeholderTextColor="#9ca3af"
@@ -101,11 +103,11 @@ const MyItinerariesScreen = ({ navigation }) => {
         {/* Stats row */}
         <View style={styles.statsRow}>
           <Text style={styles.statsText}>
-            {loading ? 'Loading…' : `${filtered.length} of ${(itineraries ?? []).length} trips`}
+            {loading ? t('myItineraries.loadingCount') : t('myItineraries.tripCount', { filtered: filtered.length, total: (itineraries ?? []).length })}
           </Text>
           {hasFilters && (
             <TouchableOpacity onPress={() => { setSearch(''); setDebouncedSearch(''); setCategory(''); }}>
-              <Text style={styles.clearFilters}>Clear filters ✕</Text>
+              <Text style={styles.clearFilters}>{t('myItineraries.clearFilters')}</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -128,21 +130,21 @@ const MyItinerariesScreen = ({ navigation }) => {
               {hasFilters ? (
                 <>
                   <Text style={styles.emptyEmoji}>🔍</Text>
-                  <Text style={styles.emptyTitle}>No trips match your filters</Text>
+                  <Text style={styles.emptyTitle}>{t('myItineraries.noFiltersMatch')}</Text>
                   <TouchableOpacity onPress={() => { setSearch(''); setDebouncedSearch(''); setCategory(''); }}>
-                    <Text style={styles.emptyLink}>Clear filters</Text>
+                    <Text style={styles.emptyLink}>{t('myItineraries.clearFiltersLink')}</Text>
                   </TouchableOpacity>
                 </>
               ) : (
                 <>
                   <Text style={styles.emptyEmoji}>✈️</Text>
-                  <Text style={styles.emptyTitle}>No trips yet</Text>
-                  <Text style={styles.emptySubtitle}>Plan your first adventure!</Text>
+                  <Text style={styles.emptyTitle}>{t('myItineraries.noTripsYet')}</Text>
+                  <Text style={styles.emptySubtitle}>{t('myItineraries.noTripsSubtitle')}</Text>
                   <TouchableOpacity
                     style={styles.emptyBtn}
                     onPress={() => navigation.navigate('CreateItinerary')}
                   >
-                    <Text style={styles.emptyBtnText}>Plan a trip</Text>
+                    <Text style={styles.emptyBtnText}>{t('myItineraries.planTripBtn')}</Text>
                   </TouchableOpacity>
                 </>
               )}

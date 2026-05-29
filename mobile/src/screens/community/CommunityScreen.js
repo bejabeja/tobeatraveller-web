@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import {
   followUser, initAllUsers, loadMoreUsers, unfollowUser,
   selectAllUsers, selectAllUsersCurrentPage, selectAllUsersLoading,
@@ -14,12 +15,8 @@ import {
 import { UserCardSkeleton } from '../../components/Skeleton';
 import { shadow } from '../../utils/styles';
 
-const SORT_OPTIONS = [
-  { value: 'username',    label: 'A–Z' },
-  { value: 'itineraries', label: 'Most trips' },
-];
-
 const CommunityScreen = ({ navigation }) => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const insets = useSafeAreaInsets();
   const isAuthenticated = useSelector(selectIsAuthenticated);
@@ -63,9 +60,9 @@ const CommunityScreen = ({ navigation }) => {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerTop}>
-          <Text style={styles.headerTitle}>Community</Text>
+          <Text style={styles.headerTitle}>{t('community.title')}</Text>
           {totalCount > 0 && (
-            <Text style={styles.memberCount}>{totalCount} members</Text>
+            <Text style={styles.memberCount}>{t('community.membersCount', { count: totalCount })}</Text>
           )}
         </View>
 
@@ -77,7 +74,7 @@ const CommunityScreen = ({ navigation }) => {
               style={styles.searchField}
               value={search}
               onChangeText={setSearch}
-              placeholder="Search by username…"
+              placeholder={t('community.searchPlaceholder')}
               placeholderTextColor="#9ca3af"
               autoCapitalize="none"
               autoCorrect={false}
@@ -92,7 +89,10 @@ const CommunityScreen = ({ navigation }) => {
 
           {/* Sort toggle */}
           <View style={styles.sortRow}>
-            {SORT_OPTIONS.map(opt => (
+            {[
+              { value: 'username', label: t('community.sortAZ') },
+              { value: 'itineraries', label: t('community.sortMostTrips') },
+            ].map(opt => (
               <TouchableOpacity
                 key={opt.value}
                 style={[styles.sortChip, sortBy === opt.value && styles.sortChipSelected]}
@@ -110,16 +110,16 @@ const CommunityScreen = ({ navigation }) => {
       {/* Guest CTA overlay */}
       {!isAuthenticated && !loading && users?.length > 0 && (
         <View style={styles.guestCta}>
-          <Text style={styles.guestCtaTitle}>Join the community</Text>
+          <Text style={styles.guestCtaTitle}>{t('community.joinCommunity')}</Text>
           <Text style={styles.guestCtaSubtitle}>
-            Sign up to follow travellers and get inspired for your next trip.
+            {t('community.joinCommunitySubtitle')}
           </Text>
           <View style={styles.guestCtaBtns}>
             <TouchableOpacity style={styles.primaryBtn} onPress={() => navigation.navigate('Register')}>
-              <Text style={styles.primaryBtnText}>Create account</Text>
+              <Text style={styles.primaryBtnText}>{t('community.createAccount')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.secondaryBtn} onPress={() => navigation.navigate('Login')}>
-              <Text style={styles.secondaryBtnText}>Log in</Text>
+              <Text style={styles.secondaryBtnText}>{t('community.logIn')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -146,10 +146,10 @@ const CommunityScreen = ({ navigation }) => {
           !loading ? (
             <View style={styles.emptyState}>
               <Text style={styles.emptyEmoji}>👥</Text>
-              <Text style={styles.emptyText}>No travellers found.</Text>
+              <Text style={styles.emptyText}>{t('community.noTravellersFound')}</Text>
               {search.length > 0 && (
                 <TouchableOpacity onPress={() => setSearch('')}>
-                  <Text style={styles.emptyLink}>Clear search</Text>
+                  <Text style={styles.emptyLink}>{t('community.clearSearch')}</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -235,7 +235,7 @@ const UserCard = ({ user, me, isAuthenticated, onPress }) => {
           <Text style={styles.userCardLocation} numberOfLines={1}>📍 {user.location}</Text>
         )}
 
-        <Text style={styles.userCardTrips}>{user.totalItineraries ?? 0} trips</Text>
+        <Text style={styles.userCardTrips}>{t('community.trips', { count: user.totalItineraries ?? 0 })}</Text>
 
         {!isMe && isAuthenticated && (
           <TouchableOpacity
@@ -244,7 +244,7 @@ const UserCard = ({ user, me, isAuthenticated, onPress }) => {
             disabled={loadingFollow}
           >
             <Text style={[styles.followBtnText, following && styles.followBtnTextFollowing]}>
-              {loadingFollow ? '…' : following ? 'Following' : 'Follow'}
+              {loadingFollow ? '…' : following ? t('community.following') : t('community.follow')}
             </Text>
           </TouchableOpacity>
         )}

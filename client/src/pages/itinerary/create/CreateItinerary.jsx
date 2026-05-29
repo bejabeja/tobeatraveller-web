@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
 import SubmitButton from "../../../components/form/SubmitButton";
 import { createItinerary } from "../../../services/itinerary";
@@ -22,6 +23,7 @@ import VisibilityForm from "../sectionsForm/VisibilityForm";
 import "./CreateItinerary.scss";
 
 const CreateItinerary = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -55,7 +57,7 @@ const CreateItinerary = () => {
       currency: "",
       numberOfTravellers: "1",
       category: "other",
-      isPublic: false, // #8 — default to private
+      isPublic: false,
     },
   });
 
@@ -66,7 +68,6 @@ const CreateItinerary = () => {
       ? Math.max(1, Math.round((new Date(endDate) - new Date(startDate)) / 86400000) + 1)
       : 1;
 
-  // #3 — scroll/focus to first field with a validation error
   const onError = (errs) => {
     const firstKey = Object.keys(errs)[0];
     try {
@@ -82,7 +83,6 @@ const CreateItinerary = () => {
     name: "places",
   });
 
-  // #6 — section completion signals
   const titleVal = watch("title");
   const destVal = watch("destination");
   const budgetVal = watch("budget");
@@ -100,7 +100,7 @@ const CreateItinerary = () => {
       );
       if (emptyDays.length > 0) {
         toast.error(
-          `Day ${emptyDays.join(", ")} ${emptyDays.length === 1 ? "has" : "have"} no places. Add places or switch to private.`
+          t("createItinerary.emptyDaysDesc", { days: emptyDays.join(", ") })
         );
         return;
       }
@@ -143,9 +143,9 @@ const CreateItinerary = () => {
 
     try {
       await toast.promise(createItinerary(formData), {
-        loading: "Saving itinerary...",
-        success: <b>Itinerary created successfully! 🎉</b>,
-        error: <b>Failed to create itinerary. Please try again.</b>,
+        loading: t("itinerary.createItinerary") + "...",
+        success: <b>{t("itinerary.createItinerary")} 🎉</b>,
+        error: <b>{t("errors.somethingWrong")}</b>,
       });
 
       dispatch(setUserInfo(userMe.id));
@@ -159,18 +159,22 @@ const CreateItinerary = () => {
 
   return (
     <section className="create-itinerary section__container">
-      <h1 className="form__title">Create Itinerary</h1>
+      <h1 className="form__title">{t("itinerary.createItinerary")}</h1>
       {destVal?.name ? (
-        <p className="form__hero-subtitle">Planning your trip to <strong>{destVal.label || destVal.name}</strong></p>
+        <p className="form__hero-subtitle"
+          dangerouslySetInnerHTML={{
+            __html: t("itinerary.planningTo", { destination: destVal.label || destVal.name })
+          }}
+        />
       ) : (
-        <p className="form__hero-subtitle">Share your journey with the world</p>
+        <p className="form__hero-subtitle">{t("itinerary.shareJourney")}</p>
       )}
 
       <div className="form__progress">
         <div className="form__progress-bar">
           <div className="form__progress-fill" style={{ width: `${progress}%` }} />
         </div>
-        <span className="form__progress-label">{progress}% complete</span>
+        <span className="form__progress-label">{progress}{t("itinerary.complete")}</span>
       </div>
 
       <form className="form__container" onSubmit={handleSubmit(addItinerary, onError)}>
@@ -210,24 +214,24 @@ const CreateItinerary = () => {
         <VisibilityForm control={control} />
         <div className="form__cta">
           <Link to="/my-itineraries" type="button" className="btn btn--ghost">
-            Cancel
+            {t("common.cancel")}
           </Link>
           <div className="form__cta-submit">
             {sectionsDone < 5 && (
               <span className="form__cta-hint">
                 {(() => {
                   const missing = [
-                    !isBasicInfoComplete && "basic info",
-                    !isDatesComplete && "dates",
-                    !imageFile && "cover photo",
-                    !isPlacesComplete && "places",
-                    !isBudgetComplete && "budget",
+                    !isBasicInfoComplete && t("itinerary.basicInfo"),
+                    !isDatesComplete && t("itinerary.dates"),
+                    !imageFile && t("itinerary.coverPhoto"),
+                    !isPlacesComplete && t("itinerary.placesLabel"),
+                    !isBudgetComplete && t("itinerary.budgetLabel"),
                   ].filter(Boolean);
-                  return `Still needed: ${missing.join(", ")}`;
+                  return t("itinerary.stillNeeded", { missing: missing.join(", ") });
                 })()}
               </span>
             )}
-            <SubmitButton label="Create itinerary" />
+            <SubmitButton label={t("itinerary.createItineraryBtn")} />
           </div>
         </div>
       </form>

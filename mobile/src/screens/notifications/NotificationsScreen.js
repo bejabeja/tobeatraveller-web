@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import {
   initNotifications, markAllNotificationsRead,
   selectNotifications, selectNotificationsLoading, selectUnreadCount,
@@ -15,6 +16,7 @@ import { shadow } from '../../utils/styles';
 const TYPE_ICON = { follow: '👤', like: '❤️', comment: '💬' };
 
 const NotificationsScreen = ({ navigation }) => {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const dispatch = useDispatch();
   const notifications = useSelector(selectNotifications);
@@ -40,7 +42,7 @@ const NotificationsScreen = ({ navigation }) => {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
           <Text style={styles.backText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Notifications</Text>
+        <Text style={styles.title}>{t('notifications.title')}</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -51,9 +53,9 @@ const NotificationsScreen = ({ navigation }) => {
       ) : notifications.length === 0 ? (
         <View style={styles.empty}>
           <Text style={styles.emptyIcon}>🔔</Text>
-          <Text style={styles.emptyTitle}>No notifications yet</Text>
+          <Text style={styles.emptyTitle}>{t('notifications.noNotifications')}</Text>
           <Text style={styles.emptySub}>
-            When someone follows you, likes or comments on your trips, you'll see it here.
+            {t('notifications.noNotificationsDesc')}
           </Text>
         </View>
       ) : (
@@ -81,9 +83,9 @@ const NotificationsScreen = ({ navigation }) => {
               <View style={styles.body}>
                 <Text style={styles.text} numberOfLines={2}>
                   <Text style={styles.bold}>@{n.actor?.username}</Text>
-                  {n.type === 'follow' && ' started following you'}
-                  {n.type === 'like' && <Text> liked <Text style={styles.italic}>{n.itinerary?.title}</Text></Text>}
-                  {n.type === 'comment' && <Text> commented on <Text style={styles.italic}>{n.itinerary?.title}</Text></Text>}
+                  {n.type === 'follow' && t('notifications.startedFollowing')}
+                  {n.type === 'like' && <Text>{t('notifications.liked')}<Text style={styles.italic}>{n.itinerary?.title}</Text></Text>}
+                  {n.type === 'comment' && <Text>{t('notifications.commented')}<Text style={styles.italic}>{n.itinerary?.title}</Text></Text>}
                 </Text>
                 <Text style={styles.time}>{n.createdAt}</Text>
               </View>

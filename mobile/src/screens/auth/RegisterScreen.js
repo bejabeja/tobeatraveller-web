@@ -7,6 +7,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { checkUsernameAvailable, registerUser, selectAuthError } from '@tobeatraveller/shared';
 import { shadow, textShadow } from '../../utils/styles';
 
@@ -14,6 +15,7 @@ const AUTH_BG = require('../../../assets/auth.webp');
 const { height: SCREEN_H } = Dimensions.get('window');
 
 const RegisterScreen = ({ navigation }) => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const insets = useSafeAreaInsets();
   const authError = useSelector(selectAuthError);
@@ -49,18 +51,18 @@ const RegisterScreen = ({ navigation }) => {
 
   const validate = () => {
     const e = {};
-    if (!email.trim()) e.email = 'Email is required';
-    else if (!/\S+@\S+\.\S+/.test(email)) e.email = 'Invalid email address';
-    if (!username.trim()) e.username = 'Username is required';
-    else if (username.length < 2) e.username = 'At least 2 characters';
-    else if (username.length > 50) e.username = 'Max 50 characters';
-    else if (/\s/.test(username)) e.username = 'No spaces allowed';
-    if (!password) e.password = 'Password is required';
-    else if (password.length < 6) e.password = 'At least 6 characters';
-    if (!confirmPassword) e.confirmPassword = 'Please confirm your password';
-    else if (password !== confirmPassword) e.confirmPassword = "Passwords don't match";
-    if (!ageConfirmed) e.ageConfirmed = 'You must confirm you are at least 16 years old';
-    if (!termsAccepted) e.termsAccepted = 'You must accept the Terms and Privacy Policy';
+    if (!email.trim()) e.email = t('errors.emailRequired');
+    else if (!/\S+@\S+\.\S+/.test(email)) e.email = t('errors.invalidEmailAddress');
+    if (!username.trim()) e.username = t('errors.usernameRequired');
+    else if (username.length < 2) e.username = t('errors.usernameMin');
+    else if (username.length > 50) e.username = t('errors.usernameMax');
+    else if (/\s/.test(username)) e.username = t('errors.usernameNoSpaces');
+    if (!password) e.password = t('errors.passwordRequired');
+    else if (password.length < 6) e.password = t('errors.passwordMin');
+    if (!confirmPassword) e.confirmPassword = t('errors.confirmPasswordRequired');
+    else if (password !== confirmPassword) e.confirmPassword = t('errors.passwordsDontMatch');
+    if (!ageConfirmed) e.ageConfirmed = t('errors.ageConfirmRequired');
+    if (!termsAccepted) e.termsAccepted = t('errors.termsRequired');
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -94,7 +96,7 @@ const RegisterScreen = ({ navigation }) => {
         <View style={[styles.branding, { paddingTop: insets.top + 20 }]}>
           <Text style={styles.brandIcon}>🌍</Text>
           <Text style={styles.brandName}>Tobeatraveller</Text>
-          <Text style={styles.tagline}>Your journey{'\n'}starts here.</Text>
+          <Text style={styles.tagline}>{t('auth.taglineRegister')}</Text>
         </View>
 
         {/* Sheet — flex:0 sizes to content */}
@@ -108,8 +110,8 @@ const RegisterScreen = ({ navigation }) => {
               bounces={false}
             >
               <View style={styles.handle} />
-              <Text style={styles.title}>Create account</Text>
-              <Text style={styles.subtitle}>Join the community of travellers</Text>
+              <Text style={styles.title}>{t('auth.createAccount')}</Text>
+              <Text style={styles.subtitle}>{t('auth.createAccountSubtitle')}</Text>
 
               <Field
                 label="Email"
@@ -132,9 +134,9 @@ const RegisterScreen = ({ navigation }) => {
                   usernameStatus && (
                     <View style={[styles.usernamePill, styles[`pill_${usernameStatus}`]]}>
                       <Text style={[styles.usernameText, styles[`pillText_${usernameStatus}`]]}>
-                        {usernameStatus === 'checking'  && '…'}
-                        {usernameStatus === 'available' && '✓ Available'}
-                        {usernameStatus === 'taken'     && '✗ Taken'}
+                        {usernameStatus === 'checking'  && t('common.checking')}
+                        {usernameStatus === 'available' && t('auth.usernameAvailable')}
+                        {usernameStatus === 'taken'     && t('auth.usernameTaken')}
                       </Text>
                     </View>
                   )
@@ -178,7 +180,7 @@ const RegisterScreen = ({ navigation }) => {
                     {ageConfirmed && <Text style={styles.checkmark}>✓</Text>}
                   </View>
                   <Text style={[styles.consentText, errors.ageConfirmed && styles.consentTextError]}>
-                    I confirm I am at least <Text style={[styles.consentBold, errors.ageConfirmed && styles.consentTextError]}>16 years old</Text>
+                    {t('auth.ageConfirm', { strong: (chunks) => chunks })}
                   </Text>
                 </TouchableOpacity>
                 {errors.ageConfirmed ? <Text style={styles.consentError}>{errors.ageConfirmed}</Text> : null}
@@ -192,10 +194,14 @@ const RegisterScreen = ({ navigation }) => {
                     {termsAccepted && <Text style={styles.checkmark}>✓</Text>}
                   </View>
                   <Text style={[styles.consentText, errors.termsAccepted && styles.consentTextError]}>
-                    I accept the{' '}
-                    <Text style={styles.consentLink} onPress={() => Linking.openURL('https://tobeatraveller.com/terms')}>Terms</Text>
-                    {' '}and{' '}
-                    <Text style={styles.consentLink} onPress={() => Linking.openURL('https://tobeatraveller.com/privacy-policy')}>Privacy Policy</Text>
+                    {t('auth.termsAccept', {
+                      terms: t('auth.termsOfService'),
+                      privacy: t('auth.privacyPolicy'),
+                    })}
+                    {' '}
+                    <Text style={styles.consentLink} onPress={() => Linking.openURL('https://tobeatraveller.com/terms')}>{t('auth.termsOfService')}</Text>
+                    {' '}{t('auth.termsAccept').includes('and') ? 'and' : 'y'}{' '}
+                    <Text style={styles.consentLink} onPress={() => Linking.openURL('https://tobeatraveller.com/privacy-policy')}>{t('auth.privacyPolicy')}</Text>
                   </Text>
                 </TouchableOpacity>
                 {errors.termsAccepted ? <Text style={styles.consentError}>{errors.termsAccepted}</Text> : null}
@@ -211,19 +217,19 @@ const RegisterScreen = ({ navigation }) => {
                 disabled={loading || usernameStatus === 'taken'}
                 activeOpacity={0.85}
               >
-                <Text style={styles.btnText}>{loading ? 'Creating account…' : 'Create account'}</Text>
+                <Text style={styles.btnText}>{loading ? t('common.loading') : t('auth.createAccount')}</Text>
               </TouchableOpacity>
 
               <View style={styles.divider} />
 
               <TouchableOpacity onPress={() => navigation.navigate('Login')} activeOpacity={0.7}>
                 <Text style={styles.link}>
-                  Already have an account? <Text style={styles.linkAccent}>Sign in</Text>
+                  {t('auth.alreadyHaveAccount')} <Text style={styles.linkAccent}>{t('auth.signInLink')}</Text>
                 </Text>
               </TouchableOpacity>
 
               <TouchableOpacity onPress={() => navigation.navigate('Tabs')} activeOpacity={0.7}>
-                <Text style={styles.browse}>Explore without an account →</Text>
+                <Text style={styles.browse}>{t('auth.exploreWithout')}</Text>
               </TouchableOpacity>
             </ScrollView>
           </View>

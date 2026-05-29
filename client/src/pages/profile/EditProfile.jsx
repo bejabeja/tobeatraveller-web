@@ -5,6 +5,8 @@ import toast from "react-hot-toast";
 import { IoCameraOutline, IoTrashOutline, IoCheckmarkCircle, IoArrowBackOutline, IoLocationOutline, IoWarningOutline } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import i18n from "../../i18n";
 import { InputForm, TextAreaForm } from "../../components/form/InputForm";
 import Modal from "../../components/modal/Modal";
 import { useAvatarUpload } from "../../hooks/useAvatarUpload";
@@ -17,6 +19,7 @@ import { updateUserSchema } from "../../utils/schemasValidation";
 import "./EditProfile.scss";
 
 const EditProfile = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const { id } = useParams();
   const userMe = useSelector(selectMe);
@@ -29,6 +32,8 @@ const EditProfile = () => {
   const [usernameStatus, setUsernameStatus] = useState(null);
   const { avatarFile, avatarPreview, removeAvatar, handleAvatarChange, handleRemoveAvatar, handleUndoRemove } = useAvatarUpload();
   const navigate = useNavigate();
+
+  const currentLang = i18n.language?.startsWith("en") ? "en" : "es";
 
   const {
     control,
@@ -92,12 +97,12 @@ const EditProfile = () => {
       formData.append("user", JSON.stringify({ ...data, ...(removeAvatar && { removeAvatar: true }) }));
       if (avatarFile) formData.append("avatar", avatarFile);
       await updateUser(formData);
-      toast.success("Profile updated!");
+      toast.success(t("errors.profileUpdated"));
       await Promise.all([dispatch(initAuthUser()), dispatch(setUserInfo(id))]);
       navigate(`/profile/${id}`);
     } catch (err) {
       console.error("Error updating profile", err);
-      toast.error("Failed to update profile");
+      toast.error(t("errors.updateProfileFailed"));
       setErrorSubmit(err.message);
     }
   };
@@ -115,7 +120,7 @@ const EditProfile = () => {
       dispatch(logoutUser());
       navigate("/");
     } catch {
-      toast.error("Failed to delete account. Please try again.");
+      toast.error(t("errors.deleteAccountFailed"));
       setIsDeleting(false);
     }
   };
@@ -127,11 +132,11 @@ const EditProfile = () => {
           type="button"
           className="edit-profile__back"
           onClick={handleCancel}
-          aria-label="Go back"
+          aria-label={t("common.back")}
         >
           <IoArrowBackOutline aria-hidden="true" />
         </button>
-        <h1 className="edit-profile__title">Edit profile</h1>
+        <h1 className="edit-profile__title">{t("editProfile.title")}</h1>
       </div>
 
       <form onSubmit={handleSubmit(saveUser)} className="edit-profile__form">
@@ -146,6 +151,7 @@ const EditProfile = () => {
               onAvatarChange={handleAvatarChange}
               onRemoveAvatar={handleRemoveAvatar}
               onUndoRemove={handleUndoRemove}
+              t={t}
             />
             <div className="edit-profile__fields">
               <InputForm
@@ -153,7 +159,7 @@ const EditProfile = () => {
                 label="Name"
                 control={control}
                 type="text"
-                placeholder="Your display name"
+                placeholder={t("editProfile.namePlaceholder")}
                 error={errors.name}
               />
               <div className="edit-profile__username-wrapper">
@@ -162,7 +168,7 @@ const EditProfile = () => {
                   label="Username"
                   control={control}
                   type="text"
-                  placeholder="your_username"
+                  placeholder={t("editProfile.usernamePlaceholder")}
                   error={errors.username}
                 />
                 {usernameStatus && (
@@ -171,9 +177,9 @@ const EditProfile = () => {
                     aria-live="polite"
                     aria-atomic="true"
                   >
-                    {usernameStatus === "checking"  && "…"}
-                    {usernameStatus === "available" && "✓ Available"}
-                    {usernameStatus === "taken"     && "✗ Already taken"}
+                    {usernameStatus === "checking"  && t("common.checking")}
+                    {usernameStatus === "available" && t("common.available")}
+                    {usernameStatus === "taken"     && t("editProfile.alreadyTaken")}
                   </span>
                 )}
               </div>
@@ -182,7 +188,7 @@ const EditProfile = () => {
                   name="bio"
                   label="Bio"
                   control={control}
-                  placeholder="A short description of yourself…"
+                  placeholder={t("editProfile.bioPlaceholder")}
                   error={errors.bio}
                 />
                 <CharCount value={bioValue} max={160} warnAt={140} />
@@ -194,14 +200,14 @@ const EditProfile = () => {
         <div className="edit-profile__card edit-profile__card--padded">
           <div className="edit-profile__section-header">
             <IoLocationOutline aria-hidden="true" />
-            <h2 className="edit-profile__section-title">Location & About</h2>
+            <h2 className="edit-profile__section-title">{t("editProfile.locationAbout")}</h2>
           </div>
           <InputForm
             name="location"
             label="Location"
             control={control}
             type="text"
-            placeholder="City, Country"
+            placeholder={t("editProfile.locationPlaceholder")}
             error={errors.location}
           />
           <div className="edit-profile__field-group">
@@ -209,7 +215,7 @@ const EditProfile = () => {
               name="about"
               label="About"
               control={control}
-              placeholder="Tell the community about yourself and your travel style…"
+              placeholder={t("editProfile.aboutPlaceholder")}
               error={errors.about}
             />
             <CharCount value={aboutValue} max={1000} warnAt={900} />
@@ -226,46 +232,67 @@ const EditProfile = () => {
             className="btn btn--ghost"
             onClick={handleCancel}
           >
-            Cancel
+            {t("editProfile.cancel")}
           </button>
           <button
             type="submit"
             className="btn btn--primary"
             disabled={isSubmitting || usernameStatus === "taken"}
           >
-            {isSubmitting ? "Saving…" : "Save profile"}
+            {isSubmitting ? t("common.saving") : t("editProfile.saveProfile")}
           </button>
         </div>
       </form>
 
       <div className="edit-profile__data-section">
-        <h2 className="edit-profile__data-title">Your data</h2>
+        <h2 className="edit-profile__data-title">{t("editProfile.yourData")}</h2>
         <p className="edit-profile__data-desc">
-          Download a copy of all your data — profile, itineraries, comments, likes and saved trips — in JSON format.
+          {t("editProfile.yourDataDesc")}
         </p>
         <a
           href={`${import.meta.env.VITE_API_URL}/users/me/export`}
           className="btn btn--secondary"
           download
         >
-          Download my data
+          {t("editProfile.downloadData")}
         </a>
+      </div>
+
+      {/* Language selector */}
+      <div className="edit-profile__lang-section">
+        <h2>{t("editProfile.language")}</h2>
+        <div className="edit-profile__lang-toggle">
+          <button
+            type="button"
+            className={`edit-profile__lang-btn${currentLang === "es" ? " active" : ""}`}
+            onClick={() => i18n.changeLanguage("es")}
+          >
+            🇪🇸 Español
+          </button>
+          <button
+            type="button"
+            className={`edit-profile__lang-btn${currentLang === "en" ? " active" : ""}`}
+            onClick={() => i18n.changeLanguage("en")}
+          >
+            🇬🇧 English
+          </button>
+        </div>
       </div>
 
       <div className="edit-profile__danger-zone">
         <div className="edit-profile__danger-header">
           <IoWarningOutline size={18} aria-hidden="true" />
-          <h2 className="edit-profile__danger-title">Danger zone</h2>
+          <h2 className="edit-profile__danger-title">{t("editProfile.dangerZone")}</h2>
         </div>
         <p className="edit-profile__danger-desc">
-          Once you delete your account, all your data — itineraries, likes, and followers — will be permanently removed. This action cannot be undone.
+          {t("editProfile.dangerZoneDesc")}
         </p>
         <button
           type="button"
           className="btn btn--danger"
           onClick={() => { setDeleteConfirmInput(""); setShowDeleteModal(true); }}
         >
-          Delete my account
+          {t("editProfile.deleteAccount")}
         </button>
       </div>
 
@@ -273,20 +300,19 @@ const EditProfile = () => {
         isOpen={showCancelModal}
         onClose={() => setShowCancelModal(false)}
         onConfirm={() => navigate(-1)}
-        title="Discard changes?"
-        description="You have unsaved changes. Are you sure you want to discard them?"
-        confirmText="Discard"
+        title={t("editProfile.discardChanges")}
+        description={t("editProfile.discardChangesDesc")}
+        confirmText={t("editProfile.discard")}
         type="warning"
       />
 
       {showDeleteModal && (
         <div className="modal__backdrop">
           <div className="modal">
-            <h2>Delete account?</h2>
-            <p>
-              This will permanently delete your account and all your data.
-              Type <strong>{userMe?.username}</strong> to confirm.
-            </p>
+            <h2>{t("editProfile.deleteAccountModal")}</h2>
+            <p dangerouslySetInnerHTML={{
+              __html: t("editProfile.deleteAccountDesc", { username: userMe?.username })
+            }} />
             <input
               className="edit-profile__delete-input"
               type="text"
@@ -301,14 +327,14 @@ const EditProfile = () => {
                 onClick={() => setShowDeleteModal(false)}
                 disabled={isDeleting}
               >
-                Cancel
+                {t("common.cancel")}
               </button>
               <button
                 className="btn btn--danger"
                 onClick={handleDeleteAccount}
                 disabled={deleteConfirmInput !== userMe?.username || isDeleting}
               >
-                {isDeleting ? "Deleting…" : "Delete account"}
+                {isDeleting ? t("editProfile.deleting") : t("editProfile.deleteAccount")}
               </button>
             </div>
           </div>
@@ -363,7 +389,7 @@ const CharCount = ({ value, max, warnAt }) => (
   </span>
 );
 
-const AvatarSection = ({ userMe, avatarPreview, removeAvatar, onAvatarChange, onRemoveAvatar, onUndoRemove }) => {
+const AvatarSection = ({ userMe, avatarPreview, removeAvatar, onAvatarChange, onRemoveAvatar, onUndoRemove, t }) => {
   const inputRef = useRef(null);
   const hasCloudinaryAvatar = userMe?.avatarUrl?.includes("res.cloudinary.com");
   const preview = avatarPreview || userMe?.avatarUrl || generateAvatar(userMe?.username);
@@ -411,12 +437,12 @@ const AvatarSection = ({ userMe, avatarPreview, removeAvatar, onAvatarChange, on
       {removeAvatar ? (
         <button type="button" className="edit-profile__avatar-remove-btn edit-profile__avatar-remove-btn--undo" onClick={onUndoRemove}>
           <IoArrowBackOutline aria-hidden="true" />
-          Undo remove
+          {t("editProfile.undoRemove")}
         </button>
       ) : (hasCloudinaryAvatar || avatarPreview) ? (
         <button type="button" className="edit-profile__avatar-remove-btn" onClick={onRemoveAvatar}>
           <IoTrashOutline aria-hidden="true" />
-          Remove photo
+          {t("editProfile.removePhoto")}
         </button>
       ) : null}
     </div>

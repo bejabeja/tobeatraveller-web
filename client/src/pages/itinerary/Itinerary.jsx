@@ -9,6 +9,7 @@ import {
 import { GoPeople } from "react-icons/go";
 import { MdArrowBack, MdOutlineAttachMoney, MdOutlineCalendarMonth, MdOutlineLocationOn, MdOutlineShare } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { getCategoryIcon } from "../../assets/icons.js";
 import Modal from "../../components/modal/Modal.jsx";
@@ -35,6 +36,7 @@ import "./Itinerary.scss";
 import Error from "../error/Error.jsx";
 
 const Itinerary = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { id } = useParams();
@@ -90,7 +92,7 @@ const Itinerary = () => {
   }, [itinerary, isAuthenticated]);
 
   if (loading) return <Spinner />;
-  if (error) return <Error message="We couldn't load the itinerary page. Please try again later." />;
+  if (error) return <Error message={t("errors.itineraryLoad")} />;
 
   const isMyItinerary = userMe?.id === itinerary?.userId;
 
@@ -105,6 +107,7 @@ const Itinerary = () => {
         navigate={navigate}
         isMyItinerary={isMyItinerary}
         setIsModalOpen={setIsModalOpen}
+        t={t}
       />
 
       <div className="section__container">
@@ -112,18 +115,18 @@ const Itinerary = () => {
           <div className="itinerary__main">
             {itinerary.description && (
               <div className="itinerary__section">
-                <h2 className="itinerary__section-title">About this trip</h2>
+                <h2 className="itinerary__section-title">{t("itinerary.aboutTrip")}</h2>
                 <p className="itinerary__description">{itinerary.description}</p>
               </div>
             )}
 
-            <Stats itinerary={itinerary} hasDescription={!!itinerary.description} />
-            <Places itinerary={itinerary} onHoverPlace={setHoveredPlaceIndex} onPlaceClick={handlePlaceClick} selectedPlaceIndex={selectedPlaceIndex} />
+            <Stats itinerary={itinerary} hasDescription={!!itinerary.description} t={t} />
+            <Places itinerary={itinerary} onHoverPlace={setHoveredPlaceIndex} onPlaceClick={handlePlaceClick} selectedPlaceIndex={selectedPlaceIndex} t={t} />
           </div>
 
           <aside className="itinerary__sidebar">
             <div className="itinerary__sidebar-sticky">
-              <h2 className="itinerary__section-title">Trip area</h2>
+              <h2 className="itinerary__section-title">{t("itinerary.tripArea")}</h2>
               <Map location={itinerary?.location} places={itinerary?.places} hoveredPlaceIndex={hoveredPlaceIndex ?? selectedPlaceIndex} panToRef={mapPanToRef} />
             </div>
           </aside>
@@ -141,9 +144,9 @@ const Itinerary = () => {
           await handleRemove();
           setIsModalOpen(false);
         }}
-        title="Confirm Deletion"
-        description="Are you sure you want to delete this itinerary? This action cannot be undone."
-        confirmText="Delete"
+        title={t("itinerary.confirmDeletion")}
+        description={t("itinerary.deleteDesc")}
+        confirmText={t("itinerary.delete")}
         type="danger"
       />
     </section>
@@ -152,12 +155,12 @@ const Itinerary = () => {
   async function handleRemove() {
     try {
       await deleteItinerary(itinerary.id);
-      toast.success("Itinerary deleted successfully");
+      toast.success(t("itinerary.deletedSuccess"));
       navigate(`/profile/${userMe?.id}`);
       dispatch(setUserInfo(itinerary?.userId));
       dispatch(setUserInfoItineraries(itinerary?.userId));
     } catch (error) {
-      toast.error("Failed to delete itinerary");
+      toast.error(t("itinerary.deleteFailed"));
     }
   }
 };
@@ -171,6 +174,7 @@ const Hero = ({
   navigate,
   isMyItinerary,
   setIsModalOpen,
+  t,
 }) => {
   const handleShare = async () => {
     const url = window.location.href;
@@ -178,7 +182,7 @@ const Hero = ({
       try { await navigator.share({ title: itinerary.title, url }); } catch {}
     } else {
       await navigator.clipboard.writeText(url);
-      toast.success("Link copied!");
+      toast.success(t("itinerary.linkCopied"));
     }
   };
 
@@ -187,14 +191,14 @@ const Hero = ({
     try {
       if (!isFavorite) {
         await addFavorite(itinerary.id);
-        toast.success("Added to favourites!");
+        toast.success(t("itinerary.addedToFavorites"));
       } else {
         await removeFavorite(itinerary.id);
-        toast.success("Removed from favourites!");
+        toast.success(t("itinerary.removedFromFavorites"));
       }
       setIsFavorite(!isFavorite);
     } catch {
-      toast.error("Error updating favourites");
+      toast.error(t("itinerary.errorFavorites"));
     }
   };
 
@@ -206,7 +210,7 @@ const Hero = ({
       <div className="itinerary__hero-overlay" />
 
       <div className="itinerary__hero-back">
-        <button className="action-icon-btn" onClick={() => navigate(-1)} title="Go back">
+        <button className="action-icon-btn" onClick={() => navigate(-1)} title={t("common.back")}>
           <MdArrowBack />
         </button>
       </div>
@@ -237,18 +241,18 @@ const Hero = ({
       </div>
 
       <div className="itinerary__hero-actions">
-        <button className="action-icon-btn" onClick={handleShare} title="Share">
+        <button className="action-icon-btn" onClick={handleShare} title={t("common.send")}>
           <MdOutlineShare />
         </button>
         {isMyItinerary ? (
           <>
-            <Link to={`/itinerary/edit/${itinerary.id}`} className="action-icon-btn" title="Edit">
+            <Link to={`/itinerary/edit/${itinerary.id}`} className="action-icon-btn" title={t("common.edit")}>
               <FaEdit />
             </Link>
             <button
               className="action-icon-btn danger"
               onClick={(e) => { e.preventDefault(); setIsModalOpen(true); }}
-              title="Delete"
+              title={t("common.delete")}
             >
               <FaTrashAlt />
             </button>
@@ -257,7 +261,7 @@ const Hero = ({
           <button
             className={`action-icon-btn ${isFavorite ? "saved" : ""}`}
             onClick={handleSave}
-            title={isFavorite ? "Remove from favourites" : "Save"}
+            title={isFavorite ? t("itinerary.removedFromFavorites") : t("itinerary.addedToFavorites")}
           >
             {isFavorite ? <FaBookmark /> : <FaRegBookmark />}
           </button>
@@ -275,7 +279,7 @@ const formatBudget = (budget) => {
     : n.toLocaleString(undefined, { maximumFractionDigits: 2 });
 };
 
-const Stats = ({ itinerary, hasDescription }) => {
+const Stats = ({ itinerary, hasDescription, t }) => {
   const currencySymbol = getCurrencySymbol(itinerary.currency);
   const budget = parseFloat(itinerary.budget);
   const perPerson =
@@ -287,44 +291,44 @@ const Stats = ({ itinerary, hasDescription }) => {
       {itinerary.location?.name && (
         <div className="itinerary__stat">
           <div className="itinerary__stat-icon"><MdOutlineLocationOn /></div>
-          <span className="itinerary__stat-label">Destination</span>
+          <span className="itinerary__stat-label">{t("itinerary.destination")}</span>
           <span className="itinerary__stat-value">{itinerary.location.name}</span>
         </div>
       )}
       <div className="itinerary__stat">
         <div className="itinerary__stat-icon"><MdOutlineCalendarMonth /></div>
-        <span className="itinerary__stat-label">Duration</span>
-        <span className="itinerary__stat-value">{itinerary.tripTotalDays} {itinerary.tripTotalDays === 1 ? "day" : "days"}</span>
+        <span className="itinerary__stat-label">{t("itinerary.duration")}</span>
+        <span className="itinerary__stat-value">{itinerary.tripTotalDays} {itinerary.tripTotalDays === 1 ? t("itinerary.day") : t("itinerary.days")}</span>
       </div>
       <div className="itinerary__stat">
         <div className="itinerary__stat-icon">
           {currencySymbol ? <span style={{ fontWeight: 700, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>{currencySymbol}</span> : <MdOutlineAttachMoney />}
         </div>
-        <span className="itinerary__stat-label">Budget</span>
+        <span className="itinerary__stat-label">{t("itinerary.budget")}</span>
         <span className="itinerary__stat-value">
           {formatBudget(itinerary.budget)}{currencySymbol ? "" : ` ${itinerary.currency}`}
           {perPerson && (
             <span className="itinerary__stat-subvalue">
-              {` · ${currencySymbol || ""}${perPerson}/pp`}
+              {` · ${currencySymbol || ""}${perPerson}${t("itinerary.perPerson")}`}
             </span>
           )}
         </span>
       </div>
       <div className="itinerary__stat">
         <div className="itinerary__stat-icon"><GoPeople /></div>
-        <span className="itinerary__stat-label">Travellers</span>
-        <span className="itinerary__stat-value">{itinerary.numberOfPeople} {itinerary.numberOfPeople === 1 ? "person" : "people"}</span>
+        <span className="itinerary__stat-label">{t("itinerary.travelers")}</span>
+        <span className="itinerary__stat-value">{itinerary.numberOfPeople} {itinerary.numberOfPeople === 1 ? t("itinerary.person") : t("itinerary.people")}</span>
       </div>
     </div>
   );
 };
 
-const Places = ({ itinerary, onHoverPlace, onPlaceClick, selectedPlaceIndex }) => {
+const Places = ({ itinerary, onHoverPlace, onPlaceClick, selectedPlaceIndex, t }) => {
   if (!itinerary.places?.length) return null;
 
   return (
     <div className="itinerary__places">
-      <h2 className="itinerary__section-title">Places ({itinerary.places.length})</h2>
+      <h2 className="itinerary__section-title">{t("itinerary.places")} ({itinerary.places.length})</h2>
       <div className="itinerary__places-list">
         {itinerary.places.map((place, index) => (
           <Place

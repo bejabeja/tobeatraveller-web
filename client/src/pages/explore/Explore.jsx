@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
 import { IoSearchOutline } from "react-icons/io5";
 
 import LoadingButton from "../../components/LoadingButton.jsx";
@@ -26,14 +27,8 @@ import {
 
 import "./Explore.scss";
 
-const SORT_OPTIONS = [
-  { value: "recent",    label: "Most recent" },
-  { value: "liked",     label: "❤️ Most liked" },
-  { value: "commented", label: "💬 Most discussed" },
-  { value: "cheapest",  label: "💰 Cheapest" },
-];
-
 const Explore = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const loadMoreRef = useRef(null);
@@ -46,6 +41,13 @@ const Explore = () => {
   const totalPages = useSelector(selectExploreTotalPages);
   const totalItems = useSelector(selectExploreTotalItems);
   const page = useSelector(selectExplorePage);
+
+  const SORT_OPTIONS = [
+    { value: "recent",    label: t("explore.sortRecent") },
+    { value: "liked",     label: t("explore.sortLiked") },
+    { value: "commented", label: t("explore.sortDiscussed") },
+    { value: "cheapest",  label: t("explore.sortCheapest") },
+  ];
 
   const [searchParams, setSearchParams] = useSearchParams();
   const initialDestination = searchParams.get("location") ?? "";
@@ -93,9 +95,9 @@ const Explore = () => {
   return (
     <div className="explore">
       <div className="explore__hero">
-        <h1 className="explore__hero-title">Explore the world</h1>
+        <h1 className="explore__hero-title">{t("explore.title")}</h1>
         <p className="explore__hero-subtitle">
-          Discover travel itineraries shared by explorers around the globe
+          {t("explore.subtitle")}
         </p>
       </div>
 
@@ -113,9 +115,9 @@ const Explore = () => {
         <div className="explore__results-header">
           <div className="explore__results-header-top">
             <div className="explore__results-title-row">
-              <h2 className="explore__results-title">Itineraries</h2>
+              <h2 className="explore__results-title">{t("explore.itineraries")}</h2>
               {!loading && totalItems > 0 && (
-                <span className="explore__results-count">{totalItems.toLocaleString()} found</span>
+                <span className="explore__results-count">{totalItems.toLocaleString()} {t("explore.found")}</span>
               )}
             </div>
             <div className="explore__sort">
@@ -143,7 +145,7 @@ const Explore = () => {
                 </span>
               )}
               <button className="explore__clear-all" onClick={clearAllFilters}>
-                Clear all
+                {t("explore.clearAll")}
               </button>
             </div>
           )}
@@ -152,10 +154,10 @@ const Explore = () => {
         {error ? (
           <div className="explore__error">
             <p className="error-message">
-              Oops! Something went wrong while loading itineraries.
+              {t("explore.errorMsg")}
             </p>
             <button className="btn btn--ghost" onClick={handleRetry}>
-              Try again
+              {t("explore.tryAgain")}
             </button>
           </div>
         ) : itineraries.length === 0 && !loading ? (
@@ -163,9 +165,9 @@ const Explore = () => {
             <div className="explore__no-results-icon">
               <IoSearchOutline />
             </div>
-            <p className="explore__no-results-title">No itineraries found</p>
+            <p className="explore__no-results-title">{t("explore.noResultsTitle")}</p>
             <p className="explore__no-results-sub">
-              Try adjusting your search or filters
+              {t("explore.noResultsSub")}
             </p>
           </div>
         ) : (
@@ -177,15 +179,15 @@ const Explore = () => {
             {!isAuthenticated && itineraries.length > 0 && (
               <div className="explore__guest-banner">
                 <p className="explore__guest-banner-text">
-                  <strong>Save trips, like itineraries and follow travellers</strong>
-                  <span>Create a free account to get the most out of ToBeATraveller.</span>
+                  <strong>{t("explore.saveLike")}</strong>
+                  <span>{t("explore.createFreeAccount")}</span>
                 </p>
                 <div className="explore__guest-banner-actions">
                   <button className="btn btn--primary" onClick={() => navigate("/register")}>
-                    Create account
+                    {t("explore.createAccount")}
                   </button>
                   <button className="btn btn--secondary" onClick={() => navigate("/login")}>
-                    Log in
+                    {t("explore.logIn")}
                   </button>
                 </div>
               </div>
@@ -193,7 +195,7 @@ const Explore = () => {
             <div className="explore__results-ctas" ref={loadMoreRef}>
               {hasMore && (
                 <LoadingButton onClick={loadMore} isLoading={loadingMore}>
-                  Show more
+                  {t("common.showMore")}
                 </LoadingButton>
               )}
             </div>

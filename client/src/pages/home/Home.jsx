@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
 import { selectIsAuthenticated } from "../../store/auth/authSelectors.js";
 
 import { Link } from "react-router-dom";
@@ -23,6 +24,7 @@ import { FEATURES } from "../../utils/constants/constants.js";
 import "./Home.scss";
 
 const Home = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const [tab, setTab] = useState("featured");
@@ -57,15 +59,15 @@ const Home = () => {
           <div className="home__stats-inner">
             <div className="home__stats-item">
               <span className="home__stats-number">{stats.trips}</span>
-              <span className="home__stats-label">Trips shared</span>
+              <span className="home__stats-label">{t("home.tripsShared")}</span>
             </div>
             <div className="home__stats-item">
               <span className="home__stats-number">{stats.travelers}</span>
-              <span className="home__stats-label">Travelers</span>
+              <span className="home__stats-label">{t("home.travelers")}</span>
             </div>
             <div className="home__stats-item">
               <span className="home__stats-number">{stats.destinations}</span>
-              <span className="home__stats-label">Destinations</span>
+              <span className="home__stats-label">{t("home.destinations")}</span>
             </div>
           </div>
         </div>
@@ -80,13 +82,13 @@ const Home = () => {
               className={`home__tab${tab === "featured" ? " home__tab--active" : ""}`}
               onClick={() => setTab("featured")}
             >
-              ✨ Discover
+              {t("home.tabDiscover")}
             </button>
             <button
               className={`home__tab${tab === "following" ? " home__tab--active" : ""}`}
               onClick={() => setTab("following")}
             >
-              👥 Following
+              {t("home.tabFollowing")}
             </button>
           </div>
         )}
@@ -96,9 +98,9 @@ const Home = () => {
           <div className="home__users">
             {feed.length === 0 && !feedLoading ? (
               <div className="home__feed-empty">
-                <p>No trips from people you follow yet.</p>
+                <p>{t("home.noFeedTrips")}</p>
                 <Link to="/community" className="btn btn--secondary">
-                  Find travellers to follow →
+                  {t("home.findTravelers")}
                 </Link>
               </div>
             ) : (
@@ -110,7 +112,7 @@ const Home = () => {
                       onClick={() => dispatch(initFeed(feedPage + 1))}
                       isLoading={feedLoading}
                     >
-                      Load more
+                      {t("common.loadMore")}
                     </LoadingButton>
                   </div>
                 )}
@@ -124,9 +126,9 @@ const Home = () => {
           <>
             <div className="home__users">
               <div className="home__section-header">
-                <h2>Featured Travel Journeys</h2>
-                <Link to="/explore" className="home__see-all">See all →</Link>
-                <p>Where will your next adventure take you?</p>
+                <h2>{t("home.featuredTrips")}</h2>
+                <Link to="/explore" className="home__see-all">{t("common.seeAll")}</Link>
+                <p>{t("home.featuredSubtitle")}</p>
               </div>
               <ItinerariesSection
                 itineraries={featuredItineraries}
@@ -135,25 +137,25 @@ const Home = () => {
             </div>
             <div className="home__users">
               <div className="home__section-header">
-                <h2>People You May Like</h2>
-                <Link to="/community" className="home__see-all">See all →</Link>
-                <p>Discover fellow travelers who share your passion.</p>
+                <h2>{t("home.peopleYouMayLike")}</h2>
+                <Link to="/community" className="home__see-all">{t("common.seeAll")}</Link>
+                <p>{t("home.peopleSubtitle")}</p>
               </div>
               <UsersSection users={featuredUsers} isLoading={featuredUsersLoading} />
             </div>
             <div className="home__destinations">
               <div className="home__section-header">
-                <h2>Explore the World</h2>
-                <p>Click any destination to discover itineraries from the community.</p>
+                <h2>{t("home.exploreTheWorld")}</h2>
+                <p>{t("home.exploreSubtitle")}</p>
               </div>
               <WorldMap />
             </div>
             {!isAuthenticated && (
               <div className="home__cta">
-                <h2>Join the Community</h2>
-                <p>Share your journeys, discover inspiring itineraries, and connect with travelers from around the world.</p>
+                <h2>{t("home.joinCommunity")}</h2>
+                <p>{t("home.joinCommunityDesc")}</p>
                 <Link to="/register" className="home__cta-btn btn">
-                  Get Started — It's Free
+                  {t("home.getStarted")}
                 </Link>
               </div>
             )}

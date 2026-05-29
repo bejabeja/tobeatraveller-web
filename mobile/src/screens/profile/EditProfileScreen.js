@@ -7,6 +7,8 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
+import i18n from '../../i18n';
 import {
   checkUsernameAvailable, deleteMyAccount, initAuthUser,
   logoutUser, selectMe, selectAuthUser,
@@ -15,16 +17,19 @@ import {
 import { shadow } from '../../utils/styles';
 
 const EditProfileScreen = ({ navigation }) => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const insets = useSafeAreaInsets();
   const meDetail = useSelector(selectMe);
   const authUser = useSelector(selectAuthUser);
   const user = meDetail ?? authUser;
 
+  const currentLang = i18n.language?.startsWith('en') ? 'en' : 'es';
+
   const [fields, setFields] = useState({
     name: '', username: '', bio: '', location: '', about: '',
   });
-  const [avatarUri, setAvatarUri] = useState(null);   // new local image
+  const [avatarUri, setAvatarUri] = useState(null);
   const [removeAvatar, setRemoveAvatar] = useState(false);
   const [usernameStatus, setUsernameStatus] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -37,7 +42,6 @@ const EditProfileScreen = ({ navigation }) => {
 
   const usernameTimer = useRef(null);
 
-  // Populate fields when user loads
   useEffect(() => {
     if (user) {
       setFields({
@@ -50,7 +54,6 @@ const EditProfileScreen = ({ navigation }) => {
     }
   }, [user?.id]);
 
-  // Username availability check
   useEffect(() => {
     const val = fields.username;
     if (!val || val.length < 2 || /\s/.test(val) || val === user?.username) {
@@ -74,14 +77,14 @@ const EditProfileScreen = ({ navigation }) => {
 
   const validate = () => {
     const e = {};
-    if (!fields.username.trim()) e.username = 'Username is required';
-    else if (fields.username.length < 2) e.username = 'At least 2 characters';
-    else if (fields.username.length > 50) e.username = 'Max 50 characters';
-    else if (/\s/.test(fields.username)) e.username = 'No spaces allowed';
-    if (fields.name.length > 50) e.name = 'Max 50 characters';
-    if (fields.bio.length > 160) e.bio = 'Max 160 characters';
-    if (fields.about.length > 1000) e.about = 'Max 1000 characters';
-    if (fields.location.length > 50) e.location = 'Max 50 characters';
+    if (!fields.username.trim()) e.username = t('errors.usernameRequired');
+    else if (fields.username.length < 2) e.username = t('errors.usernameMin');
+    else if (fields.username.length > 50) e.username = t('errors.usernameMax');
+    else if (/\s/.test(fields.username)) e.username = t('errors.usernameNoSpaces');
+    if (fields.name.length > 50) e.name = t('errors.nameMax');
+    if (fields.bio.length > 160) e.bio = t('errors.bioMax');
+    if (fields.about.length > 1000) e.about = t('errors.aboutMax');
+    if (fields.location.length > 50) e.location = t('errors.locationMax');
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -89,7 +92,7 @@ const EditProfileScreen = ({ navigation }) => {
   const handlePickAvatar = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('Permission needed', 'Allow access to your photo library to change your avatar.');
+      Alert.alert(t('editProfile.permissionNeeded'), t('editProfile.permissionNeededDesc'));
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -118,9 +121,9 @@ const EditProfileScreen = ({ navigation }) => {
 
   const handleCancel = () => {
     if (isDirty || avatarUri || removeAvatar) {
-      Alert.alert('Discard changes?', 'You have unsaved changes.', [
-        { text: 'Keep editing', style: 'cancel' },
-        { text: 'Discard', style: 'destructive', onPress: () => navigation.goBack() },
+      Alert.alert(t('editProfile.discardChanges'), t('editProfile.discardChangesDesc'), [
+        { text: t('editProfile.keepEditing'), style: 'cancel' },
+        { text: t('editProfile.discard'), style: 'destructive', onPress: () => navigation.goBack() },
       ]);
     } else {
       navigation.goBack();
@@ -149,7 +152,7 @@ const EditProfileScreen = ({ navigation }) => {
       await Promise.all(refreshes);
       navigation.goBack();
     } catch (err) {
-      setSubmitError(err?.message || 'Failed to save. Please try again.');
+      setSubmitError(err?.message || t('errors.updateProfileFailed'));
     } finally {
       setSaving(false);
     }
@@ -162,7 +165,7 @@ const EditProfileScreen = ({ navigation }) => {
       await deleteMyAccount();
       dispatch(logoutUser());
     } catch {
-      Alert.alert('Error', 'Failed to delete account. Please try again.');
+      Alert.alert(t('common.cancel'), t('errors.deleteAccountFailed'));
       setDeleting(false);
     }
   };
@@ -180,7 +183,7 @@ const EditProfileScreen = ({ navigation }) => {
   if (!user) {
     return (
       <View style={[styles.container, { alignItems: 'center', justifyContent: 'center' }]}>
-        <Text style={{ color: '#6b7280' }}>Loading…</Text>
+        <Text style={{ color: '#6b7280' }}>{t('common.loading')}</Text>
       </View>
     );
   }
@@ -192,13 +195,13 @@ const EditProfileScreen = ({ navigation }) => {
         <TouchableOpacity style={styles.headerBack} onPress={handleCancel}>
           <Text style={styles.headerBackText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Edit profile</Text>
+        <Text style={styles.headerTitle}>{t('editProfile.title')}</Text>
         <TouchableOpacity
           style={[styles.headerSave, (saving || usernameStatus === 'taken') && styles.headerSaveDisabled]}
           onPress={handleSave}
           disabled={saving || usernameStatus === 'taken'}
         >
-          <Text style={styles.headerSaveText}>{saving ? 'Saving…' : 'Save'}</Text>
+          <Text style={styles.headerSaveText}>{saving ? t('common.saving') : t('common.save')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -232,25 +235,25 @@ const EditProfileScreen = ({ navigation }) => {
 
             {removeAvatar ? (
               <TouchableOpacity onPress={handleUndoRemove} style={styles.avatarAction}>
-                <Text style={styles.avatarActionText}>↩ Undo remove</Text>
+                <Text style={styles.avatarActionText}>{t('editProfile.undoRemove')}</Text>
               </TouchableOpacity>
             ) : (user?.avatarUrl || avatarUri) ? (
               <TouchableOpacity onPress={handleRemoveAvatar} style={styles.avatarAction}>
-                <Text style={[styles.avatarActionText, { color: '#ef4444' }]}>Remove photo</Text>
+                <Text style={[styles.avatarActionText, { color: '#ef4444' }]}>{t('editProfile.removePhoto')}</Text>
               </TouchableOpacity>
             ) : null}
           </View>
 
           {/* Basic info card */}
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>Basic info</Text>
+            <Text style={styles.cardTitle}>{t('editProfile.basicInfo')}</Text>
 
             <Field label="Name" error={errors.name}>
               <TextInput
                 style={styles.input}
                 value={fields.name}
                 onChangeText={v => setField('name', v)}
-                placeholder="Your display name"
+                placeholder={t('editProfile.namePlaceholder')}
                 placeholderTextColor="#9ca3af"
                 maxLength={50}
               />
@@ -261,7 +264,7 @@ const EditProfileScreen = ({ navigation }) => {
                 style={styles.input}
                 value={fields.username}
                 onChangeText={v => setField('username', v)}
-                placeholder="your_username"
+                placeholder={t('editProfile.usernamePlaceholder')}
                 placeholderTextColor="#9ca3af"
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -270,9 +273,9 @@ const EditProfileScreen = ({ navigation }) => {
               {usernameStatus && (
                 <View style={[styles.usernamePill, styles[`pill_${usernameStatus}`]]}>
                   <Text style={[styles.usernameText, styles[`pillText_${usernameStatus}`]]}>
-                    {usernameStatus === 'checking'  && '…'}
-                    {usernameStatus === 'available' && '✓ Available'}
-                    {usernameStatus === 'taken'     && '✗ Already taken'}
+                    {usernameStatus === 'checking'  && t('common.checking')}
+                    {usernameStatus === 'available' && t('common.available')}
+                    {usernameStatus === 'taken'     && t('editProfile.alreadyTaken')}
                   </Text>
                 </View>
               )}
@@ -283,7 +286,7 @@ const EditProfileScreen = ({ navigation }) => {
                 style={[styles.input, styles.textarea]}
                 value={fields.bio}
                 onChangeText={v => setField('bio', v)}
-                placeholder="A short description of yourself…"
+                placeholder={t('editProfile.bioPlaceholder')}
                 placeholderTextColor="#9ca3af"
                 multiline
                 maxLength={160}
@@ -293,14 +296,14 @@ const EditProfileScreen = ({ navigation }) => {
 
           {/* Location & About card */}
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>📍 Location & About</Text>
+            <Text style={styles.cardTitle}>{t('editProfile.locationAbout')}</Text>
 
             <Field label="Location" error={errors.location}>
               <TextInput
                 style={styles.input}
                 value={fields.location}
                 onChangeText={v => setField('location', v)}
-                placeholder="City, Country"
+                placeholder={t('editProfile.locationPlaceholder')}
                 placeholderTextColor="#9ca3af"
                 maxLength={50}
               />
@@ -311,7 +314,7 @@ const EditProfileScreen = ({ navigation }) => {
                 style={[styles.input, styles.textareaLarge]}
                 value={fields.about}
                 onChangeText={v => setField('about', v)}
-                placeholder="Tell the community about yourself and your travel style…"
+                placeholder={t('editProfile.aboutPlaceholder')}
                 placeholderTextColor="#9ca3af"
                 multiline
                 maxLength={1000}
@@ -325,23 +328,42 @@ const EditProfileScreen = ({ navigation }) => {
             </View>
           )}
 
+          {/* Language selector */}
+          <View style={styles.langCard}>
+            <Text style={styles.cardTitle}>{t('editProfile.language')}</Text>
+            <View style={styles.langToggle}>
+              <TouchableOpacity
+                style={[styles.langBtn, currentLang === 'es' && styles.langBtnActive]}
+                onPress={() => i18n.changeLanguage('es')}
+              >
+                <Text style={[styles.langBtnText, currentLang === 'es' && styles.langBtnTextActive]}>🇪🇸 Español</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.langBtn, currentLang === 'en' && styles.langBtnActive]}
+                onPress={() => i18n.changeLanguage('en')}
+              >
+                <Text style={[styles.langBtnText, currentLang === 'en' && styles.langBtnTextActive]}>🇬🇧 English</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
           {/* Danger zone */}
           <View style={styles.dangerCard}>
-            <Text style={styles.dangerTitle}>⚠️ Danger zone</Text>
+            <Text style={styles.dangerTitle}>{t('editProfile.dangerZone')}</Text>
             <Text style={styles.dangerDesc}>
-              Deleting your account permanently removes all your itineraries, likes, and followers. This cannot be undone.
+              {t('editProfile.dangerZoneDesc')}
             </Text>
             {!showDeleteConfirm ? (
               <TouchableOpacity
                 style={styles.dangerBtn}
                 onPress={() => { setDeleteInput(''); setShowDeleteConfirm(true); }}
               >
-                <Text style={styles.dangerBtnText}>Delete my account</Text>
+                <Text style={styles.dangerBtnText}>{t('editProfile.deleteAccount')}</Text>
               </TouchableOpacity>
             ) : (
               <View style={styles.deleteConfirm}>
                 <Text style={styles.deleteConfirmLabel}>
-                  Type <Text style={{ fontWeight: '700' }}>{user?.username}</Text> to confirm
+                  {t('editProfile.deleteAccountDesc', { username: user?.username })}
                 </Text>
                 <TextInput
                   style={[styles.input, { marginTop: 6 }]}
@@ -358,14 +380,14 @@ const EditProfileScreen = ({ navigation }) => {
                     onPress={() => setShowDeleteConfirm(false)}
                     disabled={deleting}
                   >
-                    <Text style={styles.cancelBtnText}>Cancel</Text>
+                    <Text style={styles.cancelBtnText}>{t('common.cancel')}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[styles.dangerBtn, { flex: 1 }, (deleteInput !== user?.username || deleting) && styles.btnDisabled]}
                     onPress={handleDeleteAccount}
                     disabled={deleteInput !== user?.username || deleting}
                   >
-                    <Text style={styles.dangerBtnText}>{deleting ? 'Deleting…' : 'Delete account'}</Text>
+                    <Text style={styles.dangerBtnText}>{deleting ? t('editProfile.deleting') : t('editProfile.deleteAccount')}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -463,6 +485,21 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: '#fecaca',
   },
   errorBannerText: { color: '#dc2626', fontSize: 14 },
+
+  // Language selector
+  langCard: {
+    backgroundColor: '#fff', borderRadius: 14, padding: 16,
+    ...shadow(2, 0.06, 8, 2),
+  },
+  langToggle: { flexDirection: 'row', gap: 10 },
+  langBtn: {
+    flex: 1, borderRadius: 10, paddingVertical: 11,
+    borderWidth: 1.5, borderColor: '#e5e7eb',
+    alignItems: 'center', backgroundColor: '#f9fafb',
+  },
+  langBtnActive: { borderColor: '#0077b6', backgroundColor: '#eff6ff' },
+  langBtnText: { fontSize: 14, color: '#374151', fontWeight: '500' },
+  langBtnTextActive: { color: '#0077b6', fontWeight: '700' },
 
   dangerCard: {
     backgroundColor: '#fff', borderRadius: 14, padding: 16,

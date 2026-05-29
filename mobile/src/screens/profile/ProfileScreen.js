@@ -6,6 +6,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import {
   followUser, getItinerariesByUserId, getUserById, getUserFavorites, logoutUser,
   selectAuthUser, selectIsAuthenticated, selectMe, selectMyItineraries,
@@ -21,20 +22,20 @@ const TRIP_BADGES = [
   { id: 'explorer',     label: 'Explorer',     emoji: '🗺️',  min: 1  },
 ];
 const COMPLETENESS_FIELDS = [
-  { key: 'name',      tip: 'Add your name' },
-  { key: 'bio',       tip: 'Write a bio' },
-  { key: 'about',     tip: 'Complete your About section' },
-  { key: 'location',  tip: 'Add your location' },
-  { key: 'avatarUrl', tip: 'Set a profile photo' },
+  { key: 'name',      tipKey: 'profile.completenessTipName' },
+  { key: 'bio',       tipKey: 'profile.completenessTipBio' },
+  { key: 'about',     tipKey: 'profile.completenessTipAbout' },
+  { key: 'location',  tipKey: 'profile.completenessTipLocation' },
+  { key: 'avatarUrl', tipKey: 'profile.completenessTipPhoto' },
 ];
 
 const ProfileScreen = ({ route, navigation }) => {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const meDetail = useSelector(selectMe);
   const authUser = useSelector(selectAuthUser);
-  // selectMe is populated by initAuthUser; fall back to selectAuthUser right after login
   const me = meDetail ?? authUser;
   const myItineraries = useSelector(selectMyItineraries);
 
@@ -56,7 +57,6 @@ const ProfileScreen = ({ route, navigation }) => {
 
   useEffect(() => { setAvatarError(false); }, [user?.avatarUrl]);
 
-  // Load saved trips (own profile only)
   useEffect(() => {
     if (!isOwnProfile || !isAuthenticated) return;
     setSavedLoading(true);
@@ -106,14 +106,13 @@ const ProfileScreen = ({ route, navigation }) => {
         await followUser(profileId);
         setIsFollowing(true);
       }
-      // Refresh me so followingListIds stays accurate across screens
       if (me?.id) dispatch(setUserInfo(me.id));
     } catch {}
     finally { setFollowLoading(false); }
   };
 
   if (!isAuthenticated && isOwnProfile) {
-    return <UnauthView navigation={navigation} insets={insets} />;
+    return <UnauthView navigation={navigation} insets={insets} t={t} />;
   }
 
   if (!isAuthenticated && !isOwnProfile) return null;
@@ -126,7 +125,6 @@ const ProfileScreen = ({ route, navigation }) => {
     );
   }
 
-  // Does the profile user follow the logged-in user?
   const followsYou = !isOwnProfile && isAuthenticated && me &&
     user?.followingListIds?.some(f => String(f.id) === String(me.id));
 
@@ -136,7 +134,7 @@ const ProfileScreen = ({ route, navigation }) => {
 
   const completenessCount = COMPLETENESS_FIELDS.filter(f => !!user?.[f.key]).length;
   const completenessPct = Math.round((completenessCount / COMPLETENESS_FIELDS.length) * 100);
-  const nextTip = COMPLETENESS_FIELDS.find(f => !user?.[f.key])?.tip;
+  const nextTipKey = COMPLETENESS_FIELDS.find(f => !user?.[f.key])?.tipKey;
 
   return (
     <ScrollView
@@ -186,7 +184,7 @@ const ProfileScreen = ({ route, navigation }) => {
                 style={styles.secondaryBtn}
                 onPress={() => navigation.navigate('EditProfile')}
               >
-                <Text style={styles.secondaryBtnText}>✏️  Edit profile</Text>
+                <Text style={styles.secondaryBtnText}>✏️  {t('profile.editProfile')}</Text>
               </TouchableOpacity>
             ) : (
               <TouchableOpacity
@@ -195,7 +193,7 @@ const ProfileScreen = ({ route, navigation }) => {
                 disabled={followLoading}
               >
                 <Text style={[styles.primaryBtnText, isFollowing && styles.secondaryBtnText]}>
-                  {followLoading ? '…' : isFollowing ? 'Unfollow' : 'Follow'}
+                  {followLoading ? '…' : isFollowing ? t('profile.unfollow') : t('profile.follow')}
                 </Text>
               </TouchableOpacity>
             )}
@@ -207,7 +205,7 @@ const ProfileScreen = ({ route, navigation }) => {
             ? <Text style={styles.displayName}>{user.name}</Text>
             : isOwnProfile && (
               <TouchableOpacity onPress={() => navigation.navigate('EditProfile')}>
-                <Text style={styles.emptyPrompt}>+ Add your name</Text>
+                <Text style={styles.emptyPrompt}>{t('profile.addYourName')}</Text>
               </TouchableOpacity>
             )
           }
@@ -219,7 +217,7 @@ const ProfileScreen = ({ route, navigation }) => {
             )}
             {followsYou && (
               <View style={styles.followsYouBadge}>
-                <Text style={styles.followsYouText}>Follows you</Text>
+                <Text style={styles.followsYouText}>{t('profile.followsYou')}</Text>
               </View>
             )}
           </View>
@@ -228,7 +226,7 @@ const ProfileScreen = ({ route, navigation }) => {
             <Text style={styles.bio}>{user.bio}</Text>
           ) : isOwnProfile && (
             <TouchableOpacity onPress={() => navigation.navigate('EditProfile')}>
-              <Text style={styles.emptyPrompt}>+ Add a bio</Text>
+              <Text style={styles.emptyPrompt}>{t('profile.addBio')}</Text>
             </TouchableOpacity>
           )}
 
@@ -248,11 +246,11 @@ const ProfileScreen = ({ route, navigation }) => {
               <Text style={styles.metaItem}>📍 {user.location}</Text>
             ) : isOwnProfile && (
               <TouchableOpacity onPress={() => navigation.navigate('EditProfile')}>
-                <Text style={[styles.metaItem, styles.emptyPrompt]}>📍 Add location</Text>
+                <Text style={[styles.metaItem, styles.emptyPrompt]}>📍 {t('profile.addLocation')}</Text>
               </TouchableOpacity>
             )}
             {user?.createdAt && (
-              <Text style={styles.metaItem}>📅 Joined {user.createdAt}</Text>
+              <Text style={styles.metaItem}>📅 {t('profile.joinedOn', { date: user.createdAt })}</Text>
             )}
           </View>
 
@@ -262,7 +260,7 @@ const ProfileScreen = ({ route, navigation }) => {
               onPress={() => navigation.navigate('Follows', { userId: user?.id, type: 'followers' })}
             >
               <Text style={styles.statNumber}>{user?.followers ?? 0}</Text>
-              <Text style={styles.statLabel}>Followers</Text>
+              <Text style={styles.statLabel}>{t('profile.followers')}</Text>
             </TouchableOpacity>
             <View style={styles.statDivider} />
             <TouchableOpacity
@@ -270,7 +268,7 @@ const ProfileScreen = ({ route, navigation }) => {
               onPress={() => navigation.navigate('Follows', { userId: user?.id, type: 'following' })}
             >
               <Text style={styles.statNumber}>{user?.following ?? 0}</Text>
-              <Text style={styles.statLabel}>Following</Text>
+              <Text style={styles.statLabel}>{t('profile.following')}</Text>
             </TouchableOpacity>
             <View style={styles.statDivider} />
             <TouchableOpacity
@@ -278,7 +276,7 @@ const ProfileScreen = ({ route, navigation }) => {
               onPress={() => isOwnProfile && navigation.navigate('MyItineraries')}
             >
               <Text style={styles.statNumber}>{user?.totalItineraries ?? 0}</Text>
-              <Text style={styles.statLabel}>Trips</Text>
+              <Text style={styles.statLabel}>{t('profile.trips')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -287,15 +285,15 @@ const ProfileScreen = ({ route, navigation }) => {
         {isOwnProfile && completenessPct < 100 && (
           <View style={styles.completeness}>
             <View style={styles.completenessHeader}>
-              <Text style={styles.completenessLabel}>Profile strength</Text>
+              <Text style={styles.completenessLabel}>{t('profile.profileStrength')}</Text>
               <Text style={styles.completenessPct}>{completenessPct}%</Text>
             </View>
             <View style={styles.completenessTrack}>
               <View style={[styles.completenessFill, { width: `${completenessPct}%` }]} />
             </View>
-            {nextTip && (
+            {nextTipKey && (
               <TouchableOpacity onPress={() => navigation.navigate('EditProfile')}>
-                <Text style={styles.completenessTip}>→ {nextTip}</Text>
+                <Text style={styles.completenessTip}>→ {t(nextTipKey)}</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -308,13 +306,13 @@ const ProfileScreen = ({ route, navigation }) => {
               style={styles.contactBtn}
               onPress={() => navigation.navigate('Contact')}
             >
-              <Text style={styles.contactText}>✉️  Contact us</Text>
+              <Text style={styles.contactText}>{t('profile.contactUs')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.logoutBtn}
               onPress={() => dispatch(logoutUser())}
             >
-              <Text style={styles.logoutText}>Sign out</Text>
+              <Text style={styles.logoutText}>{t('profile.signOut')}</Text>
             </TouchableOpacity>
           </>
         )}
@@ -323,7 +321,7 @@ const ProfileScreen = ({ route, navigation }) => {
       {/* About */}
       {user?.about && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>About</Text>
+          <Text style={styles.sectionTitle}>{t('profile.about')}</Text>
           <Text style={styles.aboutText}>{user.about}</Text>
         </View>
       )}
@@ -332,17 +330,17 @@ const ProfileScreen = ({ route, navigation }) => {
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>
-            {isOwnProfile ? 'My trips' : 'Trips'} ({itineraries.length})
+            {isOwnProfile ? t('profile.myTrips') : t('profile.otherTrips')} ({itineraries.length})
           </Text>
           {isOwnProfile && itineraries.length > 0 && (
             <TouchableOpacity onPress={() => navigation.navigate('MyItineraries')}>
-              <Text style={styles.seeAll}>See all →</Text>
+              <Text style={styles.seeAll}>{t('profile.seeAll')}</Text>
             </TouchableOpacity>
           )}
         </View>
         {itineraries.length === 0 ? (
           <Text style={styles.emptyTrips}>
-            {isOwnProfile ? 'No trips yet. Start creating!' : 'No public trips yet.'}
+            {isOwnProfile ? t('profile.noTripsYet') : t('profile.noPublicTrips')}
           </Text>
         ) : (
           <View style={styles.grid}>
@@ -363,11 +361,11 @@ const ProfileScreen = ({ route, navigation }) => {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>
-              Saved trips {savedTrips.length > 0 ? `(${savedTrips.length})` : ''}
+              {t('profile.savedTrips')} {savedTrips.length > 0 ? `(${savedTrips.length})` : ''}
             </Text>
             {savedTrips.length > 0 && (
               <TouchableOpacity onPress={() => navigation.navigate('Saved')}>
-                <Text style={styles.seeAll}>See all →</Text>
+                <Text style={styles.seeAll}>{t('profile.seeAll')}</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -378,7 +376,7 @@ const ProfileScreen = ({ route, navigation }) => {
               ))}
             </View>
           ) : savedTrips.length === 0 ? (
-            <Text style={styles.emptyTrips}>No saved trips yet. Bookmark itineraries you love!</Text>
+            <Text style={styles.emptyTrips}>{t('profile.noSavedTrips')}</Text>
           ) : (
             <View style={styles.grid}>
               {savedTrips.slice(0, 4).map(it => (
@@ -398,61 +396,63 @@ const ProfileScreen = ({ route, navigation }) => {
 };
 
 
-const BENEFITS = [
-  { emoji: '✈️', title: 'Share your journeys',    desc: 'Create and publish itineraries for the world to discover.' },
-  { emoji: '🔖', title: 'Save inspiring trips',   desc: 'Bookmark itineraries you love and find them anytime.' },
-  { emoji: '👥', title: 'Connect with travellers', desc: 'Follow people, get inspired and build your travel community.' },
-];
+const UnauthView = ({ navigation, insets, t }) => {
+  const BENEFITS = [
+    { emoji: '✈️', titleKey: 'profile.benefit1Title', descKey: 'profile.benefit1Desc' },
+    { emoji: '🔖', titleKey: 'profile.benefit2Title', descKey: 'profile.benefit2Desc' },
+    { emoji: '👥', titleKey: 'profile.benefit3Title', descKey: 'profile.benefit3Desc' },
+  ];
 
-const UnauthView = ({ navigation, insets }) => (
-  <View style={styles.unauthRoot}>
-    {/* Hero */}
-    <LinearGradient
-      colors={['#0077b6', '#005a8a']}
-      start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-      style={[styles.unauthHero, { paddingTop: insets.top + 24 }]}
-    >
-      <Text style={styles.unauthHeroEmoji}>🌍</Text>
-      <Text style={styles.unauthHeroTitle}>Tobeatraveller</Text>
-      <Text style={styles.unauthHeroTagline}>
-        Discover the world,{'\n'}one journey at a time.
-      </Text>
-    </LinearGradient>
-
-    {/* Benefits */}
-    <View style={styles.unauthBody}>
-      <Text style={styles.unauthBodyTitle}>Join the community</Text>
-      {BENEFITS.map((b, i) => (
-        <View key={i} style={styles.unauthBenefit}>
-          <Text style={styles.unauthBenefitEmoji}>{b.emoji}</Text>
-          <View style={styles.unauthBenefitText}>
-            <Text style={styles.unauthBenefitTitle}>{b.title}</Text>
-            <Text style={styles.unauthBenefitDesc}>{b.desc}</Text>
-          </View>
-        </View>
-      ))}
-
-      {/* CTAs */}
-      <TouchableOpacity
-        style={styles.unauthPrimaryBtn}
-        onPress={() => navigation.navigate('Register')}
-        activeOpacity={0.85}
+  return (
+    <View style={styles.unauthRoot}>
+      {/* Hero */}
+      <LinearGradient
+        colors={['#0077b6', '#005a8a']}
+        start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+        style={[styles.unauthHero, { paddingTop: insets.top + 24 }]}
       >
-        <Text style={styles.unauthPrimaryBtnText}>Get started — it's free</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.unauthSecondaryBtn}
-        onPress={() => navigation.navigate('Login')}
-        activeOpacity={0.7}
-      >
-        <Text style={styles.unauthSecondaryBtnText}>
-          Already have an account? <Text style={styles.unauthSignInAccent}>Sign in</Text>
+        <Text style={styles.unauthHeroEmoji}>🌍</Text>
+        <Text style={styles.unauthHeroTitle}>Tobeatraveller</Text>
+        <Text style={styles.unauthHeroTagline}>
+          {t('auth.taglineLogin')}
         </Text>
-      </TouchableOpacity>
+      </LinearGradient>
+
+      {/* Benefits */}
+      <View style={styles.unauthBody}>
+        <Text style={styles.unauthBodyTitle}>{t('profile.joinCommunityTitle')}</Text>
+        {BENEFITS.map((b, i) => (
+          <View key={i} style={styles.unauthBenefit}>
+            <Text style={styles.unauthBenefitEmoji}>{b.emoji}</Text>
+            <View style={styles.unauthBenefitText}>
+              <Text style={styles.unauthBenefitTitle}>{t(b.titleKey)}</Text>
+              <Text style={styles.unauthBenefitDesc}>{t(b.descKey)}</Text>
+            </View>
+          </View>
+        ))}
+
+        {/* CTAs */}
+        <TouchableOpacity
+          style={styles.unauthPrimaryBtn}
+          onPress={() => navigation.navigate('Register')}
+          activeOpacity={0.85}
+        >
+          <Text style={styles.unauthPrimaryBtnText}>{t('profile.getStarted')}</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.unauthSecondaryBtn}
+          onPress={() => navigation.navigate('Login')}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.unauthSecondaryBtnText}>
+            {t('profile.alreadyHaveAccount')} <Text style={styles.unauthSignInAccent}>{t('auth.signInLink')}</Text>
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
-  </View>
-);
+  );
+};
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8fafc' },

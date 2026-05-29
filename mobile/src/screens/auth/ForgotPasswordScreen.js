@@ -4,9 +4,11 @@ import {
   StyleSheet, Text, TextInput, TouchableOpacity, View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import { forgotPassword } from '@tobeatraveller/shared';
 
 const ForgotPasswordScreen = ({ navigation }) => {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
@@ -15,7 +17,7 @@ const ForgotPasswordScreen = ({ navigation }) => {
 
   const handleSubmit = async () => {
     if (!email.trim() || !/\S+@\S+\.\S+/.test(email)) {
-      setError('Enter a valid email address');
+      setError(t('errors.enterValidEmail'));
       return;
     }
     setLoading(true);
@@ -48,20 +50,19 @@ const ForgotPasswordScreen = ({ navigation }) => {
         {sent ? (
           <View style={styles.successBox}>
             <Text style={styles.successIcon}>✉️</Text>
-            <Text style={styles.title}>Check your inbox</Text>
+            <Text style={styles.title}>{t('auth.checkInbox')}</Text>
             <Text style={styles.subtitle}>
-              If an account exists for <Text style={styles.emailHighlight}>{email}</Text>, you'll receive a reset link shortly.{'\n'}
-              The link expires in 1 hour.
+              {t('auth.resetLinkSent', { email })}{'\n'}
             </Text>
             <TouchableOpacity style={styles.btn} onPress={() => navigation.navigate('Login')}>
-              <Text style={styles.btnText}>Back to sign in</Text>
+              <Text style={styles.btnText}>{t('auth.backToSignIn')}</Text>
             </TouchableOpacity>
           </View>
         ) : (
           <>
-            <Text style={styles.title}>Forgot password?</Text>
+            <Text style={styles.title}>{t('auth.forgotPasswordTitle')}</Text>
             <Text style={styles.subtitle}>
-              Enter your email and we'll send you a link to reset your password.
+              {t('auth.forgotPasswordSubtitle')}
             </Text>
 
             <View style={styles.fieldWrapper}>
@@ -85,11 +86,11 @@ const ForgotPasswordScreen = ({ navigation }) => {
               onPress={handleSubmit}
               disabled={loading}
             >
-              <Text style={styles.btnText}>{loading ? 'Sending…' : 'Send reset link'}</Text>
+              <Text style={styles.btnText}>{loading ? t('common.sending') : t('auth.sendResetLink')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-              <Text style={styles.link}>Back to sign in</Text>
+              <Text style={styles.link}>{t('auth.backToSignIn')}</Text>
             </TouchableOpacity>
           </>
         )}

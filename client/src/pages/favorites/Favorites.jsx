@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import ItinerariesSection from "../../components/itineraries/ItinerariesSection";
 import { getUserFavorites } from "../../services/favorites";
 
 const Favorites = () => {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [favoritesItineraries, setFavoritesItineraries] = useState([]);
@@ -26,7 +28,7 @@ const Favorites = () => {
   if (error) {
     return (
       <section className="section__container">
-        <p className="error-message">Could not load saved trips. Please try again.</p>
+        <p className="error-message">{t("favorites.errorMsg")}</p>
       </section>
     );
   }
@@ -35,7 +37,7 @@ const Favorites = () => {
     <section className="section__container">
       <ItinerariesSection
         itineraries={favoritesItineraries}
-        title="Saved trips"
+        title={t("favorites.title")}
         isLoading={loading}
       />
     </section>

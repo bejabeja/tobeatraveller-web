@@ -6,6 +6,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 
 // Map only on native — react-native-maps doesn't support web
 const MapView = Platform.OS !== 'web' ? require('react-native-maps').default : null;
@@ -33,6 +34,7 @@ const formatBudget = (budget) => {
 
 const ItineraryScreen = ({ route, navigation }) => {
   const { id } = route.params;
+  const { t } = useTranslation();
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const me = useSelector(selectMe);
 
@@ -69,7 +71,7 @@ const ItineraryScreen = ({ route, navigation }) => {
   }, [itinerary?.id, isAuthenticated]);
 
   if (loading) return <ScrollView style={styles.container}><ItineraryDetailSkeleton /></ScrollView>;
-  if (!itinerary) return <Text style={styles.errorText}>Itinerary not found.</Text>;
+  if (!itinerary) return <Text style={styles.errorText}>{t('itinerary.itineraryNotFound')}</Text>;
 
   const isMyItinerary = me?.id === itinerary.userId;
   const currencySymbol = getCurrencySymbol(itinerary.currency);
@@ -91,24 +93,24 @@ const ItineraryScreen = ({ route, navigation }) => {
       else await addFavorite(itinerary.id);
       setIsFavorite(f => !f);
     } catch {
-      Alert.alert('Error', 'Could not update saved status. Please try again.');
+      Alert.alert(t('errors.somethingWrong'), t('itinerary.errorFavorite'));
     }
   };
 
   const handleDelete = () => {
     Alert.alert(
-      'Delete Itinerary',
-      'Are you sure you want to delete this itinerary? This action cannot be undone.',
+      t('itinerary.deleteAlert'),
+      t('itinerary.deleteAlertDesc'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Delete', style: 'destructive',
+          text: t('common.delete'), style: 'destructive',
           onPress: async () => {
             try {
               await deleteItinerary(itinerary.id);
               navigation.goBack();
             } catch {
-              Alert.alert('Error', 'Could not delete itinerary. Please try again.');
+              Alert.alert(t('errors.somethingWrong'), t('itinerary.errorDelete'));
             }
           },
         },
@@ -127,10 +129,10 @@ const ItineraryScreen = ({ route, navigation }) => {
   };
 
   const handleDeleteComment = (commentId) => {
-    Alert.alert('Delete Comment', 'Delete this comment?', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('itinerary.deleteCommentAlert'), t('itinerary.deleteCommentDesc'), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Delete', style: 'destructive',
+        text: t('common.delete'), style: 'destructive',
         onPress: async () => {
           try {
             await deleteComment(commentId);
@@ -214,7 +216,7 @@ const ItineraryScreen = ({ route, navigation }) => {
         {/* About */}
         {itinerary.description && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>About this trip</Text>
+            <Text style={styles.sectionTitle}>{t('itinerary.aboutTrip')}</Text>
             <Text style={styles.description}>{itinerary.description}</Text>
           </View>
         )}
@@ -222,30 +224,30 @@ const ItineraryScreen = ({ route, navigation }) => {
         {/* Stats */}
         <View style={styles.statsGrid}>
           {itinerary.location?.name && (
-            <StatCard icon="📍" label="Destination" value={itinerary.location.name} />
+            <StatCard icon="📍" label={t('itinerary.destination')} value={itinerary.location.name} />
           )}
           <StatCard
             icon="🗓"
-            label="Duration"
-            value={`${itinerary.tripTotalDays} ${itinerary.tripTotalDays === 1 ? 'day' : 'days'}`}
+            label={t('itinerary.duration')}
+            value={`${itinerary.tripTotalDays} ${itinerary.tripTotalDays === 1 ? t('itinerary.day') : t('itinerary.days')}`}
           />
           <StatCard
             icon="💰"
-            label="Budget"
+            label={t('itinerary.budget')}
             value={`${formatBudget(itinerary.budget)} ${currencySymbol || itinerary.currency}`}
-            subvalue={perPerson ? `${currencySymbol || ''}${perPerson}/pp` : null}
+            subvalue={perPerson ? `${currencySymbol || ''}${perPerson}${t('itinerary.perPerson')}` : null}
           />
           <StatCard
             icon="👥"
-            label="Travellers"
-            value={`${itinerary.numberOfPeople} ${itinerary.numberOfPeople === 1 ? 'person' : 'people'}`}
+            label={t('itinerary.travelers')}
+            value={`${itinerary.numberOfPeople} ${itinerary.numberOfPeople === 1 ? t('itinerary.person') : t('itinerary.people')}`}
           />
         </View>
 
         {/* Places */}
         {itinerary.places?.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Places ({itinerary.places.length})</Text>
+            <Text style={styles.sectionTitle}>{t('itinerary.places')} ({itinerary.places.length})</Text>
             {itinerary.places.map((place, i) => (
               <View key={i} style={styles.placeCard}>
                 <View style={styles.placeNumber}>
@@ -266,12 +268,12 @@ const ItineraryScreen = ({ route, navigation }) => {
 
         {/* Map — native only */}
         {Platform.OS !== 'web' && itinerary.places?.some(p => p.latitude && p.longitude) && (
-          <ItineraryMap places={itinerary.places} location={itinerary.location} />
+          <ItineraryMap places={itinerary.places} location={itinerary.location} t={t} />
         )}
 
         {/* Comments */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Comments ({comments.length})</Text>
+          <Text style={styles.sectionTitle}>{t('comments.title')} ({comments.length})</Text>
 
           {isAuthenticated && (
             <View style={styles.commentForm}>
@@ -284,7 +286,7 @@ const ItineraryScreen = ({ route, navigation }) => {
               <View style={styles.commentFormRight}>
                 <TextInput
                   style={styles.commentInput}
-                  placeholder="Add a comment..."
+                  placeholder={t('comments.addComment')}
                   placeholderTextColor="#9ca3af"
                   value={commentText}
                   onChangeText={setCommentText}
@@ -294,14 +296,14 @@ const ItineraryScreen = ({ route, navigation }) => {
                 {commentText.trim() !== '' && (
                   <View style={styles.commentFormActions}>
                     <TouchableOpacity onPress={() => setCommentText('')}>
-                      <Text style={styles.commentCancel}>Cancel</Text>
+                      <Text style={styles.commentCancel}>{t('comments.cancel')}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={[styles.commentPostBtn, submitting && styles.commentPostBtnDisabled]}
                       onPress={handleAddComment}
                       disabled={submitting}
                     >
-                      <Text style={styles.commentPostBtnText}>{submitting ? 'Posting...' : 'Post'}</Text>
+                      <Text style={styles.commentPostBtnText}>{submitting ? t('comments.posting') : t('comments.post')}</Text>
                     </TouchableOpacity>
                   </View>
                 )}
@@ -311,12 +313,12 @@ const ItineraryScreen = ({ route, navigation }) => {
 
           {!isAuthenticated && (
             <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-              <Text style={styles.loginPrompt}>Log in to leave a comment</Text>
+              <Text style={styles.loginPrompt}>{t('comments.loginToLeave')}</Text>
             </TouchableOpacity>
           )}
 
           {comments.length === 0 && isAuthenticated && (
-            <Text style={styles.noComments}>Be the first to leave a comment!</Text>
+            <Text style={styles.noComments}>{t('comments.beFirst')}</Text>
           )}
 
           {comments.map((comment) => (
@@ -348,7 +350,7 @@ const ItineraryScreen = ({ route, navigation }) => {
 };
 
 // ─── Map component (native only) ─────────────────────────────────────────────
-const ItineraryMap = ({ places, location }) => {
+const ItineraryMap = ({ places, location, t }) => {
   const mapRef = useRef(null);
   const validPlaces = places.filter(p => p.latitude && p.longitude);
 
@@ -370,7 +372,7 @@ const ItineraryMap = ({ places, location }) => {
 
   return (
     <View style={mapStyles.section}>
-      <Text style={mapStyles.title}>Trip area</Text>
+      <Text style={mapStyles.title}>{t('itinerary.tripArea')}</Text>
       <View style={mapStyles.container}>
         <MapView
           ref={mapRef}

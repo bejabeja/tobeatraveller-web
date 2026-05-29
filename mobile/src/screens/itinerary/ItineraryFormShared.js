@@ -3,6 +3,7 @@ import {
   Alert, ActivityIndicator, FlatList, Modal, ScrollView, StyleSheet,
   Text, TextInput, TouchableOpacity, View,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import {
   currencyOptions, generateSmartItinerary, getCurrencySymbol,
   itineraryCategories, placeCategories,
@@ -18,10 +19,10 @@ export const PLACE_CATEGORY_EMOJI = {
   nature:'🌿', beach:'🏖', city:'🏙', park:'🌳', monument:'🏛',
   camping:'⛺', island:'🏝', sport:'⚽', vineyard:'🍇', other:'📍',
 };
-export const BUDGET_PRESETS = [
-  { label: 'Backpacker', rate: 50 },
-  { label: 'Mid-range',  rate: 150 },
-  { label: 'Luxury',     rate: 400 },
+export const BUDGET_PRESET_RATES = [
+  { key: 'backpacker', rate: 50 },
+  { key: 'midRange',   rate: 150 },
+  { key: 'luxury',     rate: 400 },
 ];
 
 // ─── Card ────────────────────────────────────────────────────────────────────
@@ -53,6 +54,7 @@ export const PlaceCard = ({
   days = [], currentDay, onMoveToDay,
   onMoveUp, onMoveDown, isFirst, isLast,
 }) => {
+  const { t } = useTranslation();
   const [showDesc, setShowDesc] = useState(!!place.description);
   const otherDays = days.filter(d => d !== currentDay);
   return (
@@ -77,7 +79,7 @@ export const PlaceCard = ({
           style={s.placeNameInput}
           value={place.name}
           onChangeText={v => onUpdate('name', v)}
-          placeholder="Place name"
+          placeholder={t('itineraryForm.placeName')}
           placeholderTextColor="#9ca3af"
         />
         <TouchableOpacity onPress={onRemove} style={s.placeRemoveBtn}>
@@ -104,27 +106,27 @@ export const PlaceCard = ({
           style={[s.input, s.placeDescInput]}
           value={place.description}
           onChangeText={v => onUpdate('description', v)}
-          placeholder="Description (optional)"
+          placeholder={t('itineraryForm.descriptionOptional')}
           placeholderTextColor="#9ca3af"
           multiline maxLength={500}
         />
       ) : (
         <TouchableOpacity onPress={() => setShowDesc(true)}>
-          <Text style={s.addDescLink}>+ Add description</Text>
+          <Text style={s.addDescLink}>{t('itineraryForm.addDescription')}</Text>
         </TouchableOpacity>
       )}
 
       {/* Move to another day */}
       {otherDays.length > 0 && (
         <View style={s.moveDayRow}>
-          <Text style={s.moveDayLabel}>Move to:</Text>
+          <Text style={s.moveDayLabel}>{t('itineraryForm.moveTo')}</Text>
           {otherDays.map(d => (
             <TouchableOpacity
               key={d}
               style={s.moveDayBtn}
               onPress={() => onMoveToDay?.(d)}
             >
-              <Text style={s.moveDayBtnText}>Day {d}</Text>
+              <Text style={s.moveDayBtnText}>{t('itineraryForm.moveToDay', { day: d })}</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -134,25 +136,29 @@ export const PlaceCard = ({
 };
 
 // ─── CategorySection ─────────────────────────────────────────────────────────
-export const CategorySection = ({ value, onChange, complete }) => (
-  <Card title="Trip Category" badge={complete}>
-    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-      {itineraryCategories.map(cat => (
-        <TouchableOpacity
-          key={cat.value}
-          style={[s.chip, value === cat.value && s.chipSelected]}
-          onPress={() => onChange(cat.value)}
-        >
-          <Text style={s.chipEmoji}>{CATEGORY_EMOJI[cat.value] || '📍'}</Text>
-          <Text style={[s.chipLabel, value === cat.value && s.chipLabelSelected]}>{cat.label}</Text>
-        </TouchableOpacity>
-      ))}
-    </ScrollView>
-  </Card>
-);
+export const CategorySection = ({ value, onChange, complete }) => {
+  const { t } = useTranslation();
+  return (
+    <Card title={t('itineraryForm.tripCategory')} badge={complete}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        {itineraryCategories.map(cat => (
+          <TouchableOpacity
+            key={cat.value}
+            style={[s.chip, value === cat.value && s.chipSelected]}
+            onPress={() => onChange(cat.value)}
+          >
+            <Text style={s.chipEmoji}>{CATEGORY_EMOJI[cat.value] || '📍'}</Text>
+            <Text style={[s.chipLabel, value === cat.value && s.chipLabelSelected]}>{cat.label}</Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+    </Card>
+  );
+};
 
 // ─── DatesSection ────────────────────────────────────────────────────────────
 export const DatesSection = ({ startDate, endDate, onStartChange, onEndChange, errors, complete }) => {
+  const { t } = useTranslation();
   const tripDays = (() => {
     if (!startDate || !endDate) return 1;
     return Math.max(1, Math.round((new Date(endDate) - new Date(startDate)) / 86400000) + 1);
@@ -167,16 +173,20 @@ export const DatesSection = ({ startDate, endDate, onStartChange, onEndChange, e
   };
 
   return (
-    <Card title="Dates" badge={complete}>
+    <Card title={t('itineraryForm.dates')} badge={complete}>
       <View style={s.presetsRow}>
-        {[{label:'Weekend',days:2},{label:'1 week',days:7},{label:'2 weeks',days:14}].map(p => (
-          <TouchableOpacity key={p.label} style={s.presetChip} onPress={() => applyPreset(p.days)}>
-            <Text style={s.presetChipText}>{p.label}</Text>
+        {[
+          { labelKey: 'itineraryForm.weekend', days: 2 },
+          { labelKey: 'itineraryForm.oneWeek', days: 7 },
+          { labelKey: 'itineraryForm.twoWeeks', days: 14 },
+        ].map(p => (
+          <TouchableOpacity key={p.labelKey} style={s.presetChip} onPress={() => applyPreset(p.days)}>
+            <Text style={s.presetChipText}>{t(p.labelKey)}</Text>
           </TouchableOpacity>
         ))}
       </View>
       <View style={s.row}>
-        <Field label="Start date" error={errors?.startDate} style={{ flex: 1 }}>
+        <Field label={t('itineraryForm.startDate')} error={errors?.startDate} style={{ flex: 1 }}>
           <TextInput
             style={[s.input, errors?.startDate && s.inputError]}
             value={startDate}
@@ -187,7 +197,7 @@ export const DatesSection = ({ startDate, endDate, onStartChange, onEndChange, e
           />
         </Field>
         <View style={{ width: 12 }} />
-        <Field label="End date" error={errors?.endDate} style={{ flex: 1 }}>
+        <Field label={t('itineraryForm.endDate')} error={errors?.endDate} style={{ flex: 1 }}>
           <TextInput
             style={[s.input, errors?.endDate && s.inputError]}
             value={endDate}
@@ -199,7 +209,7 @@ export const DatesSection = ({ startDate, endDate, onStartChange, onEndChange, e
         </Field>
       </View>
       <View style={s.durationBadge}>
-        <Text style={s.durationText}>{tripDays} {tripDays === 1 ? 'day' : 'days'}</Text>
+        <Text style={s.durationText}>{`${tripDays} ${tripDays === 1 ? t('itinerary.day') : t('itinerary.days')}`}</Text>
       </View>
     </Card>
   );
@@ -207,6 +217,7 @@ export const DatesSection = ({ startDate, endDate, onStartChange, onEndChange, e
 
 // ─── BudgetSection ───────────────────────────────────────────────────────────
 export const BudgetSection = ({ budget, setBudget, currency, setCurrency, travellers, tripDays, errors, complete }) => {
+  const { t } = useTranslation();
   const [showPicker, setShowPicker] = useState(false);
   const symbol = getCurrencySymbol(currency);
   const perPerson = (() => {
@@ -215,21 +226,27 @@ export const BudgetSection = ({ budget, setBudget, currency, setCurrency, travel
     return (b / travellers).toLocaleString(undefined, { maximumFractionDigits: 2 });
   })();
 
+  const BUDGET_PRESETS = [
+    { labelKey: 'itineraryForm.backpackerPreset', rate: 50 },
+    { labelKey: 'itineraryForm.midRangePreset',   rate: 150 },
+    { labelKey: 'itineraryForm.luxuryPreset',      rate: 400 },
+  ];
+
   return (
-    <Card title="Budget" badge={complete}>
+    <Card title={t('itineraryForm.budget')} badge={complete}>
       <View style={s.presetsRow}>
         {BUDGET_PRESETS.map(p => (
           <TouchableOpacity
-            key={p.label}
+            key={p.labelKey}
             style={s.presetChip}
             onPress={() => { setBudget(String(p.rate * (tripDays || 1))); if (!currency) setCurrency('EUR'); }}
           >
-            <Text style={s.presetChipText}>{p.label}</Text>
+            <Text style={s.presetChipText}>{t(p.labelKey)}</Text>
           </TouchableOpacity>
         ))}
       </View>
       <View style={s.row}>
-        <Field label="Amount" error={errors?.budget} style={{ flex: 1 }}>
+        <Field label={t('itineraryForm.amount')} error={errors?.budget} style={{ flex: 1 }}>
           <TextInput
             style={[s.input, errors?.budget && s.inputError]}
             value={budget}
@@ -240,20 +257,20 @@ export const BudgetSection = ({ budget, setBudget, currency, setCurrency, travel
           />
         </Field>
         <View style={{ width: 12 }} />
-        <Field label="Currency" style={{ flex: 1 }}>
+        <Field label={t('itineraryForm.currency')} style={{ flex: 1 }}>
           <TouchableOpacity style={[s.input, s.currencyBtn]} onPress={() => setShowPicker(true)}>
-            <Text style={s.currencyBtnText}>{currency || 'Select'} {symbol ? `(${symbol})` : ''}</Text>
+            <Text style={s.currencyBtnText}>{currency || t('itineraryForm.currencySelect')} {symbol ? `(${symbol})` : ''}</Text>
             <Text style={s.currencyChevron}>▾</Text>
           </TouchableOpacity>
         </Field>
       </View>
-      {perPerson && <Text style={s.perPerson}>{symbol}{perPerson} per person</Text>}
+      {perPerson && <Text style={s.perPerson}>{t('itineraryForm.perPerson', { amount: `${symbol || ''}${perPerson}` })}</Text>}
 
       <Modal visible={showPicker} animationType="slide" transparent onRequestClose={() => setShowPicker(false)}>
         <View style={s.modalBackdrop}>
           <View style={s.modalSheet}>
             <View style={s.modalHandle} />
-            <Text style={s.modalTitle}>Select Currency</Text>
+            <Text style={s.modalTitle}>{t('itineraryForm.selectCurrency')}</Text>
             <FlatList
               data={currencyOptions}
               keyExtractor={i => i.value}
@@ -279,50 +296,56 @@ export const BudgetSection = ({ budget, setBudget, currency, setCurrency, travel
 };
 
 // ─── TravellersSection ───────────────────────────────────────────────────────
-export const TravellersSection = ({ value, onChange }) => (
-  <Card title="Travellers">
-    <View style={s.stepperRow}>
-      <TouchableOpacity
-        style={[s.stepperBtn, value <= 1 && s.stepperBtnDisabled]}
-        onPress={() => onChange(Math.max(1, value - 1))}
-        disabled={value <= 1}
-      >
-        <Text style={s.stepperBtnText}>−</Text>
-      </TouchableOpacity>
-      <Text style={s.stepperValue}>{value}</Text>
-      <TouchableOpacity
-        style={[s.stepperBtn, value >= 20 && s.stepperBtnDisabled]}
-        onPress={() => onChange(Math.min(20, value + 1))}
-        disabled={value >= 20}
-      >
-        <Text style={s.stepperBtnText}>+</Text>
-      </TouchableOpacity>
-      <Text style={s.stepperLabel}>{value === 1 ? 'Travelling solo' : `Group of ${value}`}</Text>
-    </View>
-  </Card>
-);
+export const TravellersSection = ({ value, onChange }) => {
+  const { t } = useTranslation();
+  return (
+    <Card title={t('itineraryForm.travellers')}>
+      <View style={s.stepperRow}>
+        <TouchableOpacity
+          style={[s.stepperBtn, value <= 1 && s.stepperBtnDisabled]}
+          onPress={() => onChange(Math.max(1, value - 1))}
+          disabled={value <= 1}
+        >
+          <Text style={s.stepperBtnText}>−</Text>
+        </TouchableOpacity>
+        <Text style={s.stepperValue}>{value}</Text>
+        <TouchableOpacity
+          style={[s.stepperBtn, value >= 20 && s.stepperBtnDisabled]}
+          onPress={() => onChange(Math.min(20, value + 1))}
+          disabled={value >= 20}
+        >
+          <Text style={s.stepperBtnText}>+</Text>
+        </TouchableOpacity>
+        <Text style={s.stepperLabel}>{value === 1 ? t('itineraryForm.travellingSolo') : t('itineraryForm.groupOf', { count: value })}</Text>
+      </View>
+    </Card>
+  );
+};
 
 // ─── VisibilitySection ───────────────────────────────────────────────────────
-export const VisibilitySection = ({ value, onChange }) => (
-  <Card title="Visibility">
-    <View style={s.visibilityRow}>
-      {[
-        { val: true,  icon: '🌍', label: 'Public',  desc: 'Anyone can see this' },
-        { val: false, icon: '🔒', label: 'Private', desc: 'Only you can see' },
-      ].map(opt => (
-        <TouchableOpacity
-          key={String(opt.val)}
-          style={[s.visibilityOption, value === opt.val && s.visibilitySelected]}
-          onPress={() => onChange(opt.val)}
-        >
-          <Text style={s.visibilityIcon}>{opt.icon}</Text>
-          <Text style={s.visibilityLabel}>{opt.label}</Text>
-          <Text style={s.visibilityDesc}>{opt.desc}</Text>
-        </TouchableOpacity>
-      ))}
-    </View>
-  </Card>
-);
+export const VisibilitySection = ({ value, onChange }) => {
+  const { t } = useTranslation();
+  return (
+    <Card title={t('itineraryForm.visibility')}>
+      <View style={s.visibilityRow}>
+        {[
+          { val: true,  icon: '🌍', labelKey: 'itineraryForm.visibilityPublic',  descKey: 'itineraryForm.visibilityPublicDesc' },
+          { val: false, icon: '🔒', labelKey: 'itineraryForm.visibilityPrivate', descKey: 'itineraryForm.visibilityPrivateDesc' },
+        ].map(opt => (
+          <TouchableOpacity
+            key={String(opt.val)}
+            style={[s.visibilityOption, value === opt.val && s.visibilitySelected]}
+            onPress={() => onChange(opt.val)}
+          >
+            <Text style={s.visibilityIcon}>{opt.icon}</Text>
+            <Text style={s.visibilityLabel}>{t(opt.labelKey)}</Text>
+            <Text style={s.visibilityDesc}>{t(opt.descKey)}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </Card>
+  );
+};
 
 // ─── PlacesSection ───────────────────────────────────────────────────────────
 export const PlacesSection = ({
@@ -330,6 +353,7 @@ export const PlacesSection = ({
   // AI + sync props (optional — only on Create)
   tripDays, destination, category, travellers, budget, currency,
 }) => {
+  const { t } = useTranslation();
   const [generating, setGenerating] = useState(false);
 
   const addPlace = (dayNumber) =>
@@ -385,12 +409,14 @@ export const PlacesSection = ({
   const removeDay = (day) => {
     const count = places.filter(p => p.dayNumber === day).length;
     Alert.alert(
-      'Remove day',
-      count > 0 ? `Remove Day ${day} and its ${count} place${count > 1 ? 's' : ''}?` : `Remove Day ${day}?`,
+      t('itineraryForm.removeDayTitle'),
+      count > 0
+        ? t('itineraryForm.removeDayWithPlaces', { day, count })
+        : t('itineraryForm.removeDayEmpty', { day }),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('itineraryForm.removeDayCancel'), style: 'cancel' },
         {
-          text: 'Remove', style: 'destructive',
+          text: t('itineraryForm.removeDayConfirm'), style: 'destructive',
           onPress: () => {
             setPlaces(prev => prev
               .filter(p => p.dayNumber !== day)
@@ -431,7 +457,7 @@ export const PlacesSection = ({
       const uniqueDays = [...new Set(generated.map(p => p.dayNumber))].sort((a, b) => a - b);
       setDays(uniqueDays.length > 0 ? uniqueDays : [1]);
     } catch {
-      Alert.alert('Error', 'Could not generate itinerary. Please try again.');
+      Alert.alert(t('errors.somethingWrong'), t('itineraryForm.errorGenerate'));
     } finally {
       setGenerating(false);
     }
@@ -441,7 +467,7 @@ export const PlacesSection = ({
   const showSyncHint = tripDays && tripDays > days.length;
 
   return (
-    <Card title={`Places (${places.length})`} badge={complete}>
+    <Card title={t('itineraryForm.placesCount', { count: places.length })} badge={complete}>
       {/* AI generation button */}
       <View style={s.aiRow}>
         <TouchableOpacity
@@ -451,11 +477,11 @@ export const PlacesSection = ({
         >
           {generating
             ? <ActivityIndicator size="small" color="#fff" />
-            : <Text style={s.aiBtnText}>✨ Generate with AI</Text>
+            : <Text style={s.aiBtnText}>{t('itineraryForm.generateWithAI')}</Text>
           }
         </TouchableOpacity>
         {!canGenerate && (
-          <Text style={s.aiHint}>Set a destination first</Text>
+          <Text style={s.aiHint}>{t('itineraryForm.setDestinationFirst')}</Text>
         )}
       </View>
 
@@ -463,10 +489,10 @@ export const PlacesSection = ({
       {showSyncHint && (
         <View style={s.syncHint}>
           <Text style={s.syncHintText}>
-            Your trip is {tripDays} days — you have {days.length} configured.
+            {t('itineraryForm.tripIsDays', { tripDays, configuredDays: days.length })}
           </Text>
           <TouchableOpacity style={s.syncBtn} onPress={syncDays}>
-            <Text style={s.syncBtnText}>Set to {tripDays} days</Text>
+            <Text style={s.syncBtnText}>{t('itineraryForm.setToDays', { count: tripDays })}</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -476,16 +502,16 @@ export const PlacesSection = ({
         return (
           <View key={day} style={s.daySection}>
             <View style={s.dayHeader}>
-              <Text style={s.dayTitle}>Day {day}</Text>
-              <Text style={s.dayCount}>{dayPlaces.length} {dayPlaces.length === 1 ? 'place' : 'places'}</Text>
+              <Text style={s.dayTitle}>{t('itineraryForm.dayTitle', { day })}</Text>
+              <Text style={s.dayCount}>{dayPlaces.length === 1 ? t('itineraryForm.placesInDay_one', { count: 1 }) : t('itineraryForm.placesInDay_other', { count: dayPlaces.length })}</Text>
               {days.length > 1 && (
                 <TouchableOpacity onPress={() => removeDay(day)} style={s.removeDayBtn}>
-                  <Text style={s.removeDayText}>Remove day</Text>
+                  <Text style={s.removeDayText}>{t('itineraryForm.removeDay')}</Text>
                 </TouchableOpacity>
               )}
             </View>
             {isPublic && dayPlaces.length === 0 && (
-              <Text style={s.dayWarning}>⚠️ Add at least one place to publish.</Text>
+              <Text style={s.dayWarning}>{t('itineraryForm.addPlaceWarning')}</Text>
             )}
             {dayPlaces.map((place, idx) => (
               <PlaceCard
@@ -503,14 +529,14 @@ export const PlacesSection = ({
               />
             ))}
             <TouchableOpacity style={s.addPlaceBtn} onPress={() => addPlace(day)}>
-              <Text style={s.addPlaceBtnText}>+ Add place to Day {day}</Text>
+              <Text style={s.addPlaceBtnText}>{t('itineraryForm.addPlaceToDay', { day })}</Text>
             </TouchableOpacity>
           </View>
         );
       })}
       {places.length > 0 && (
         <TouchableOpacity style={s.addDayBtn} onPress={addDay}>
-          <Text style={s.addDayBtnText}>+ Add Day {Math.max(...days) + 1}</Text>
+          <Text style={s.addDayBtnText}>{t('itineraryForm.addDay', { day: Math.max(...days) + 1 })}</Text>
         </TouchableOpacity>
       )}
     </Card>

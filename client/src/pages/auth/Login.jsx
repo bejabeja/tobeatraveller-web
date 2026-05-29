@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-
+import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { InputForm } from "../../components/form/InputForm";
@@ -21,6 +21,7 @@ const GUEST_EMAIL = "test.tobeatraveller@gmail.com";
 const GUEST_PASSWORD = "testtest";
 
 const Login = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const imageAuthLoaded = useSelector(selectimageAuthLoaded);
@@ -57,8 +58,8 @@ const Login = () => {
           <img src="/logo-white.svg" alt="ToBeATraveller" height="28" />
         </Link>
         <div className="auth__tagline">
-          <h2>Discover the world,<br />one journey at a time.</h2>
-          <p>Join a community of travellers sharing their most inspiring journeys.</p>
+          <h2>{t("auth.taglineLogin")}</h2>
+          <p>{t("auth.taglineLoginSub")}</p>
         </div>
       </div>
 
@@ -69,8 +70,8 @@ const Login = () => {
           </Link>
 
           <div className="auth__form-header">
-            <h1 className="auth__form-title">Welcome back</h1>
-            <p className="auth__form-subtitle">Sign in to continue your journey</p>
+            <h1 className="auth__form-title">{t("auth.welcomeBack")}</h1>
+            <p className="auth__form-subtitle">{t("auth.signInSubtitle")}</p>
           </div>
 
           <InputForm name="email" label="Email" type="email" control={control} error={errors.email} />
@@ -86,24 +87,24 @@ const Login = () => {
                 marginTop: "0.2rem",
               }}
             >
-              Forgot your password?
+              {t("auth.forgotPassword")}
             </Link>
           </div>
 
           <div className="auth__form-error" role="alert" aria-live="assertive">
-            {errorInAuth && Object.keys(errors).length === 0 ? errorInAuth : " "}
+            {errorInAuth && Object.keys(errors).length === 0 ? errorInAuth : " "}
           </div>
 
           <div className="auth__form-link">
-            <SubmitButton label="Log In" loading={isSubmitting} />
+            <SubmitButton label={t("auth.signIn")} loading={isSubmitting} />
             {import.meta.env.VITE_ENV === 'development' && (
               <button type="button" className="auth__form-guest" onClick={loginAsGuest}>
-                Continue as guest
+                {t("auth.continueAsGuest")}
               </button>
             )}
-            <Link to="/register">New here? <strong>Create an account</strong></Link>
+            <Link to="/register">{t("auth.noAccount")} <strong>{t("auth.createAccountLink")}</strong></Link>
             <Link to="/explore" className="auth__form-browse">
-              Explore without an account →
+              {t("auth.exploreWithout")}
             </Link>
           </div>
         </form>

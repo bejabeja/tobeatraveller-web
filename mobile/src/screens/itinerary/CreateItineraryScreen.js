@@ -7,6 +7,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import {
   createItinerary, selectAuthUser, selectMe,
   setUserInfo, setUserInfoItineraries,
@@ -19,6 +20,7 @@ import { shadow } from '../../utils/styles';
 import { GEOAPIFY_KEY } from '../../utils/config';
 
 const CreateItineraryScreen = ({ navigation }) => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const insets = useSafeAreaInsets();
   const meDetail = useSelector(selectMe);
@@ -64,11 +66,11 @@ const CreateItineraryScreen = ({ navigation }) => {
   const progress = Math.round((sectionsComplete / 5) * 100);
 
   const missingItems = [
-    !isBasicComplete  && 'basic info',
-    !isDatesComplete  && 'dates',
-    !isPhotoComplete  && 'cover photo',
-    !isPlacesComplete && 'places',
-    !isBudgetComplete && 'budget',
+    !isBasicComplete  && t('itinerary.basicInfo'),
+    !isDatesComplete  && t('itinerary.dates'),
+    !isPhotoComplete  && t('itinerary.coverPhoto'),
+    !isPlacesComplete && t('itinerary.placesLabel'),
+    !isBudgetComplete && t('itinerary.budgetLabel'),
   ].filter(Boolean);
 
   // Destination search
@@ -106,15 +108,15 @@ const CreateItineraryScreen = ({ navigation }) => {
 
   const validate = () => {
     const e = {};
-    if (!title.trim() || title.length < 2) e.title = 'Title must be at least 2 characters';
-    if (title.length > 50) e.title = 'Max 50 characters';
-    if (!destination?.name) e.destination = 'Destination is required';
-    if (description.length > 500) e.description = 'Max 500 characters';
-    if (!startDate) e.startDate = 'Start date required';
-    if (!endDate) e.endDate = 'End date required';
-    if (startDate && endDate && endDate < startDate) e.endDate = 'End date must be after start';
-    if (!budget || isNaN(parseFloat(budget))) e.budget = 'Valid budget required';
-    if (!currency) e.currency = 'Currency required';
+    if (!title.trim() || title.length < 2) e.title = t('createItinerary.titleMin');
+    if (title.length > 50) e.title = t('createItinerary.titleMax');
+    if (!destination?.name) e.destination = t('createItinerary.destinationRequired');
+    if (description.length > 500) e.description = t('createItinerary.descriptionMax');
+    if (!startDate) e.startDate = t('createItinerary.startDateRequired');
+    if (!endDate) e.endDate = t('createItinerary.endDateRequired');
+    if (startDate && endDate && endDate < startDate) e.endDate = t('createItinerary.endDateAfterStart');
+    if (!budget || isNaN(parseFloat(budget))) e.budget = t('createItinerary.budgetRequired');
+    if (!currency) e.currency = t('createItinerary.currencyRequired');
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -124,7 +126,7 @@ const CreateItineraryScreen = ({ navigation }) => {
     if (isPublic) {
       const emptyDays = days.filter(d => !places.some(p => p.dayNumber === d));
       if (emptyDays.length > 0) {
-        Alert.alert('Empty days', `Day ${emptyDays.join(', ')} ${emptyDays.length === 1 ? 'has' : 'have'} no places. Add places or switch to private.`);
+        Alert.alert(t('createItinerary.emptyDaysTitle'), t('createItinerary.emptyDaysDesc', { days: emptyDays.join(', ') }));
         return;
       }
     }
@@ -169,7 +171,7 @@ const CreateItineraryScreen = ({ navigation }) => {
       }
       navigation.navigate('Tabs', { screen: 'Profile' });
     } catch (err) {
-      Alert.alert('Error', err?.message || 'Failed to create itinerary. Please try again.');
+      Alert.alert(t('errors.somethingWrong'), err?.message || t('createItinerary.errorCreate'));
     } finally {
       setSaving(false);
     }
@@ -177,7 +179,7 @@ const CreateItineraryScreen = ({ navigation }) => {
 
   const pickPhoto = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') { Alert.alert('Permission needed', 'Allow photo library access.'); return; }
+    if (status !== 'granted') { Alert.alert(t('createItinerary.permissionNeeded'), t('createItinerary.permissionDesc')); return; }
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsEditing: true, aspect: [16, 9], quality: 0.8,
@@ -193,7 +195,7 @@ const CreateItineraryScreen = ({ navigation }) => {
           <Text style={ls.headerBackText}>←</Text>
         </TouchableOpacity>
         <View style={ls.headerCenter}>
-          <Text style={ls.headerTitle}>New Itinerary</Text>
+          <Text style={ls.headerTitle}>{t('createItinerary.newItinerary')}</Text>
           {destination?.name && (
             <Text style={ls.headerSubtitle} numberOfLines={1}>📍 {destination.name}</Text>
           )}
@@ -203,7 +205,7 @@ const CreateItineraryScreen = ({ navigation }) => {
           onPress={handleSave}
           disabled={saving}
         >
-          <Text style={ls.headerSaveText}>{saving ? 'Saving…' : 'Create'}</Text>
+          <Text style={ls.headerSaveText}>{saving ? t('createItinerary.saving') : t('createItinerary.create')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -211,7 +213,7 @@ const CreateItineraryScreen = ({ navigation }) => {
       <View style={ls.progressBar}>
         <View style={[ls.progressFill, { width: `${progress}%` }]} />
       </View>
-      <Text style={ls.progressLabel}>{progress}% complete</Text>
+      <Text style={ls.progressLabel}>{t('createItinerary.percentComplete', { percent: progress })}</Text>
 
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView
@@ -231,25 +233,25 @@ const CreateItineraryScreen = ({ navigation }) => {
               : (
                 <View style={ls.photoPlaceholder}>
                   <Text style={ls.photoPlaceholderIcon}>📷</Text>
-                  <Text style={ls.photoPlaceholderText}>Add cover photo</Text>
+                  <Text style={ls.photoPlaceholderText}>{t('createItinerary.addCoverPhoto')}</Text>
                 </View>
               )
             }
             {photoUri && (
               <View style={ls.photoOverlay}>
-                <Text style={ls.photoOverlayText}>📷 Change photo</Text>
+                <Text style={ls.photoOverlayText}>{t('createItinerary.changePhoto')}</Text>
               </View>
             )}
           </TouchableOpacity>
 
           {/* Basic Info */}
-          <Card title="Basic Info" badge={isBasicComplete}>
+          <Card title={t('createItinerary.basicInfo')} badge={isBasicComplete}>
             <Field label="Title" error={errors.title} hint={`${title.length}/50`} hintWarn={title.length > 45}>
               <TextInput
                 style={[s.input, errors.title && s.inputError]}
                 value={title}
                 onChangeText={v => { setTitle(v); setErrors(e => ({ ...e, title: null })); }}
-                placeholder="A weekend in Rome…"
+                placeholder={t('createItinerary.titlePlaceholder')}
                 placeholderTextColor="#9ca3af"
                 maxLength={50}
               />
@@ -262,7 +264,7 @@ const CreateItineraryScreen = ({ navigation }) => {
                     style={[s.input, { flex: 1 }, errors.destination && s.inputError, destination && ls.inputConfirmed]}
                     value={destQuery}
                     onChangeText={searchDestination}
-                    placeholder="Where are you heading?"
+                    placeholder={t('createItinerary.destinationPlaceholder')}
                     placeholderTextColor="#9ca3af"
                   />
                   {destSearching && (
@@ -291,7 +293,7 @@ const CreateItineraryScreen = ({ navigation }) => {
                 style={[s.input, s.textarea, errors.description && s.inputError]}
                 value={description}
                 onChangeText={setDescription}
-                placeholder="What makes this trip special?"
+                placeholder={t('createItinerary.descriptionPlaceholder')}
                 placeholderTextColor="#9ca3af"
                 multiline
                 maxLength={500}
@@ -343,7 +345,7 @@ const CreateItineraryScreen = ({ navigation }) => {
           {/* Submit hint */}
           {missingItems.length > 0 && (
             <View style={ls.missingHint}>
-              <Text style={ls.missingHintText}>Still needed: {missingItems.join(', ')}</Text>
+              <Text style={ls.missingHintText}>{t('createItinerary.stillNeeded', { items: missingItems.join(', ') })}</Text>
             </View>
           )}
 
@@ -352,7 +354,7 @@ const CreateItineraryScreen = ({ navigation }) => {
             onPress={handleSave}
             disabled={saving}
           >
-            <Text style={ls.createBtnText}>{saving ? 'Creating itinerary…' : 'Create itinerary 🎉'}</Text>
+            <Text style={ls.createBtnText}>{saving ? t('createItinerary.creating') : t('createItinerary.createBtn')}</Text>
           </TouchableOpacity>
 
         </ScrollView>

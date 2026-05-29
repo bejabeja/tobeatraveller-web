@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import ItinerariesSection from "../../components/itineraries/ItinerariesSection";
 import { setUserInfoItineraries } from "../../store/user/userInfoActions";
@@ -15,6 +16,7 @@ import "./MyItineraries.scss";
 import Filters from "./filters/Filters";
 
 const MyItineraries = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const userMe = useSelector(selectMe);
   const myItineraries = useSelector(selectMyItineraries);
@@ -42,7 +44,7 @@ const MyItineraries = () => {
     <section className="my-itineraries section__container">
       <div className="my-itineraries__section-ctas">
         <Link to="/create-itinerary" className="btn btn--primary">
-          Plan a trip
+          {t("myItineraries.planTrip")}
         </Link>
       </div>
 
@@ -51,24 +53,24 @@ const MyItineraries = () => {
       {myItinerariesError ? (
         <div className="explore__error">
           <p className="error-message">
-            Oops! Something went wrong while loading itineraries.
+            {t("myItineraries.errorMsg")}
           </p>
           <button className="btn btn--ghost" onClick={handleRetry}>
-            Try again
+            {t("myItineraries.tryAgain")}
           </button>
         </div>
       ) : filteredItineraries.length === 0 && !myItinerariesLoading ? (
         <div className="explore__no-results">
           {hasActiveFilters ? (
             <>
-              <p>No itineraries found for these filters.</p>
-              <p>Try adjusting your search criteria.</p>
+              <p>{t("myItineraries.noFiltersResults")}</p>
+              <p>{t("myItineraries.tryAdjusting")}</p>
             </>
           ) : (
             <>
-              <p>You haven&apos;t created any trips yet.</p>
+              <p>{t("myItineraries.noItineraries")}</p>
               <Link to="/create-itinerary" className="btn btn--primary" style={{ marginTop: "12px", display: "inline-block" }}>
-                Plan your first trip
+                {t("myItineraries.planFirstTrip")}
               </Link>
             </>
           )}

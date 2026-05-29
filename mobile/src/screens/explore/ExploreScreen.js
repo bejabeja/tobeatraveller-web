@@ -4,12 +4,7 @@ import {
   StyleSheet, Text, TextInput, TouchableOpacity, View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-const TRAVELERS_OPTIONS = [
-  { value: 'solo',   label: '🧍 Solo'    },
-  { value: 'couple', label: '👫 Couple'  },
-  { value: 'group',  label: '👥 Group'   },
-  { value: 'large',  label: '🏕️ Large (6+)' },
-];
+import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   initExploreItineraries, itineraryCategories,
@@ -27,16 +22,24 @@ const CATEGORY_EMOJI = {
   gastronomic:'🍽', party:'🎉', sport:'⚽', other:'📍',
 };
 
-const SORT_OPTIONS = [
-  { value: 'recent',    label: 'Recent' },
-  { value: 'liked',     label: '❤️ Liked' },
-  { value: 'commented', label: '💬 Discussed' },
-  { value: 'cheapest',  label: '💰 Cheapest' },
-];
-
 const ExploreScreen = ({ navigation, route }) => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const insets = useSafeAreaInsets();
+
+  const SORT_OPTIONS = [
+    { value: 'recent',    label: t('explore.recent') },
+    { value: 'liked',     label: t('explore.liked') },
+    { value: 'commented', label: t('explore.discussed') },
+    { value: 'cheapest',  label: t('explore.cheapest') },
+  ];
+
+  const TRAVELERS_OPTIONS = [
+    { value: 'solo',   label: t('explore.solo') },
+    { value: 'couple', label: t('explore.couple') },
+    { value: 'group',  label: t('explore.group') },
+    { value: 'large',  label: t('explore.large') },
+  ];
 
   const itineraries  = useSelector(selectExploreItineraries);
   const loading      = useSelector(selectExploreItinerariesLoading);
@@ -117,12 +120,12 @@ const ExploreScreen = ({ navigation, route }) => {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.titleRow}>
-          <Text style={styles.title}>Explore</Text>
+          <Text style={styles.title}>{t('explore.title')}</Text>
           {!loading && totalItems > 0 && (
-            <Text style={styles.count}>{totalItems.toLocaleString()} trips</Text>
+            <Text style={styles.count}>{totalItems.toLocaleString()} {t('home.trips')}</Text>
           )}
           <TouchableOpacity onPress={openFilters} style={styles.filterBtn}>
-            <Text style={styles.filterBtnText}>⚙️ Filters</Text>
+            <Text style={styles.filterBtnText}>{t('explore.filters')}</Text>
             {advancedCount > 0 && (
               <View style={styles.filterBadge}>
                 <Text style={styles.filterBadgeText}>{advancedCount}</Text>
@@ -131,7 +134,7 @@ const ExploreScreen = ({ navigation, route }) => {
           </TouchableOpacity>
           {activeFilters && (
             <TouchableOpacity onPress={clearFilters} style={styles.clearBtn}>
-              <Text style={styles.clearBtnText}>Clear ✕</Text>
+              <Text style={styles.clearBtnText}>{t('explore.clearFilters')}</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -141,7 +144,7 @@ const ExploreScreen = ({ navigation, route }) => {
           <Text style={styles.searchIcon}>🔍</Text>
           <TextInput
             style={styles.searchInput}
-            placeholder="Search by destination…"
+            placeholder={t('explore.searchByDestination')}
             value={search}
             onChangeText={setSearch}
             placeholderTextColor="#9ca3af"
@@ -221,10 +224,10 @@ const ExploreScreen = ({ navigation, route }) => {
           !loading ? (
             <View style={styles.emptyState}>
               <Text style={styles.emptyEmoji}>🗺️</Text>
-              <Text style={styles.emptyTitle}>No itineraries found</Text>
+              <Text style={styles.emptyTitle}>{t('explore.noResultsTitle')}</Text>
               {activeFilters && (
                 <TouchableOpacity onPress={clearFilters}>
-                  <Text style={styles.emptyLink}>Clear filters</Text>
+                  <Text style={styles.emptyLink}>{t('explore.clearFiltersLink')}</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -236,7 +239,7 @@ const ExploreScreen = ({ navigation, route }) => {
             : hasMore
               ? (
                 <TouchableOpacity style={styles.loadMoreBtn} onPress={handleLoadMore}>
-                  <Text style={styles.loadMoreText}>Load more</Text>
+                  <Text style={styles.loadMoreText}>{t('explore.loadMore')}</Text>
                 </TouchableOpacity>
               )
               : null
@@ -263,21 +266,21 @@ const ExploreScreen = ({ navigation, route }) => {
           <View style={styles.modalSheet}>
             <View style={styles.modalHandle} />
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Filters</Text>
+              <Text style={styles.modalTitle}>{t('explore.filters')}</Text>
               <TouchableOpacity onPress={clearAdvanced}>
-                <Text style={styles.modalClearText}>Clear all</Text>
+                <Text style={styles.modalClearText}>{t('explore.clearAdvanced')}</Text>
               </TouchableOpacity>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
               {/* Budget */}
-              <Text style={styles.filterLabel}>Budget</Text>
+              <Text style={styles.filterLabel}>{t('explore.budget')}</Text>
               <View style={styles.rangeRow}>
                 <TextInput
                   style={[styles.rangeInput, { flex: 1 }]}
                   value={draft.budgetMin ?? ''}
                   onChangeText={v => setDraft(d => ({ ...d, budgetMin: v }))}
-                  placeholder="Min"
+                  placeholder={t('common.min')}
                   placeholderTextColor="#9ca3af"
                   keyboardType="decimal-pad"
                 />
@@ -286,20 +289,20 @@ const ExploreScreen = ({ navigation, route }) => {
                   style={[styles.rangeInput, { flex: 1 }]}
                   value={draft.budgetMax ?? ''}
                   onChangeText={v => setDraft(d => ({ ...d, budgetMax: v }))}
-                  placeholder="Max"
+                  placeholder={t('common.max')}
                   placeholderTextColor="#9ca3af"
                   keyboardType="decimal-pad"
                 />
               </View>
 
               {/* Duration */}
-              <Text style={styles.filterLabel}>Duration (days)</Text>
+              <Text style={styles.filterLabel}>{t('explore.duration')}</Text>
               <View style={styles.rangeRow}>
                 <TextInput
                   style={[styles.rangeInput, { flex: 1 }]}
                   value={draft.durationMin ?? ''}
                   onChangeText={v => setDraft(d => ({ ...d, durationMin: v }))}
-                  placeholder="Min"
+                  placeholder={t('common.min')}
                   placeholderTextColor="#9ca3af"
                   keyboardType="number-pad"
                 />
@@ -308,14 +311,14 @@ const ExploreScreen = ({ navigation, route }) => {
                   style={[styles.rangeInput, { flex: 1 }]}
                   value={draft.durationMax ?? ''}
                   onChangeText={v => setDraft(d => ({ ...d, durationMax: v }))}
-                  placeholder="Max"
+                  placeholder={t('common.max')}
                   placeholderTextColor="#9ca3af"
                   keyboardType="number-pad"
                 />
               </View>
 
               {/* Travelers */}
-              <Text style={styles.filterLabel}>Travelers</Text>
+              <Text style={styles.filterLabel}>{t('explore.travelers')}</Text>
               <View style={styles.travelersRow}>
                 {TRAVELERS_OPTIONS.map(opt => (
                   <TouchableOpacity
@@ -332,7 +335,7 @@ const ExploreScreen = ({ navigation, route }) => {
             </ScrollView>
 
             <TouchableOpacity style={styles.applyBtn} onPress={applyFilters}>
-              <Text style={styles.applyBtnText}>Apply filters</Text>
+              <Text style={styles.applyBtnText}>{t('explore.applyFilters')}</Text>
             </TouchableOpacity>
           </View>
         </View>
