@@ -1,3 +1,4 @@
+import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
@@ -45,6 +46,7 @@ const Comments = ({ itineraryId, isAuthenticated }) => {
       await fetchComments();
     } catch (error) {
       console.error("Failed to add comment", error);
+      toast.error("Could not post comment. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -56,6 +58,7 @@ const Comments = ({ itineraryId, isAuthenticated }) => {
       await fetchComments();
     } catch (error) {
       console.error("Failed to delete comment", error);
+      toast.error("Could not delete comment. Please try again.");
     }
   };
 

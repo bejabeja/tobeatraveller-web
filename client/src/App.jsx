@@ -88,7 +88,7 @@ const App = () => {
               <Route path="/my-itineraries" element={<MyItineraries />} />
               <Route path="/itineraries/saved" element={<Favorites />} />
               <Route path="/profile/:id" element={<Profile />} />
-              <Route path="profile/edit/:id" element={<EditProfile />} />
+              <Route path="/profile/edit/:id" element={<EditProfile />} />
               <Route path="/create-itinerary" element={<CreateItinerary />} />
               <Route path="/itinerary/edit/:id" element={<EditItinerary />} />
             </Route>

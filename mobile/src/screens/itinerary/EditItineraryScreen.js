@@ -149,7 +149,7 @@ const EditItineraryScreen = ({ route, navigation }) => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') { Alert.alert('Permission needed', 'Allow photo library access.'); return; }
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsEditing: true, aspect: [16, 9], quality: 0.8,
     });
     if (!result.canceled && result.assets?.[0]) setPhotoUri(result.assets[0].uri);

@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import ItinerariesSection from "../../components/itineraries/ItinerariesSection";
+import { setUserInfoItineraries } from "../../store/user/userInfoActions";
 import {
   selectMe,
   selectMeError,
@@ -14,6 +15,7 @@ import "./MyItineraries.scss";
 import Filters from "./filters/Filters";
 
 const MyItineraries = () => {
+  const dispatch = useDispatch();
   const userMe = useSelector(selectMe);
   const myItineraries = useSelector(selectMyItineraries);
   const myItinerariesLoading = useSelector(selectMyItinerariesLoading);
@@ -27,7 +29,7 @@ const MyItineraries = () => {
   }
 
   const handleRetry = () => {
-    setFilters({});
+    if (userMe?.id) dispatch(setUserInfoItineraries(userMe.id));
   };
 
   const filteredItineraries = useMemo(() => {

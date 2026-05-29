@@ -35,8 +35,8 @@ const ItinerariesSection = ({
               ? Array.from({ length: skeletonCount }).map((_, i) => (
                   <ItineraryCardSkeleton key={i} />
                 ))
-              : displayedItineraries?.map((itinerary, key) => (
-                  <ItineraryCard itinerary={itinerary} key={key} user={user} />
+              : displayedItineraries?.map((itinerary) => (
+                  <ItineraryCard itinerary={itinerary} key={itinerary.id} user={user} />
                 ))}
           </div>
           {showViewAll && (

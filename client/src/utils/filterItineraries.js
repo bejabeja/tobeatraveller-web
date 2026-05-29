@@ -30,6 +30,16 @@ export const filterItineraries = (itineraries, filters) => {
         if (startDateMin && start < startDateMin) return false;
         if (startDateMax && start > startDateMax) return false;
 
+        if (filters.currency && itinerary.currency !== filters.currency) return false;
+
+        if (filters.travelersCount) {
+            const people = itinerary.numberOfPeople ?? 1;
+            if (filters.travelersCount === "solo"   && people !== 1)                   return false;
+            if (filters.travelersCount === "couple" && people !== 2)                   return false;
+            if (filters.travelersCount === "group"  && (people < 3 || people > 5))    return false;
+            if (filters.travelersCount === "large"  && people < 6)                    return false;
+        }
+
         return true;
     });
 };

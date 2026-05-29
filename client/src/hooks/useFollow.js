@@ -1,3 +1,4 @@
+import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from 'react-router-dom';
@@ -43,6 +44,7 @@ export const useFollow = (targetUserId) => {
             setIsFollowing((prev) => !prev);
         } catch (err) {
             console.error("Failed to toggle follow:", err);
+            toast.error("Could not update follow status. Please try again.");
         } finally {
             setIsLoadingFollow(false);
         }
