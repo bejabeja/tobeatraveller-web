@@ -238,6 +238,20 @@ const EditProfile = () => {
         </div>
       </form>
 
+      <div className="edit-profile__data-section">
+        <h2 className="edit-profile__data-title">Your data</h2>
+        <p className="edit-profile__data-desc">
+          Download a copy of all your data — profile, itineraries, comments, likes and saved trips — in JSON format.
+        </p>
+        <a
+          href={`${import.meta.env.VITE_API_URL}/users/me/export`}
+          className="btn btn--secondary"
+          download
+        >
+          Download my data
+        </a>
+      </div>
+
       <div className="edit-profile__danger-zone">
         <div className="edit-profile__danger-header">
           <IoWarningOutline size={18} aria-hidden="true" />

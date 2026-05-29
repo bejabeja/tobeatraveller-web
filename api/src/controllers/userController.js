@@ -98,6 +98,18 @@ export class UserController {
         }
     }
 
+    async exportMyData(req, res, next) {
+        const { id } = req.user;
+        try {
+            const data = await this.userService.exportUserData(id);
+            res.setHeader('Content-Disposition', `attachment; filename="tobeatraveller-data-${id}.json"`);
+            res.setHeader('Content-Type', 'application/json');
+            res.status(200).json(data);
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async deleteUserMe(req, res, next) {
         const { id } = req.user;
         try {

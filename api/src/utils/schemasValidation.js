@@ -36,6 +36,12 @@ export const signupSchema = z.object({
     password: z.string().min(6, "Password must be at least 6 characters long"),
     confirmPassword: z.string(),
     location: z.string().max(50, "No valid location").optional().or(z.literal("")),
+    termsAccepted: z.literal(true, {
+        errorMap: () => ({ message: "You must accept the Terms of Service and Privacy Policy" }),
+    }),
+    ageConfirmed: z.literal(true, {
+        errorMap: () => ({ message: "You must confirm you are at least 16 years old" }),
+    }),
 }).refine((data) => {
     return data.password === data.confirmPassword;
 }, {

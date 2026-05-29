@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from 'uuid';
+import db from '../db/clientPostgres.js';
 import { ConflictError } from "../errors/ConflictError.js";
 import { NotFoundError } from "../errors/NotFoundError.js";
 import { generateAvatar } from "../utils/avatar.js";
@@ -13,7 +14,7 @@ export class UserService {
     }
 
     async create(userData) {
-        const { password, username, email, location } = userData;
+        const { password, username, email, location, termsAccepted } = userData;
 
         await this._ensureUsernameAvailable(username);
         await this._ensureEmailAvailable(email);
@@ -27,6 +28,7 @@ export class UserService {
             password: hashedPassword,
             location: location || null,
             avatarUrl: generateAvatar(username),
+            termsAcceptedAt: termsAccepted ? new Date() : null,
         };
 
         const savedUser = await this.userRepository.save(userToSave);
@@ -148,6 +150,56 @@ export class UserService {
 
         await this.userRepository.deleteUser(id);
         return user;
+    }
+
+    async exportUserData(id) {
+        const user = await this.userRepository.getUserById(id);
+        if (!user) throw new NotFoundError("User not found");
+
+        const [itineraries, followers, following, commentsResult, likesResult, favoritesResult] = await Promise.all([
+            this.itinerariesRepository.findByUserId(id),
+            this.followRepository.getFollowers(id),
+            this.followRepository.getFollowing(id),
+            db.query(
+                `SELECT ic.id, ic.content, ic.created_at, i.title AS itinerary_title
+                 FROM itinerary_comments ic
+                 JOIN itineraries i ON ic.itinerary_id = i.id
+                 WHERE ic.user_id = $1 ORDER BY ic.created_at DESC`, [id]
+            ),
+            db.query(
+                `SELECT il.itinerary_id, i.title, il.created_at
+                 FROM itinerary_likes il
+                 JOIN itineraries i ON il.itinerary_id = i.id
+                 WHERE il.user_id = $1 ORDER BY il.created_at DESC`, [id]
+            ),
+            db.query(
+                `SELECT f.itinerary_id, i.title, f.created_at
+                 FROM favorites f
+                 JOIN itineraries i ON f.itinerary_id = i.id
+                 WHERE f.user_id = $1 ORDER BY f.created_at DESC`, [id]
+            ),
+        ]);
+
+        return {
+            exportedAt: new Date().toISOString(),
+            profile: {
+                id: user.id,
+                username: user.username,
+                email: user.email,
+                name: user.name,
+                bio: user.bio,
+                about: user.about,
+                location: user.location,
+                avatarUrl: user.avatarUrl,
+                createdAt: user.createdAt,
+            },
+            itineraries: itineraries.map(i => i.toDTO()),
+            comments: commentsResult.rows,
+            likes: likesResult.rows,
+            savedTrips: favoritesResult.rows,
+            followers: followers.map(f => ({ id: f.id, username: f.username })),
+            following: following.map(f => ({ id: f.id, username: f.username })),
+        };
     }
 
     async isUsernameAvailable(username) {

@@ -1,7 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useRef, useState } from 'react';
 import {
-  Dimensions, ImageBackground, KeyboardAvoidingView,
+  Dimensions, ImageBackground, KeyboardAvoidingView, Linking,
   Platform, ScrollView, StyleSheet, Text, TextInput,
   TouchableOpacity, View,
 } from 'react-native';
@@ -27,6 +27,8 @@ const RegisterScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [usernameStatus, setUsernameStatus] = useState(null); // null | "checking" | "available" | "taken"
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
 
   const timer = useRef(null);
 
@@ -57,6 +59,8 @@ const RegisterScreen = ({ navigation }) => {
     else if (password.length < 6) e.password = 'At least 6 characters';
     if (!confirmPassword) e.confirmPassword = 'Please confirm your password';
     else if (password !== confirmPassword) e.confirmPassword = "Passwords don't match";
+    if (!ageConfirmed) e.ageConfirmed = 'You must confirm you are at least 16 years old';
+    if (!termsAccepted) e.termsAccepted = 'You must accept the Terms and Privacy Policy';
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -65,7 +69,7 @@ const RegisterScreen = ({ navigation }) => {
     if (!validate() || usernameStatus === 'taken') return;
     setLoading(true);
     try {
-      await dispatch(registerUser({ email: email.trim(), username: username.trim(), password, confirmPassword }));
+      await dispatch(registerUser({ email: email.trim(), username: username.trim(), password, confirmPassword, termsAccepted, ageConfirmed }));
     } finally {
       setLoading(false);
     }
@@ -163,6 +167,40 @@ const RegisterScreen = ({ navigation }) => {
                 }
               />
 
+              {/* Age + Terms consent */}
+              <View style={styles.consentBox}>
+                <TouchableOpacity
+                  style={styles.consentRow}
+                  onPress={() => { setAgeConfirmed(v => !v); setErrors(e => ({ ...e, ageConfirmed: null })); }}
+                  activeOpacity={0.8}
+                >
+                  <View style={[styles.checkbox, ageConfirmed && styles.checkboxChecked, errors.ageConfirmed && styles.checkboxError]}>
+                    {ageConfirmed && <Text style={styles.checkmark}>✓</Text>}
+                  </View>
+                  <Text style={[styles.consentText, errors.ageConfirmed && styles.consentTextError]}>
+                    I confirm I am at least <Text style={[styles.consentBold, errors.ageConfirmed && styles.consentTextError]}>16 years old</Text>
+                  </Text>
+                </TouchableOpacity>
+                {errors.ageConfirmed ? <Text style={styles.consentError}>{errors.ageConfirmed}</Text> : null}
+
+                <TouchableOpacity
+                  style={styles.consentRow}
+                  onPress={() => { setTermsAccepted(v => !v); setErrors(e => ({ ...e, termsAccepted: null })); }}
+                  activeOpacity={0.8}
+                >
+                  <View style={[styles.checkbox, termsAccepted && styles.checkboxChecked, errors.termsAccepted && styles.checkboxError]}>
+                    {termsAccepted && <Text style={styles.checkmark}>✓</Text>}
+                  </View>
+                  <Text style={[styles.consentText, errors.termsAccepted && styles.consentTextError]}>
+                    I accept the{' '}
+                    <Text style={styles.consentLink} onPress={() => Linking.openURL('https://tobeatraveller.com/terms')}>Terms</Text>
+                    {' '}and{' '}
+                    <Text style={styles.consentLink} onPress={() => Linking.openURL('https://tobeatraveller.com/privacy-policy')}>Privacy Policy</Text>
+                  </Text>
+                </TouchableOpacity>
+                {errors.termsAccepted ? <Text style={styles.consentError}>{errors.termsAccepted}</Text> : null}
+              </View>
+
               {authError && Object.keys(errors).length === 0 && (
                 <Text style={styles.authError}>{authError}</Text>
               )}
@@ -245,6 +283,21 @@ const styles = StyleSheet.create({
   title: { fontSize: 24, fontWeight: '800', color: '#111827', letterSpacing: -0.3, marginBottom: 4 },
   subtitle: { fontSize: 14, color: '#6b7280', marginBottom: 16 },
 
+  consentBox: { gap: 8, marginBottom: 4 },
+  consentRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
+  checkbox: {
+    width: 18, height: 18, borderRadius: 4, borderWidth: 1.5, borderColor: '#9ca3af',
+    alignItems: 'center', justifyContent: 'center', marginTop: 1, flexShrink: 0,
+  },
+  checkboxChecked: { backgroundColor: '#0077b6', borderColor: '#0077b6' },
+  checkboxError: { borderColor: '#dc2626', borderWidth: 2 },
+  consentTextError: { color: '#dc2626' },
+  checkmark: { color: '#fff', fontSize: 11, fontWeight: '700' },
+  consentText: { fontSize: 12, color: '#6b7280', lineHeight: 18, flex: 1 },
+  consentBold: { fontWeight: '600', color: '#374151' },
+  consentLink: { color: '#0077b6', fontWeight: '500' },
+  required: { color: '#dc2626', fontWeight: '700' },
+  consentError: { fontSize: 11, color: '#dc2626', marginLeft: 28 },
   authError: { color: '#dc2626', fontSize: 13, textAlign: 'center', marginBottom: 4 },
 
   btn: {

@@ -32,18 +32,17 @@ const Signup = () => {
     });
   }, [dispatch, imageAuthLoaded]);
 
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
+  const [consentErrors, setConsentErrors] = useState({});
+
   const {
     control,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(signupSchema),
-    defaultValues: {
-      email: "",
-      username: "",
-      password: "",
-      confirmPassword: "",
-    },
+    defaultValues: { email: "", username: "", password: "", confirmPassword: "" },
   });
 
   const usernameValue = useWatch({ control, name: "username" });
@@ -62,8 +61,22 @@ const Signup = () => {
     return () => clearTimeout(timer);
   }, [usernameValue]);
 
-  const addUser = (data) =>
-    dispatch(createUser(data, () => navigate("/")));
+  const validateConsent = () => {
+    const e = {};
+    if (!ageConfirmed)   e.ageConfirmed   = "You must confirm you are at least 16 years old";
+    if (!termsAccepted)  e.termsAccepted  = "You must accept the Terms of Service and Privacy Policy";
+    setConsentErrors(e);
+    return e;
+  };
+
+  const onSubmit = (e) => {
+    e.preventDefault();
+    const cErrors = validateConsent();
+    handleSubmit((data) => {
+      if (Object.keys(cErrors).length > 0) return;
+      dispatch(createUser({ ...data, termsAccepted, ageConfirmed }, () => navigate("/")));
+    })();
+  };
 
   return (
     <section className="auth">
@@ -81,7 +94,7 @@ const Signup = () => {
 
       <div className="auth__panel">
         <form
-          onSubmit={handleSubmit(addUser)}
+          onSubmit={onSubmit}
           className="auth__form"
           aria-labelledby="signup-form-title"
         >
@@ -96,23 +109,56 @@ const Signup = () => {
 
           <InputForm name="email" label="Email" type="email" control={control} error={errors.email} />
 
-          <div className="auth__username-wrapper">
-            <InputForm name="username" label="Username" type="text" control={control} error={errors.username} />
-            {usernameStatus && (
-              <span
-                className={`auth__username-status auth__username-status--${usernameStatus}`}
-                aria-live="polite"
-                aria-atomic="true"
-              >
-                {usernameStatus === "checking" && "…"}
-                {usernameStatus === "available" && "✓ Available"}
-                {usernameStatus === "taken" && "✗ Already taken"}
-              </span>
-            )}
-          </div>
+          <InputForm
+            name="username"
+            label="Username"
+            type="text"
+            control={control}
+            error={errors.username}
+            right={
+              usernameStatus && (
+                <span
+                  className={`auth__username-status auth__username-status--${usernameStatus}`}
+                  aria-live="polite"
+                  aria-atomic="true"
+                >
+                  {usernameStatus === "checking" && "…"}
+                  {usernameStatus === "available" && "✓ Available"}
+                  {usernameStatus === "taken" && "✗ Taken"}
+                </span>
+              )
+            }
+          />
 
           <PasswordInputForm name="password" label="Password" control={control} error={errors.password} />
           <PasswordInputForm name="confirmPassword" label="Confirm password" control={control} error={errors.confirmPassword} />
+
+          <div className="auth__consent">
+            <label className={`auth__consent-label${consentErrors.ageConfirmed ? " auth__consent-label--error" : ""}`}>
+              <input
+                type="checkbox"
+                checked={ageConfirmed}
+                onChange={(e) => { setAgeConfirmed(e.target.checked); setConsentErrors(p => ({ ...p, ageConfirmed: undefined })); }}
+              />
+              <span>I confirm I am at least <strong>16 years old</strong></span>
+            </label>
+            {consentErrors.ageConfirmed && <p className="auth__consent-error">{consentErrors.ageConfirmed}</p>}
+
+            <label className={`auth__consent-label${consentErrors.termsAccepted ? " auth__consent-label--error" : ""}`}>
+              <input
+                type="checkbox"
+                checked={termsAccepted}
+                onChange={(e) => { setTermsAccepted(e.target.checked); setConsentErrors(p => ({ ...p, termsAccepted: undefined })); }}
+              />
+              <span>
+                I accept the{" "}
+                <a href="/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a>
+                {" "}and{" "}
+                <a href="/privacy-policy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+              </span>
+            </label>
+            {consentErrors.termsAccepted && <p className="auth__consent-error">{consentErrors.termsAccepted}</p>}
+          </div>
 
           <div className="auth__form-error" role="alert" aria-live="assertive">
             {errorInAuth && Object.keys(errors).length === 0 ? errorInAuth : " "}

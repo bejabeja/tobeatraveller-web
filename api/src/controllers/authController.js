@@ -21,7 +21,9 @@ export class AuthController {
     async create(req, res, next) {
         const result = signupSchema.safeParse(req.body);
         if (!result.success) {
-            return next(new ValidationError("Signup validation failed"));
+            const firstError = result.error.errors[0];
+            const message = firstError?.message || "Signup validation failed";
+            return next(new ValidationError(message));
         }
         try {
             await this.userService.create(result.data);
