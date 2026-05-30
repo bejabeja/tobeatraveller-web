@@ -35,6 +35,12 @@ import { getCurrencySymbol } from "../../utils/constants/currencies.js";
 import "./Itinerary.scss";
 import Error from "../error/Error.jsx";
 
+const setMeta = (key, content, attr = 'name') => {
+  let el = document.querySelector(`meta[${attr}="${key}"]`);
+  if (!el) { el = document.createElement('meta'); el.setAttribute(attr, key); document.head.appendChild(el); }
+  el.setAttribute('content', content ?? '');
+};
+
 const Itinerary = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
@@ -90,6 +96,29 @@ const Itinerary = () => {
     };
     fetchIsFavorite();
   }, [itinerary, isAuthenticated]);
+
+  useEffect(() => {
+    if (!itinerary) return;
+    const title = `${itinerary.title} — ToBeATraveller`;
+    const desc = itinerary.description?.slice(0, 160)
+      || `A ${itinerary.tripTotalDays}-day trip to ${itinerary.location?.name || 'an amazing destination'}`;
+    const image = itinerary.photoUrl;
+    const url = window.location.href;
+
+    document.title = title;
+    setMeta('description', desc);
+    setMeta('og:title', title, 'property');
+    setMeta('og:description', desc, 'property');
+    setMeta('og:image', image, 'property');
+    setMeta('og:url', url, 'property');
+    setMeta('og:type', 'article', 'property');
+    setMeta('twitter:card', 'summary_large_image');
+    setMeta('twitter:title', title);
+    setMeta('twitter:description', desc);
+    setMeta('twitter:image', image);
+
+    return () => { document.title = 'ToBeATraveller'; };
+  }, [itinerary]);
 
   if (loading) return <Spinner />;
   if (error) return <Error message={t("errors.itineraryLoad")} />;
