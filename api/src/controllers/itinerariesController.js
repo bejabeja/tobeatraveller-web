@@ -85,4 +85,13 @@ export class ItinerariesController {
             next(error)
         }
     }
+
+    async getMyItineraries(req, res, next) {
+        try {
+            const itineraries = await this.itinerariesService.getAllItinerariesByUserId(req.user.id);
+            res.status(200).json(itineraries)
+        } catch (error) {
+            next(error)
+        }
+    }
 }

@@ -25,6 +25,7 @@ describe('ItinerariesService', () => {
     itinerariesRepository = {
       findById: vi.fn(),
       findByUserId: vi.fn(),
+      findPublicByUserId: vi.fn(),
       findByFilters: vi.fn(),
       countByFilters: vi.fn(),
       findTopByLikes: vi.fn(),
@@ -140,7 +141,7 @@ describe('ItinerariesService', () => {
 
   describe('getItinerariesByUserId()', () => {
     it('returns empty array when user has no itineraries', async () => {
-      itinerariesRepository.findByUserId.mockResolvedValue([]);
+      itinerariesRepository.findPublicByUserId.mockResolvedValue([]);
 
       const result = await service.getItinerariesByUserId('user-1');
 
@@ -151,7 +152,7 @@ describe('ItinerariesService', () => {
     it('returns DTOs with places attached for each itinerary', async () => {
       const itin = makeItinerary('itin-1');
       const place = { id: 'place-1' };
-      itinerariesRepository.findByUserId.mockResolvedValue([itin]);
+      itinerariesRepository.findPublicByUserId.mockResolvedValue([itin]);
       placesRepository.getPlacesByItineraryId.mockResolvedValue([place]);
 
       const result = await service.getItinerariesByUserId('user-1');
@@ -165,7 +166,7 @@ describe('ItinerariesService', () => {
     it('handles multiple itineraries independently', async () => {
       const itin1 = makeItinerary('itin-1');
       const itin2 = makeItinerary('itin-2');
-      itinerariesRepository.findByUserId.mockResolvedValue([itin1, itin2]);
+      itinerariesRepository.findPublicByUserId.mockResolvedValue([itin1, itin2]);
       placesRepository.getPlacesByItineraryId.mockResolvedValue([]);
 
       const result = await service.getItinerariesByUserId('user-1');

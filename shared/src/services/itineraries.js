@@ -72,6 +72,12 @@ export const getFeedItineraries = async (page = 1) => {
     return response.json();
 };
 
+export const getMyItineraries = async () => {
+    const response = await authFetch(`${baseUrl()}/mine`);
+    if (!response.ok) await parseError(response, 'Failed to get my itineraries');
+    return response.json();
+};
+
 export const getItinerariesByUserId = async (id) => {
     const response = await fetch(`${baseUrl()}/${id}`, {
         method: 'GET',

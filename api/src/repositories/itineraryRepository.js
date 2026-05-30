@@ -4,8 +4,18 @@ import { Itinerary } from '../models/itinerary.js';
 
 export class ItineraryRepository {
   async findByUserId(userId) {
-    const query = `SELECT * FROM itineraries WHERE user_id = $1`;
-    const result = await client.query(query, [userId]);
+    const result = await client.query(
+      `SELECT * FROM itineraries WHERE user_id = $1 ORDER BY created_at DESC`,
+      [userId]
+    );
+    return result.rows.map(Itinerary.fromDb);
+  }
+
+  async findPublicByUserId(userId) {
+    const result = await client.query(
+      `SELECT * FROM itineraries WHERE user_id = $1 AND is_public = true ORDER BY created_at DESC`,
+      [userId]
+    );
     return result.rows.map(Itinerary.fromDb);
   }
 

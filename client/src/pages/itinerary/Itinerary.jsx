@@ -158,7 +158,7 @@ const Itinerary = () => {
       toast.success(t("itinerary.deletedSuccess"));
       navigate(`/profile/${userMe?.id}`);
       dispatch(setUserInfo(itinerary?.userId));
-      dispatch(setUserInfoItineraries(itinerary?.userId));
+      dispatch(setUserInfoItineraries());
     } catch (error) {
       toast.error(t("itinerary.deleteFailed"));
     }

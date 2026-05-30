@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { GoBook, GoHome, GoPerson, GoSignIn, GoSignOut } from "react-icons/go";
+import { GoHome, GoPerson, GoSignIn, GoSignOut } from "react-icons/go";
 import {
   IoAddOutline,
   IoNotificationsOutline,
@@ -102,10 +102,6 @@ const Navbar = () => {
               </span>
               <span>{t("nav.notifications")}</span>
             </NavLink>
-            <NavLink to="/my-itineraries" className="nav-item" title={t("nav.myTrips")}>
-              <GoBook className="nav-icon" />
-              <span>{t("nav.myTrips")}</span>
-            </NavLink>
             <NavLink to="/itineraries/saved" className="nav-item" title={t("nav.savedTrips")}>
               <IoSaveOutline className="nav-icon" />
               <span>{t("nav.savedTrips")}</span>
@@ -160,10 +156,6 @@ const Navbar = () => {
             <NavLink to={`/profile/${userMe?.id}`} className="me-panel__item">
               <GoPerson className="me-panel__icon" />
               <span>{t("nav.profile")}</span>
-            </NavLink>
-            <NavLink to="/my-itineraries" className="me-panel__item">
-              <GoBook className="me-panel__icon" />
-              <span>{t("nav.myTrips")}</span>
             </NavLink>
             <NavLink to="/itineraries/saved" className="me-panel__item">
               <IoSaveOutline className="me-panel__icon" />

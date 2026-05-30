@@ -91,7 +91,7 @@ export class UserService {
         }
 
         const [itineraries, followersListIds, followingListIds] = await Promise.all([
-            this.itinerariesRepository.findByUserId(id),
+            this.itinerariesRepository.findPublicByUserId(id),
             this.followRepository.getFollowers(id),
             this.followRepository.getFollowing(id),
         ]);

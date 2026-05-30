@@ -167,7 +167,7 @@ const CreateItineraryScreen = ({ navigation }) => {
       await createItinerary(formData);
       if (me?.id) {
         dispatch(setUserInfo(me.id));
-        dispatch(setUserInfoItineraries(me.id));
+        dispatch(setUserInfoItineraries());
       }
       navigation.navigate('Tabs', { screen: 'Profile' });
     } catch (err) {

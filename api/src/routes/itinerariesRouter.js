@@ -20,6 +20,7 @@ export const createItinerariesRouter = () => {
     router.get("/destinations", itinerariesController.getDestinations.bind(itinerariesController));
     router.get("/featured", itinerariesController.featuredItineraries.bind(itinerariesController));
     router.get("/feed", authenticate, itinerariesController.getFeed.bind(itinerariesController));
+    router.get("/mine", authenticate, itinerariesController.getMyItineraries.bind(itinerariesController));
     router.get("/", itinerariesController.filterItinerariesBy.bind(itinerariesController));
     router.get("/:id", itinerariesController.getItinerariesByUserId.bind(itinerariesController));
 

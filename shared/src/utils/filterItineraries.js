@@ -30,6 +30,9 @@ export const filterItineraries = (itineraries, filters) => {
         if (startDateMin && start < startDateMin) return false;
         if (startDateMax && start > startDateMax) return false;
 
+        if (filters.visibility === 'public'  && !itinerary.isPublic)  return false;
+        if (filters.visibility === 'private' &&  itinerary.isPublic)  return false;
+
         return true;
     });
 };

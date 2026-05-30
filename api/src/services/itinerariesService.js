@@ -65,19 +65,21 @@ export class ItinerariesService {
     }
 
     async getItinerariesByUserId(userId) {
-        const itineraries = await this.itinerariesRepository.findByUserId(userId);
-        if (!itineraries.length) {
-            return [];
-        }
+        const itineraries = await this.itinerariesRepository.findPublicByUserId(userId);
+        return this._enrichItineraries(itineraries);
+    }
 
-        const enriched = await Promise.all(itineraries.map(async (itinerary) => {
+    async getAllItinerariesByUserId(userId) {
+        const itineraries = await this.itinerariesRepository.findByUserId(userId);
+        return this._enrichItineraries(itineraries);
+    }
+
+    async _enrichItineraries(itineraries) {
+        if (!itineraries.length) return [];
+        return Promise.all(itineraries.map(async (itinerary) => {
             const places = await this.placesRepository.getPlacesByItineraryId(itinerary.id);
-            for (const place of places) {
-                itinerary.addPlace(place);
-            }
+            for (const place of places) itinerary.addPlace(place);
             return itinerary.toDTO();
         }));
-
-        return enriched;
     }
 }

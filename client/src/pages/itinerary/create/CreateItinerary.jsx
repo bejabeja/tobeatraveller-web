@@ -149,7 +149,7 @@ const CreateItinerary = () => {
       });
 
       dispatch(setUserInfo(userMe.id));
-      dispatch(setUserInfoItineraries(userMe.id));
+      dispatch(setUserInfoItineraries());
       navigate(`/profile/${userMe.id}`);
     } catch (error) {}
   };

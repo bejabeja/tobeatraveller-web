@@ -1,5 +1,5 @@
 import { getAllFollowers, getAllFollowing } from "../../services/followers";
-import { getItinerariesByUserId } from "../../services/itineraries";
+import { getItinerariesByUserId, getMyItineraries } from "../../services/itineraries";
 import { getUserById } from "../../services/users";
 
 export const START_LOADING_MY_INFO_ME = "@myInfo/me/loading";
@@ -38,12 +38,12 @@ export const setUserInfo = (userId) => {
     };
 };
 
-export const setUserInfoItineraries = (userId) => {
+export const setUserInfoItineraries = () => {
     return async (dispatch) => {
         dispatch({ type: START_LOADING_MY_INFO_ITINERARIES });
 
         try {
-            const myItineraries = await getItinerariesByUserId(userId);
+            const myItineraries = await getMyItineraries();
             dispatch({ type: SET_MY_INFO_ITINERARIES, payload: myItineraries });
         } catch (error) {
             dispatch({
@@ -93,7 +93,7 @@ export const loadMyUserInfo = (userId) => {
         dispatch(resetUserInfo());
 
         dispatch(setUserInfo(userId));
-        dispatch(setUserInfoItineraries(userId));
+        dispatch(setUserInfoItineraries());
         dispatch(setUserInfoFollowing(userId));
         dispatch(setUserInfoFollowers(userId));
     };

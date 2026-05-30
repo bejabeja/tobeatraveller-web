@@ -485,7 +485,10 @@
     "clearFiltersLink": "Limpiar filtros",
     "noTripsYet": "Todavía no tienes viajes",
     "noTripsSubtitle": "¡Planifica tu primera aventura!",
-    "planTripBtn": "Planificar un viaje"
+    "planTripBtn": "Planificar un viaje",
+    "all": "Todos",
+    "public": "Públicos",
+    "private": "Privados"
   },
   "settings": {
     "title": "Ajustes",

@@ -11,7 +11,7 @@ import {
   selectMyItinerariesError,
   selectMyItinerariesLoading,
 } from "../../store/user/userInfoSelectors";
-import { filterItineraries } from "../../utils/filterItineraries";
+import { filterItineraries } from "@tobeatraveller/shared";
 import "./MyItineraries.scss";
 import Filters from "./filters/Filters";
 
@@ -25,20 +25,21 @@ const MyItineraries = () => {
   const userMeError = useSelector(selectMeError);
 
   const [filters, setFilters] = useState({});
+  const [visibility, setVisibility] = useState('all');
 
   if (userMeError) {
     return <div>Error: {userMeError}</div>;
   }
 
   const handleRetry = () => {
-    if (userMe?.id) dispatch(setUserInfoItineraries(userMe.id));
+    if (userMe?.id) dispatch(setUserInfoItineraries());
   };
 
   const filteredItineraries = useMemo(() => {
-    return filterItineraries(myItineraries, filters);
-  }, [myItineraries, filters]);
+    return filterItineraries(myItineraries, { ...filters, visibility: visibility === 'all' ? '' : visibility });
+  }, [myItineraries, filters, visibility]);
 
-  const hasActiveFilters = Object.values(filters).some(Boolean);
+  const hasActiveFilters = Object.values(filters).some(Boolean) || visibility !== 'all';
 
   return (
     <section className="my-itineraries section__container">
@@ -46,6 +47,23 @@ const MyItineraries = () => {
         <Link to="/create-itinerary" className="btn btn--primary">
           {t("myItineraries.planTrip")}
         </Link>
+      </div>
+
+      <div className="my-itineraries__visibility-toggle">
+        {[
+          { val: 'all',     label: t('myItineraries.all')     || 'All' },
+          { val: 'public',  label: '🌍 ' + (t('myItineraries.public')  || 'Public') },
+          { val: 'private', label: '🔒 ' + (t('myItineraries.private') || 'Private') },
+        ].map(opt => (
+          <button
+            key={opt.val}
+            type="button"
+            className={`my-itineraries__vis-btn${visibility === opt.val ? ' my-itineraries__vis-btn--active' : ''}`}
+            onClick={() => setVisibility(opt.val)}
+          >
+            {opt.label}
+          </button>
+        ))}
       </div>
 
       <Filters onChange={setFilters} />
