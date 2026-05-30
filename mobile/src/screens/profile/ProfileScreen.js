@@ -149,7 +149,7 @@ const ProfileScreen = ({ route, navigation }) => {
     >
       {/* Banner */}
       <LinearGradient
-        colors={['#0077b6', '#005a8a']}
+        colors={['#E8743B', '#C45A22']}
         start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
         style={[styles.banner, canGoBack && { paddingTop: insets.top + 8 }]}
       >
@@ -435,7 +435,7 @@ const UnauthView = ({ navigation, insets, t }) => {
     <View style={styles.unauthRoot}>
       {/* Hero */}
       <LinearGradient
-        colors={['#0077b6', '#005a8a']}
+        colors={['#E8743B', '#C45A22']}
         start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
         style={[styles.unauthHero, { paddingTop: insets.top + 24 }]}
       >
@@ -510,7 +510,7 @@ const styles = StyleSheet.create({
   avatar: { width: 80, height: 80, borderRadius: 40 },
   avatarFallback: {
     width: 80, height: 80, borderRadius: 40,
-    backgroundColor: '#0077b6', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#E8743B', alignItems: 'center', justifyContent: 'center',
   },
   avatarInitial: { color: '#fff', fontSize: 32, fontWeight: '700' },
 
@@ -522,7 +522,7 @@ const styles = StyleSheet.create({
   },
   iconBtnText: { fontSize: 16, color: '#374151' },
   primaryBtn: {
-    backgroundColor: '#0077b6', borderRadius: 999,
+    backgroundColor: '#E8743B', borderRadius: 999,
     paddingVertical: 9, paddingHorizontal: 20,
   },
   primaryBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
@@ -546,16 +546,16 @@ const styles = StyleSheet.create({
   followsYouText: { fontSize: 11, color: '#6b7280', fontWeight: '500' },
   officialBadge: {
     width: 18, height: 18, borderRadius: 9,
-    backgroundColor: '#0077b6', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#E8743B', alignItems: 'center', justifyContent: 'center',
   },
   officialText: { color: '#fff', fontSize: 10, fontWeight: '700' },
   bio: { fontSize: 14, color: '#374151', marginTop: 8, lineHeight: 20 },
-  emptyPrompt: { fontSize: 14, color: '#0077b6', marginTop: 6 },
+  emptyPrompt: { fontSize: 14, color: '#E8743B', marginTop: 6 },
 
   badges: { flexDirection: 'row', gap: 6, marginTop: 10, flexWrap: 'wrap' },
   badge: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    backgroundColor: '#eff6ff', borderRadius: 999,
+    backgroundColor: '#FFF0E8', borderRadius: 999,
     paddingVertical: 3, paddingHorizontal: 10,
     borderWidth: 1, borderColor: '#bfdbfe',
   },
@@ -582,16 +582,16 @@ const styles = StyleSheet.create({
   },
   completenessHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
   completenessLabel: { fontSize: 13, color: '#374151', fontWeight: '600' },
-  completenessPct: { fontSize: 13, color: '#0077b6', fontWeight: '700' },
+  completenessPct: { fontSize: 13, color: '#E8743B', fontWeight: '700' },
   completenessTrack: {
     height: 6, backgroundColor: '#e5e7eb', borderRadius: 3, overflow: 'hidden',
   },
-  completenessFill: { height: '100%', backgroundColor: '#0077b6', borderRadius: 3 },
-  completenessTip: { fontSize: 12, color: '#0077b6', marginTop: 6 },
+  completenessFill: { height: '100%', backgroundColor: '#E8743B', borderRadius: 3 },
+  completenessTip: { fontSize: 12, color: '#E8743B', marginTop: 6 },
 
   createBtn: {
     marginHorizontal: 16, marginTop: 14,
-    backgroundColor: '#0077b6', borderRadius: 10,
+    backgroundColor: '#E8743B', borderRadius: 10,
     paddingVertical: 11, alignItems: 'center',
   },
   createBtnText: { color: '#fff', fontSize: 14, fontWeight: '700' },
@@ -611,7 +611,7 @@ const styles = StyleSheet.create({
   section: { marginHorizontal: 16, marginTop: 16 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   sectionTitle: { fontSize: 16, fontWeight: '700', color: '#111827' },
-  seeAll: { fontSize: 13, color: '#0077b6', fontWeight: '600' },
+  seeAll: { fontSize: 13, color: '#E8743B', fontWeight: '600' },
   aboutText: { fontSize: 14, color: '#374151', lineHeight: 22 },
   emptyTrips: { color: '#9ca3af', fontSize: 14 },
 
@@ -623,9 +623,9 @@ const styles = StyleSheet.create({
     borderWidth: 1.5, borderColor: '#e5e7eb', borderRadius: 999,
     paddingVertical: 5, paddingHorizontal: 14,
   },
-  visBtnActive: { borderColor: '#0077b6', backgroundColor: '#eff6ff' },
+  visBtnActive: { borderColor: '#E8743B', backgroundColor: '#FFF0E8' },
   visBtnText: { fontSize: 13, fontWeight: '500', color: '#6b7280' },
-  visBtnTextActive: { color: '#0077b6', fontWeight: '600' },
+  visBtnTextActive: { color: '#E8743B', fontWeight: '600' },
 
   // Unauth
   unauthRoot: { flex: 1, backgroundColor: '#fff' },
@@ -658,14 +658,14 @@ const styles = StyleSheet.create({
   unauthBenefitTitle: { fontSize: 15, fontWeight: '700', color: '#111827', marginBottom: 2 },
   unauthBenefitDesc: { fontSize: 13, color: '#6b7280', lineHeight: 19 },
   unauthPrimaryBtn: {
-    backgroundColor: '#0077b6', borderRadius: 999,
+    backgroundColor: '#E8743B', borderRadius: 999,
     paddingVertical: 15, alignItems: 'center',
     marginTop: 12,
   },
   unauthPrimaryBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
   unauthSecondaryBtn: { paddingVertical: 14, alignItems: 'center' },
   unauthSecondaryBtnText: { fontSize: 14, color: '#6b7280' },
-  unauthSignInAccent: { color: '#0077b6', fontWeight: '600' },
+  unauthSignInAccent: { color: '#E8743B', fontWeight: '600' },
 });
 
 export default ProfileScreen;

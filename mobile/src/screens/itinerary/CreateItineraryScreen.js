@@ -268,7 +268,7 @@ const CreateItineraryScreen = ({ navigation }) => {
                     placeholderTextColor="#9ca3af"
                   />
                   {destSearching && (
-                    <ActivityIndicator size="small" color="#0077b6" style={ls.destSpinner} />
+                    <ActivityIndicator size="small" color="#E8743B" style={ls.destSpinner} />
                   )}
                 </View>
                 {destResults.length > 0 && (
@@ -378,14 +378,14 @@ const ls = StyleSheet.create({
   headerTitle: { fontSize: 17, fontWeight: '700', color: '#111827' },
   headerSubtitle: { fontSize: 11, color: '#6b7280', marginTop: 1, maxWidth: 160 },
   headerSave: {
-    backgroundColor: '#0077b6', borderRadius: 999,
+    backgroundColor: '#E8743B', borderRadius: 999,
     paddingVertical: 7, paddingHorizontal: 16,
   },
   headerSaveText: { color: '#fff', fontWeight: '700', fontSize: 14 },
   btnDisabled: { opacity: 0.5 },
 
   progressBar: { height: 4, backgroundColor: '#e5e7eb' },
-  progressFill: { height: '100%', backgroundColor: '#0077b6' },
+  progressFill: { height: '100%', backgroundColor: '#E8743B' },
   progressLabel: { fontSize: 11, color: '#6b7280', textAlign: 'right', paddingHorizontal: 16, paddingVertical: 4, backgroundColor: '#fff' },
 
   scroll: { padding: 16, gap: 14 },
@@ -394,7 +394,7 @@ const ls = StyleSheet.create({
     height: 180, borderRadius: 14, overflow: 'hidden',
     backgroundColor: '#e5e7eb', borderWidth: 2, borderStyle: 'dashed', borderColor: '#cbd5e1',
   },
-  photoCardComplete: { borderStyle: 'solid', borderColor: '#0077b6', borderWidth: 2 },
+  photoCardComplete: { borderStyle: 'solid', borderColor: '#E8743B', borderWidth: 2 },
   photo: { width: '100%', height: '100%' },
   photoPlaceholder: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8 },
   photoPlaceholderIcon: { fontSize: 32 },
@@ -425,7 +425,7 @@ const ls = StyleSheet.create({
   missingHintText: { fontSize: 13, color: '#92400e' },
 
   createBtn: {
-    backgroundColor: '#0077b6', borderRadius: 999,
+    backgroundColor: '#E8743B', borderRadius: 999,
     paddingVertical: 16, alignItems: 'center',
     ...shadow(4, 0.2, 10, 4),
   },

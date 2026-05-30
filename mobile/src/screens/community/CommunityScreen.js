@@ -138,7 +138,7 @@ const CommunityScreen = ({ navigation }) => {
         contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 24 }]}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={loading && !loadingMore} onRefresh={handleRefresh} tintColor="#0077b6" />
+          <RefreshControl refreshing={loading && !loadingMore} onRefresh={handleRefresh} tintColor="#E8743B" />
         }
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.4}
@@ -157,7 +157,7 @@ const CommunityScreen = ({ navigation }) => {
         }
         ListFooterComponent={
           loadingMore
-            ? <ActivityIndicator color="#0077b6" style={{ marginVertical: 16 }} />
+            ? <ActivityIndicator color="#E8743B" style={{ marginVertical: 16 }} />
             : null
         }
         renderItem={({ item }) => (
@@ -182,6 +182,7 @@ const CommunityScreen = ({ navigation }) => {
 };
 
 const UserCard = ({ user, me, isAuthenticated, onPress }) => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const [following, setFollowing] = useState(
     !!me?.followingListIds?.some(f => String(f.id) === String(user.id))
@@ -266,8 +267,8 @@ const styles = StyleSheet.create({
   backText: { fontSize: 20, color: '#374151' },
   headerTitle: { fontSize: 24, fontWeight: '800', color: '#111827' },
   memberCount: {
-    fontSize: 12, fontWeight: '600', color: '#0077b6',
-    backgroundColor: '#eff6ff', borderRadius: 999,
+    fontSize: 12, fontWeight: '600', color: '#E8743B',
+    backgroundColor: '#FFF0E8', borderRadius: 999,
     paddingVertical: 2, paddingHorizontal: 8,
   },
 
@@ -288,7 +289,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5, paddingHorizontal: 14, borderRadius: 999,
     borderWidth: 1, borderColor: '#e5e7eb', backgroundColor: '#fff',
   },
-  sortChipSelected: { backgroundColor: '#0077b6', borderColor: '#0077b6' },
+  sortChipSelected: { backgroundColor: '#E8743B', borderColor: '#E8743B' },
   sortChipText: { fontSize: 13, color: '#6b7280', fontWeight: '500' },
   sortChipTextSelected: { color: '#fff', fontWeight: '600' },
 
@@ -302,7 +303,7 @@ const styles = StyleSheet.create({
   emptyState: { alignItems: 'center', paddingTop: 48, paddingHorizontal: 32 },
   emptyEmoji: { fontSize: 40, marginBottom: 12 },
   emptyText: { fontSize: 15, color: '#6b7280', marginBottom: 8 },
-  emptyLink: { fontSize: 14, color: '#0077b6', fontWeight: '600' },
+  emptyLink: { fontSize: 14, color: '#E8743B', fontWeight: '600' },
 
   // Guest CTA
   guestCta: {
@@ -313,7 +314,7 @@ const styles = StyleSheet.create({
   guestCtaTitle: { fontSize: 16, fontWeight: '700', color: '#111827', marginBottom: 4 },
   guestCtaSubtitle: { fontSize: 13, color: '#6b7280', textAlign: 'center', marginBottom: 14 },
   guestCtaBtns: { flexDirection: 'row', gap: 10 },
-  primaryBtn: { backgroundColor: '#0077b6', borderRadius: 999, paddingVertical: 9, paddingHorizontal: 20 },
+  primaryBtn: { backgroundColor: '#E8743B', borderRadius: 999, paddingVertical: 9, paddingHorizontal: 20 },
   primaryBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
   secondaryBtn: { borderWidth: 1.5, borderColor: '#e5e7eb', borderRadius: 999, paddingVertical: 9, paddingHorizontal: 20 },
   secondaryBtnText: { color: '#374151', fontWeight: '600', fontSize: 14 },
@@ -333,7 +334,7 @@ const styles = StyleSheet.create({
   userCardAvatar: { width: 40, height: 40, borderRadius: 20 },
   userCardAvatarFallback: {
     width: 40, height: 40, borderRadius: 20,
-    backgroundColor: '#0077b6', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#E8743B', alignItems: 'center', justifyContent: 'center',
   },
   userCardAvatarInitial: { color: '#fff', fontWeight: '700', fontSize: 16 },
   userCardBody: { paddingTop: 22, paddingHorizontal: 12, paddingBottom: 12 },
@@ -341,18 +342,18 @@ const styles = StyleSheet.create({
   userCardUsername: { fontSize: 13, fontWeight: '700', color: '#111827', flex: 1 },
   officialBadge: {
     width: 14, height: 14, borderRadius: 7,
-    backgroundColor: '#0077b6', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#E8743B', alignItems: 'center', justifyContent: 'center',
   },
   officialText: { color: '#fff', fontSize: 8, fontWeight: '700' },
   userCardLocation: { fontSize: 11, color: '#9ca3af', marginBottom: 2 },
   userCardTrips: { fontSize: 11, color: '#6b7280', marginBottom: 8 },
   followBtn: {
-    borderWidth: 1.5, borderColor: '#0077b6', borderRadius: 999,
+    borderWidth: 1.5, borderColor: '#E8743B', borderRadius: 999,
     paddingVertical: 5, alignItems: 'center',
   },
   followBtnFollowing: { backgroundColor: '#f3f4f6', borderColor: '#e5e7eb' },
   followBtnDisabled: { opacity: 0.5 },
-  followBtnText: { fontSize: 12, fontWeight: '600', color: '#0077b6' },
+  followBtnText: { fontSize: 12, fontWeight: '600', color: '#E8743B' },
   followBtnTextFollowing: { color: '#6b7280' },
 });
 

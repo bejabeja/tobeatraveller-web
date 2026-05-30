@@ -120,13 +120,13 @@ const styles = StyleSheet.create({
   errorText: { fontSize: 12, color: '#dc2626', marginTop: 4 },
 
   btn: {
-    backgroundColor: '#0077b6', borderRadius: 999,
+    backgroundColor: '#E8743B', borderRadius: 999,
     paddingVertical: 15, alignItems: 'center', marginBottom: 16,
   },
   btnDisabled: { opacity: 0.6 },
   btnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
 
-  link: { textAlign: 'center', fontSize: 14, color: '#0077b6', fontWeight: '500' },
+  link: { textAlign: 'center', fontSize: 14, color: '#E8743B', fontWeight: '500' },
 
   successBox: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingBottom: 40 },
   successIcon: { fontSize: 48, marginBottom: 16 },

@@ -298,19 +298,19 @@ const styles = StyleSheet.create({
     width: 18, height: 18, borderRadius: 4, borderWidth: 1.5, borderColor: '#9ca3af',
     alignItems: 'center', justifyContent: 'center', marginTop: 1, flexShrink: 0,
   },
-  checkboxChecked: { backgroundColor: '#0077b6', borderColor: '#0077b6' },
+  checkboxChecked: { backgroundColor: '#E8743B', borderColor: '#E8743B' },
   checkboxError: { borderColor: '#dc2626', borderWidth: 2 },
   consentTextError: { color: '#dc2626' },
   checkmark: { color: '#fff', fontSize: 11, fontWeight: '700' },
   consentText: { fontSize: 12, color: '#6b7280', lineHeight: 18, flex: 1 },
   consentBold: { fontWeight: '600', color: '#374151' },
-  consentLink: { color: '#0077b6', fontWeight: '500' },
+  consentLink: { color: '#E8743B', fontWeight: '500' },
   required: { color: '#dc2626', fontWeight: '700' },
   consentError: { fontSize: 11, color: '#dc2626', marginLeft: 28 },
   authError: { color: '#dc2626', fontSize: 13, textAlign: 'center', marginBottom: 4 },
 
   btn: {
-    backgroundColor: '#0077b6', borderRadius: 999,
+    backgroundColor: '#E8743B', borderRadius: 999,
     paddingVertical: 15, alignItems: 'center', marginTop: 8, marginBottom: 10,
   },
   btnDisabled: { opacity: 0.6 },
@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
   divider: { height: 1, backgroundColor: '#e5e7eb', marginVertical: 16 },
 
   link: { textAlign: 'center', color: '#6b7280', fontSize: 14, marginBottom: 10 },
-  linkAccent: { color: '#0077b6', fontWeight: '600' },
+  linkAccent: { color: '#E8743B', fontWeight: '600' },
   browse: { textAlign: 'center', color: '#9ca3af', fontSize: 13 },
 
   usernamePill: {

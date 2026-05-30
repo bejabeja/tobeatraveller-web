@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
   authError: { color: '#dc2626', fontSize: 13, textAlign: 'center', marginBottom: 4 },
 
   btn: {
-    backgroundColor: '#0077b6', borderRadius: 999,
+    backgroundColor: '#E8743B', borderRadius: 999,
     paddingVertical: 15, alignItems: 'center', marginTop: 8, marginBottom: 10,
   },
   btnDisabled: { opacity: 0.6 },
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
   divider: { height: 1, backgroundColor: '#e5e7eb', marginVertical: 16 },
 
   link: { textAlign: 'center', color: '#6b7280', fontSize: 14, marginBottom: 10 },
-  linkAccent: { color: '#0077b6', fontWeight: '600' },
+  linkAccent: { color: '#E8743B', fontWeight: '600' },
   browse: { textAlign: 'center', color: '#9ca3af', fontSize: 13 },
 
   eyeBtn: { paddingHorizontal: 12 },

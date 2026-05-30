@@ -85,7 +85,7 @@ const SavedScreen = ({ navigation }) => {
         contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 24 }]}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#0077b6" />
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#E8743B" />
         }
         ListEmptyComponent={
           <View style={styles.emptyState}>
@@ -126,8 +126,8 @@ const styles = StyleSheet.create({
   },
   headerTitle: { fontSize: 24, fontWeight: '800', color: '#111827' },
   headerCount: {
-    fontSize: 13, fontWeight: '600', color: '#0077b6',
-    backgroundColor: '#eff6ff', borderRadius: 999,
+    fontSize: 13, fontWeight: '600', color: '#E8743B',
+    backgroundColor: '#FFF0E8', borderRadius: 999,
     paddingVertical: 2, paddingHorizontal: 8,
   },
 
@@ -151,12 +151,12 @@ const styles = StyleSheet.create({
   unauthTitle: { fontSize: 20, fontWeight: '800', color: '#111827', marginBottom: 8 },
   unauthSubtitle: { fontSize: 14, color: '#6b7280', textAlign: 'center', lineHeight: 21, marginBottom: 28 },
   signInBtn: {
-    backgroundColor: '#0077b6', borderRadius: 999,
+    backgroundColor: '#E8743B', borderRadius: 999,
     paddingVertical: 13, paddingHorizontal: 40, marginBottom: 14,
   },
   signInBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
   createLink: { fontSize: 14, color: '#6b7280' },
-  createLinkAccent: { color: '#0077b6', fontWeight: '600' },
+  createLinkAccent: { color: '#E8743B', fontWeight: '600' },
 });
 
 export default SavedScreen;

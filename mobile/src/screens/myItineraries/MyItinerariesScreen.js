@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
   backText: { fontSize: 20, color: '#374151' },
   title: { flex: 1, fontSize: 20, fontWeight: '800', color: '#111827' },
   newBtn: {
-    backgroundColor: '#0077b6', borderRadius: 999,
+    backgroundColor: '#E8743B', borderRadius: 999,
     paddingVertical: 7, paddingHorizontal: 14,
   },
   newBtnText: { color: '#fff', fontWeight: '700', fontSize: 13 },
@@ -203,10 +203,10 @@ const styles = StyleSheet.create({
     borderRadius: 999, borderWidth: 1.5, borderColor: '#e5e7eb',
     backgroundColor: '#f9fafb',
   },
-  chipActive: { borderColor: '#0077b6', backgroundColor: '#eff6ff' },
+  chipActive: { borderColor: '#E8743B', backgroundColor: '#FFF0E8' },
   chipEmoji: { fontSize: 12 },
   chipLabel: { fontSize: 12, color: '#6b7280', fontWeight: '500' },
-  chipLabelActive: { color: '#0077b6', fontWeight: '600' },
+  chipLabelActive: { color: '#E8743B', fontWeight: '600' },
 
   statsRow: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
@@ -224,9 +224,9 @@ const styles = StyleSheet.create({
   emptyEmoji: { fontSize: 40, marginBottom: 12 },
   emptyTitle: { fontSize: 16, fontWeight: '700', color: '#111827', marginBottom: 6 },
   emptySubtitle: { fontSize: 14, color: '#6b7280', marginBottom: 20 },
-  emptyLink: { fontSize: 14, color: '#0077b6', fontWeight: '600' },
+  emptyLink: { fontSize: 14, color: '#E8743B', fontWeight: '600' },
   emptyBtn: {
-    backgroundColor: '#0077b6', borderRadius: 999,
+    backgroundColor: '#E8743B', borderRadius: 999,
     paddingVertical: 11, paddingHorizontal: 32,
   },
   emptyBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },

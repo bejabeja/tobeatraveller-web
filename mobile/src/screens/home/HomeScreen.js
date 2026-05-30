@@ -169,8 +169,9 @@ const HomeScreen = ({ navigation }) => {
         <WorldMapSection destinations={destinations} navigation={navigation} t={t} />
       )}
 
-      {/* Featured Itineraries — only in discover tab */}
+      {/* Featured Itineraries + People — only in discover tab */}
       {(!isAuthenticated || tab === 'discover') && (
+      <>
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <View>
@@ -250,7 +251,7 @@ const HomeScreen = ({ navigation }) => {
         </ScrollView>
       </View>
 
-      )} {/* end discover tab */}
+      </> )} {/* end discover tab */}
 
       {/* CTA for guests */}
       {!isAuthenticated && (

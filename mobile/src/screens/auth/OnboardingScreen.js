@@ -64,7 +64,7 @@ const OnboardingScreen = ({ navigation }) => {
     <View style={[styles.root, { paddingTop: insets.top }]}>
       {/* Hero */}
       <LinearGradient
-        colors={['#0077b6', '#00b4d8']}
+        colors={['#E8743B', '#1A535C']}
         start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
         style={styles.hero}
       >
@@ -90,7 +90,7 @@ const OnboardingScreen = ({ navigation }) => {
         </View>
 
         {loading ? (
-          <ActivityIndicator size="large" color="#0077b6" style={styles.loader} />
+          <ActivityIndicator size="large" color="#E8743B" style={styles.loader} />
         ) : (
           <View style={styles.grid}>
             {users.map(user => (
@@ -140,7 +140,7 @@ const UserCard = ({ user, isFollowing, onToggle, t }) => {
           <AvatarBadge user={user} avatarError={avatarError} setAvatarError={setAvatarError} initial={initial} />
         </ImageBackground>
       ) : (
-        <LinearGradient colors={['#0077b6', '#00b4d8']} style={styles.cardPhoto}>
+        <LinearGradient colors={['#E8743B', '#1A535C']} style={styles.cardPhoto}>
           <AvatarBadge user={user} avatarError={avatarError} setAvatarError={setAvatarError} initial={initial} />
         </LinearGradient>
       )}
@@ -209,9 +209,9 @@ const styles = StyleSheet.create({
   dots: { flexDirection: 'row', gap: 8 },
   dot: {
     width: 10, height: 10, borderRadius: 5,
-    borderWidth: 2, borderColor: '#0077b6', backgroundColor: 'transparent',
+    borderWidth: 2, borderColor: '#E8743B', backgroundColor: 'transparent',
   },
-  dotFilled: { backgroundColor: '#0077b6' },
+  dotFilled: { backgroundColor: '#E8743B' },
   progressLabel: { fontSize: 13, color: '#6b7280', fontWeight: '500' },
 
   loader: { marginTop: 40 },
@@ -228,7 +228,7 @@ const styles = StyleSheet.create({
     ...shadow(2, 0.06, 8, 3),
   },
   cardFollowing: {
-    borderColor: '#0077b6',
+    borderColor: '#E8743B',
     ...shadow(0, 0.12, 0, 4),
   },
 
@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
   avatar: { width: 44, height: 44, borderRadius: 22 },
   avatarFallback: {
     width: 44, height: 44, borderRadius: 22,
-    backgroundColor: '#0077b6', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#E8743B', alignItems: 'center', justifyContent: 'center',
   },
   avatarInitial: { color: '#fff', fontSize: 18, fontWeight: '700' },
 
@@ -271,11 +271,11 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingVertical: 6,
     borderRadius: 999,
-    borderWidth: 1.5, borderColor: '#0077b6',
+    borderWidth: 1.5, borderColor: '#E8743B',
     alignItems: 'center',
   },
-  followBtnActive: { backgroundColor: '#0077b6' },
-  followBtnText: { fontSize: 12, fontWeight: '700', color: '#0077b6' },
+  followBtnActive: { backgroundColor: '#E8743B' },
+  followBtnText: { fontSize: 12, fontWeight: '700', color: '#E8743B' },
   followBtnTextActive: { color: '#fff' },
 
   footer: {
@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', gap: 8,
   },
   ctaBtn: {
-    width: '100%', backgroundColor: '#0077b6',
+    width: '100%', backgroundColor: '#E8743B',
     borderRadius: 999, paddingVertical: 14, alignItems: 'center',
   },
   ctaBtnLocked: {

@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12, gap: 12,
     borderBottomWidth: 1, borderBottomColor: '#f3f4f6',
   },
-  itemUnread: { backgroundColor: '#eff6ff', marginHorizontal: -16, paddingHorizontal: 16 },
+  itemUnread: { backgroundColor: '#FFF0E8', marginHorizontal: -16, paddingHorizontal: 16 },
 
   avatarWrap: { position: 'relative', flexShrink: 0 },
   avatar: { width: 46, height: 46, borderRadius: 23, backgroundColor: '#e5e7eb' },
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
 
   dot: {
     width: 8, height: 8, borderRadius: 4,
-    backgroundColor: '#0077b6', flexShrink: 0,
+    backgroundColor: '#E8743B', flexShrink: 0,
   },
 
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 8 },

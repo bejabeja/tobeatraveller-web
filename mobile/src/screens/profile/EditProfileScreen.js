@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
   headerBackText: { fontSize: 20, color: '#374151' },
   headerTitle: { flex: 1, fontSize: 17, fontWeight: '700', color: '#111827', textAlign: 'center' },
   headerSave: {
-    backgroundColor: '#0077b6', borderRadius: 999,
+    backgroundColor: '#E8743B', borderRadius: 999,
     paddingVertical: 7, paddingHorizontal: 16,
   },
   headerSaveDisabled: { opacity: 0.5 },
@@ -357,7 +357,7 @@ const styles = StyleSheet.create({
   avatar: { width: '100%', height: '100%' },
   avatarFallback: {
     width: '100%', height: '100%',
-    backgroundColor: '#0077b6', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#E8743B', alignItems: 'center', justifyContent: 'center',
   },
   avatarInitial: { color: '#fff', fontSize: 36, fontWeight: '700' },
   avatarOverlay: {
@@ -368,7 +368,7 @@ const styles = StyleSheet.create({
   avatarOverlayRemove: { backgroundColor: 'rgba(239,68,68,0.35)' },
   avatarOverlayIcon: { fontSize: 24 },
   avatarAction: { marginTop: 8 },
-  avatarActionText: { fontSize: 13, color: '#0077b6', fontWeight: '600' },
+  avatarActionText: { fontSize: 13, color: '#E8743B', fontWeight: '600' },
 
   card: {
     backgroundColor: '#fff', borderRadius: 14, padding: 16,

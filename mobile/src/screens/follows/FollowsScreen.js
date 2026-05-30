@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1, borderBottomColor: '#f3f4f6',
   },
   avatar: { width: 48, height: 48, borderRadius: 24, marginRight: 12 },
-  avatarFallback: { backgroundColor: '#0077b6', alignItems: 'center', justifyContent: 'center' },
+  avatarFallback: { backgroundColor: '#E8743B', alignItems: 'center', justifyContent: 'center' },
   avatarInitial: { color: '#fff', fontSize: 18, fontWeight: '700' },
 
   userInfo: { flex: 1 },
@@ -185,12 +185,12 @@ const styles = StyleSheet.create({
   userTrips: { fontSize: 12, color: '#9ca3af', marginTop: 1 },
 
   followBtn: {
-    borderWidth: 1.5, borderColor: '#0077b6', borderRadius: 999,
+    borderWidth: 1.5, borderColor: '#E8743B', borderRadius: 999,
     paddingVertical: 6, paddingHorizontal: 16,
   },
   followBtnActive: { backgroundColor: '#f3f4f6', borderColor: '#e5e7eb' },
   btnDisabled: { opacity: 0.5 },
-  followBtnText: { fontSize: 13, fontWeight: '600', color: '#0077b6' },
+  followBtnText: { fontSize: 13, fontWeight: '600', color: '#E8743B' },
   followBtnTextActive: { color: '#6b7280' },
 
   empty: { alignItems: 'center', paddingTop: 60 },

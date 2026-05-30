@@ -155,7 +155,7 @@ const EditItineraryScreen = ({ route, navigation }) => {
     if (!result.canceled && result.assets?.[0]) setPhotoUri(result.assets[0].uri);
   };
 
-  if (loading) return <ActivityIndicator size="large" color="#0077b6" style={{ flex: 1, marginTop: 60 }} />;
+  if (loading) return <ActivityIndicator size="large" color="#E8743B" style={{ flex: 1, marginTop: 60 }} />;
 
   const currentPhoto = photoUri || itinerary?.photoUrl;
 
@@ -272,7 +272,7 @@ const ls = StyleSheet.create({
   headerBackText: { fontSize: 20, color: '#374151' },
   headerTitle: { flex: 1, fontSize: 17, fontWeight: '700', color: '#111827', textAlign: 'center' },
   headerSave: {
-    backgroundColor: '#0077b6', borderRadius: 999,
+    backgroundColor: '#E8743B', borderRadius: 999,
     paddingVertical: 7, paddingHorizontal: 16,
   },
   headerSaveText: { color: '#fff', fontWeight: '700', fontSize: 14 },

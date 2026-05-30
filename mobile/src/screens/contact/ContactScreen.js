@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
   errorText: { fontSize: 12, color: '#dc2626', marginTop: 4 },
 
   btn: {
-    backgroundColor: '#0077b6', borderRadius: 999,
+    backgroundColor: '#E8743B', borderRadius: 999,
     paddingVertical: 15, alignItems: 'center',
     ...shadow(4, 0.2, 10, 4),
   },

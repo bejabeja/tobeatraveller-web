@@ -3,21 +3,19 @@ import {
   Alert, ActivityIndicator, FlatList, Modal, ScrollView, StyleSheet,
   Text, TextInput, TouchableOpacity, View,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import {
   currencyOptions, generateSmartItinerary, getCurrencySymbol,
   itineraryCategories, placeCategories,
 } from '@tobeatraveller/shared';
-import { shadow } from '../../utils/styles';
+import { COLORS, shadow } from '../../utils/styles';
+import { STEP_CONFIG, STEP_NAME_HINT, getStepConfig } from '../../utils/stepConfig';
 
 export const CATEGORY_EMOJI = {
   adventure:'🧗', relax:'🧘', culture:'🏛', romantic:'💕',
   roadtrip:'🚗', family:'👨‍👩‍👧', backpacking:'🎒', wellness:'🌿',
   gastronomic:'🍽', party:'🎉', sport:'⚽', other:'📍',
-};
-export const PLACE_CATEGORY_EMOJI = {
-  nature:'🌿', beach:'🏖', city:'🏙', park:'🌳', monument:'🏛',
-  camping:'⛺', island:'🏝', sport:'⚽', vineyard:'🍇', other:'📍',
 };
 export const BUDGET_PRESET_RATES = [
   { key: 'backpacker', rate: 50 },
@@ -87,17 +85,22 @@ export const PlaceCard = ({
         </TouchableOpacity>
       </View>
 
-      {/* Category chips */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.placeCatRow}>
-        {placeCategories.map(cat => (
-          <TouchableOpacity
-            key={cat.value}
-            style={[s.placeCatChip, place.category === cat.value && s.placeCatChipSelected]}
-            onPress={() => onUpdate('category', cat.value)}
-          >
-            <Text style={s.placeCatEmoji}>{PLACE_CATEGORY_EMOJI[cat.value] || '📍'}</Text>
-          </TouchableOpacity>
-        ))}
+      {/* Step type selector */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.placeCatRow} contentContainerStyle={s.placeCatContent}>
+        {placeCategories.map(cat => {
+          const cfg = getStepConfig(cat.value);
+          const selected = place.category === cat.value;
+          return (
+            <TouchableOpacity
+              key={cat.value}
+              style={[s.typeChip, selected && { backgroundColor: cfg.color, borderColor: cfg.color }]}
+              onPress={() => onUpdate('category', cat.value)}
+            >
+              <Ionicons name={cfg.icon} size={13} color={selected ? '#fff' : cfg.color} />
+              <Text style={[s.typeChipLabel, selected && s.typeChipLabelSelected]}>{cat.label}</Text>
+            </TouchableOpacity>
+          );
+        })}
       </ScrollView>
 
       {/* Description */}
@@ -106,7 +109,7 @@ export const PlaceCard = ({
           style={[s.input, s.placeDescInput]}
           value={place.description}
           onChangeText={v => onUpdate('description', v)}
-          placeholder={t('itineraryForm.descriptionOptional')}
+          placeholder={STEP_NAME_HINT[place.category] || t('itineraryForm.descriptionOptional')}
           placeholderTextColor="#9ca3af"
           multiline maxLength={500}
         />
@@ -575,10 +578,10 @@ export const s = StyleSheet.create({
     paddingVertical: 7, paddingHorizontal: 12, marginRight: 8,
     borderRadius: 999, borderWidth: 1.5, borderColor: '#e5e7eb', backgroundColor: '#f9fafb',
   },
-  chipSelected: { borderColor: '#0077b6', backgroundColor: '#eff6ff' },
+  chipSelected: { borderColor: COLORS.primary, backgroundColor: COLORS.bgLight },
   chipEmoji: { fontSize: 14 },
   chipLabel: { fontSize: 13, color: '#6b7280', fontWeight: '500' },
-  chipLabelSelected: { color: '#0077b6', fontWeight: '600' },
+  chipLabelSelected: { color: COLORS.primary, fontWeight: '600' },
 
   presetsRow: { flexDirection: 'row', gap: 8, marginBottom: 14 },
   presetChip: {
@@ -589,10 +592,10 @@ export const s = StyleSheet.create({
 
   durationBadge: {
     alignSelf: 'flex-start', marginTop: 8,
-    backgroundColor: '#eff6ff', borderRadius: 999,
-    paddingVertical: 3, paddingHorizontal: 12, borderWidth: 1, borderColor: '#bfdbfe',
+    backgroundColor: COLORS.bgLight, borderRadius: 999,
+    paddingVertical: 3, paddingHorizontal: 12, borderWidth: 1, borderColor: COLORS.primary + '50',
   },
-  durationText: { fontSize: 13, color: '#1d4ed8', fontWeight: '600' },
+  durationText: { fontSize: 13, color: COLORS.primaryDark, fontWeight: '600' },
 
   currencyBtn: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   currencyBtnText: { fontSize: 14, color: '#111827' },
@@ -615,7 +618,7 @@ export const s = StyleSheet.create({
     flex: 1, borderRadius: 12, padding: 14, borderWidth: 1.5,
     borderColor: '#e5e7eb', alignItems: 'center', backgroundColor: '#f9fafb',
   },
-  visibilitySelected: { borderColor: '#0077b6', backgroundColor: '#eff6ff' },
+  visibilitySelected: { borderColor: COLORS.primary, backgroundColor: COLORS.bgLight },
   visibilityIcon: { fontSize: 22, marginBottom: 4 },
   visibilityLabel: { fontSize: 14, fontWeight: '700', color: '#111827', marginBottom: 2 },
   visibilityDesc: { fontSize: 11, color: '#6b7280', textAlign: 'center' },
@@ -639,13 +642,23 @@ export const s = StyleSheet.create({
   },
   placeRemoveBtn: { padding: 4 },
   placeRemoveText: { color: '#9ca3af', fontSize: 14 },
-  placeCatRow: { marginBottom: 8 },
+  placeCatRow: { marginBottom: 10 },
+  placeCatContent: { gap: 6, paddingVertical: 2 },
   placeCatChip: {
     width: 34, height: 34, borderRadius: 8, marginRight: 6,
     alignItems: 'center', justifyContent: 'center',
     backgroundColor: '#f3f4f6', borderWidth: 1, borderColor: '#e5e7eb',
   },
-  placeCatChipSelected: { borderColor: '#0077b6', backgroundColor: '#eff6ff' },
+  typeChip: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    paddingVertical: 6, paddingHorizontal: 11,
+    borderRadius: 999, borderWidth: 1.5, borderColor: '#E5E7EB',
+    backgroundColor: '#F9FAFB',
+  },
+  typeChipLabel: { fontSize: 12, color: '#6B7280', fontWeight: '500' },
+  typeChipLabelSelected: { color: '#fff', fontWeight: '600' },
+  // (kept for compatibility — replaced by typeChip below)
+  placeCatChipSelected: { borderColor: COLORS.primary, backgroundColor: COLORS.bgLight },
   placeCatEmoji: { fontSize: 16 },
   placeDescInput: { minHeight: 60, textAlignVertical: 'top', marginTop: 4 },
   // Place reorder + move-to-day
@@ -690,17 +703,17 @@ export const s = StyleSheet.create({
   },
   syncBtnText: { fontSize: 12, color: '#fff', fontWeight: '600' },
 
-  addDescLink: { fontSize: 13, color: '#0077b6', marginTop: 4 },
+  addDescLink: { fontSize: 13, color: COLORS.primary, marginTop: 4 },
   addPlaceBtn: {
-    borderWidth: 1.5, borderStyle: 'dashed', borderColor: '#bfdbfe',
-    borderRadius: 8, paddingVertical: 8, alignItems: 'center', backgroundColor: '#f8faff',
+    borderWidth: 1.5, borderStyle: 'dashed', borderColor: COLORS.primary + '60',
+    borderRadius: 8, paddingVertical: 8, alignItems: 'center', backgroundColor: COLORS.bgLight,
   },
-  addPlaceBtnText: { color: '#0077b6', fontSize: 13, fontWeight: '500' },
+  addPlaceBtnText: { color: COLORS.primary, fontSize: 13, fontWeight: '500' },
   addDayBtn: {
-    borderWidth: 1.5, borderColor: '#0077b6', borderRadius: 10,
-    paddingVertical: 11, alignItems: 'center', backgroundColor: '#eff6ff', marginTop: 4,
+    borderWidth: 1.5, borderColor: COLORS.primary, borderRadius: 10,
+    paddingVertical: 11, alignItems: 'center', backgroundColor: COLORS.bgLight, marginTop: 4,
   },
-  addDayBtnText: { color: '#0077b6', fontSize: 14, fontWeight: '600' },
+  addDayBtnText: { color: COLORS.primary, fontSize: 14, fontWeight: '600' },
 
   modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
   modalSheet: {
@@ -713,8 +726,8 @@ export const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#f3f4f6',
   },
-  currencyItemSelected: { backgroundColor: '#eff6ff' },
+  currencyItemSelected: { backgroundColor: COLORS.bgLight },
   currencyItemText: { fontSize: 14, color: '#374151' },
-  currencyItemTextSelected: { color: '#0077b6', fontWeight: '600' },
-  currencyCheck: { color: '#0077b6', fontSize: 14, fontWeight: '700' },
+  currencyItemTextSelected: { color: COLORS.primary, fontWeight: '600' },
+  currencyCheck: { color: COLORS.primary, fontSize: 14, fontWeight: '700' },
 });

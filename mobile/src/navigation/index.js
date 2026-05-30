@@ -2,9 +2,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Modal, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { selectIsAuthenticated } from '@tobeatraveller/shared';
+import { COLORS } from '../utils/styles';
 
 import HomeScreen from '../screens/home/HomeScreen';
 import ExploreScreen from '../screens/explore/ExploreScreen';
@@ -21,6 +23,7 @@ import SettingsScreen from '../screens/settings/SettingsScreen';
 import ItineraryScreen from '../screens/itinerary/ItineraryScreen';
 import EditItineraryScreen from '../screens/itinerary/EditItineraryScreen';
 import CreateItineraryScreen from '../screens/itinerary/CreateItineraryScreen';
+import PlanExperienceScreen from '../screens/itinerary/PlanExperienceScreen';
 import MyItinerariesScreen from '../screens/myItineraries/MyItinerariesScreen';
 import FollowsScreen from '../screens/follows/FollowsScreen';
 import OnboardingScreen from '../screens/auth/OnboardingScreen';
@@ -43,46 +46,98 @@ const CreateButton = ({ onPress }) => (
   </TouchableOpacity>
 );
 
-const TabNavigator = () => (
-  <Tab.Navigator
-    screenOptions={({ route }) => ({
-      headerShown: false,
-      tabBarActiveTintColor: '#E8743B',
-      tabBarInactiveTintColor: '#9ca3af',
-      tabBarStyle: {
-        borderTopColor: '#e5e7eb',
-        borderTopWidth: 1,
-        height: 60,
-        paddingBottom: 8,
-        paddingTop: 6,
-        backgroundColor: '#fff',
-      },
-      tabBarLabelStyle: { fontSize: 10, fontWeight: '500' },
-      tabBarIcon: ({ focused, color, size }) => (
-        <Ionicons
-          name={TAB_ICONS[route.name]
-            ? (focused ? TAB_ICONS[route.name].active : TAB_ICONS[route.name].inactive)
-            : 'add'}
-          size={size}
-          color={color}
+const TabNavigator = ({ navigation }) => {
+  const [showSheet, setShowSheet] = useState(false);
+
+  return (
+    <>
+      <Tab.Navigator
+        screenOptions={({ route }) => ({
+          headerShown: false,
+          tabBarActiveTintColor: '#E8743B',
+          tabBarInactiveTintColor: '#9ca3af',
+          tabBarStyle: {
+            borderTopColor: '#e5e7eb',
+            borderTopWidth: 1,
+            height: 60,
+            paddingBottom: 8,
+            paddingTop: 6,
+            backgroundColor: '#fff',
+          },
+          tabBarLabelStyle: { fontSize: 10, fontWeight: '500' },
+          tabBarIcon: ({ focused, color, size }) => (
+            <Ionicons
+              name={TAB_ICONS[route.name]
+                ? (focused ? TAB_ICONS[route.name].active : TAB_ICONS[route.name].inactive)
+                : 'add'}
+              size={size}
+              color={color}
+            />
+          ),
+        })}
+      >
+        <Tab.Screen name="Home"      component={HomeScreen}      options={{ tabBarLabel: 'Home' }} />
+        <Tab.Screen name="Explore"   component={ExploreScreen}   options={{ tabBarLabel: 'Explore' }} />
+        <Tab.Screen
+          name="Create"
+          component={CreateItineraryScreen}
+          options={{
+            tabBarLabel: () => null,
+            tabBarButton: () => <CreateButton onPress={() => setShowSheet(true)} />,
+          }}
         />
-      ),
-    })}
-  >
-    <Tab.Screen name="Home"      component={HomeScreen}      options={{ tabBarLabel: 'Home' }} />
-    <Tab.Screen name="Explore"   component={ExploreScreen}   options={{ tabBarLabel: 'Explore' }} />
-    <Tab.Screen
-      name="Create"
-      component={CreateItineraryScreen}
-      options={{
-        tabBarLabel: () => null,
-        tabBarButton: (props) => <CreateButton onPress={props.onPress} />,
-      }}
-    />
-    <Tab.Screen name="Community" component={CommunityScreen} options={{ tabBarLabel: 'People' }} />
-    <Tab.Screen name="Profile"   component={ProfileScreen}   options={{ tabBarLabel: 'Profile' }} />
-  </Tab.Navigator>
-);
+        <Tab.Screen name="Community" component={CommunityScreen} options={{ tabBarLabel: 'People' }} />
+        <Tab.Screen name="Profile"   component={ProfileScreen}   options={{ tabBarLabel: 'Profile' }} />
+      </Tab.Navigator>
+
+      {/* Create type bottom sheet */}
+      <Modal visible={showSheet} animationType="slide" transparent onRequestClose={() => setShowSheet(false)}>
+        <TouchableOpacity style={tb.backdrop} onPress={() => setShowSheet(false)} activeOpacity={1}>
+          <View style={tb.sheet}>
+            <View style={tb.handle} />
+            <Text style={tb.sheetTitle}>What do you want to create?</Text>
+
+            {/* Option 1 — Itinerary */}
+            <TouchableOpacity
+              style={[tb.option, { borderColor: COLORS.accent + '40' }]}
+              onPress={() => { setShowSheet(false); navigation.navigate('CreateItinerary'); }}
+              activeOpacity={0.85}
+            >
+              <View style={[tb.optionIcon, { backgroundColor: COLORS.accent + '18' }]}>
+                <Ionicons name="list-outline" size={28} color={COLORS.accent} />
+              </View>
+              <View style={tb.optionText}>
+                <Text style={[tb.optionTitle, { color: COLORS.accent }]}>Itinerary</Text>
+                <Text style={tb.optionDesc}>Plan day by day — places, budget, and all the details.</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color="#D1D5DB" />
+            </TouchableOpacity>
+
+            {/* Option 2 — Experience */}
+            <TouchableOpacity
+              style={[tb.option, { borderColor: COLORS.primary + '40' }]}
+              onPress={() => { setShowSheet(false); navigation.navigate('PlanExperience'); }}
+              activeOpacity={0.85}
+            >
+              <View style={[tb.optionIcon, { backgroundColor: COLORS.primary + '18' }]}>
+                <Ionicons name="flash-outline" size={28} color={COLORS.primary} />
+              </View>
+              <View style={tb.optionText}>
+                <Text style={[tb.optionTitle, { color: COLORS.primary }]}>Experience</Text>
+                <Text style={tb.optionDesc}>Tell AI where you're going — it plans the whole journey.</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color="#D1D5DB" />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={tb.cancelBtn} onPress={() => setShowSheet(false)}>
+              <Text style={tb.cancelText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+    </>
+  );
+};
 
 const tb = StyleSheet.create({
   createWrap: {
@@ -91,6 +146,25 @@ const tb = StyleSheet.create({
     justifyContent: 'center',
     marginTop: -12,
   },
+  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'flex-end' },
+  sheet: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 24, borderTopRightRadius: 24,
+    padding: 20, paddingBottom: 36, gap: 12,
+  },
+  handle: { width: 36, height: 4, borderRadius: 2, backgroundColor: '#E5E7EB', alignSelf: 'center', marginBottom: 8 },
+  sheetTitle: { fontSize: 16, fontWeight: '700', color: '#1C1C1E', marginBottom: 4 },
+  option: {
+    flexDirection: 'row', alignItems: 'center', gap: 14,
+    borderWidth: 1.5, borderRadius: 16, padding: 14,
+    backgroundColor: '#FAFAFA',
+  },
+  optionIcon: { width: 52, height: 52, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  optionText: { flex: 1 },
+  optionTitle: { fontSize: 16, fontWeight: '800', marginBottom: 2 },
+  optionDesc: { fontSize: 13, color: '#6b7280', lineHeight: 17 },
+  cancelBtn: { alignItems: 'center', paddingVertical: 10 },
+  cancelText: { fontSize: 15, color: '#9CA3AF', fontWeight: '500' },
   createCircle: {
     width: 54,
     height: 54,
@@ -127,6 +201,7 @@ const Navigation = () => {
         <Stack.Screen name="Settings" component={SettingsScreen} />
         <Stack.Screen name="EditItinerary" component={EditItineraryScreen} />
         <Stack.Screen name="CreateItinerary" component={CreateItineraryScreen} />
+        <Stack.Screen name="PlanExperience" component={PlanExperienceScreen} />
         <Stack.Screen name="Community" component={CommunityScreen} />
         <Stack.Screen name="MyItineraries" component={MyItinerariesScreen} />
         <Stack.Screen name="Follows" component={FollowsScreen} options={{ presentation: 'formSheet', headerShown: false }} />

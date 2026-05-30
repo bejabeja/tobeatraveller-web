@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
     fontSize: 13, color: '#6b7280', lineHeight: 19, marginBottom: 12,
   },
   linkBtn: { alignSelf: 'flex-start' },
-  linkBtnText: { fontSize: 14, fontWeight: '600', color: '#0077b6' },
+  linkBtnText: { fontSize: 14, fontWeight: '600', color: '#E8743B' },
 
   input: {
     borderWidth: 1.5, borderColor: '#dde3ec', borderRadius: 10,
@@ -201,9 +201,9 @@ const styles = StyleSheet.create({
     borderWidth: 1.5, borderColor: '#e5e7eb',
     alignItems: 'center', backgroundColor: '#f9fafb',
   },
-  langBtnActive: { borderColor: '#0077b6', backgroundColor: '#eff6ff' },
+  langBtnActive: { borderColor: '#E8743B', backgroundColor: '#FFF0E8' },
   langBtnText: { fontSize: 14, color: '#374151', fontWeight: '500' },
-  langBtnTextActive: { color: '#0077b6', fontWeight: '700' },
+  langBtnTextActive: { color: '#E8743B', fontWeight: '700' },
 
   dangerCard: {
     backgroundColor: '#fff', borderRadius: 14, padding: 16,

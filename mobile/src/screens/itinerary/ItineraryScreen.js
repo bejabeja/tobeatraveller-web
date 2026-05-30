@@ -1,7 +1,8 @@
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator, Alert, Image, Platform, ScrollView, Share,
+  Alert, Image, Platform, ScrollView, Share,
   StyleSheet, Text, TextInput, TouchableOpacity, View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -12,19 +13,14 @@ import { useTranslation } from 'react-i18next';
 const MapView = Platform.OS !== 'web' ? require('react-native-maps').default : null;
 const Marker  = Platform.OS !== 'web' ? require('react-native-maps').Marker  : null;
 import { ItineraryDetailSkeleton } from '../../components/Skeleton';
-import { shadow, textShadow } from '../../utils/styles';
+import { COLORS, shadow, textShadow } from '../../utils/styles';
+import { getStepConfig } from '../../utils/stepConfig';
 import {
   addComment, addFavorite, checkIsFavorite, deleteComment,
   deleteItinerary, getCommentsByItineraryId, getCurrencySymbol,
   getItineraryById, getUserById, removeFavorite,
   selectIsAuthenticated, selectMe,
 } from '@tobeatraveller/shared';
-
-const PLACE_ICONS = {
-  restaurant: '🍽', cafe: '☕', museum: '🏛', park: '🌳',
-  beach: '🏖', hotel: '🏨', shopping: '🛍', viewpoint: '👁',
-  attraction: '🎡', transport: '🚉',
-};
 
 const formatBudget = (budget) => {
   const n = parseFloat(budget);
@@ -244,7 +240,7 @@ const ItineraryScreen = ({ route, navigation }) => {
           />
         </View>
 
-        {/* Places */}
+        {/* Places — timeline */}
         {itinerary.places?.length > 0 && (() => {
           const dayMap = {};
           itinerary.places.forEach((place, i) => {
@@ -263,39 +259,24 @@ const ItineraryScreen = ({ route, navigation }) => {
               {isMultiDay ? dayNumbers.map(day => (
                 <View key={day}>
                   <View style={styles.dayHeader}>
+                    <View style={styles.dayHeaderDot} />
                     <Text style={styles.dayLabel}>{t('itinerary.dayHeader', { n: day })}</Text>
                     <View style={styles.dayLine} />
                   </View>
                   {dayMap[day].map(({ place, i }, position) => (
-                    <View key={i} style={styles.placeCard}>
-                      <View style={styles.placeNumber}>
-                        <Text style={styles.placeNumberText}>{position + 1}</Text>
-                      </View>
-                      <View style={styles.placeInfo}>
-                        <View style={styles.placeHeader}>
-                          <Text style={styles.placeIcon}>{PLACE_ICONS[place.category] || '📍'}</Text>
-                          <Text style={styles.placeName}>{place.name}</Text>
-                        </View>
-                        {place.description && <Text style={styles.placeDesc}>{place.description}</Text>}
-                        {place.address && <Text style={styles.placeAddress}>📍 {place.address}</Text>}
-                      </View>
-                    </View>
+                    <TimelineStep
+                      key={i}
+                      place={place}
+                      isLast={position === dayMap[day].length - 1}
+                    />
                   ))}
                 </View>
               )) : itinerary.places.map((place, i) => (
-                <View key={i} style={styles.placeCard}>
-                  <View style={styles.placeNumber}>
-                    <Text style={styles.placeNumberText}>{i + 1}</Text>
-                  </View>
-                  <View style={styles.placeInfo}>
-                    <View style={styles.placeHeader}>
-                      <Text style={styles.placeIcon}>{PLACE_ICONS[place.category] || '📍'}</Text>
-                      <Text style={styles.placeName}>{place.name}</Text>
-                    </View>
-                    {place.description && <Text style={styles.placeDesc}>{place.description}</Text>}
-                    {place.address && <Text style={styles.placeAddress}>📍 {place.address}</Text>}
-                  </View>
-                </View>
+                <TimelineStep
+                  key={i}
+                  place={place}
+                  isLast={i === itinerary.places.length - 1}
+                />
               ))}
             </View>
           );
@@ -384,6 +365,56 @@ const ItineraryScreen = ({ route, navigation }) => {
   );
 };
 
+// ─── Timeline step ────────────────────────────────────────────────────────────
+const TimelineStep = ({ place, isLast }) => {
+  const cfg = getStepConfig(place.category);
+  const dimColor = cfg.color + '25';
+  return (
+    <View style={tl.row}>
+      <View style={tl.col}>
+        <View style={[tl.dot, { backgroundColor: cfg.color }]}>
+          <Ionicons name={cfg.icon} size={13} color="#fff" />
+        </View>
+        {!isLast && <View style={tl.connector} />}
+      </View>
+      <View style={[tl.content, isLast && tl.contentLast]}>
+        <View style={[tl.badge, { backgroundColor: dimColor }]}>
+          <Text style={[tl.badgeText, { color: cfg.color }]}>{cfg.label.toUpperCase()}</Text>
+        </View>
+        <Text style={tl.name}>{place.name}</Text>
+        {place.description ? <Text style={tl.desc}>{place.description}</Text> : null}
+        {place.address ? (
+          <View style={tl.addressRow}>
+            <Ionicons name="location-outline" size={11} color="#9CA3AF" />
+            <Text style={tl.address}>{place.address}</Text>
+          </View>
+        ) : null}
+      </View>
+    </View>
+  );
+};
+
+const tl = StyleSheet.create({
+  row: { flexDirection: 'row', gap: 12 },
+  col: { width: 28, alignItems: 'center' },
+  dot: {
+    width: 28, height: 28, borderRadius: 14,
+    alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+  },
+  connector: { width: 2, flex: 1, minHeight: 12, backgroundColor: '#E5E7EB', marginVertical: 3 },
+  content: { flex: 1, paddingBottom: 20, paddingTop: 1 },
+  contentLast: { paddingBottom: 4 },
+  badge: {
+    alignSelf: 'flex-start', borderRadius: 6,
+    paddingVertical: 2, paddingHorizontal: 7, marginBottom: 5,
+  },
+  badgeText: { fontSize: 9, fontWeight: '800', letterSpacing: 0.6 },
+  name: { fontSize: 14, fontWeight: '700', color: '#111827', marginBottom: 4, lineHeight: 20 },
+  desc: { fontSize: 13, color: '#6b7280', lineHeight: 19, marginBottom: 2 },
+  addressRow: { flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 3 },
+  address: { fontSize: 12, color: '#9CA3AF' },
+});
+
 // ─── Map component (native only) ─────────────────────────────────────────────
 const ItineraryMap = ({ places, location, t }) => {
   const mapRef = useRef(null);
@@ -452,7 +483,7 @@ const mapStyles = StyleSheet.create({
   map: { width: '100%', height: 240 },
   marker: {
     width: 28, height: 28, borderRadius: 14,
-    backgroundColor: '#0077b6', borderWidth: 2, borderColor: '#fff',
+    backgroundColor: COLORS.primary, borderWidth: 2, borderColor: '#fff',
     alignItems: 'center', justifyContent: 'center',
   },
   markerText: { color: '#fff', fontSize: 11, fontWeight: '700' },
@@ -508,8 +539,8 @@ const styles = StyleSheet.create({
   },
   badge: {
     alignSelf: 'flex-start',
-    backgroundColor: 'rgba(0,119,182,0.85)',
-    borderWidth: 1, borderColor: 'rgba(100,200,255,0.3)',
+    backgroundColor: 'rgba(26,83,92,0.85)',
+    borderWidth: 1, borderColor: 'rgba(168,213,199,0.3)',
     borderRadius: 14,
     paddingVertical: 4, paddingHorizontal: 12, marginBottom: 10,
   },
@@ -523,7 +554,7 @@ const styles = StyleSheet.create({
   authorRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   authorAvatar: {
     width: 32, height: 32, borderRadius: 16,
-    backgroundColor: '#0077b6',
+    backgroundColor: COLORS.accent,
     borderWidth: 2, borderColor: 'rgba(255,255,255,0.5)',
     alignItems: 'center', justifyContent: 'center',
     overflow: 'hidden',
@@ -563,41 +594,27 @@ const styles = StyleSheet.create({
   // Day groups
   dayHeader: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
-    marginTop: 20, marginBottom: 4,
+    marginTop: 20, marginBottom: 8,
+  },
+  dayHeaderDot: {
+    width: 8, height: 8, borderRadius: 4, backgroundColor: COLORS.primary,
   },
   dayLabel: {
-    fontSize: 11, fontWeight: '800', color: '#0077b6',
+    fontSize: 11, fontWeight: '800', color: COLORS.primary,
     textTransform: 'uppercase', letterSpacing: 1,
   },
   dayLine: { flex: 1, height: 1, backgroundColor: '#e5e7eb' },
 
-  // Places
-  placeCard: {
-    flexDirection: 'row', gap: 12,
-    paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#f3f4f6',
-  },
-  placeNumber: {
-    width: 28, height: 28, borderRadius: 14,
-    backgroundColor: '#0077b6', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-  },
-  placeNumberText: { color: '#fff', fontSize: 12, fontWeight: '700' },
-  placeInfo: { flex: 1 },
-  placeHeader: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  placeIcon: { fontSize: 14 },
-  placeName: { fontSize: 14, fontWeight: '600', color: '#111827', flex: 1 },
-  placeDesc: { fontSize: 13, color: '#6b7280', marginTop: 3, lineHeight: 18 },
-  placeAddress: { fontSize: 12, color: '#9ca3af', marginTop: 3 },
-
   // Comments
   loginPrompt: {
-    color: '#0077b6', fontSize: 14, marginBottom: 12,
+    color: COLORS.primary, fontSize: 14, marginBottom: 12,
     textDecorationLine: 'underline',
   },
   noComments: { color: '#9ca3af', fontSize: 14, marginBottom: 8 },
   commentForm: { flexDirection: 'row', gap: 10, marginBottom: 16 },
   commentFormAvatar: {
     width: 34, height: 34, borderRadius: 17,
-    backgroundColor: '#0077b6', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: COLORS.accent, alignItems: 'center', justifyContent: 'center',
     flexShrink: 0, overflow: 'hidden',
   },
   commentFormRight: { flex: 1 },
@@ -612,7 +629,7 @@ const styles = StyleSheet.create({
   },
   commentCancel: { fontSize: 13, color: '#6b7280', paddingVertical: 6, paddingHorizontal: 10 },
   commentPostBtn: {
-    backgroundColor: '#0077b6', borderRadius: 8,
+    backgroundColor: COLORS.primary, borderRadius: 8,
     paddingVertical: 6, paddingHorizontal: 14,
   },
   commentPostBtnDisabled: { opacity: 0.5 },
@@ -623,7 +640,7 @@ const styles = StyleSheet.create({
   },
   commentAvatar: {
     width: 34, height: 34, borderRadius: 17,
-    backgroundColor: '#0077b6', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: COLORS.accent, alignItems: 'center', justifyContent: 'center',
     flexShrink: 0, overflow: 'hidden',
   },
   commentAvatarImg: { width: 34, height: 34, borderRadius: 17 },
