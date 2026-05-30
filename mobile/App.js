@@ -1,13 +1,13 @@
 import './src/i18n';
-import { useEffect } from 'react';
-import { Platform } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { AppState, Platform } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Provider, useDispatch } from 'react-redux';
 import * as SecureStore from 'expo-secure-store';
 import {
   store, setApiUrl, setTokenStorage, initAuthUser,
   selectIsAuthenticated, selectAuthUser,
-  setUserInfo, setUserInfoItineraries,
+  setUserInfo, setUserInfoItineraries, refreshUnreadCount,
 } from '@tobeatraveller/shared';
 import { useSelector } from 'react-redux';
 import Navigation from './src/navigation';
@@ -43,9 +43,27 @@ function AppContent() {
   useEffect(() => {
     if (isAuthenticated && authUser?.id) {
       dispatch(setUserInfo(authUser.id));
-      dispatch(setUserInfoItineraries(authUser.id));
+      dispatch(setUserInfoItineraries());
     }
   }, [isAuthenticated, authUser?.id, dispatch]);
+
+  // Poll unread notification count every 30s and on app foreground
+  const appState = useRef(AppState.currentState);
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    dispatch(refreshUnreadCount());
+    const interval = setInterval(() => dispatch(refreshUnreadCount()), 30_000);
+    const sub = AppState.addEventListener('change', next => {
+      if (appState.current !== 'active' && next === 'active') {
+        dispatch(refreshUnreadCount());
+      }
+      appState.current = next;
+    });
+    return () => {
+      clearInterval(interval);
+      sub.remove();
+    };
+  }, [dispatch, isAuthenticated]);
 
   return (
     <>

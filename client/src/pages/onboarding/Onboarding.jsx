@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { followUser, getSuggestedUsers, unfollowUser } from "@tobeatraveller/shared";
+import { followUser, getSuggestedUsers, selectAuthUser, setUserInfo, unfollowUser } from "@tobeatraveller/shared";
 import { generateAvatar } from "../../utils/constants/constants";
 import "./Onboarding.scss";
 
@@ -9,7 +10,9 @@ const DOTS = 3;
 
 const Onboarding = () => {
   const { t } = useTranslation();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const authUser = useSelector(selectAuthUser);
   const [users, setUsers] = useState([]);
   const [following, setFollowing] = useState(new Set());
   const [loading, setLoading] = useState(true);
@@ -40,6 +43,11 @@ const Onboarding = () => {
         return next;
       });
     }
+  };
+
+  const handleFinish = () => {
+    if (authUser?.id) dispatch(setUserInfo(authUser.id));
+    navigate("/");
   };
 
   const progressLabel = count === 0
@@ -97,11 +105,11 @@ const Onboarding = () => {
         <div className="onboarding__footer">
           <button
             className={`onboarding__cta btn${canContinue ? " btn--primary" : " onboarding__cta--locked"}`}
-            onClick={() => navigate("/")}
+            onClick={handleFinish}
           >
             {canContinue ? t("onboarding.continue") : t("onboarding.followPromptBtn")}
           </button>
-          <button className="onboarding__skip" onClick={() => navigate("/")}>
+          <button className="onboarding__skip" onClick={handleFinish}>
             {t("onboarding.skip")}
           </button>
         </div>

@@ -6,20 +6,28 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
-import { followUser, getSuggestedUsers, unfollowUser } from '@tobeatraveller/shared';
+import { followUser, getSuggestedUsers, selectAuthUser, setUserInfo, unfollowUser } from '@tobeatraveller/shared';
+import { useDispatch, useSelector } from 'react-redux';
 import { shadow } from '../../utils/styles';
 
 const DOTS = 3;
 
 const OnboardingScreen = ({ navigation }) => {
   const { t } = useTranslation();
+  const dispatch = useDispatch();
   const insets = useSafeAreaInsets();
+  const authUser = useSelector(selectAuthUser);
   const [users, setUsers] = useState([]);
   const [following, setFollowing] = useState(new Set());
   const [loading, setLoading] = useState(true);
 
   const count = following.size;
   const canContinue = count >= 1;
+
+  const handleFinish = () => {
+    if (authUser?.id) dispatch(setUserInfo(authUser.id));
+    navigation.replace('Tabs');
+  };
 
   useEffect(() => {
     getSuggestedUsers().then(data => {
@@ -102,14 +110,14 @@ const OnboardingScreen = ({ navigation }) => {
       <View style={[styles.footer, { paddingBottom: insets.bottom + 16 }]}>
         <TouchableOpacity
           style={[styles.ctaBtn, !canContinue && styles.ctaBtnLocked]}
-          onPress={() => navigation.replace('Tabs')}
+          onPress={handleFinish}
           activeOpacity={0.85}
         >
           <Text style={[styles.ctaBtnText, !canContinue && styles.ctaBtnTextLocked]}>
             {canContinue ? t('onboarding.continue') : t('onboarding.followPromptBtn')}
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.replace('Tabs')} activeOpacity={0.7}>
+        <TouchableOpacity onPress={handleFinish} activeOpacity={0.7}>
           <Text style={styles.skip}>{t('onboarding.skip')}</Text>
         </TouchableOpacity>
       </View>

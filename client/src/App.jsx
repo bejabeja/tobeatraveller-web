@@ -21,6 +21,7 @@ import EditProfile from "./pages/profile/EditProfile";
 import Profile from "./pages/profile/Profile";
 import Settings from "./pages/settings/Settings";
 import { clearError, initAuthUser } from "./store/auth/authActions";
+import { refreshUnreadCount } from "@tobeatraveller/shared";
 
 import CustomToaster from "./components/toast/CustomToaster";
 import Community from "./pages/community/Community";
@@ -58,6 +59,21 @@ const App = () => {
   useEffect(() => {
     dispatch(clearError());
   }, [dispatch, location]);
+
+  // Poll unread notification count every 30s and on tab focus
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    dispatch(refreshUnreadCount());
+    const interval = setInterval(() => dispatch(refreshUnreadCount()), 30_000);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") dispatch(refreshUnreadCount());
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [dispatch, isAuthenticated]);
 
   const publicRoutes = ["/", "/explore", "/community", "/privacy-policy", "/terms", "/contact"];
 
