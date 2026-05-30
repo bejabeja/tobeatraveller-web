@@ -49,14 +49,12 @@ const FollowsScreen = ({ route, navigation }) => {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
+      <View style={styles.handle} />
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Text style={styles.backText}>←</Text>
-        </TouchableOpacity>
         <Text style={styles.title}>{title}</Text>
-        <View style={styles.countBadge}>
-          <Text style={styles.countText}>{users.length}</Text>
-        </View>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.closeBtn}>
+          <Text style={styles.closeText}>✕</Text>
+        </TouchableOpacity>
       </View>
 
       {loading ? (
@@ -151,21 +149,24 @@ const UserRow = ({ user, me, dispatch, onPress }) => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8fafc' },
 
+  handle: {
+    width: 36, height: 4, borderRadius: 2,
+    backgroundColor: '#d1d5db',
+    alignSelf: 'center', marginTop: 10, marginBottom: 4,
+  },
   header: {
     flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 16, paddingTop: 14, paddingBottom: 14,
-    backgroundColor: '#fff',
+    paddingHorizontal: 16, paddingTop: 10, paddingBottom: 14,
+    backgroundColor: '#f8fafc',
     borderBottomWidth: 1, borderBottomColor: '#e5e7eb',
-    ...shadow(2, 0.05, 6, 2),
   },
-  backBtn: { marginRight: 12, padding: 4 },
-  backText: { fontSize: 20, color: '#374151' },
-  title: { flex: 1, fontSize: 18, fontWeight: '800', color: '#111827' },
-  countBadge: {
-    backgroundColor: '#eff6ff', borderRadius: 999,
-    paddingVertical: 2, paddingHorizontal: 10,
+  closeBtn: {
+    width: 32, height: 32, borderRadius: 16,
+    backgroundColor: '#f3f4f6',
+    alignItems: 'center', justifyContent: 'center',
   },
-  countText: { fontSize: 13, color: '#0077b6', fontWeight: '600' },
+  closeText: { fontSize: 13, color: '#6b7280', fontWeight: '600' },
+  title: { flex: 1, fontSize: 17, fontWeight: '800', color: '#111827' },
 
   list: { paddingHorizontal: 16, paddingTop: 8 },
 

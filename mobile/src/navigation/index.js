@@ -129,7 +129,7 @@ const Navigation = () => {
         <Stack.Screen name="CreateItinerary" component={CreateItineraryScreen} />
         <Stack.Screen name="Community" component={CommunityScreen} />
         <Stack.Screen name="MyItineraries" component={MyItinerariesScreen} />
-        <Stack.Screen name="Follows" component={FollowsScreen} />
+        <Stack.Screen name="Follows" component={FollowsScreen} options={{ presentation: 'formSheet', headerShown: false }} />
         <Stack.Screen name="Saved" component={SavedScreen} />
         <Stack.Screen name="Contact" component={ContactScreen} />
         <Stack.Screen name="Notifications" component={NotificationsScreen} />

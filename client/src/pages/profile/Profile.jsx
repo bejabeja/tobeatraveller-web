@@ -12,6 +12,7 @@ import { useProfileData } from "../../hooks/useProfileData";
 import { selectAuthUser } from "../../store/auth/authSelectors";
 import { generateAvatar } from "../../utils/constants/constants";
 import { filterItineraries } from "@tobeatraveller/shared";
+import FollowsModal from "../../components/follows/FollowsModal";
 import OfficialBadge from "../../components/users/OfficialBadge";
 import Error from "../error/Error";
 import "./Profile.scss";
@@ -50,6 +51,7 @@ const Profile = () => {
   } = useProfileData(id);
   const { isFollowing, toggleFollow, isLoadingFollow } = useFollow(id);
   const [showUnfollowModal, setShowUnfollowModal] = useState(false);
+  const [followsModal, setFollowsModal] = useState(null); // null | 'followers' | 'following'
   const [visibility, setVisibility] = useState('all');
 
   const filteredItineraries = useMemo(() => {
@@ -108,6 +110,7 @@ const Profile = () => {
                 onCopyLink={handleCopyLink}
                 isAuthenticated={isAuthenticated}
                 isLoadingFollow={isLoadingFollow}
+                onOpenFollows={setFollowsModal}
                 t={t}
               />
               {isMyProfile && <ProfileCompleteness user={user} t={t} />}
@@ -145,6 +148,16 @@ const Profile = () => {
         </div>
       </div>
 
+      {followsModal && (
+        <FollowsModal
+          userId={user?.id}
+          initialTab={followsModal}
+          followersCount={user?.followers}
+          followingCount={user?.following}
+          onClose={() => setFollowsModal(null)}
+        />
+      )}
+
       <Modal
         isOpen={showUnfollowModal}
         onClose={() => setShowUnfollowModal(false)}
@@ -163,7 +176,7 @@ export default Profile;
 // ─── Header card ──────────────────────────────────────────────────────────────
 const HeaderSection = ({
   user, isMyProfile, isFollowing, followsYou, onFollowToggle,
-  onCopyLink, isAuthenticated, isLoadingFollow, t,
+  onCopyLink, isAuthenticated, isLoadingFollow, onOpenFollows, t,
 }) => {
   const followBtnRef = useRef(null);
   const wasLoadingRef = useRef(false);
@@ -271,20 +284,28 @@ const HeaderSection = ({
           )}
 
           <div className="profile__stats">
-            <Link
-              to={isAuthenticated ? `/profile/${user?.id}/followers` : "/login"}
-              className="profile__stat"
-            >
-              <StatNumber value={user?.followers} />
-              <span>{t("profile.followers")}</span>
-            </Link>
-            <Link
-              to={isAuthenticated ? `/profile/${user?.id}/following` : "/login"}
-              className="profile__stat"
-            >
-              <StatNumber value={user?.following} />
-              <span>{t("profile.following")}</span>
-            </Link>
+            {isAuthenticated ? (
+              <button className="profile__stat profile__stat--btn" onClick={() => onOpenFollows("followers")}>
+                <StatNumber value={user?.followers} />
+                <span>{t("profile.followers")}</span>
+              </button>
+            ) : (
+              <Link to="/login" className="profile__stat">
+                <StatNumber value={user?.followers} />
+                <span>{t("profile.followers")}</span>
+              </Link>
+            )}
+            {isAuthenticated ? (
+              <button className="profile__stat profile__stat--btn" onClick={() => onOpenFollows("following")}>
+                <StatNumber value={user?.following} />
+                <span>{t("profile.following")}</span>
+              </button>
+            ) : (
+              <Link to="/login" className="profile__stat">
+                <StatNumber value={user?.following} />
+                <span>{t("profile.following")}</span>
+              </Link>
+            )}
             <span className="profile__stat">
               <StatNumber value={user?.totalItineraries} />
               <span>{t("profile.trips")}</span>
