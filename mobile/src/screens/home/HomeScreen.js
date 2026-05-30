@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator, Image, Platform, ScrollView,
+  Image, Platform, ScrollView,
   StyleSheet, Text, TouchableOpacity, View,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import { WebView } from 'react-native-webview';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
@@ -17,7 +19,7 @@ import {
 } from '@tobeatraveller/shared';
 import ItineraryCard from '../../components/ItineraryCard';
 import { ItineraryCardSkeleton, UserAvatarSkeleton } from '../../components/Skeleton';
-import { shadow } from '../../utils/styles';
+import { COLORS, shadow } from '../../utils/styles';
 
 const buildMapHTML = (destinations) => `<!DOCTYPE html>
 <html>
@@ -28,10 +30,10 @@ const buildMapHTML = (destinations) => `<!DOCTYPE html>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     html,body,#map{width:100%;height:100%}
-    .pin{background:#0077b6;color:#fff;border-radius:50%;border:2px solid #fff;
+    .pin{background:#E8743B;color:#fff;border-radius:50%;border:2px solid #fff;
       width:32px;height:32px;display:flex;align-items:center;justify-content:center;
       font-size:11px;font-weight:800;font-family:sans-serif;
-      box-shadow:0 2px 6px rgba(0,119,182,.5);cursor:pointer}
+      box-shadow:0 2px 6px rgba(232,116,59,.5);cursor:pointer}
   </style>
 </head>
 <body>
@@ -88,7 +90,12 @@ const HomeScreen = ({ navigation }) => {
       contentContainerStyle={{ paddingBottom: 24 }}
     >
       {/* Hero */}
-      <View style={[styles.hero, { paddingTop: insets.top + 20 }]}>
+      <LinearGradient
+        colors={[COLORS.accentDark, COLORS.accent]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={[styles.hero, { paddingTop: insets.top + 20 }]}
+      >
         <View style={styles.heroRow}>
           <View>
             <Text style={styles.heroTitle}>{t('home.heroTitle')}</Text>
@@ -100,7 +107,7 @@ const HomeScreen = ({ navigation }) => {
               onPress={() => navigation.navigate('Notifications')}
               activeOpacity={0.7}
             >
-              <Text style={styles.bellIcon}>🔔</Text>
+              <Ionicons name="notifications-outline" size={24} color="#fff" />
             </TouchableOpacity>
           )}
         </View>
@@ -120,7 +127,7 @@ const HomeScreen = ({ navigation }) => {
             </TouchableOpacity>
           </View>
         )}
-      </View>
+      </LinearGradient>
 
       {/* Following feed */}
       {isAuthenticated && tab === 'following' && (
@@ -267,18 +274,16 @@ const HomeScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f8fafc' },
+  container: { flex: 1, backgroundColor: COLORS.bg },
 
   hero: {
     paddingHorizontal: 20, paddingBottom: 0,
-    backgroundColor: '#0077b6',
   },
   heroRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: 20 },
   heroTitle: { fontSize: 26, fontWeight: '800', color: '#fff', letterSpacing: -0.3 },
-  heroSubtitle: { fontSize: 14, color: '#bae6fd', marginTop: 4 },
+  heroSubtitle: { fontSize: 14, color: '#A8D5C7', marginTop: 4 },
 
   bellBtn: { padding: 4 },
-  bellIcon: { fontSize: 22 },
 
   tabs: {
     flexDirection: 'row', gap: 4,
@@ -298,7 +303,7 @@ const styles = StyleSheet.create({
   feedEmptyTitle: { fontSize: 16, fontWeight: '700', color: '#111827' },
   feedEmptySub: { fontSize: 13, color: '#6b7280', textAlign: 'center' },
   feedEmptyBtn: {
-    marginTop: 8, backgroundColor: '#0077b6', borderRadius: 999,
+    marginTop: 8, backgroundColor: COLORS.primary, borderRadius: 999,
     paddingVertical: 10, paddingHorizontal: 20,
   },
   feedEmptyBtnText: { color: '#fff', fontWeight: '600', fontSize: 13 },
@@ -310,7 +315,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: { fontSize: 18, fontWeight: '700', color: '#111827' },
   sectionSubtitle: { fontSize: 13, color: '#6b7280', marginTop: 2 },
-  seeAll: { fontSize: 13, color: '#0077b6', fontWeight: '600', paddingTop: 2 },
+  seeAll: { fontSize: 13, color: COLORS.primary, fontWeight: '600', paddingTop: 2 },
   loader: { marginVertical: 20 },
   empty: { color: '#9ca3af', fontSize: 14, marginTop: 8 },
 
@@ -321,28 +326,28 @@ const styles = StyleSheet.create({
   userCard: { width: 88, alignItems: 'center' },
   avatarWrapper: { ...shadow(2, 0.08, 6, 2), borderRadius: 32 },
   avatar: { width: 64, height: 64, borderRadius: 32 },
-  avatarFallback: { backgroundColor: '#0077b6', alignItems: 'center', justifyContent: 'center' },
+  avatarFallback: { backgroundColor: COLORS.accent, alignItems: 'center', justifyContent: 'center' },
   avatarInitial: { color: '#fff', fontSize: 22, fontWeight: '700' },
   username: { fontSize: 12, color: '#374151', marginTop: 6, textAlign: 'center', width: 88 },
   userTrips: { fontSize: 11, color: '#9ca3af', marginTop: 1 },
 
   cta: {
     margin: 16, marginTop: 20,
-    backgroundColor: '#0077b6', borderRadius: 16,
+    backgroundColor: COLORS.accent, borderRadius: 16,
     padding: 24, alignItems: 'center',
-    ...shadow(4, 0.15, 12, 4),
+    ...shadow(4, 0.18, 12, 4),
   },
   ctaEmoji: { fontSize: 32, marginBottom: 8 },
   ctaTitle: { fontSize: 20, fontWeight: '800', color: '#fff', textAlign: 'center' },
   ctaSubtitle: {
-    fontSize: 13, color: '#bae6fd', textAlign: 'center',
+    fontSize: 13, color: '#A8D5C7', textAlign: 'center',
     marginTop: 8, lineHeight: 20, marginBottom: 16,
   },
   ctaBtn: {
     backgroundColor: '#fff', borderRadius: 999,
     paddingHorizontal: 24, paddingVertical: 12,
   },
-  ctaBtnText: { fontSize: 14, fontWeight: '700', color: '#0077b6' },
+  ctaBtnText: { fontSize: 14, fontWeight: '700', color: COLORS.accent },
 
   // World map
   mapSection: { paddingHorizontal: 16, paddingTop: 20 },
@@ -361,7 +366,7 @@ const styles = StyleSheet.create({
   destChipName: { fontSize: 13, fontWeight: '600', color: '#111827' },
   destChipCount: {
     fontSize: 11, fontWeight: '700', color: '#fff',
-    backgroundColor: '#0077b6', borderRadius: 999,
+    backgroundColor: COLORS.primary, borderRadius: 999,
     paddingVertical: 1, paddingHorizontal: 6,
   },
 });

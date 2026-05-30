@@ -47,7 +47,7 @@ const TabNavigator = () => (
   <Tab.Navigator
     screenOptions={({ route }) => ({
       headerShown: false,
-      tabBarActiveTintColor: '#0077b6',
+      tabBarActiveTintColor: '#E8743B',
       tabBarInactiveTintColor: '#9ca3af',
       tabBarStyle: {
         borderTopColor: '#e5e7eb',
@@ -95,15 +95,15 @@ const tb = StyleSheet.create({
     width: 54,
     height: 54,
     borderRadius: 27,
-    backgroundColor: '#0077b6',
+    backgroundColor: '#E8743B',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 3,
     borderColor: '#fff',
     ...Platform.select({
-      web: { boxShadow: '0px 4px 12px rgba(0,119,182,0.45)' },
+      web: { boxShadow: '0px 4px 12px rgba(232,116,59,0.45)' },
       default: {
-        shadowColor: '#0077b6',
+        shadowColor: '#E8743B',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.45,
         shadowRadius: 10,

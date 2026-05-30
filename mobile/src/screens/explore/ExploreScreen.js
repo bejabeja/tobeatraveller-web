@@ -12,9 +12,10 @@ import {
   selectExploreItinerariesLoading, selectExploreItinerariesLoadingMore,
   selectExplorePage, selectExploreTotalItems, selectExploreTotalPages,
 } from '@tobeatraveller/shared';
+import { Ionicons } from '@expo/vector-icons';
 import ItineraryCard from '../../components/ItineraryCard';
 import { ItineraryCardSkeleton } from '../../components/Skeleton';
-import { shadow } from '../../utils/styles';
+import { COLORS, shadow } from '../../utils/styles';
 
 const CATEGORY_EMOJI = {
   adventure:'🧗', relax:'🧘', culture:'🏛', romantic:'💕',
@@ -141,7 +142,7 @@ const ExploreScreen = ({ navigation, route }) => {
 
         {/* Search */}
         <View style={styles.searchRow}>
-          <Text style={styles.searchIcon}>🔍</Text>
+          <Ionicons name="search-outline" size={16} color="#9ca3af" />
           <TextInput
             style={styles.searchInput}
             placeholder={t('explore.searchByDestination')}
@@ -217,7 +218,7 @@ const ExploreScreen = ({ navigation, route }) => {
           <RefreshControl
             refreshing={loading && !loadingMore && (itineraries?.length ?? 0) === 0}
             onRefresh={handleRefresh}
-            tintColor="#0077b6"
+            tintColor={COLORS.primary}
           />
         }
         ListEmptyComponent={
@@ -235,7 +236,7 @@ const ExploreScreen = ({ navigation, route }) => {
         }
         ListFooterComponent={
           loadingMore
-            ? <ActivityIndicator color="#0077b6" style={{ marginVertical: 16 }} />
+            ? <ActivityIndicator color={COLORS.primary} style={{ marginVertical: 16 }} />
             : hasMore
               ? (
                 <TouchableOpacity style={styles.loadMoreBtn} onPress={handleLoadMore}>
@@ -345,7 +346,7 @@ const ExploreScreen = ({ navigation, route }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f8fafc' },
+  container: { flex: 1, backgroundColor: COLORS.bg },
 
   header: {
     backgroundColor: '#fff',
@@ -359,8 +360,8 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 22, fontWeight: '800', color: '#111827' },
   count: {
-    fontSize: 12, fontWeight: '600', color: '#0077b6',
-    backgroundColor: '#eff6ff', borderRadius: 999,
+    fontSize: 12, fontWeight: '600', color: COLORS.primary,
+    backgroundColor: COLORS.bgLight, borderRadius: 999,
     paddingVertical: 2, paddingHorizontal: 8,
     flex: 1,
   },
@@ -372,7 +373,7 @@ const styles = StyleSheet.create({
   },
   filterBtnText: { fontSize: 13, color: '#374151', fontWeight: '500' },
   filterBadge: {
-    backgroundColor: '#0077b6', borderRadius: 999,
+    backgroundColor: COLORS.primary, borderRadius: 999,
     width: 18, height: 18, alignItems: 'center', justifyContent: 'center',
   },
   filterBadgeText: { color: '#fff', fontSize: 10, fontWeight: '700' },
@@ -401,11 +402,11 @@ const styles = StyleSheet.create({
     paddingVertical: 7, paddingHorizontal: 14, borderRadius: 999,
     borderWidth: 1.5, borderColor: '#e5e7eb', backgroundColor: '#f9fafb',
   },
-  travelerChipActive: { borderColor: '#0077b6', backgroundColor: '#eff6ff' },
+  travelerChipActive: { borderColor: COLORS.primary, backgroundColor: COLORS.bgLight },
   travelerChipText: { fontSize: 13, color: '#6b7280', fontWeight: '500' },
-  travelerChipTextActive: { color: '#0077b6', fontWeight: '600' },
+  travelerChipTextActive: { color: COLORS.primary, fontWeight: '600' },
   applyBtn: {
-    backgroundColor: '#0077b6', borderRadius: 999,
+    backgroundColor: COLORS.primary, borderRadius: 999,
     paddingVertical: 14, alignItems: 'center', marginTop: 20,
   },
   applyBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
@@ -423,7 +424,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#f3f4f6', borderRadius: 12,
     paddingHorizontal: 12,
   },
-  searchIcon: { fontSize: 14 },
   searchInput: {
     flex: 1, paddingVertical: 10,
     fontSize: 14, color: '#111827',
@@ -438,10 +438,10 @@ const styles = StyleSheet.create({
     borderRadius: 999, borderWidth: 1.5, borderColor: '#e5e7eb',
     backgroundColor: '#f9fafb',
   },
-  catChipSelected: { borderColor: '#0077b6', backgroundColor: '#eff6ff' },
+  catChipSelected: { borderColor: COLORS.primary, backgroundColor: COLORS.bgLight },
   catEmoji: { fontSize: 13 },
   catLabel: { fontSize: 12, color: '#6b7280', fontWeight: '500' },
-  catLabelSelected: { color: '#0077b6', fontWeight: '600' },
+  catLabelSelected: { color: COLORS.primary, fontWeight: '600' },
 
   sortRow: { paddingHorizontal: 16, gap: 8 },
   sortChip: {
@@ -449,7 +449,7 @@ const styles = StyleSheet.create({
     borderRadius: 999, borderWidth: 1, borderColor: '#e5e7eb',
     backgroundColor: '#f9fafb',
   },
-  sortChipSelected: { backgroundColor: '#0077b6', borderColor: '#0077b6' },
+  sortChipSelected: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
   sortLabel: { fontSize: 12, color: '#6b7280', fontWeight: '500' },
   sortLabelSelected: { color: '#fff', fontWeight: '600' },
 
@@ -461,15 +461,15 @@ const styles = StyleSheet.create({
   emptyState: { alignItems: 'center', paddingTop: 48, paddingHorizontal: 32 },
   emptyEmoji: { fontSize: 40, marginBottom: 12 },
   emptyTitle: { fontSize: 15, color: '#6b7280', marginBottom: 8 },
-  emptyLink: { fontSize: 14, color: '#0077b6', fontWeight: '600' },
+  emptyLink: { fontSize: 14, color: COLORS.primary, fontWeight: '600' },
 
   loadMoreBtn: {
     marginHorizontal: 16, marginVertical: 8,
-    borderWidth: 1.5, borderColor: '#0077b6',
+    borderWidth: 1.5, borderColor: COLORS.primary,
     borderRadius: 10, paddingVertical: 11, alignItems: 'center',
-    backgroundColor: '#eff6ff',
+    backgroundColor: COLORS.bgLight,
   },
-  loadMoreText: { color: '#0077b6', fontWeight: '600', fontSize: 14 },
+  loadMoreText: { color: COLORS.primary, fontWeight: '600', fontSize: 14 },
 });
 
 export default ExploreScreen;

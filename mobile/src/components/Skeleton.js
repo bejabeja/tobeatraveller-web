@@ -24,20 +24,7 @@ export const SkeletonBox = ({ style }) => {
 // ─── Itinerary card skeleton ──────────────────────────────────────────────────
 export const ItineraryCardSkeleton = () => {
   const opacity = usePulse();
-  return (
-    <Animated.View style={[sk.card, { opacity }]}>
-      <View style={sk.cardImage} />
-      <View style={sk.cardBody}>
-        <View style={[sk.line, { width: '80%', height: 14, marginBottom: 7 }]} />
-        <View style={[sk.line, { width: '50%', height: 11, marginBottom: 10 }]} />
-        <View style={sk.metaRow}>
-          <View style={[sk.line, { width: 36, height: 10 }]} />
-          <View style={[sk.line, { width: 36, height: 10 }]} />
-          <View style={[sk.line, { width: 36, height: 10 }]} />
-        </View>
-      </View>
-    </Animated.View>
-  );
+  return <Animated.View style={[sk.itinCard, { opacity }]} />;
 };
 
 // ─── User card skeleton (Community grid) ─────────────────────────────────────
@@ -156,7 +143,10 @@ const sk = StyleSheet.create({
   line:     { backgroundColor: '#e5e7eb', borderRadius: 4 },
   metaRow:  { flexDirection: 'row', gap: 10 },
 
-  // Card (itinerary + user)
+  // Itinerary card (full-bleed)
+  itinCard: { height: 200, borderRadius: 14, backgroundColor: '#dde3ec' },
+
+  // User card (Community grid)
   card: {
     backgroundColor: '#fff', borderRadius: 12, overflow: 'hidden',
     borderWidth: 1, borderColor: '#f3f4f6',
