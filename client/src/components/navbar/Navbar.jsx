@@ -2,31 +2,41 @@ import { useEffect, useState } from "react";
 import { GoHome, GoPerson, GoSignIn, GoSignOut } from "react-icons/go";
 import {
   IoAddOutline,
-  IoNotificationsOutline,
   IoChevronBack,
   IoChevronForward,
+  IoChevronForward as IoChevronForwardOutline,
+  IoFlashOutline,
+  IoListOutline,
+  IoNotificationsOutline,
   IoSaveOutline,
   IoSearch,
 } from "react-icons/io5";
 import { RiUserCommunityLine } from "react-icons/ri";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, NavLink, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { refreshUnreadCount, selectUnreadCount } from "@tobeatraveller/shared";
-import {
-  selectIsAuthenticated,
-} from "../../store/auth/authSelectors";
+import { selectIsAuthenticated } from "../../store/auth/authSelectors";
 import { selectMe } from "../../store/user/userInfoSelectors";
 import { generateAvatar } from "../../utils/constants/constants";
 import "./Navbar.scss";
 
 const Navbar = () => {
   const { t } = useTranslation();
-  const dispatch = useDispatch();
+  const dispatch   = useDispatch();
+  const navigate   = useNavigate();
   const isAuthenticated = useSelector(selectIsAuthenticated);
-  const userMe = useSelector(selectMe);
+  const userMe     = useSelector(selectMe);
   const unreadCount = useSelector(selectUnreadCount);
-  const [meOpen, setMeOpen] = useState(false);
+  const location   = useLocation();
+
+  const [meOpen, setMeOpen]             = useState(false);
+  const [createOpen, setCreateOpen]     = useState(false);
+  const [isCollapsed, setIsCollapsed]   = useState(
+    () => localStorage.getItem("sidebar-collapsed") === "true"
+  );
+
+  const isAuthRoute = ["/login", "/register"].includes(location.pathname);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -34,14 +44,10 @@ const Navbar = () => {
     const interval = setInterval(() => dispatch(refreshUnreadCount()), 30000);
     return () => clearInterval(interval);
   }, [isAuthenticated, dispatch]);
-  const [isCollapsed, setIsCollapsed] = useState(
-    () => localStorage.getItem("sidebar-collapsed") === "true"
-  );
-  const location = useLocation();
-  const isAuthRoute = ["/login", "/register"].includes(location.pathname);
 
   useEffect(() => {
     setMeOpen(false);
+    setCreateOpen(false);
   }, [location]);
 
   useEffect(() => {
@@ -49,9 +55,12 @@ const Navbar = () => {
     localStorage.setItem("sidebar-collapsed", isCollapsed);
   }, [isCollapsed]);
 
+  const openCreate = () => setCreateOpen(true);
+  const handleCreate = (path) => { setCreateOpen(false); navigate(path); };
+
   return (
     <>
-      {/* Mobile: fixed top header — hidden on auth pages */}
+      {/* Mobile: fixed top header */}
       {!isAuthRoute && (
         <div className="mobile-header">
           <Link to="/" className="logo">
@@ -83,11 +92,12 @@ const Navbar = () => {
           </NavLink>
         </div>
 
+        {/* Single create button — opens sheet */}
         {isAuthenticated && (
-          <NavLink to="/create-itinerary" className="nav-create" title={t("nav.createTrip")}>
+          <button className="nav-create" onClick={openCreate} title={t("nav.createTrip")}>
             <IoAddOutline className="nav-icon" />
             <span>{t("nav.createTrip")}</span>
-          </NavLink>
+          </button>
         )}
 
         {isAuthenticated && (
@@ -115,11 +125,7 @@ const Navbar = () => {
             onClick={() => setIsCollapsed((v) => !v)}
             title={isCollapsed ? t("nav.expandSidebar") : t("nav.collapseSidebar")}
           >
-            {isCollapsed ? (
-              <IoChevronForward className="nav-icon" />
-            ) : (
-              <IoChevronBack className="nav-icon" />
-            )}
+            {isCollapsed ? <IoChevronForward className="nav-icon" /> : <IoChevronBack className="nav-icon" />}
             <span>{t("nav.collapse")}</span>
           </button>
 
@@ -148,7 +154,7 @@ const Navbar = () => {
         </div>
       </nav>
 
-      {/* Mobile: Me panel (slide up) */}
+      {/* Mobile: Me panel */}
       {meOpen && isAuthenticated && (
         <>
           <div className="me-panel__backdrop" onClick={() => setMeOpen(false)} />
@@ -170,7 +176,7 @@ const Navbar = () => {
         </>
       )}
 
-      {/* Mobile: fixed bottom tab bar */}
+      {/* Mobile: bottom tab bar */}
       <nav className="bottom-nav">
         <NavLink to="/" className="bottom-nav__item" end>
           <GoHome className="bottom-nav__icon" />
@@ -181,21 +187,18 @@ const Navbar = () => {
           <span>{t("nav.explore")}</span>
         </NavLink>
         {isAuthenticated && (
-          <NavLink to="/create-itinerary" className="bottom-nav__item bottom-nav__item--create">
+          <button className="bottom-nav__item bottom-nav__item--create" onClick={openCreate}>
             <div className="bottom-nav__create-btn">
               <IoAddOutline className="bottom-nav__icon" />
             </div>
-          </NavLink>
+          </button>
         )}
         <NavLink to="/community" className="bottom-nav__item">
           <RiUserCommunityLine className="bottom-nav__icon" />
           <span>{t("nav.community")}</span>
         </NavLink>
         {isAuthenticated ? (
-          <button
-            className={`bottom-nav__item ${meOpen ? "active" : ""}`}
-            onClick={() => setMeOpen(!meOpen)}
-          >
+          <button className={`bottom-nav__item ${meOpen ? "active" : ""}`} onClick={() => setMeOpen(!meOpen)}>
             <GoPerson className="bottom-nav__icon" />
             <span>{t("nav.me")}</span>
           </button>
@@ -206,6 +209,40 @@ const Navbar = () => {
           </NavLink>
         )}
       </nav>
+
+      {/* Create sheet — same pattern as mobile */}
+      {createOpen && (
+        <div className="create-sheet__backdrop" onClick={() => setCreateOpen(false)}>
+          <div className="create-sheet" onClick={e => e.stopPropagation()}>
+            <div className="create-sheet__handle" />
+            <p className="create-sheet__title">What do you want to create?</p>
+
+            <button className="create-sheet__option create-sheet__option--itinerary" onClick={() => handleCreate("/create-itinerary")}>
+              <div className="create-sheet__option-icon">
+                <IoListOutline />
+              </div>
+              <div className="create-sheet__option-text">
+                <strong>Itinerary</strong>
+                <span>Plan day by day — places, budget, and details.</span>
+              </div>
+              <IoChevronForwardOutline className="create-sheet__option-arrow" />
+            </button>
+
+            <button className="create-sheet__option create-sheet__option--experience" onClick={() => handleCreate("/create-experience")}>
+              <div className="create-sheet__option-icon">
+                <IoFlashOutline />
+              </div>
+              <div className="create-sheet__option-text">
+                <strong>Experience</strong>
+                <span>Tell AI where you're going — it plans the journey.</span>
+              </div>
+              <IoChevronForwardOutline className="create-sheet__option-arrow" />
+            </button>
+
+            <button className="create-sheet__cancel" onClick={() => setCreateOpen(false)}>Cancel</button>
+          </div>
+        </div>
+      )}
     </>
   );
 };

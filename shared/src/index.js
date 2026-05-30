@@ -35,5 +35,6 @@ export { setApiUrl } from './utils/apiConfig.js';
 export { setTokenStorage } from './utils/tokenStorage.js';
 export { setNotifier } from './utils/notifier.js';
 export * from './utils/schemasValidation.js';
+export * from './utils/constants/colors.js';
 export * from './utils/constants/constants.js';
 export * from './utils/constants/currencies.js';

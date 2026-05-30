@@ -45,7 +45,7 @@
       width: 1.25rem;
       height: 1.25rem;
       min-width: 1.25rem;
-      color: var(--primary-color, #0077b6);
+      color: var(--primary-color);
       flex-shrink: 0;
     }
 
@@ -54,7 +54,7 @@
     }
 
     &:hover {
-      color: var(--primary-color, #0077b6);
+      color: var(--primary-color);
     }
   }
 

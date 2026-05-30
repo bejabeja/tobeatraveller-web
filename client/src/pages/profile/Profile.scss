@@ -21,7 +21,7 @@ $avatar-overlap: 44px;
 
   &__banner {
     height: $banner-height-mobile;
-    background: linear-gradient(135deg, #001d4a 0%, #0077b6 35%, #00b4d8 65%, #90e0ef 100%);
+    background: linear-gradient(135deg, #0C3540 0%, #1A535C 100%);
     background-size: 300% 300%;
     border-radius: 16px 16px 0 0;
     animation: banner-shift 12s ease infinite;
@@ -363,7 +363,7 @@ $avatar-overlap: 44px;
 
     &-fill {
       height: 100%;
-      background: linear-gradient(90deg, var(--primary-color), #00b4d8);
+      background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
       border-radius: 999px;
       transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
@@ -568,7 +568,7 @@ $avatar-overlap: 44px;
     &--active {
       border-color: var(--primary-color);
       color: var(--primary-color);
-      background: #eff6ff;
+      background: #FFF0E8;
       font-weight: 600;
     }
 

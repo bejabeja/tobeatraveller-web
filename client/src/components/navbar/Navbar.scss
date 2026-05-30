@@ -87,6 +87,11 @@
     &--danger {
       color: var(--error-color);
     }
+
+    &--experience {
+      color: #E8743B;
+      font-weight: 600;
+    }
   }
 
   &__icon {
@@ -324,7 +329,8 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  text-decoration: none;
+  border: none;
+  cursor: pointer;
   font-size: 1rem;
   font-weight: 600;
   padding: 0.6rem 0.75rem;
@@ -332,12 +338,10 @@
   width: 100%;
   background-color: var(--primary-color);
   color: var(--white-color);
+  font-family: inherit;
   transition: opacity 0.2s;
 
-  &:hover {
-    opacity: 0.85;
-    color: var(--white-color);
-  }
+  &:hover { opacity: 0.85; }
 
   .nav-icon {
     font-size: 1.3rem;
@@ -345,6 +349,122 @@
     height: 1em;
     flex-shrink: 0;
   }
+}
+
+/* ── Create choice sheet ── */
+.create-sheet__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 300;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: cs-backdrop 0.2s ease;
+}
+
+@keyframes cs-backdrop {
+  from { background: transparent; }
+  to   { background: rgba(0,0,0,0.45); }
+}
+
+.create-sheet {
+  width: 100%;
+  max-width: 520px;
+  background: var(--white-color);
+  border-radius: 24px 24px 0 0;
+  padding: 1rem 1.25rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  box-shadow: 0 -8px 30px rgba(0,0,0,0.12);
+  animation: cs-up 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+
+  &__handle {
+    width: 36px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border-color);
+    margin: 0 auto 0.25rem;
+  }
+
+  &__title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin: 0 0 0.25rem;
+  }
+
+  &__option {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: 14px;
+    border: 1.5px solid var(--border-color);
+    background: var(--surface-color);
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    transition: border-color 0.15s, background 0.15s;
+
+    &--itinerary {
+      .create-sheet__option-icon { background: rgba(26,83,92,0.12); color: #1A535C; }
+      &:hover { border-color: #1A535C; background: rgba(26,83,92,0.04); }
+    }
+
+    &--experience {
+      .create-sheet__option-icon { background: rgba(232,116,59,0.12); color: #E8743B; }
+      &:hover { border-color: #E8743B; background: rgba(232,116,59,0.04); }
+    }
+  }
+
+  &__option-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  &__option-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    strong { font-size: 1rem; font-weight: 700; color: var(--text-color); }
+    span   { font-size: 0.8rem; color: var(--text-secondary-color); line-height: 1.35; }
+  }
+
+  &__option-arrow {
+    color: var(--border-color);
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+
+  &__cancel {
+    width: 100%;
+    padding: 0.75rem;
+    background: none;
+    border: none;
+    font-size: 0.9rem;
+    color: var(--text-secondary-color);
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 500;
+    transition: color 0.1s;
+
+    &:hover { color: var(--text-color); }
+  }
+}
+
+@keyframes cs-up {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
 }
 
 /* ── Mobile: fixed bottom tab bar ── */

@@ -1,16 +1,8 @@
 import { Platform } from 'react-native';
+import { COLORS } from '@tobeatraveller/shared';
 
-export const COLORS = {
-  primary:     '#E8743B',
-  primaryDark: '#C45A22',
-  accent:      '#1A535C',
-  accentDark:  '#0C3540',
-  bg:          '#FFF8F3',
-  bgLight:     '#FFF0E8',
-  text:        '#1C1C1E',
-  textSub:     '#6B6B6B',
-  border:      '#E5E7EB',
-};
+// Re-export so mobile components import from one place
+export { COLORS };
 
 export const shadow = (offsetY, opacity, radius, elevation) =>
   Platform.select({

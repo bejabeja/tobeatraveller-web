@@ -14,6 +14,7 @@ import Explore from "./pages/explore/Explore";
 import Home from "./pages/home/Home";
 import Itinerary from "./pages/itinerary/Itinerary";
 import CreateItinerary from "./pages/itinerary/create/CreateItinerary";
+import CreateExperience from "./pages/experience/CreateExperience";
 import EditItinerary from "./pages/itinerary/edit/EditItinerary";
 import MyItineraries from "./pages/myItineraries/MyItineraries";
 import Onboarding from "./pages/onboarding/Onboarding";
@@ -122,6 +123,7 @@ const App = () => {
               <Route path="/profile/edit/:id" element={<EditProfile />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/create-itinerary" element={<CreateItinerary />} />
+              <Route path="/create-experience" element={<CreateExperience />} />
               <Route path="/itinerary/edit/:id" element={<EditItinerary />} />
             </Route>
           </Routes>

@@ -63,7 +63,7 @@
       }
 
       a {
-        color: var(--primary-color, #0077b6);
+        color: var(--primary-color);
         text-decoration: none;
 
         &:hover {
@@ -89,7 +89,7 @@
 
   &__link {
     font-size: 0.875rem;
-    color: var(--primary-color, #0077b6);
+    color: var(--primary-color);
     text-decoration: none;
 
     &:hover {
