@@ -24,6 +24,7 @@ export const createUsersRouter = () => {
     router.delete("/me", authenticate, userController.deleteUserMe.bind(userController));
     router.get("/featured", userController.getFeaturedUsers.bind(userController));
     router.get("/all", userController.getAllUsersFiltered.bind(userController));
+    router.get("/suggested", authenticate, userController.getSuggestedUsers.bind(userController));
     router.get("/check-username", userController.checkUsernameAvailable.bind(userController));
     router.get("/:id", userController.getUserById.bind(userController));
 

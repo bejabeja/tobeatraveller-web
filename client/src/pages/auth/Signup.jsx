@@ -75,7 +75,7 @@ const Signup = () => {
     const cErrors = validateConsent();
     handleSubmit((data) => {
       if (Object.keys(cErrors).length > 0) return;
-      dispatch(createUser({ ...data, termsAccepted, ageConfirmed }, () => navigate("/")));
+      dispatch(createUser({ ...data, termsAccepted, ageConfirmed }, () => navigate("/welcome")));
     })();
   };
 

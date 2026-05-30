@@ -71,7 +71,10 @@ const RegisterScreen = ({ navigation }) => {
     if (!validate() || usernameStatus === 'taken') return;
     setLoading(true);
     try {
-      await dispatch(registerUser({ email: email.trim(), username: username.trim(), password, confirmPassword, termsAccepted, ageConfirmed }));
+      await dispatch(registerUser(
+        { email: email.trim(), username: username.trim(), password, confirmPassword, termsAccepted, ageConfirmed },
+        () => navigation.navigate('Onboarding')
+      ));
     } finally {
       setLoading(false);
     }

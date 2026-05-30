@@ -122,6 +122,15 @@ export class UserController {
         }
     }
 
+    async getSuggestedUsers(req, res, next) {
+        try {
+            const users = await this.userService.getSuggestedUsers(req.user.id);
+            res.status(200).json(users);
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async getAllUsersFiltered(req, res, next) {
         try {
             const { searchName = '', page = 1, limit = 9, sortBy = 'username' } = req.query;

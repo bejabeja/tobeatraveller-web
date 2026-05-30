@@ -1,0 +1,268 @@
+.onboarding {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--background-color);
+
+  // ── Hero ───────────────────────────────────────────────────────
+  &__hero {
+    background: linear-gradient(135deg, #0077b6 0%, #00b4d8 100%);
+    padding: 3rem 1.5rem 3.5rem;
+    text-align: center;
+    animation: ob-fadeIn 0.5s ease both;
+  }
+
+  &__hero-emoji {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 0.75rem;
+    animation: ob-popIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
+  }
+
+  &__title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.5px;
+    margin-bottom: 0.5rem;
+
+    @media (min-width: 480px) { font-size: 2rem; }
+  }
+
+  &__subtitle {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.85);
+    max-width: 400px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  // ── Inner ──────────────────────────────────────────────────────
+  &__inner {
+    flex: 1;
+    max-width: 900px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 2rem 1rem 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  // ── Progress ───────────────────────────────────────────────────
+  &__progress {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    animation: ob-fadeIn 0.5s ease 0.15s both;
+  }
+
+  &__dots { display: flex; gap: 0.5rem; }
+
+  &__dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    border: 2px solid var(--primary-color);
+    background: transparent;
+    transition: background 0.25s, transform 0.25s;
+
+    &--filled {
+      background: var(--primary-color);
+      transform: scale(1.25);
+    }
+  }
+
+  &__progress-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary-color);
+    font-weight: 500;
+  }
+
+  // ── Grid ──────────────────────────────────────────────────────
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.875rem;
+
+    @media (min-width: 540px) { grid-template-columns: repeat(3, 1fr); }
+    @media (min-width: 768px) { grid-template-columns: repeat(4, 1fr); }
+  }
+
+  // ── Card ──────────────────────────────────────────────────────
+  &__card {
+    border-radius: 16px;
+    overflow: hidden;
+    background: var(--white-color);
+    border: 1.5px solid var(--border-color);
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    animation: ob-fadeSlideUp 0.4s ease both;
+    animation-delay: calc(var(--i, 0) * 0.05s);
+
+    &--following {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(0, 119, 182, 0.12);
+    }
+
+    &:not(&--skeleton):hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    &--skeleton { pointer-events: none; animation: none; }
+  }
+
+  // Card photo
+  &__card-photo {
+    height: 100px;
+    background: linear-gradient(135deg, #0077b6, #00b4d8);
+    background-size: cover;
+    background-position: center;
+    position: relative;
+  }
+
+  &__card-photo-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.5) 100%);
+  }
+
+  &__avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: 3px solid var(--white-color);
+    object-fit: cover;
+    position: absolute;
+    bottom: -26px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #e5e7eb;
+    z-index: 1;
+  }
+
+  // Card body
+  &__card-body {
+    padding: 2rem 0.75rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+  }
+
+  &__username {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--text-color);
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+  }
+
+  &__destination {
+    font-size: 0.75rem;
+    color: var(--text-secondary-color);
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+  }
+
+  &__trips {
+    font-size: 0.75rem;
+    color: var(--text-secondary-color);
+  }
+
+  &__follow-btn {
+    margin-top: 0.5rem;
+    padding: 0.35rem 0;
+    border-radius: 999px;
+    border: 1.5px solid var(--primary-color);
+    background: none;
+    color: var(--primary-color);
+    font-size: 0.8rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    width: 100%;
+    transition: background 0.15s, color 0.15s;
+
+    &--active {
+      background: var(--primary-color);
+      color: #fff;
+    }
+
+    &:hover:not(&--active) { background: #eff6ff; }
+  }
+
+  // Skeletons
+  &__skeleton-line {
+    height: 12px;
+    border-radius: 6px;
+    width: 80%;
+    &--short { width: 55%; }
+  }
+
+  &__skeleton-btn {
+    height: 28px;
+    border-radius: 999px;
+    width: 90%;
+    margin-top: 6px;
+  }
+
+  // ── Footer ────────────────────────────────────────────────────
+  &__footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  &__cta {
+    min-width: 220px;
+
+    &--locked {
+      background: var(--surface-color);
+      color: var(--text-secondary-color);
+      border: 1.5px solid var(--border-color);
+      cursor: default;
+
+      &:hover { background: var(--surface-color); }
+    }
+  }
+
+  &__skip {
+    background: none;
+    border: none;
+    color: var(--text-secondary-color);
+    font-size: 0.875rem;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 0.25rem;
+
+    &:hover {
+      color: var(--text-color);
+      text-decoration: underline;
+    }
+  }
+}
+
+// ── Animations ────────────────────────────────────────────────────────────────
+@keyframes ob-fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes ob-popIn {
+  from { opacity: 0; transform: scale(0.4); }
+  to   { opacity: 1; transform: scale(1);   }
+}
+
+@keyframes ob-fadeSlideUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}

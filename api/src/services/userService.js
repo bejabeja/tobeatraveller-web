@@ -141,6 +141,19 @@ export class UserService {
         return users.map(user => user.toFeaturedDTO());
     }
 
+    async getSuggestedUsers(currentUserId) {
+        const users = await this.userRepository.findSuggested(currentUserId);
+        await Promise.all(users.map(async (user) => {
+            const [total, lastItinerary] = await Promise.all([
+                this.itinerariesRepository.getTotalByUserId(user.id),
+                this.itinerariesRepository.findLastByUserId(user.id),
+            ]);
+            user.totalItineraries = total;
+            user.lastItinerary = lastItinerary ? lastItinerary.toSimpleDTO() : null;
+        }));
+        return users.map(u => u.toFeaturedDTO());
+    }
+
     async deleteUser(id) {
         const user = await this.userRepository.getUserById(id);
         if (!user) throw new NotFoundError("User not found");

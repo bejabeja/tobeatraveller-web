@@ -23,6 +23,7 @@ import EditItineraryScreen from '../screens/itinerary/EditItineraryScreen';
 import CreateItineraryScreen from '../screens/itinerary/CreateItineraryScreen';
 import MyItinerariesScreen from '../screens/myItineraries/MyItinerariesScreen';
 import FollowsScreen from '../screens/follows/FollowsScreen';
+import OnboardingScreen from '../screens/auth/OnboardingScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -132,6 +133,7 @@ const Navigation = () => {
         <Stack.Screen name="Saved" component={SavedScreen} />
         <Stack.Screen name="Contact" component={ContactScreen} />
         <Stack.Screen name="Notifications" component={NotificationsScreen} />
+        <Stack.Screen name="Onboarding" component={OnboardingScreen} options={{ gestureEnabled: false }} />
         {!isAuthenticated && (
           <>
             <Stack.Screen name="Login" component={LoginScreen} />

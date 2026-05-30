@@ -86,6 +86,16 @@ export const deleteMyAccount = async () => {
     return response.json();
 };
 
+export const getSuggestedUsers = async () => {
+    try {
+        const response = await authFetch(`${baseUrl()}/suggested`);
+        if (!response.ok) return [];
+        return response.json();
+    } catch {
+        return [];
+    }
+};
+
 export const getAllUsers = async ({ searchName = '', page = 1, limit = 9, sortBy = 'username' } = {}) => {
     const params = new URLSearchParams();
     if (searchName) params.append("searchName", searchName);

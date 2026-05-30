@@ -528,5 +528,18 @@
     "updateProfileFailed": "No se pudo actualizar el perfil",
     "profileUpdated": "¡Perfil actualizado!",
     "couldNotSend": "No se pudo enviar tu mensaje. Por favor, inténtalo más tarde."
+  },
+  "onboarding": {
+    "welcomeTitle": "¡Ya eres parte de la comunidad!",
+    "subtitle": "Sigue a algunos viajeros para llenar tu feed de inspiración",
+    "trips": "{{count}} viajes",
+    "follow": "Seguir",
+    "following": "Siguiendo ✓",
+    "continue": "Continuar →",
+    "skip": "Omitir por ahora",
+    "followPrompt": "Sigue al menos 1 viajero para continuar",
+    "followPromptBtn": "Sigue a alguien para continuar",
+    "followedCount": "{{count}} seguidos ✓",
+    "readyToGo": "¡Todo listo! 🎉"
   }
 }

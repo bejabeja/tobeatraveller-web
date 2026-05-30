@@ -16,6 +16,7 @@ import Itinerary from "./pages/itinerary/Itinerary";
 import CreateItinerary from "./pages/itinerary/create/CreateItinerary";
 import EditItinerary from "./pages/itinerary/edit/EditItinerary";
 import MyItineraries from "./pages/myItineraries/MyItineraries";
+import Onboarding from "./pages/onboarding/Onboarding";
 import EditProfile from "./pages/profile/EditProfile";
 import Profile from "./pages/profile/Profile";
 import Settings from "./pages/settings/Settings";
@@ -97,6 +98,7 @@ const App = () => {
 
             {/* private routes */}
             <Route element={<PrivateLayout />}>
+              <Route path="/welcome" element={<Onboarding />} />
               <Route path="/notifications" element={<Notifications />} />
               <Route path="/my-itineraries" element={<MyItineraries />} />
               <Route path="/itineraries/saved" element={<Favorites />} />

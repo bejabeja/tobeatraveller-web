@@ -63,6 +63,19 @@ export class UserRepository {
         return result.rows.map(row => User.fromDb(row));
     }
 
+    async findSuggested(currentUserId) {
+        const result = await db.query(`
+            SELECT users.*
+            FROM users
+            WHERE users.id != $1
+              AND users.role != 'test'
+              AND EXISTS (SELECT 1 FROM itineraries WHERE user_id = users.id)
+            ORDER BY (SELECT COUNT(*) FROM itineraries WHERE user_id = users.id) DESC
+            LIMIT 8
+        `, [currentUserId]);
+        return result.rows.map(row => User.fromDb(row));
+    }
+
     async updateUser(id, userData) {
         const { username, name, avatarUrl, location, bio, about, updatedAt } = userData;
 
