@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
@@ -27,19 +27,23 @@ const MyItineraries = () => {
   const [filters, setFilters] = useState({});
   const [visibility, setVisibility] = useState('all');
 
-  if (userMeError) {
-    return <div>Error: {userMeError}</div>;
-  }
-
-  const handleRetry = () => {
-    if (userMe?.id) dispatch(setUserInfoItineraries());
-  };
+  useEffect(() => {
+    dispatch(setUserInfoItineraries());
+  }, [dispatch]);
 
   const filteredItineraries = useMemo(() => {
     return filterItineraries(myItineraries, { ...filters, visibility: visibility === 'all' ? '' : visibility });
   }, [myItineraries, filters, visibility]);
 
   const hasActiveFilters = Object.values(filters).some(Boolean) || visibility !== 'all';
+
+  if (userMeError) {
+    return <div>Error: {userMeError}</div>;
+  }
+
+  const handleRetry = () => {
+    dispatch(setUserInfoItineraries());
+  };
 
   return (
     <section className="my-itineraries section__container">

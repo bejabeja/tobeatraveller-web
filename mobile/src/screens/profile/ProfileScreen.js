@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
+  filterItineraries,
   followUser, getItinerariesByUserId, getUserById, getUserFavorites, logoutUser,
   selectAuthUser, selectIsAuthenticated, selectMe, selectMyItineraries,
   setUserInfo, unfollowUser,
@@ -50,9 +51,13 @@ const ProfileScreen = ({ route, navigation }) => {
   const [avatarError, setAvatarError] = useState(false);
   const [savedTrips, setSavedTrips] = useState([]);
   const [savedLoading, setSavedLoading] = useState(false);
+  const [visibility, setVisibility] = useState('all');
 
   const user = isOwnProfile ? me : otherUser;
-  const itineraries = isOwnProfile ? (myItineraries ?? []) : otherItineraries;
+  const rawItineraries = isOwnProfile ? (myItineraries ?? []) : otherItineraries;
+  const itineraries = isOwnProfile
+    ? filterItineraries(rawItineraries, { visibility: visibility === 'all' ? '' : visibility })
+    : rawItineraries;
   const canGoBack = navigation.canGoBack();
 
   useEffect(() => { setAvatarError(false); }, [user?.avatarUrl]);
@@ -341,12 +346,26 @@ const ProfileScreen = ({ route, navigation }) => {
           <Text style={styles.sectionTitle}>
             {isOwnProfile ? t('profile.myTrips') : t('profile.otherTrips')} ({itineraries.length})
           </Text>
-          {isOwnProfile && itineraries.length > 0 && (
-            <TouchableOpacity onPress={() => navigation.navigate('MyItineraries')}>
-              <Text style={styles.seeAll}>{t('profile.seeAll')}</Text>
-            </TouchableOpacity>
-          )}
         </View>
+        {isOwnProfile && (
+          <View style={styles.visibilityToggle}>
+            {[
+              { val: 'all',     label: t('myItineraries.all') },
+              { val: 'public',  label: '🌍 ' + t('myItineraries.public') },
+              { val: 'private', label: '🔒 ' + t('myItineraries.private') },
+            ].map(opt => (
+              <TouchableOpacity
+                key={opt.val}
+                style={[styles.visBtn, visibility === opt.val && styles.visBtnActive]}
+                onPress={() => setVisibility(opt.val)}
+              >
+                <Text style={[styles.visBtnText, visibility === opt.val && styles.visBtnTextActive]}>
+                  {opt.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
         {itineraries.length === 0 ? (
           <Text style={styles.emptyTrips}>
             {isOwnProfile ? t('profile.noTripsYet') : t('profile.noPublicTrips')}
@@ -598,6 +617,15 @@ const styles = StyleSheet.create({
 
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   gridItem: { width: '47.5%' },
+
+  visibilityToggle: { flexDirection: 'row', gap: 6, marginBottom: 12 },
+  visBtn: {
+    borderWidth: 1.5, borderColor: '#e5e7eb', borderRadius: 999,
+    paddingVertical: 5, paddingHorizontal: 14,
+  },
+  visBtnActive: { borderColor: '#0077b6', backgroundColor: '#eff6ff' },
+  visBtnText: { fontSize: 13, fontWeight: '500', color: '#6b7280' },
+  visBtnTextActive: { color: '#0077b6', fontWeight: '600' },
 
   // Unauth
   unauthRoot: { flex: 1, backgroundColor: '#fff' },

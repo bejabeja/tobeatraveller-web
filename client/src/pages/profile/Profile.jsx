@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { IoAirplaneOutline, IoEarthOutline, IoLinkOutline, IoLocationOutline, IoSettingsOutline, IoStarOutline } from "react-icons/io5";
 import { MdExplore, MdOutlineCalendarMonth, MdOutlineEdit } from "react-icons/md";
@@ -11,6 +11,7 @@ import { useFollow } from "../../hooks/useFollow";
 import { useProfileData } from "../../hooks/useProfileData";
 import { selectAuthUser } from "../../store/auth/authSelectors";
 import { generateAvatar } from "../../utils/constants/constants";
+import { filterItineraries } from "@tobeatraveller/shared";
 import OfficialBadge from "../../components/users/OfficialBadge";
 import Error from "../error/Error";
 import "./Profile.scss";
@@ -49,6 +50,12 @@ const Profile = () => {
   } = useProfileData(id);
   const { isFollowing, toggleFollow, isLoadingFollow } = useFollow(id);
   const [showUnfollowModal, setShowUnfollowModal] = useState(false);
+  const [visibility, setVisibility] = useState('all');
+
+  const filteredItineraries = useMemo(() => {
+    if (!isMyProfile) return itineraries;
+    return filterItineraries(itineraries, { visibility: visibility === 'all' ? '' : visibility });
+  }, [itineraries, visibility, isMyProfile]);
 
   const followsYou = !isMyProfile && isAuthenticated &&
     user?.followingListIds?.some((u) => String(u.id) === String(authUser?.id));
@@ -110,13 +117,30 @@ const Profile = () => {
         </div>
 
         <div className="profile__main">
+          {isMyProfile && (
+            <div className="profile__visibility-toggle">
+              {[
+                { val: 'all',     label: t('myItineraries.all') },
+                { val: 'public',  label: '🌍 ' + t('myItineraries.public') },
+                { val: 'private', label: '🔒 ' + t('myItineraries.private') },
+              ].map(opt => (
+                <button
+                  key={opt.val}
+                  type="button"
+                  className={`profile__vis-btn${visibility === opt.val ? ' profile__vis-btn--active' : ''}`}
+                  onClick={() => setVisibility(opt.val)}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          )}
           <ItinerariesSection
             user={user}
-            itineraries={itineraries}
+            itineraries={filteredItineraries}
             title={isMyProfile ? t("profile.myTrips") : t("profile.otherTrips")}
             isLoading={loadingItineraries}
             isOwner={isMyProfile}
-            {...(isMyProfile ? { limit: 3, viewAllHref: "/my-itineraries" } : {})}
           />
         </div>
       </div>
