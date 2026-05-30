@@ -246,6 +246,38 @@
     gap: 0.75rem;
   }
 
+  &__day-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+
+    & + & {
+      margin-top: 0.75rem;
+    }
+  }
+
+  &__day-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    &::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border-color);
+    }
+  }
+
+  &__day-label {
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    white-space: nowrap;
+  }
+
   &__comments {
     margin-top: 1rem;
     padding-top: 2rem;

@@ -245,26 +245,61 @@ const ItineraryScreen = ({ route, navigation }) => {
         </View>
 
         {/* Places */}
-        {itinerary.places?.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t('itinerary.places')} ({itinerary.places.length})</Text>
-            {itinerary.places.map((place, i) => (
-              <View key={i} style={styles.placeCard}>
-                <View style={styles.placeNumber}>
-                  <Text style={styles.placeNumberText}>{i + 1}</Text>
-                </View>
-                <View style={styles.placeInfo}>
-                  <View style={styles.placeHeader}>
-                    <Text style={styles.placeIcon}>{PLACE_ICONS[place.category] || '📍'}</Text>
-                    <Text style={styles.placeName}>{place.name}</Text>
+        {itinerary.places?.length > 0 && (() => {
+          const dayMap = {};
+          itinerary.places.forEach((place, i) => {
+            const day = place.dayNumber ?? 1;
+            if (!dayMap[day]) dayMap[day] = [];
+            dayMap[day].push({ place, i });
+          });
+          const dayNumbers = Object.keys(dayMap).map(Number).sort((a, b) => a - b);
+          const isMultiDay = dayNumbers.length > 1;
+
+          return (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>
+                {t('itinerary.places')} ({itinerary.places.length})
+              </Text>
+              {isMultiDay ? dayNumbers.map(day => (
+                <View key={day}>
+                  <View style={styles.dayHeader}>
+                    <Text style={styles.dayLabel}>{t('itinerary.dayHeader', { n: day })}</Text>
+                    <View style={styles.dayLine} />
                   </View>
-                  {place.description && <Text style={styles.placeDesc}>{place.description}</Text>}
-                  {place.address && <Text style={styles.placeAddress}>📍 {place.address}</Text>}
+                  {dayMap[day].map(({ place, i }, position) => (
+                    <View key={i} style={styles.placeCard}>
+                      <View style={styles.placeNumber}>
+                        <Text style={styles.placeNumberText}>{position + 1}</Text>
+                      </View>
+                      <View style={styles.placeInfo}>
+                        <View style={styles.placeHeader}>
+                          <Text style={styles.placeIcon}>{PLACE_ICONS[place.category] || '📍'}</Text>
+                          <Text style={styles.placeName}>{place.name}</Text>
+                        </View>
+                        {place.description && <Text style={styles.placeDesc}>{place.description}</Text>}
+                        {place.address && <Text style={styles.placeAddress}>📍 {place.address}</Text>}
+                      </View>
+                    </View>
+                  ))}
                 </View>
-              </View>
-            ))}
-          </View>
-        )}
+              )) : itinerary.places.map((place, i) => (
+                <View key={i} style={styles.placeCard}>
+                  <View style={styles.placeNumber}>
+                    <Text style={styles.placeNumberText}>{i + 1}</Text>
+                  </View>
+                  <View style={styles.placeInfo}>
+                    <View style={styles.placeHeader}>
+                      <Text style={styles.placeIcon}>{PLACE_ICONS[place.category] || '📍'}</Text>
+                      <Text style={styles.placeName}>{place.name}</Text>
+                    </View>
+                    {place.description && <Text style={styles.placeDesc}>{place.description}</Text>}
+                    {place.address && <Text style={styles.placeAddress}>📍 {place.address}</Text>}
+                  </View>
+                </View>
+              ))}
+            </View>
+          );
+        })()}
 
         {/* Map — native only */}
         {Platform.OS !== 'web' && itinerary.places?.some(p => p.latitude && p.longitude) && (
@@ -524,6 +559,17 @@ const styles = StyleSheet.create({
   statLabel: { fontSize: 11, color: '#9ca3af', fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5 },
   statValue: { fontSize: 14, color: '#111827', fontWeight: '600', marginTop: 2 },
   statSubvalue: { fontSize: 12, color: '#6b7280', marginTop: 1 },
+
+  // Day groups
+  dayHeader: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    marginTop: 20, marginBottom: 4,
+  },
+  dayLabel: {
+    fontSize: 11, fontWeight: '800', color: '#0077b6',
+    textTransform: 'uppercase', letterSpacing: 1,
+  },
+  dayLine: { flex: 1, height: 1, backgroundColor: '#e5e7eb' },
 
   // Places
   placeCard: {

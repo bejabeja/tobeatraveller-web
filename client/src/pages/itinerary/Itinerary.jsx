@@ -326,27 +326,64 @@ const Stats = ({ itinerary, hasDescription, t }) => {
 const Places = ({ itinerary, onHoverPlace, onPlaceClick, selectedPlaceIndex, t }) => {
   if (!itinerary.places?.length) return null;
 
+  // Build day groups preserving global index for map interaction
+  const dayMap = {};
+  itinerary.places.forEach((place, globalIndex) => {
+    const day = place.dayNumber ?? 1;
+    if (!dayMap[day]) dayMap[day] = [];
+    dayMap[day].push({ place, globalIndex });
+  });
+  const dayNumbers = Object.keys(dayMap).map(Number).sort((a, b) => a - b);
+  const isMultiDay = dayNumbers.length > 1;
+
   return (
     <div className="itinerary__places">
-      <h2 className="itinerary__section-title">{t("itinerary.places")} ({itinerary.places.length})</h2>
-      <div className="itinerary__places-list">
-        {itinerary.places.map((place, index) => (
-          <Place
-            key={index}
-            place={place}
-            index={index}
-            isSelected={selectedPlaceIndex === index}
-            onMouseEnter={() => onHoverPlace(index)}
-            onMouseLeave={() => onHoverPlace(null)}
-            onClick={() => onPlaceClick(index)}
-          />
-        ))}
-      </div>
+      <h2 className="itinerary__section-title">
+        {t("itinerary.places")} ({itinerary.places.length})
+      </h2>
+      {isMultiDay ? (
+        dayNumbers.map(day => (
+          <div key={day} className="itinerary__day-group">
+            <div className="itinerary__day-header">
+              <span className="itinerary__day-label">
+                {t("itinerary.dayHeader", { n: day })}
+              </span>
+            </div>
+            <div className="itinerary__places-list">
+              {dayMap[day].map(({ place, globalIndex }, position) => (
+                <Place
+                  key={globalIndex}
+                  place={place}
+                  number={position + 1}
+                  isSelected={selectedPlaceIndex === globalIndex}
+                  onMouseEnter={() => onHoverPlace(globalIndex)}
+                  onMouseLeave={() => onHoverPlace(null)}
+                  onClick={() => onPlaceClick(globalIndex)}
+                />
+              ))}
+            </div>
+          </div>
+        ))
+      ) : (
+        <div className="itinerary__places-list">
+          {itinerary.places.map((place, index) => (
+            <Place
+              key={index}
+              place={place}
+              number={index + 1}
+              isSelected={selectedPlaceIndex === index}
+              onMouseEnter={() => onHoverPlace(index)}
+              onMouseLeave={() => onHoverPlace(null)}
+              onClick={() => onPlaceClick(index)}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };
 
-const Place = ({ place, index, onMouseEnter, onMouseLeave, onClick, isSelected }) => {
+const Place = ({ place, number, onMouseEnter, onMouseLeave, onClick, isSelected }) => {
   const Icon = getCategoryIcon(place.category) || FaCity;
   const hasBody = place.description || place.address;
   return (
@@ -357,7 +394,7 @@ const Place = ({ place, index, onMouseEnter, onMouseLeave, onClick, isSelected }
       onClick={onClick}
     >
       <div className="place__header">
-        <span className="place__number">{index + 1}</span>
+        <span className="place__number">{number}</span>
         <Icon className="place__icon" />
         <h3 className="place__name">{place.name}</h3>
       </div>
