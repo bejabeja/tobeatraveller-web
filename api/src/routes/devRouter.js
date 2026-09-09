@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { accountDeletedTemplate } from '../emails/templates/accountDeleted.js';
 import { contactTemplate } from '../emails/templates/contact.js';
 import { contactConfirmationTemplate } from '../emails/templates/contactConfirmation.js';
+import { passwordChangedTemplate } from '../emails/templates/passwordChanged.js';
 import { passwordResetTemplate } from '../emails/templates/passwordReset.js';
 import { welcomeTemplate } from '../emails/templates/welcome.js';
 import { EmailService } from '../services/emailService.js';
@@ -46,6 +47,14 @@ export const createDevRouter = () => {
     res.send(html);
   });
 
+  // Preview: GET /dev/emails/password-changed?username=jane
+  router.get('/emails/password-changed', (req, res) => {
+    const { html } = passwordChangedTemplate({
+      username: req.query.username || 'traveller',
+    });
+    res.send(html);
+  });
+
   // Preview: GET /dev/emails/account-deleted?username=jane
   router.get('/emails/account-deleted', (req, res) => {
     const { html } = accountDeletedTemplate({
@@ -77,10 +86,12 @@ export const createDevRouter = () => {
         });
       } else if (type === 'contact-confirmation') {
         await emailService.sendContactConfirmation({ name: 'Jane Doe', email: to });
+      } else if (type === 'password-changed') {
+        await emailService.sendPasswordChanged({ username: 'testuser', email: to });
       } else if (type === 'account-deleted') {
         await emailService.sendAccountDeleted({ username: 'testuser', email: to });
       } else {
-        return res.status(400).json({ error: `Unknown type "${type}". Use welcome, contact, contact-confirmation, password-reset or account-deleted.` });
+        return res.status(400).json({ error: `Unknown type "${type}". Use welcome, contact, contact-confirmation, password-reset, password-changed or account-deleted.` });
       }
       res.json({ ok: true, message: `${type} email sent to ${to}` });
     } catch (err) {
@@ -170,6 +181,13 @@ export const createDevRouter = () => {
     </div>
     <a class="send-btn" onclick="sendTest('password-reset', this); return false;" href="#">Send test →</a>
     <div class="send-result" id="result-password-reset"></div>
+
+    <div class="template" data-url="/dev/emails/password-changed?username=jane" data-name="Password changed" onclick="loadPreview(this)">
+      <div class="template-name">Password changed</div>
+      <div class="template-desc">Sent when the account password is changed</div>
+    </div>
+    <a class="send-btn" onclick="sendTest('password-changed', this); return false;" href="#">Send test →</a>
+    <div class="send-result" id="result-password-changed"></div>
 
     <div class="template" data-url="/dev/emails/account-deleted?username=jane" data-name="Account deleted" onclick="loadPreview(this)">
       <div class="template-name">Account deleted</div>

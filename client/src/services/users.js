@@ -7,6 +7,7 @@ export {
     getfeaturedUsers,
     getUserById,
     updateUser,
+    changePassword,
     deleteMyAccount,
     deleteUserById,
     getAllUsers,

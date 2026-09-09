@@ -11,7 +11,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../i18n';
 import {
-  deleteMyAccount, exportMyData, fetchNotificationPreferences,
+  changePassword, deleteMyAccount, exportMyData, fetchNotificationPreferences,
   logoutUser, selectAuthUser, selectMe, updateNotificationPreferences,
 } from '@tobeatraveller/shared';
 import { shadow } from '../../utils/styles';
@@ -39,6 +39,12 @@ const SettingsScreen = ({ navigation }) => {
   const [exporting, setExporting] = useState(false);
   const [notificationPreferences, setNotificationPreferences] = useState(null);
   const [updatingPreferenceKey, setUpdatingPreferenceKey] = useState(null);
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [changingPassword, setChangingPassword] = useState(false);
 
   useEffect(() => {
     fetchNotificationPreferences()
@@ -78,6 +84,36 @@ const SettingsScreen = ({ navigation }) => {
       Alert.alert(t('errors.somethingWrong'), t('errors.notificationPreferencesUpdateFailed'));
     } finally {
       setUpdatingPreferenceKey(null);
+    }
+  };
+
+  const closePasswordForm = () => {
+    setShowPasswordForm(false);
+    setCurrentPassword('');
+    setNewPassword('');
+    setConfirmNewPassword('');
+    setPasswordError('');
+  };
+
+  const handleChangePassword = async () => {
+    if (newPassword.length < 6) {
+      setPasswordError(t('errors.passwordMin'));
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      setPasswordError(t('errors.passwordsDontMatch'));
+      return;
+    }
+    setPasswordError('');
+    setChangingPassword(true);
+    try {
+      await changePassword({ currentPassword, newPassword });
+      closePasswordForm();
+      Alert.alert(t('editProfile.passwordChanged'));
+    } catch (err) {
+      setPasswordError(err.message || t('errors.changePasswordFailed'));
+    } finally {
+      setChangingPassword(false);
     }
   };
 
@@ -125,6 +161,66 @@ const SettingsScreen = ({ navigation }) => {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
+          {/* Account */}
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>{t('settings.account').toUpperCase()}</Text>
+            {!showPasswordForm ? (
+              <TouchableOpacity style={styles.linkBtn} onPress={() => setShowPasswordForm(true)}>
+                <Text style={styles.linkBtnText}>{t('editProfile.changePassword')} →</Text>
+              </TouchableOpacity>
+            ) : (
+              <View style={styles.passwordForm}>
+                <TextInput
+                  style={styles.input}
+                  value={currentPassword}
+                  onChangeText={setCurrentPassword}
+                  placeholder={t('editProfile.currentPasswordLabel')}
+                  placeholderTextColor="#9ca3af"
+                  secureTextEntry
+                />
+                <TextInput
+                  style={[styles.input, { marginTop: 8 }]}
+                  value={newPassword}
+                  onChangeText={setNewPassword}
+                  placeholder={t('editProfile.newPasswordLabel')}
+                  placeholderTextColor="#9ca3af"
+                  secureTextEntry
+                />
+                <TextInput
+                  style={[styles.input, { marginTop: 8 }]}
+                  value={confirmNewPassword}
+                  onChangeText={setConfirmNewPassword}
+                  placeholder={t('editProfile.confirmNewPasswordLabel')}
+                  placeholderTextColor="#9ca3af"
+                  secureTextEntry
+                />
+                {!!passwordError && <Text style={styles.errorText}>{passwordError}</Text>}
+                <View style={styles.deleteConfirmActions}>
+                  <TouchableOpacity
+                    style={styles.cancelBtn}
+                    onPress={closePasswordForm}
+                    disabled={changingPassword}
+                  >
+                    <Text style={styles.cancelBtnText}>{t('common.cancel')}</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.primaryBtn,
+                      { flex: 1 },
+                      (!currentPassword || !newPassword || !confirmNewPassword || changingPassword) && styles.btnDisabled,
+                    ]}
+                    onPress={handleChangePassword}
+                    disabled={!currentPassword || !newPassword || !confirmNewPassword || changingPassword}
+                  >
+                    <Text style={styles.primaryBtnText}>
+                      {changingPassword ? t('editProfile.changingPassword') : t('editProfile.changePassword')}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+          </View>
+
           {/* Language */}
           <View style={styles.card}>
             <Text style={styles.cardTitle}>{t('settings.language').toUpperCase()}</Text>
@@ -279,6 +375,14 @@ const styles = StyleSheet.create({
   },
   linkBtn: { alignSelf: 'flex-start' },
   linkBtnText: { fontSize: 14, fontWeight: '600', color: '#E8743B' },
+
+  passwordForm: { gap: 0 },
+  errorText: { fontSize: 13, color: '#dc2626', marginTop: 8 },
+  primaryBtn: {
+    backgroundColor: '#E8743B', borderRadius: 10,
+    paddingVertical: 11, alignItems: 'center',
+  },
+  primaryBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
 
   toggleRow: {
     flexDirection: 'row', alignItems: 'center',

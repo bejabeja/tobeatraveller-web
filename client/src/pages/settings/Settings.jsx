@@ -7,11 +7,12 @@ import { Trans, useTranslation } from "react-i18next";
 import { fetchNotificationPreferences, updateNotificationPreferences } from "@tobeatraveller/shared";
 import i18n from "../../i18n";
 import Spinner from "../../components/spinner/Spinner";
-import { deleteMyAccount, exportMyData } from "../../services/users";
+import { changePassword, deleteMyAccount, exportMyData } from "../../services/users";
 import { logoutUser } from "../../store/auth/authActions";
 import { selectAuthUser } from "../../store/auth/authSelectors";
 import { setUserInfo } from "../../store/user/userInfoActions";
 import { selectMe, selectMeLoading } from "../../store/user/userInfoSelectors";
+import "../../components/modal/Modal.scss";
 import "../profile/EditProfile.scss";
 import "./Settings.scss";
 
@@ -36,6 +37,12 @@ const Settings = () => {
   const [isExporting, setIsExporting] = useState(false);
   const [notificationPreferences, setNotificationPreferences] = useState(null);
   const [updatingPreferenceKey, setUpdatingPreferenceKey] = useState(null);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   const currentLang = i18n.language?.startsWith("en") ? "en" : "es";
 
@@ -83,6 +90,36 @@ const Settings = () => {
     }
   };
 
+  const closePasswordModal = () => {
+    setShowPasswordModal(false);
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmNewPassword("");
+    setPasswordError("");
+  };
+
+  const handleChangePassword = async () => {
+    if (newPassword.length < 6) {
+      setPasswordError(t("errors.passwordMin"));
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      setPasswordError(t("errors.passwordsDontMatch"));
+      return;
+    }
+    setPasswordError("");
+    setIsChangingPassword(true);
+    try {
+      await changePassword({ currentPassword, newPassword });
+      toast.success(t("editProfile.passwordChanged"));
+      closePasswordModal();
+    } catch (err) {
+      setPasswordError(err.message || t("errors.changePasswordFailed"));
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
   const handleDeleteAccount = async () => {
     if (deleteConfirmInput !== userMe?.username) return;
     setIsDeleting(true);
@@ -109,6 +146,18 @@ const Settings = () => {
       </header>
 
       <div className="ep__body">
+        {/* Account */}
+        <section className="ep__section">
+          <p className="ep__section-label">{t("settings.account").toUpperCase()}</p>
+          <button
+            type="button"
+            className="ep__link-btn"
+            onClick={() => setShowPasswordModal(true)}
+          >
+            {t("editProfile.changePassword")} →
+          </button>
+        </section>
+
         {/* Language */}
         <section className="ep__section">
           <p className="ep__section-label">{t("settings.language").toUpperCase()}</p>
@@ -203,7 +252,7 @@ const Settings = () => {
             </p>
             <div className="modal__input-wrap">
               <input
-                className="ep__delete-input"
+                className="ep__modal-input"
                 type="text"
                 placeholder={userMe?.username}
                 value={deleteConfirmInput}
@@ -225,6 +274,70 @@ const Settings = () => {
                 disabled={deleteConfirmInput !== userMe?.username || isDeleting}
               >
                 {isDeleting ? t("editProfile.deleting") : t("editProfile.deleteAccount")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Change password modal */}
+      {showPasswordModal && (
+        <div className="modal__backdrop" onClick={() => !isChangingPassword && closePasswordModal()}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal__header">
+              <h2 className="modal__title">{t("editProfile.changePasswordModal")}</h2>
+              <button
+                className="modal__close"
+                onClick={closePasswordModal}
+                disabled={isChangingPassword}
+                aria-label={t("common.cancel")}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="modal__input-wrap">
+              <input
+                className="ep__modal-input"
+                type="password"
+                placeholder={t("editProfile.currentPasswordLabel")}
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                autoFocus
+              />
+            </div>
+            <div className="modal__input-wrap">
+              <input
+                className="ep__modal-input"
+                type="password"
+                placeholder={t("editProfile.newPasswordLabel")}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+            </div>
+            <div className="modal__input-wrap">
+              <input
+                className="ep__modal-input"
+                type="password"
+                placeholder={t("editProfile.confirmNewPasswordLabel")}
+                value={confirmNewPassword}
+                onChange={(e) => setConfirmNewPassword(e.target.value)}
+              />
+            </div>
+            {passwordError && <p className="ep__error">{passwordError}</p>}
+            <div className="modal__actions">
+              <button
+                className="btn btn--ghost modal__btn-cancel"
+                onClick={closePasswordModal}
+                disabled={isChangingPassword}
+              >
+                {t("common.cancel")}
+              </button>
+              <button
+                className="btn btn--primary modal__btn-confirm"
+                onClick={handleChangePassword}
+                disabled={!currentPassword || !newPassword || !confirmNewPassword || isChangingPassword}
+              >
+                {isChangingPassword ? t("editProfile.changingPassword") : t("editProfile.changePassword")}
               </button>
             </div>
           </div>

@@ -1,5 +1,5 @@
 import { ValidationError } from "../errors/ValidationError.js";
-import { updateUserRoleSchema, updateUserSchema, updateUserTierSchema } from "../utils/schemasValidation.js";
+import { changePasswordSchema, updateUserRoleSchema, updateUserSchema, updateUserTierSchema } from "../utils/schemasValidation.js";
 import { getRequestContext } from "../utils/requestContext.js";
 
 const MAX_AVATAR_SIZE = 5 * 1024 * 1024; // 5 MB
@@ -79,6 +79,22 @@ export class UserController {
 
             const updatedUser = await this.userService.updateUser(id, validatedData);
             res.status(200).json(updatedUser);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async changePassword(req, res, next) {
+        const result = changePasswordSchema.safeParse(req.body);
+        if (!result.success) {
+            return next(new ValidationError(result.error.errors[0]?.message || "Validation failed"));
+        }
+        try {
+            const { id } = req.user;
+            await this.userService.changePassword(
+                id, result.data.currentPassword, result.data.newPassword, getRequestContext(req)
+            );
+            res.status(200).json({ message: "Password updated successfully" });
         } catch (error) {
             next(error);
         }

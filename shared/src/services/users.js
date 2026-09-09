@@ -64,6 +64,18 @@ export const updateUser = async (data) => {
 }
 
 
+export const changePassword = async ({ currentPassword, newPassword }) => {
+    const response = await authFetch(`${baseUrl()}/me/password`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPassword, newPassword }),
+    });
+    if (!response.ok) {
+        await parseError(response, 'Failed to update password');
+    }
+    return response.json();
+};
+
 export const deleteMyAccount = async () => {
     const response = await authFetch(`${baseUrl()}/me`, {
         method: 'DELETE',

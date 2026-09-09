@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from 'uuid';
 import db from '../db/clientPostgres.js';
+import { AuthError } from "../errors/AuthError.js";
 import { ConflictError } from "../errors/ConflictError.js";
 import { ForbiddenError } from "../errors/ForbiddenError.js";
 import { NotFoundError } from "../errors/NotFoundError.js";
@@ -203,6 +204,28 @@ export class UserService {
         );
 
         return await this.userRepository.updateUser(id, user);
+    }
+
+    async changePassword(id, currentPassword, newPassword, { ip, userAgent } = {}) {
+        const user = await this.userRepository.getUserById(id);
+        if (!user) throw new NotFoundError("User not found");
+
+        const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+        if (!isCurrentPasswordValid) {
+            throw new AuthError("Current password is incorrect");
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        await this.userRepository.updatePassword(id, hashedPassword);
+
+        this.emailService?.sendPasswordChanged({ username: user.username, email: user.email })
+            .catch(err => logger.error('[email] password changed failed:', err));
+
+        this.auditLogService?.log({
+            actorId: id, actorUsername: user.username,
+            action: AUDIT_EVENTS.PASSWORD_CHANGED,
+            ipAddress: ip, userAgent,
+        });
     }
 
     async getFeaturedUsers() {

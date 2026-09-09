@@ -14,6 +14,7 @@ import { UserRepository } from "../repositories/userRepository.js";
 import { VanLogRepository } from "../repositories/vanLogRepository.js";
 import { auditLogService } from "../services/sharedAuditLogService.js";
 import { CloudinaryService } from "../services/cloudinaryService.js";
+import { EmailService } from "../services/emailService.js";
 import { UserService } from "../services/userService.js";
 
 export const createUsersRouter = () => {
@@ -26,8 +27,9 @@ export const createUsersRouter = () => {
     const inventoryRepository = new InventoryRepository();
     const shoppingListRepository = new ShoppingListRepository();
     const packingChecklistRepository = new PackingChecklistRepository();
+    const emailService = new EmailService();
     const userService = new UserService(
-        userRepository, itinerariesRepository, followRepository, null,
+        userRepository, itinerariesRepository, followRepository, emailService,
         lifeDiaryRepository, auditLogService, vanLogRepository,
         inventoryRepository, shoppingListRepository, packingChecklistRepository
     );
@@ -39,6 +41,7 @@ export const createUsersRouter = () => {
     router.get("/me", authenticate, userController.getUserMe.bind(userController));
     router.get("/me/export", authenticate, userController.exportMyData.bind(userController));
     router.put("/me", authenticate, upload.single("avatar"), userController.updateUserMe.bind(userController));
+    router.patch("/me/password", authenticate, userController.changePassword.bind(userController));
     router.delete("/me", authenticate, userController.deleteUserMe.bind(userController));
     router.delete("/:id", authenticate, staffOnly, userController.deleteUserById.bind(userController));
     router.get("/featured", userController.getFeaturedUsers.bind(userController));

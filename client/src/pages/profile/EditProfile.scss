@@ -945,8 +945,8 @@
     }
   }
 
-  // Delete input (inside modal)
-  &__delete-input {
+  // Generic text input inside a modal
+  &__modal-input {
     width: 100%;
     border: 1.5px solid var(--border-color);
     border-radius: 10px;

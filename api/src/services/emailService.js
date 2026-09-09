@@ -3,6 +3,7 @@ import { accountDeletedTemplate } from '../emails/templates/accountDeleted.js';
 import { auditLogFailureTemplate } from '../emails/templates/auditLogFailure.js';
 import { contactConfirmationTemplate } from '../emails/templates/contactConfirmation.js';
 import { contactTemplate } from '../emails/templates/contact.js';
+import { passwordChangedTemplate } from '../emails/templates/passwordChanged.js';
 import { passwordResetTemplate } from '../emails/templates/passwordReset.js';
 import { welcomeTemplate } from '../emails/templates/welcome.js';
 import { logger } from '../utils/logger.js';
@@ -61,6 +62,11 @@ export class EmailService {
 
     async sendPasswordReset({ username, email, token }) {
         const { subject, html } = passwordResetTemplate({ username, token });
+        await this._send({ to: email, subject, html });
+    }
+
+    async sendPasswordChanged({ username, email }) {
+        const { subject, html } = passwordChangedTemplate({ username });
         await this._send({ to: email, subject, html });
     }
 

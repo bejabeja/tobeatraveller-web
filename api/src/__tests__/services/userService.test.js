@@ -4,8 +4,11 @@ vi.mock('../../db/clientPostgres.js', () => ({
     default: { query: vi.fn().mockResolvedValue({ rows: [] }) },
 }));
 
+import bcrypt from 'bcrypt';
 import { User } from '../../models/user.js';
 import { UserService } from '../../services/userService.js';
+import { AuthError } from '../../errors/AuthError.js';
+import { NotFoundError } from '../../errors/NotFoundError.js';
 import { AUDIT_EVENTS } from '../../utils/auditEvents.js';
 
 const makeUser = (overrides = {}) => new User({
@@ -415,5 +418,76 @@ describe('UserService.exportUserData()', () => {
         expect(result.supplies).toEqual({ inventory: [], shoppingList: [] });
         expect(result.packingChecklist).toEqual([]);
         expect(result.lifeDiaryEntries).toEqual([]);
+    });
+});
+
+describe('UserService.changePassword()', () => {
+    let service;
+    let userRepository;
+    let hashedCurrentPassword;
+
+    beforeEach(async () => {
+        hashedCurrentPassword = await bcrypt.hash('correct-password', 10);
+        userRepository = {
+            getUserById: async () => makeUser({ password: hashedCurrentPassword }),
+            updatePassword: vi.fn().mockResolvedValue(undefined),
+        };
+        service = new UserService(userRepository, {}, {});
+    });
+
+    it('throws NotFoundError when the user does not exist', async () => {
+        userRepository.getUserById = async () => null;
+
+        await expect(service.changePassword('user-1', 'correct-password', 'new-password'))
+            .rejects.toThrow(NotFoundError);
+    });
+
+    it('throws AuthError when the current password is incorrect', async () => {
+        await expect(service.changePassword('user-1', 'wrong-password', 'new-password'))
+            .rejects.toThrow(AuthError);
+
+        expect(userRepository.updatePassword).not.toHaveBeenCalled();
+    });
+
+    it('stores a new bcrypt hash of the new password when the current password is correct', async () => {
+        await service.changePassword('user-1', 'correct-password', 'new-password');
+
+        expect(userRepository.updatePassword).toHaveBeenCalledTimes(1);
+        const [id, storedHash] = userRepository.updatePassword.mock.calls[0];
+        expect(id).toBe('user-1');
+        expect(storedHash).not.toBe('new-password');
+        await expect(bcrypt.compare('new-password', storedHash)).resolves.toBe(true);
+    });
+
+    it('logs a password_changed event for the acting user', async () => {
+        let loggedEntry;
+        const auditLogService = { log: (entry) => { loggedEntry = entry; } };
+        service = new UserService(userRepository, {}, {}, null, null, auditLogService);
+
+        await service.changePassword('user-1', 'correct-password', 'new-password', { ip: '203.0.113.1', userAgent: 'Mozilla/5.0' });
+
+        expect(loggedEntry).toEqual({
+            actorId: 'user-1', actorUsername: 'jane', action: AUDIT_EVENTS.PASSWORD_CHANGED,
+            ipAddress: '203.0.113.1', userAgent: 'Mozilla/5.0',
+        });
+    });
+
+    it('sends a password-changed confirmation email to the account owner', async () => {
+        const emailService = { sendPasswordChanged: vi.fn().mockResolvedValue(undefined) };
+        service = new UserService(userRepository, {}, {}, emailService);
+
+        await service.changePassword('user-1', 'correct-password', 'new-password');
+
+        expect(emailService.sendPasswordChanged).toHaveBeenCalledWith({ username: 'jane', email: 'jane@example.com' });
+    });
+
+    // Regression: a rejected fire-and-forget email send must not surface as a
+    // failure of the password change itself, the same guarantee sendWelcome/
+    // sendAccountDeleted already rely on elsewhere in this service.
+    it('does not fail the password change when sending the confirmation email rejects', async () => {
+        const emailService = { sendPasswordChanged: vi.fn().mockRejectedValue(new Error('brevo down')) };
+        service = new UserService(userRepository, {}, {}, emailService);
+
+        await expect(service.changePassword('user-1', 'correct-password', 'new-password')).resolves.toBeUndefined();
     });
 });
