@@ -109,3 +109,59 @@ describe('NotificationsRepository.getByUserId()', () => {
         expect(notification.commentId).toBe('c1');
     });
 });
+
+describe('NotificationsRepository.getPreferences()', () => {
+    const repo = new NotificationsRepository();
+
+    beforeEach(() => {
+        client.query.mockReset();
+    });
+
+    it('returns all preferences enabled by default when the user has no stored row', async () => {
+        client.query.mockResolvedValueOnce({ rows: [] });
+
+        const preferences = await repo.getPreferences('u1');
+
+        expect(preferences).toEqual({ notifyOnComment: true, notifyOnLike: true, notifyOnFollow: true });
+    });
+
+    it('maps the stored row to camelCase', async () => {
+        client.query.mockResolvedValueOnce({
+            rows: [{ notify_on_comment: false, notify_on_like: true, notify_on_follow: false }],
+        });
+
+        const preferences = await repo.getPreferences('u1');
+
+        expect(preferences).toEqual({ notifyOnComment: false, notifyOnLike: true, notifyOnFollow: false });
+    });
+});
+
+describe('NotificationsRepository.upsertPreferences()', () => {
+    const repo = new NotificationsRepository();
+
+    beforeEach(() => {
+        client.query.mockReset();
+    });
+
+    it('upserts only the provided preferences, leaving the others untouched via COALESCE', async () => {
+        client.query.mockResolvedValueOnce({
+            rows: [{ notify_on_comment: false, notify_on_like: true, notify_on_follow: true }],
+        });
+
+        await repo.upsertPreferences('u1', { notifyOnComment: false });
+
+        const [query, params] = client.query.mock.calls[0];
+        expect(query).toMatch(/ON CONFLICT \(user_id\) DO UPDATE/);
+        expect(params).toEqual(['u1', false, null, null]);
+    });
+
+    it('returns the resulting preferences mapped to camelCase', async () => {
+        client.query.mockResolvedValueOnce({
+            rows: [{ notify_on_comment: true, notify_on_like: false, notify_on_follow: true }],
+        });
+
+        const preferences = await repo.upsertPreferences('u1', { notifyOnLike: false });
+
+        expect(preferences).toEqual({ notifyOnComment: true, notifyOnLike: false, notifyOnFollow: true });
+    });
+});

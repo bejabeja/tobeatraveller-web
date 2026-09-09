@@ -1,3 +1,9 @@
+const NOTIFICATION_TYPE_PREFERENCE_KEY = {
+    comment: 'notifyOnComment',
+    like: 'notifyOnLike',
+    follow: 'notifyOnFollow',
+};
+
 export class NotificationsService {
     constructor(notificationsRepository) {
         this.notificationsRepository = notificationsRepository;
@@ -5,7 +11,22 @@ export class NotificationsService {
 
     async createNotification({ userId, actorId, type, itineraryId, commentId }) {
         if (userId === actorId) return;
+
+        const preferenceKey = NOTIFICATION_TYPE_PREFERENCE_KEY[type];
+        if (preferenceKey) {
+            const preferences = await this.notificationsRepository.getPreferences(userId);
+            if (!preferences[preferenceKey]) return;
+        }
+
         await this.notificationsRepository.create({ userId, actorId, type, itineraryId, commentId });
+    }
+
+    async getPreferences(userId) {
+        return this.notificationsRepository.getPreferences(userId);
+    }
+
+    async updatePreferences(userId, preferences) {
+        return this.notificationsRepository.upsertPreferences(userId, preferences);
     }
 
     async getNotifications(userId, page = 1, limit = 20) {

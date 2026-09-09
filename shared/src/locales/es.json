@@ -899,6 +899,10 @@
   "settings": {
     "title": "Ajustes",
     "language": "Idioma",
+    "notifications": "Notificaciones",
+    "notifyOnComment": "Comentarios en tus itinerarios",
+    "notifyOnLike": "Me gusta en tus itinerarios",
+    "notifyOnFollow": "Nuevos seguidores",
     "yourData": "Tus datos",
     "legal": "Legal",
     "dangerZone": "⚠️ Zona de peligro"
@@ -933,6 +937,8 @@
     "validEmailRequired": "Se requiere un correo electrónico válido",
     "deleteAccountFailed": "No se pudo eliminar la cuenta. Por favor, inténtalo más tarde.",
     "exportDataFailed": "No se pudo descargar tus datos. Por favor, inténtalo más tarde.",
+    "notificationPreferencesUpdateFailed": "No se pudieron actualizar tus preferencias de notificación. Por favor, inténtalo más tarde.",
+    "notificationPreferencesLoadFailed": "No se pudieron cargar tus preferencias de notificación.",
     "updateProfileFailed": "No se pudo actualizar el perfil",
     "profileUpdated": "¡Perfil actualizado!",
     "couldNotSend": "No se pudo enviar tu mensaje. Por favor, inténtalo más tarde."

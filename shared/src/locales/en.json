@@ -899,6 +899,10 @@
   "settings": {
     "title": "Settings",
     "language": "Language",
+    "notifications": "Notifications",
+    "notifyOnComment": "Comments on your itineraries",
+    "notifyOnLike": "Likes on your itineraries",
+    "notifyOnFollow": "New followers",
     "yourData": "Your data",
     "legal": "Legal",
     "dangerZone": "⚠️ Danger zone"
@@ -933,6 +937,8 @@
     "validEmailRequired": "Valid email required",
     "deleteAccountFailed": "Failed to delete account. Please try again.",
     "exportDataFailed": "Could not download your data. Please try again.",
+    "notificationPreferencesUpdateFailed": "Could not update your notification preferences. Please try again.",
+    "notificationPreferencesLoadFailed": "Could not load your notification preferences.",
     "updateProfileFailed": "Failed to update profile",
     "profileUpdated": "Profile updated!",
     "couldNotSend": "Could not send your message. Please try again."

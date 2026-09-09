@@ -1,3 +1,6 @@
+import { ValidationError } from '../errors/ValidationError.js';
+import { updateNotificationPreferencesSchema } from '../utils/schemasValidation.js';
+
 export class NotificationsController {
     constructor(notificationsService) {
         this.notificationsService = notificationsService;
@@ -29,6 +32,31 @@ export class NotificationsController {
             const userId = req.user.id;
             const count = await this.notificationsService.getUnreadCount(userId);
             res.status(200).json({ count });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getPreferences(req, res, next) {
+        try {
+            const userId = req.user.id;
+            const preferences = await this.notificationsService.getPreferences(userId);
+            res.status(200).json(preferences);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async updatePreferences(req, res, next) {
+        try {
+            const result = updateNotificationPreferencesSchema.safeParse(req.body);
+            if (!result.success) {
+                return next(new ValidationError(result.error.errors[0]?.message || "Validation failed"));
+            }
+
+            const userId = req.user.id;
+            const preferences = await this.notificationsService.updatePreferences(userId, result.data);
+            res.status(200).json(preferences);
         } catch (error) {
             next(error);
         }

@@ -5,6 +5,12 @@ import { timeAgo } from '../utils/date.js';
 
 const GROUPING_WINDOW_HOURS = 24;
 
+const DEFAULT_NOTIFICATION_PREFERENCES = {
+    notifyOnComment: true,
+    notifyOnLike: true,
+    notifyOnFollow: true,
+};
+
 export class NotificationsRepository {
     async create({ id, userId, actorId, type, itineraryId, commentId }) {
         try {
@@ -109,5 +115,42 @@ export class NotificationsRepository {
             [userId]
         );
         return parseInt(result.rows[0].count, 10);
+    }
+
+    async getPreferences(userId) {
+        const result = await client.query(
+            `SELECT notify_on_comment, notify_on_like, notify_on_follow
+             FROM notification_preferences WHERE user_id = $1`,
+            [userId]
+        );
+        if (result.rows.length === 0) return { ...DEFAULT_NOTIFICATION_PREFERENCES };
+
+        const row = result.rows[0];
+        return {
+            notifyOnComment: row.notify_on_comment,
+            notifyOnLike: row.notify_on_like,
+            notifyOnFollow: row.notify_on_follow,
+        };
+    }
+
+    async upsertPreferences(userId, { notifyOnComment, notifyOnLike, notifyOnFollow }) {
+        const result = await client.query(
+            `INSERT INTO notification_preferences (user_id, notify_on_comment, notify_on_like, notify_on_follow)
+             VALUES ($1, COALESCE($2, true), COALESCE($3, true), COALESCE($4, true))
+             ON CONFLICT (user_id) DO UPDATE SET
+                 notify_on_comment = COALESCE($2, notification_preferences.notify_on_comment),
+                 notify_on_like = COALESCE($3, notification_preferences.notify_on_like),
+                 notify_on_follow = COALESCE($4, notification_preferences.notify_on_follow),
+                 updated_at = NOW()
+             RETURNING notify_on_comment, notify_on_like, notify_on_follow`,
+            [userId, notifyOnComment ?? null, notifyOnLike ?? null, notifyOnFollow ?? null]
+        );
+
+        const row = result.rows[0];
+        return {
+            notifyOnComment: row.notify_on_comment,
+            notifyOnLike: row.notify_on_like,
+            notifyOnFollow: row.notify_on_follow,
+        };
     }
 }

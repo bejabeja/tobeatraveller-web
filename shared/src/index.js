@@ -28,7 +28,10 @@ export * from './store/user/userInfoSelectors.js';
 export * from './store/itineraries/itinerariesActions.js';
 export * from './store/itineraries/itinerariesReducer.js';
 export * from './store/itineraries/itinerariesSelectors.js';
-export { fetchNotifications, fetchUnreadCount, markNotificationsRead } from './services/notifications.js';
+export {
+    fetchNotifications, fetchUnreadCount, markNotificationsRead,
+    fetchNotificationPreferences, updateNotificationPreferences,
+} from './services/notifications.js';
 export * from './store/users/usersActions.js';
 export * from './store/users/usersReducer.js';
 export * from './store/users/usersSelectors.js';

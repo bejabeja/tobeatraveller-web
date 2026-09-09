@@ -20,3 +20,19 @@ export const markNotificationsRead = async () => {
     if (!res.ok) throw new Error('Failed to mark as read');
     return res.json();
 };
+
+export const fetchNotificationPreferences = async () => {
+    const res = await authFetch(`${base()}/preferences`);
+    if (!res.ok) throw new Error('Failed to fetch notification preferences');
+    return res.json();
+};
+
+export const updateNotificationPreferences = async (preferences) => {
+    const res = await authFetch(`${base()}/preferences`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(preferences),
+    });
+    if (!res.ok) throw new Error('Failed to update notification preferences');
+    return res.json();
+};

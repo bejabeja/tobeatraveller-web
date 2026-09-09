@@ -13,6 +13,8 @@ export const createNotificationsRouter = () => {
     router.get('/', notificationsController.getNotifications.bind(notificationsController));
     router.patch('/read', notificationsController.markAllAsRead.bind(notificationsController));
     router.get('/unread-count', notificationsController.getUnreadCount.bind(notificationsController));
+    router.get('/preferences', notificationsController.getPreferences.bind(notificationsController));
+    router.patch('/preferences', notificationsController.updatePreferences.bind(notificationsController));
 
     return router;
 };

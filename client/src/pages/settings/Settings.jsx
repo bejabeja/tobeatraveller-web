@@ -4,6 +4,7 @@ import { IoArrowBackOutline, IoWarningOutline } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { Trans, useTranslation } from "react-i18next";
+import { fetchNotificationPreferences, updateNotificationPreferences } from "@tobeatraveller/shared";
 import i18n from "../../i18n";
 import Spinner from "../../components/spinner/Spinner";
 import { deleteMyAccount, exportMyData } from "../../services/users";
@@ -13,6 +14,12 @@ import { setUserInfo } from "../../store/user/userInfoActions";
 import { selectMe, selectMeLoading } from "../../store/user/userInfoSelectors";
 import "../profile/EditProfile.scss";
 import "./Settings.scss";
+
+const NOTIFICATION_PREFERENCE_TOGGLES = [
+  { key: "notifyOnComment", labelKey: "settings.notifyOnComment" },
+  { key: "notifyOnLike", labelKey: "settings.notifyOnLike" },
+  { key: "notifyOnFollow", labelKey: "settings.notifyOnFollow" },
+];
 
 const Settings = () => {
   const { t } = useTranslation();
@@ -27,12 +34,20 @@ const Settings = () => {
   const [deleteConfirmInput, setDeleteConfirmInput] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [notificationPreferences, setNotificationPreferences] = useState(null);
+  const [updatingPreferenceKey, setUpdatingPreferenceKey] = useState(null);
 
   const currentLang = i18n.language?.startsWith("en") ? "en" : "es";
 
   useEffect(() => {
     if (authUser?.id && !meDetail && !meLoading) dispatch(setUserInfo(authUser.id));
   }, [authUser?.id, meDetail, meLoading, dispatch]);
+
+  useEffect(() => {
+    fetchNotificationPreferences()
+      .then(setNotificationPreferences)
+      .catch(() => toast.error(t("errors.notificationPreferencesLoadFailed")));
+  }, [t]);
 
   if (!userMe) return <Spinner />;
 
@@ -50,6 +65,21 @@ const Settings = () => {
       toast.error(t("errors.exportDataFailed"));
     } finally {
       setIsExporting(false);
+    }
+  };
+
+  const handleTogglePreference = async (key) => {
+    const previousValue = notificationPreferences[key];
+    setUpdatingPreferenceKey(key);
+    setNotificationPreferences({ ...notificationPreferences, [key]: !previousValue });
+    try {
+      const updated = await updateNotificationPreferences({ [key]: !previousValue });
+      setNotificationPreferences(updated);
+    } catch {
+      setNotificationPreferences({ ...notificationPreferences, [key]: previousValue });
+      toast.error(t("errors.notificationPreferencesUpdateFailed"));
+    } finally {
+      setUpdatingPreferenceKey(null);
     }
   };
 
@@ -98,6 +128,26 @@ const Settings = () => {
               🇬🇧 English
             </button>
           </div>
+        </section>
+
+        {/* Notifications */}
+        <section className="ep__section">
+          <p className="ep__section-label">{t("settings.notifications").toUpperCase()}</p>
+          {notificationPreferences &&
+            NOTIFICATION_PREFERENCE_TOGGLES.map(({ key, labelKey }) => (
+              <div className="ep__toggle-row" key={key}>
+                <p className="ep__toggle-label">{t(labelKey)}</p>
+                <label className="ep__toggle">
+                  <input
+                    type="checkbox"
+                    checked={notificationPreferences[key]}
+                    disabled={updatingPreferenceKey === key}
+                    onChange={() => handleTogglePreference(key)}
+                  />
+                  <span className="ep__toggle-slider" />
+                </label>
+              </div>
+            ))}
         </section>
 
         {/* Your data */}

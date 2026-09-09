@@ -160,6 +160,14 @@ export const packingItemSchema = z.object({
     checked: z.boolean().optional(),
 });
 
+export const updateNotificationPreferencesSchema = z.object({
+    notifyOnComment: z.boolean().optional(),
+    notifyOnLike: z.boolean().optional(),
+    notifyOnFollow: z.boolean().optional(),
+}).refine((data) => Object.keys(data).length > 0, {
+    message: "At least one preference must be provided",
+});
+
 export const packingSeedSchema = z.object({
     items: z.array(z.object({
         category: z.enum(PACKING_CATEGORIES, { errorMap: () => ({ message: "Invalid category" }) }),

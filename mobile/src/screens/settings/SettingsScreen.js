@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator, Alert, KeyboardAvoidingView, Platform,
-  ScrollView, StyleSheet, Text, TextInput,
+  ScrollView, StyleSheet, Switch, Text, TextInput,
   TouchableOpacity, View,
 } from 'react-native';
 import { File, Paths } from 'expo-file-system';
@@ -11,10 +11,17 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../i18n';
 import {
-  deleteMyAccount, exportMyData, logoutUser, selectAuthUser, selectMe,
+  deleteMyAccount, exportMyData, fetchNotificationPreferences,
+  logoutUser, selectAuthUser, selectMe, updateNotificationPreferences,
 } from '@tobeatraveller/shared';
 import { shadow } from '../../utils/styles';
 import { RichText } from '../../components/RichText';
+
+const NOTIFICATION_PREFERENCE_TOGGLES = [
+  { key: 'notifyOnComment', labelKey: 'settings.notifyOnComment' },
+  { key: 'notifyOnLike', labelKey: 'settings.notifyOnLike' },
+  { key: 'notifyOnFollow', labelKey: 'settings.notifyOnFollow' },
+];
 
 const SettingsScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -30,6 +37,14 @@ const SettingsScreen = ({ navigation }) => {
   const [deleteInput, setDeleteInput] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [notificationPreferences, setNotificationPreferences] = useState(null);
+  const [updatingPreferenceKey, setUpdatingPreferenceKey] = useState(null);
+
+  useEffect(() => {
+    fetchNotificationPreferences()
+      .then(setNotificationPreferences)
+      .catch(() => Alert.alert(t('errors.somethingWrong'), t('errors.notificationPreferencesLoadFailed')));
+  }, [t]);
 
   if (!user) {
     return (
@@ -48,6 +63,21 @@ const SettingsScreen = ({ navigation }) => {
     } catch {
       Alert.alert(t('common.cancel'), t('errors.deleteAccountFailed'));
       setDeleting(false);
+    }
+  };
+
+  const handleTogglePreference = async (key) => {
+    const previousValue = notificationPreferences[key];
+    setUpdatingPreferenceKey(key);
+    setNotificationPreferences({ ...notificationPreferences, [key]: !previousValue });
+    try {
+      const updated = await updateNotificationPreferences({ [key]: !previousValue });
+      setNotificationPreferences(updated);
+    } catch {
+      setNotificationPreferences({ ...notificationPreferences, [key]: previousValue });
+      Alert.alert(t('errors.somethingWrong'), t('errors.notificationPreferencesUpdateFailed'));
+    } finally {
+      setUpdatingPreferenceKey(null);
     }
   };
 
@@ -116,6 +146,26 @@ const SettingsScreen = ({ navigation }) => {
                 </Text>
               </TouchableOpacity>
             </View>
+          </View>
+
+          {/* Notifications */}
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>{t('settings.notifications').toUpperCase()}</Text>
+            {notificationPreferences && NOTIFICATION_PREFERENCE_TOGGLES.map(({ key, labelKey }, index) => (
+              <View
+                key={key}
+                style={[styles.toggleRow, index > 0 && styles.toggleRowSpacing]}
+              >
+                <Text style={styles.toggleLabel}>{t(labelKey)}</Text>
+                <Switch
+                  value={notificationPreferences[key]}
+                  onValueChange={() => handleTogglePreference(key)}
+                  disabled={updatingPreferenceKey === key}
+                  trackColor={{ false: '#e5e7eb', true: '#E8743B' }}
+                  thumbColor="#fff"
+                />
+              </View>
+            ))}
           </View>
 
           {/* Your data */}
@@ -229,6 +279,13 @@ const styles = StyleSheet.create({
   },
   linkBtn: { alignSelf: 'flex-start' },
   linkBtnText: { fontSize: 14, fontWeight: '600', color: '#E8743B' },
+
+  toggleRow: {
+    flexDirection: 'row', alignItems: 'center',
+    justifyContent: 'space-between', gap: 12,
+  },
+  toggleRowSpacing: { marginTop: 12 },
+  toggleLabel: { flex: 1, fontSize: 14, color: '#111827' },
 
   input: {
     borderWidth: 1.5, borderColor: '#dde3ec', borderRadius: 10,
