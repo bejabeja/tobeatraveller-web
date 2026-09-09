@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { IoArrowBackOutline, IoWarningOutline } from "react-icons/io5";
+import {
+  IoArrowBackOutline, IoCloudDownloadOutline, IoDocumentTextOutline, IoGlobeOutline,
+  IoLockClosedOutline, IoNotificationsOutline,
+} from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Trans, useTranslation } from "react-i18next";
 import { fetchNotificationPreferences, updateNotificationPreferences } from "@tobeatraveller/shared";
 import i18n from "../../i18n";
 import Spinner from "../../components/spinner/Spinner";
+import { REOPEN_COOKIE_PREFERENCES_EVENT } from "../../utils/analytics";
 import { changePassword, deleteMyAccount, exportMyData } from "../../services/users";
 import { logoutUser } from "../../store/auth/authActions";
 import { selectAuthUser } from "../../store/auth/authSelectors";
@@ -148,7 +152,11 @@ const Settings = () => {
       <div className="ep__body">
         {/* Account */}
         <section className="ep__section">
-          <p className="ep__section-label">{t("settings.account").toUpperCase()}</p>
+          <div className="ep__section-heading">
+            <IoLockClosedOutline aria-hidden="true" />
+            <p className="ep__section-label">{t("settings.account").toUpperCase()}</p>
+          </div>
+          <p className="ep__section-desc">{userMe?.email}</p>
           <button
             type="button"
             className="ep__link-btn"
@@ -158,9 +166,35 @@ const Settings = () => {
           </button>
         </section>
 
+        {/* Notifications */}
+        <section className="ep__section">
+          <div className="ep__section-heading">
+            <IoNotificationsOutline aria-hidden="true" />
+            <p className="ep__section-label">{t("settings.notifications").toUpperCase()}</p>
+          </div>
+          {notificationPreferences &&
+            NOTIFICATION_PREFERENCE_TOGGLES.map(({ key, labelKey }) => (
+              <div className="ep__toggle-row" key={key}>
+                <p className="ep__toggle-label">{t(labelKey)}</p>
+                <label className="ep__toggle">
+                  <input
+                    type="checkbox"
+                    checked={notificationPreferences[key]}
+                    disabled={updatingPreferenceKey === key}
+                    onChange={() => handleTogglePreference(key)}
+                  />
+                  <span className="ep__toggle-slider" />
+                </label>
+              </div>
+            ))}
+        </section>
+
         {/* Language */}
         <section className="ep__section">
-          <p className="ep__section-label">{t("settings.language").toUpperCase()}</p>
+          <div className="ep__section-heading">
+            <IoGlobeOutline aria-hidden="true" />
+            <p className="ep__section-label">{t("settings.language").toUpperCase()}</p>
+          </div>
           <div className="ep__lang-toggle">
             <button
               type="button"
@@ -179,29 +213,12 @@ const Settings = () => {
           </div>
         </section>
 
-        {/* Notifications */}
-        <section className="ep__section">
-          <p className="ep__section-label">{t("settings.notifications").toUpperCase()}</p>
-          {notificationPreferences &&
-            NOTIFICATION_PREFERENCE_TOGGLES.map(({ key, labelKey }) => (
-              <div className="ep__toggle-row" key={key}>
-                <p className="ep__toggle-label">{t(labelKey)}</p>
-                <label className="ep__toggle">
-                  <input
-                    type="checkbox"
-                    checked={notificationPreferences[key]}
-                    disabled={updatingPreferenceKey === key}
-                    onChange={() => handleTogglePreference(key)}
-                  />
-                  <span className="ep__toggle-slider" />
-                </label>
-              </div>
-            ))}
-        </section>
-
         {/* Your data */}
         <section className="ep__section">
-          <p className="ep__section-label">{t("settings.yourData").toUpperCase()}</p>
+          <div className="ep__section-heading">
+            <IoCloudDownloadOutline aria-hidden="true" />
+            <p className="ep__section-label">{t("settings.yourData").toUpperCase()}</p>
+          </div>
           <p className="ep__section-desc">{t("editProfile.yourDataDesc")}</p>
           <button
             type="button"
@@ -213,10 +230,26 @@ const Settings = () => {
           </button>
         </section>
 
+        {/* Legal */}
+        <section className="ep__section">
+          <div className="ep__section-heading">
+            <IoDocumentTextOutline aria-hidden="true" />
+            <p className="ep__section-label">{t("settings.legal").toUpperCase()}</p>
+          </div>
+          <Link to="/terms" className="ep__link-btn">{t("auth.termsOfService")} →</Link>
+          <Link to="/privacy-policy" className="ep__link-btn">{t("auth.privacyPolicy")} →</Link>
+          <button
+            type="button"
+            className="ep__link-btn"
+            onClick={() => window.dispatchEvent(new Event(REOPEN_COOKIE_PREFERENCES_EVENT))}
+          >
+            {t("footer.cookiePreferences")} →
+          </button>
+        </section>
+
         {/* Danger zone */}
         <section className="ep__section ep__section--danger">
           <div className="ep__danger-header">
-            <IoWarningOutline size={16} aria-hidden="true" />
             <p className="ep__section-label">{t("settings.dangerZone").toUpperCase()}</p>
           </div>
           <p className="ep__section-desc">{t("editProfile.dangerZoneDesc")}</p>

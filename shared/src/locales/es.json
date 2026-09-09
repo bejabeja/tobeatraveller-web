@@ -408,7 +408,6 @@
     "yourData": "Tus datos",
     "yourDataDesc": "Descarga una copia de todos tus datos: perfil, itinerarios, comentarios, me gusta y viajes guardados, en formato JSON.",
     "downloadData": "Descargar mis datos",
-    "dangerZone": "⚠️ Zona de peligro",
     "dangerZoneDesc": "Una vez que elimines tu cuenta, todos tus datos: itinerarios, comentarios (incluidos los que dejaste en viajes de otros usuarios), me gusta, viajes guardados y seguidores, se eliminarán de forma permanente. Esta acción no se puede deshacer.",
     "deleteAccount": "Eliminar mi cuenta",
     "discardChanges": "¿Descartar cambios?",

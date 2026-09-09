@@ -408,7 +408,6 @@
     "yourData": "Your data",
     "yourDataDesc": "Download a copy of all your data: profile, itineraries, comments, likes and saved trips, in JSON format.",
     "downloadData": "Download my data",
-    "dangerZone": "⚠️ Danger zone",
     "dangerZoneDesc": "Once you delete your account, all your data: itineraries, comments (including ones you left on other users' trips), likes, saved trips, and followers, will be permanently removed. This action cannot be undone.",
     "deleteAccount": "Delete my account",
     "discardChanges": "Discard changes?",
