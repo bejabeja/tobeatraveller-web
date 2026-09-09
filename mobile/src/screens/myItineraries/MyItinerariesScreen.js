@@ -52,13 +52,19 @@ const MyItinerariesScreen = ({ navigation }) => {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.titleRow}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backBtn}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            accessibilityLabel={t('common.back')}
+          >
             <Text style={styles.backText}>←</Text>
           </TouchableOpacity>
           <Text style={styles.title}>{t('myItineraries.title')}</Text>
           <TouchableOpacity
             style={styles.newBtn}
             onPress={() => navigation.navigate('CreateItinerary')}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
             <Text style={styles.newBtnText}>{t('myItineraries.newBtn')}</Text>
           </TouchableOpacity>

@@ -61,6 +61,21 @@ export const vanLogCategories = [
   { value: "other", label: "Other" },
 ];
 
+// Icon per Van Log category, shared by web (quick-add) and mobile (chips, entry rows).
+export const vanLogCategoryEmoji = {
+  gas_bottle: "🔥", water_fresh: "💧", water_grey: "🚿", water_black: "🚽",
+  trash: "🗑️", fuel: "⛽", groceries: "🛒", laundry: "🧺",
+  parking: "🅿️", tolls: "🛣️", overnight_stay: "🌙", maintenance: "🔧", other: "📍",
+};
+
+// Currency picker on Van Log entry forms: EUR first since the app targets
+// Europe by default, followed by other currencies common along van-life
+// routes through Europe/North Africa. Not exhaustive: forms offer an "other"
+// option that falls back to free text for anything not on this list.
+export const vanLogCommonCurrencies = [
+  "EUR", "GBP", "CHF", "NOK", "SEK", "DKK", "PLN", "CZK", "HUF", "RON", "MAD", "TRY", "USD",
+];
+
 // Keep values in sync with api/src/utils/supplyConstants.js
 // (api/ doesn't depend on shared/, so this list is duplicated by necessity).
 export const supplyCategories = [

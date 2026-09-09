@@ -126,7 +126,12 @@ const SubscriptionScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + 4 }]}>
-        <TouchableOpacity style={styles.headerBack} onPress={() => navigation.goBack()}>
+        <TouchableOpacity
+          style={styles.headerBack}
+          onPress={() => navigation.goBack()}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          accessibilityLabel={t('common.back')}
+        >
           <Text style={styles.headerBackText}>←</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{t('nav.subscription')}</Text>

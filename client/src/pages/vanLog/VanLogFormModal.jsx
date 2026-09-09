@@ -6,46 +6,33 @@ import { vanLogCategories } from "@tobeatraveller/shared";
 import { DropdownForm, InputForm, TextAreaForm } from "../../components/form/InputForm";
 import AutocompleteObjectInput from "../../components/form/AutocompleteObjectInput";
 import SubmitButton from "../../components/form/SubmitButton";
-import { createVanLogEntry, updateVanLogEntry } from "../../services/vanLogs";
+import { updateVanLogEntry } from "../../services/vanLogs";
 import { vanLogEntrySchema } from "../../utils/schemasValidation";
+import CurrencyField from "./CurrencyField";
 import "./VanLogFormModal.scss";
 
-const buildDefaultValues = (entry) => {
-  const today = new Date().toISOString().split("T")[0];
-  if (!entry) {
-    return {
-      category: "fuel",
-      title: "",
-      amount: "",
-      currency: "EUR",
-      pricePerLiter: "",
-      location: { name: "", label: "", coordinates: { lat: 0, lon: 0 } },
-      notes: "",
-      entryDate: today,
-    };
-  }
-  return {
-    category: entry.category,
-    title: entry.title || "",
-    amount: entry.amount != null ? String(entry.amount) : "",
-    currency: entry.currency || "",
-    pricePerLiter: entry.pricePerLiter != null ? String(entry.pricePerLiter) : "",
-    location: entry.location
-      ? {
-          name: entry.location.name || "",
-          country: entry.location.country || "",
-          label: entry.location.label || "",
-          coordinates: { lat: Number(entry.location.lat) || 0, lon: Number(entry.location.lon) || 0 },
-        }
-      : { name: "", label: "", coordinates: { lat: 0, lon: 0 } },
-    notes: entry.notes || "",
-    entryDate: entry.entryDate ? entry.entryDate.slice(0, 10) : today,
-  };
-};
+const buildDefaultValues = (entry) => ({
+  category: entry.category,
+  title: entry.title || "",
+  amount: entry.amount != null ? String(entry.amount) : "",
+  currency: entry.currency || "",
+  pricePerLiter: entry.pricePerLiter != null ? String(entry.pricePerLiter) : "",
+  location: entry.location
+    ? {
+        name: entry.location.name || "",
+        country: entry.location.country || "",
+        label: entry.location.label || "",
+        coordinates: { lat: Number(entry.location.lat) || 0, lon: Number(entry.location.lon) || 0 },
+      }
+    : { name: "", label: "", coordinates: { lat: 0, lon: 0 } },
+  notes: entry.notes || "",
+  entryDate: entry.entryDate ? entry.entryDate.slice(0, 10) : new Date().toISOString().split("T")[0],
+});
 
+// Editing only: creating an entry goes through VanLogQuickAddModal, which
+// covers both the quick path and (expanded) the detailed one in a single modal.
 const VanLogFormModal = ({ entry, onClose, onSaved }) => {
   const { t } = useTranslation();
-  const isEditing = !!entry;
 
   const { control, handleSubmit, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(vanLogEntrySchema),
@@ -79,13 +66,8 @@ const VanLogFormModal = ({ entry, onClose, onSaved }) => {
     };
 
     try {
-      if (isEditing) {
-        await updateVanLogEntry(entry.id, payload);
-        toast.success(t("vanLog.updated"));
-      } else {
-        await createVanLogEntry(payload);
-        toast.success(t("vanLog.created"));
-      }
+      await updateVanLogEntry(entry.id, payload);
+      toast.success(t("vanLog.updated"));
       onSaved();
     } catch (error) {
       toast.error(error.message || t("vanLog.saveError"));
@@ -96,7 +78,7 @@ const VanLogFormModal = ({ entry, onClose, onSaved }) => {
     <div className="van-log-form__backdrop" onClick={onClose}>
       <div className="van-log-form__panel" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
         <div className="van-log-form__header">
-          <h2>{isEditing ? t("vanLog.editEntry") : t("vanLog.addEntry")}</h2>
+          <h2>{t("vanLog.editEntry")}</h2>
           <button type="button" className="van-log-form__close" onClick={onClose} aria-label={t("common.close")}>✕</button>
         </div>
 
@@ -127,12 +109,11 @@ const VanLogFormModal = ({ entry, onClose, onSaved }) => {
               type="number"
               inputProps={{ step: "0.01", min: "0" }}
             />
-            <InputForm
+            <CurrencyField
               label={t("vanLog.currencyLabel")}
               name="currency"
               control={control}
               error={errors.currency}
-              inputProps={{ maxLength: 3 }}
             />
           </div>
 
@@ -176,7 +157,7 @@ const VanLogFormModal = ({ entry, onClose, onSaved }) => {
             <button type="button" className="btn btn--ghost" onClick={onClose}>
               {t("common.cancel")}
             </button>
-            <SubmitButton loading={isSubmitting} label={isEditing ? t("common.save") : t("vanLog.addEntry")} />
+            <SubmitButton loading={isSubmitting} label={t("common.save")} />
           </div>
         </form>
       </div>

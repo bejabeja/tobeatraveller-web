@@ -1,23 +1,61 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import {
-  Alert, FlatList, RefreshControl, ScrollView,
+  Alert, RefreshControl, ScrollView, SectionList,
   StyleSheet, Text, TextInput, TouchableOpacity, View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
-import { deleteVanLogEntry, getVanLogEntries, getVanLogStats, isPremiumRequiredError, vanLogCategories } from '@tobeatraveller/shared';
+import {
+  deleteVanLogEntry, getVanLogEntries, getVanLogStats, isPremiumRequiredError,
+  vanLogCategories, vanLogCategoryEmoji as CATEGORY_EMOJI,
+} from '@tobeatraveller/shared';
 import FeatureLoadState from '../../components/FeatureLoadState';
 import { shadow } from '../../utils/styles';
 
-const CATEGORY_EMOJI = {
-  gas_bottle: '🔥', water_fresh: '💧', water_grey: '🚿', water_black: '🚽',
-  trash: '🗑️', fuel: '⛽', groceries: '🛒', laundry: '🧺',
-  parking: '🅿️', tolls: '🛣️', overnight_stay: '🌙', maintenance: '🔧', other: '📍',
-};
+// EUR by default: the app targets Europe for now, so expenses in another
+// currency only show up once the user deliberately switches this filter,
+// instead of being silently added into a mixed-currency total.
+const DEFAULT_CURRENCY = 'EUR';
+const EMPTY_FILTERS = { category: '', country: '', currency: DEFAULT_CURRENCY, dateFrom: '', dateTo: '' };
 
-const EMPTY_FILTERS = { category: '', country: '', dateFrom: '', dateTo: '' };
+// Entries come back newest-first from the API, so grouping preserves that
+// order both across months and within a month.
+const groupEntriesByMonth = (entries) => {
+  const sections = [];
+  const byKey = new Map();
+
+  for (const entry of entries) {
+    const [year, month] = entry.entryDate.split('-');
+    const key = `${year}-${month}`;
+    let section = byKey.get(key);
+    if (!section) {
+      section = {
+        key,
+        title: new Date(Number(year), Number(month) - 1, 1)
+          .toLocaleDateString(undefined, { year: 'numeric', month: 'long' }),
+        total: 0,
+        currency: undefined,
+        data: [],
+      };
+      byKey.set(key, section);
+      sections.push(section);
+    }
+    section.data.push(entry);
+    if (entry.amount != null) {
+      const currency = entry.currency || '';
+      // Only a single-currency month can be summed into one meaningful total;
+      // once a mismatch is found it stays unsummable for the rest of the month.
+      if (section.currency === undefined) section.currency = currency;
+      section.total = (section.total === null || section.currency !== currency)
+        ? null
+        : section.total + entry.amount;
+    }
+  }
+
+  return sections;
+};
 
 const daysSince = (dateStr) => {
   if (!dateStr) return null;
@@ -26,6 +64,29 @@ const daysSince = (dateStr) => {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   return Math.round((today - then) / 86400000);
+};
+
+const shortDate = (dateStr) => {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return new Date(year, month - 1, day).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+};
+
+// A single-currency price/liter series across fuel fill-ups, oldest first.
+// Bars (not a line) on purpose: each point is a discrete refuel, not a
+// continuous quantity, so nothing should be visually interpolated between them.
+// Needs 3+ points: with only 1-2 fill-ups the chart is mostly empty space and
+// reads as broken rather than as a trend.
+const getFuelPriceTrend = (entries) => {
+  const points = entries
+    .filter(e => e.category === 'fuel' && e.pricePerLiter != null)
+    .slice()
+    .sort((a, b) => a.entryDate.localeCompare(b.entryDate));
+  if (points.length < 3) return null;
+
+  const currency = points[0].currency || '';
+  if (points.some(p => (p.currency || '') !== currency)) return null;
+
+  return { points, currency, maxPrice: Math.max(...points.map(p => p.pricePerLiter)) };
 };
 
 const VanLogScreen = ({ navigation }) => {
@@ -38,6 +99,7 @@ const VanLogScreen = ({ navigation }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [filters, setFilters] = useState(EMPTY_FILTERS);
   const [loadError, setLoadError] = useState(null); // null | 'premium' | 'error'
+  const [statsExpanded, setStatsExpanded] = useState(false);
 
   const daysSinceLabel = (dateStr) => {
     const days = daysSince(dateStr);
@@ -52,37 +114,54 @@ const VanLogScreen = ({ navigation }) => {
     return t(`vanLog.category.${value}`, fallback);
   };
 
-  const fetchStats = async () => {
-    try { setStats(await getVanLogStats()); } catch { /* keep previous stats */ }
+  // Guards against out-of-order responses: switching filters quickly (or a
+  // save/delete racing an in-flight filter fetch) can make an older request
+  // resolve after a newer one, silently reverting the charts to stale data.
+  const requestIdRef = useRef(0);
+
+  const fetchStats = async (requestId) => {
+    try {
+      const data = await getVanLogStats(filters);
+      if (requestId === requestIdRef.current) setStats(data);
+    } catch { /* keep previous stats */ }
   };
 
-  const fetchEntries = async () => {
+  const fetchEntries = async (requestId) => {
     try {
       const data = await getVanLogEntries(filters);
+      if (requestId !== requestIdRef.current) return;
       setEntries(Array.isArray(data) ? data : []);
       setLoadError(null);
     } catch (err) {
-      setEntries([]);
-      setLoadError(isPremiumRequiredError(err) ? 'premium' : 'error');
+      if (requestId === requestIdRef.current) {
+        setEntries([]);
+        setLoadError(isPremiumRequiredError(err) ? 'premium' : 'error');
+      }
     }
   };
 
+  const refresh = async () => {
+    const requestId = ++requestIdRef.current;
+    setLoading(true);
+    await Promise.all([fetchEntries(requestId), fetchStats(requestId)]);
+    if (requestId === requestIdRef.current) setLoading(false);
+  };
+
   useFocusEffect(
-    useCallback(() => {
-      setLoading(true);
-      Promise.all([fetchEntries(), fetchStats()]).finally(() => setLoading(false));
-    }, [filters])
+    useCallback(() => { refresh(); }, [filters])
   );
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await Promise.all([fetchEntries(), fetchStats()]);
+    await refresh();
     setRefreshing(false);
   };
 
   const updateFilter = (key, value) => setFilters(prev => ({ ...prev, [key]: value }));
   const clearFilters = () => setFilters(EMPTY_FILTERS);
-  const hasActiveFilters = Object.values(filters).some(Boolean);
+  // Currency isn't counted here: it always has a value (EUR by default), so
+  // it shouldn't make the reset link appear or turn on the "filtered" empty state.
+  const hasActiveFilters = Boolean(filters.category || filters.country || filters.dateFrom || filters.dateTo);
 
   const handleDelete = (entry) => {
     Alert.alert(
@@ -96,8 +175,7 @@ const VanLogScreen = ({ navigation }) => {
           onPress: async () => {
             try {
               await deleteVanLogEntry(entry.id);
-              fetchEntries();
-              fetchStats();
+              refresh();
             } catch (err) {
               Alert.alert(t('errors.somethingWrong'), err?.message || t('vanLog.deleteError'));
             }
@@ -107,15 +185,45 @@ const VanLogScreen = ({ navigation }) => {
     );
   };
 
+  // A single "more options" affordance instead of two permanently-visible
+  // icon buttons: edit/delete are rare actions and don't need their own column.
+  const handleEntryMenu = (entry) => {
+    Alert.alert(
+      entry.title || categoryLabel(entry.category),
+      undefined,
+      [
+        { text: t('common.edit'), onPress: () => navigation.navigate('VanLogEntryForm', { entry }) },
+        { text: t('common.delete'), style: 'destructive', onPress: () => handleDelete(entry) },
+        { text: t('common.cancel'), style: 'cancel' },
+      ]
+    );
+  };
+
+  const totalsByCurrency = stats?.totalsByCurrency ?? [];
   const categoryTotals = stats?.byCategory ?? [];
   const countryTotals = stats?.byCountry ?? [];
+  const countryChipOptions = [...new Set(countryTotals.map(({ country }) => country))];
+  // EUR is always offered, even before the user has any EUR entries yet.
+  const currencyChipOptions = [...new Set([DEFAULT_CURRENCY, ...(stats?.availableCurrencies ?? [])])];
+  const sortedCategoryTotals = [...categoryTotals].sort((a, b) => b.total - a.total);
+  const maxCategoryTotal = sortedCategoryTotals[0]?.total ?? 0;
+  const sortedCountryTotals = [...countryTotals].sort((a, b) => b.total - a.total);
+  const maxCountryTotal = sortedCountryTotals[0]?.total ?? 0;
+  const sections = groupEntriesByMonth(entries);
+  const fuelTrend = getFuelPriceTrend(entries);
+  const hasBreakdown = sortedCategoryTotals.length > 0 || sortedCountryTotals.length > 0 || Boolean(fuelTrend);
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.titleRow}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backBtn}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            accessibilityLabel={t('common.back')}
+          >
             <Text style={styles.backText}>←</Text>
           </TouchableOpacity>
           <Text style={styles.title}>{t('vanLog.title')}</Text>
@@ -123,38 +231,12 @@ const VanLogScreen = ({ navigation }) => {
             <TouchableOpacity
               style={styles.newBtn}
               onPress={() => navigation.navigate('VanLogEntryForm')}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
               <Text style={styles.newBtnText}>+ {t('vanLog.addEntry')}</Text>
             </TouchableOpacity>
           )}
         </View>
-
-        {/* Stats */}
-        {stats && (categoryTotals.length > 0 || countryTotals.length > 0) && (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.statsRow}
-          >
-            <View style={[styles.statCard, styles.statCardTotal]}>
-              <Text style={styles.statLabelTotal}>{t('vanLog.totalSpent')}</Text>
-              <Text style={styles.statValueTotal}>{stats.totalAmount.toFixed(2)}</Text>
-            </View>
-            {categoryTotals.map(c => (
-              <View key={`cat-${c.category}`} style={styles.statCard}>
-                <Text style={styles.statLabel}>{CATEGORY_EMOJI[c.category] ?? '📍'} {categoryLabel(c.category)}</Text>
-                <Text style={styles.statValue}>{c.total.toFixed(2)}</Text>
-                {c.lastDate && <Text style={styles.statMeta}>{daysSinceLabel(c.lastDate)}</Text>}
-              </View>
-            ))}
-            {countryTotals.map(c => (
-              <View key={`country-${c.country}`} style={styles.statCard}>
-                <Text style={styles.statLabel}>{c.country}</Text>
-                <Text style={styles.statValue}>{c.total.toFixed(2)}</Text>
-              </View>
-            ))}
-          </ScrollView>
-        )}
 
         {/* Category chips */}
         <ScrollView
@@ -184,6 +266,25 @@ const VanLogScreen = ({ navigation }) => {
           ))}
         </ScrollView>
 
+        {/* Currency chips: no "all" option, always exactly one selected */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.chips}
+        >
+          {currencyChipOptions.map((currency) => (
+            <TouchableOpacity
+              key={currency}
+              style={[styles.chip, filters.currency === currency && styles.chipActive]}
+              onPress={() => updateFilter('currency', currency)}
+            >
+              <Text style={[styles.chipLabel, filters.currency === currency && styles.chipLabelActive]}>
+                {currency}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
         {/* Country chips */}
         {countryTotals.length > 0 && (
           <ScrollView
@@ -199,7 +300,7 @@ const VanLogScreen = ({ navigation }) => {
                 {t('vanLog.allCountries')}
               </Text>
             </TouchableOpacity>
-            {countryTotals.map(({ country }) => (
+            {countryChipOptions.map((country) => (
               <TouchableOpacity
                 key={country}
                 style={[styles.chip, filters.country === country && styles.chipActive]}
@@ -237,19 +338,124 @@ const VanLogScreen = ({ navigation }) => {
             </TouchableOpacity>
           )}
         </View>
+
+        {/* Stats: one unified card (hero total + labeled sub-sections)
+            instead of a floating total chip, a chart card, and a loose
+            row of country chips as three disconnected pieces. */}
+        {stats && (categoryTotals.length > 0 || countryTotals.length > 0) && (
+          <View style={styles.statsCard}>
+            <View style={styles.statsTotal}>
+              <Text style={styles.statsTotalLabel}>{t('vanLog.totalSpent')}</Text>
+              <Text style={styles.statsTotalValue}>
+                {totalsByCurrency.length > 0
+                  ? totalsByCurrency.map((ct) => `${ct.total.toFixed(2)} ${ct.currency}`).join(' + ')
+                  : '0.00'}
+              </Text>
+            </View>
+
+            {hasBreakdown && (
+              <TouchableOpacity
+                style={styles.statsToggle}
+                onPress={() => setStatsExpanded(prev => !prev)}
+              >
+                <Text style={styles.statsToggleLabel}>
+                  {statsExpanded ? t('vanLog.hideBreakdown') : t('vanLog.viewBreakdown')}
+                </Text>
+                <Ionicons name={statsExpanded ? 'chevron-up' : 'chevron-down'} size={14} color="#6b7280" />
+              </TouchableOpacity>
+            )}
+
+            {statsExpanded && sortedCategoryTotals.length > 0 && (
+              <View style={styles.statsBlock}>
+                <Text style={styles.statsBlockTitle}>{t('vanLog.byCategory')}</Text>
+                <View style={styles.barChart}>
+                  {sortedCategoryTotals.map(c => {
+                    const pct = maxCategoryTotal > 0 ? (c.total / maxCategoryTotal) * 100 : 0;
+                    const label = categoryLabel(c.category);
+                    return (
+                      <View key={`cat-${c.category}-${c.currency ?? 'none'}`} style={styles.barRow}>
+                        <Text style={styles.barRowLabel} numberOfLines={1}>
+                          {CATEGORY_EMOJI[c.category] ?? '📍'} {label}
+                        </Text>
+                        <View style={styles.barRowTrack}>
+                          <View style={[styles.barRowFill, { width: `${pct}%` }]} />
+                        </View>
+                        <Text style={styles.barRowValue}>{c.total.toFixed(2)}</Text>
+                      </View>
+                    );
+                  })}
+                </View>
+              </View>
+            )}
+
+            {statsExpanded && sortedCountryTotals.length > 0 && (
+              <View style={styles.statsBlock}>
+                <Text style={styles.statsBlockTitle}>{t('vanLog.byCountry')}</Text>
+                <View style={styles.barChart}>
+                  {sortedCountryTotals.map(c => {
+                    const pct = maxCountryTotal > 0 ? (c.total / maxCountryTotal) * 100 : 0;
+                    return (
+                      <View key={`country-${c.country}-${c.currency ?? 'none'}`} style={styles.barRow}>
+                        <Text style={styles.barRowLabel} numberOfLines={1}>{c.country}</Text>
+                        <View style={styles.barRowTrack}>
+                          <View style={[styles.barRowFill, styles.barRowFillCountry, { width: `${pct}%` }]} />
+                        </View>
+                        <Text style={styles.barRowValue}>{c.total.toFixed(2)}</Text>
+                      </View>
+                    );
+                  })}
+                </View>
+              </View>
+            )}
+
+            {statsExpanded && fuelTrend && (
+              <View style={styles.statsBlock}>
+                <Text style={styles.statsBlockTitle}>
+                  {t('vanLog.fuelPriceTrend')} ({fuelTrend.currency}/L)
+                </Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  <View style={styles.fuelTrendChart}>
+                    {fuelTrend.points.map(p => {
+                      const pct = fuelTrend.maxPrice > 0 ? (p.pricePerLiter / fuelTrend.maxPrice) * 100 : 0;
+                      return (
+                        <View key={p.id} style={styles.fuelTrendCol}>
+                          <Text style={styles.fuelTrendValue}>{p.pricePerLiter.toFixed(2)}</Text>
+                          <View style={styles.fuelTrendBarTrack}>
+                            <View style={[styles.fuelTrendBar, { height: `${pct}%` }]} />
+                          </View>
+                          <Text style={styles.fuelTrendDate}>{shortDate(p.entryDate)}</Text>
+                        </View>
+                      );
+                    })}
+                  </View>
+                </ScrollView>
+              </View>
+            )}
+          </View>
+        )}
+
       </View>
 
-      <FlatList
-        data={loading && !entries.length
-          ? Array.from({ length: 4 }, (_, i) => ({ id: `sk-${i}`, _skeleton: true }))
-          : entries
+      <SectionList
+        sections={loading && !entries.length
+          ? [{ key: 'skeleton', title: null, total: null, data: Array.from({ length: 4 }, (_, i) => ({ id: `sk-${i}`, _skeleton: true })) }]
+          : sections
         }
         keyExtractor={item => item.id}
         contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 24 }]}
         showsVerticalScrollIndicator={false}
+        stickySectionHeadersEnabled={false}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#E8743B" />
         }
+        renderSectionHeader={({ section }) => section.title ? (
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionHeaderLabel}>{section.title}</Text>
+            {section.total != null && (
+              <Text style={styles.sectionHeaderTotal}>{section.total.toFixed(2)} {section.currency}</Text>
+            )}
+          </View>
+        ) : null}
         ListEmptyComponent={
           !loading ? (
             loadError ? (
@@ -269,49 +475,45 @@ const VanLogScreen = ({ navigation }) => {
             )
           ) : null
         }
-        renderItem={({ item }) => item._skeleton ? (
-          <View style={[styles.entry, styles.entrySkeleton]} />
-        ) : (
-          <View style={styles.entry}>
-            <View style={styles.entryMain}>
+        renderItem={({ item }) => {
+          if (item._skeleton) return <View style={[styles.entry, styles.entrySkeleton]} />;
+
+          const priceLine = item.category === 'fuel' && item.pricePerLiter != null
+            ? `${item.pricePerLiter.toFixed(3)} ${item.currency || ''}/L`
+            : null;
+
+          return (
+            <View style={styles.entry}>
               <View style={styles.entryTopRow}>
-                <Text style={styles.entryCategory}>
-                  {CATEGORY_EMOJI[item.category] ?? '📍'} {categoryLabel(item.category)}
-                </Text>
-                <Text style={styles.entryDate}>
-                  {item.entryDate}
-                  {item.entryDate && daysSinceLabel(item.entryDate) ? ` · ${daysSinceLabel(item.entryDate)}` : ''}
-                </Text>
+                <View style={styles.entryTopLeft}>
+                  <Text style={styles.entryCategory}>
+                    {CATEGORY_EMOJI[item.category] ?? '📍'} {categoryLabel(item.category)}
+                  </Text>
+                  <Text style={styles.entryDate}>
+                    {item.entryDate}
+                    {item.entryDate && daysSinceLabel(item.entryDate) ? ` · ${daysSinceLabel(item.entryDate)}` : ''}
+                  </Text>
+                </View>
+                <View style={styles.entryTopRight}>
+                  {item.amount != null && (
+                    <Text style={styles.entryAmount}>{item.amount.toFixed(2)} {item.currency || ''}</Text>
+                  )}
+                  <TouchableOpacity style={styles.entryMenuBtn} onPress={() => handleEntryMenu(item)}>
+                    <Ionicons name="ellipsis-vertical" size={16} color="#6b7280" />
+                  </TouchableOpacity>
+                </View>
               </View>
               {item.title ? <Text style={styles.entryTitle}>{item.title}</Text> : null}
-              {item.location?.name ? (
+              {(item.location?.name || priceLine) ? (
                 <Text style={styles.entryLocation}>
-                  📍 {item.location.name}{item.location.country ? `, ${item.location.country}` : ''}
+                  📍 {item.location?.name}{item.location?.country ? `, ${item.location.country}` : ''}
+                  {priceLine ? (item.location?.name ? ' · ' : '') + priceLine : ''}
                 </Text>
               ) : null}
               {item.notes ? <Text style={styles.entryNotes} numberOfLines={2}>{item.notes}</Text> : null}
             </View>
-            <View style={styles.entrySide}>
-              {item.amount != null && (
-                <Text style={styles.entryAmount}>{item.amount.toFixed(2)} {item.currency || ''}</Text>
-              )}
-              {item.category === 'fuel' && item.pricePerLiter != null && (
-                <Text style={styles.entryPricePerLiter}>{item.pricePerLiter.toFixed(3)} {item.currency || ''}/L</Text>
-              )}
-              <View style={styles.entryActions}>
-                <TouchableOpacity
-                  style={styles.entryActionBtn}
-                  onPress={() => navigation.navigate('VanLogEntryForm', { entry: item })}
-                >
-                  <Ionicons name="pencil-outline" size={16} color="#6b7280" />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.entryActionBtn} onPress={() => handleDelete(item)}>
-                  <Ionicons name="trash-outline" size={16} color="#ef4444" />
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        )}
+          );
+        }}
       />
     </View>
   );
@@ -339,18 +541,70 @@ const styles = StyleSheet.create({
   },
   newBtnText: { color: '#fff', fontWeight: '700', fontSize: 13 },
 
-  statsRow: { paddingHorizontal: 16, gap: 8, paddingBottom: 10 },
-  statCard: {
-    backgroundColor: '#f9fafb', borderRadius: 12,
+  // One unified card: a hero total up top, then a stack of labeled
+  // sub-sections (by category, by country, fuel trend), instead of a
+  // floating total chip, a chart card, and a loose row of country chips
+  // as three disconnected pieces.
+  statsCard: {
+    marginHorizontal: 16, marginBottom: 10,
+    backgroundColor: '#fff', borderRadius: 14,
     borderWidth: 1, borderColor: '#e5e7eb',
-    paddingVertical: 8, paddingHorizontal: 12, minWidth: 96,
+    overflow: 'hidden',
+    ...shadow(2, 0.04, 6, 1),
   },
-  statCardTotal: { backgroundColor: '#FFF0E8', borderColor: '#E8743B' },
-  statLabel: { fontSize: 11, color: '#6b7280', fontWeight: '600' },
-  statLabelTotal: { fontSize: 11, color: '#C45A22', fontWeight: '700' },
-  statValue: { fontSize: 15, color: '#111827', fontWeight: '800', marginTop: 2 },
-  statValueTotal: { fontSize: 15, color: '#E8743B', fontWeight: '800', marginTop: 2 },
-  statMeta: { fontSize: 10, color: '#9ca3af', marginTop: 2 },
+  statsTotal: {
+    flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between',
+    backgroundColor: '#1A535C', paddingVertical: 14, paddingHorizontal: 16,
+  },
+  statsTotalLabel: {
+    fontSize: 11, fontWeight: '700', color: 'rgba(255,255,255,0.85)',
+    textTransform: 'uppercase', letterSpacing: 0.4,
+  },
+  statsTotalValue: { fontSize: 22, fontWeight: '800', color: '#fff' },
+  // Category/country bars and the fuel trend chart default to collapsed:
+  // this header sits outside the scrollable list, so a fully expanded
+  // dashboard could push the entry list almost entirely off-screen.
+  statsToggle: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4,
+    paddingVertical: 10, paddingHorizontal: 16,
+    borderTopWidth: 1, borderTopColor: '#e5e7eb',
+  },
+  statsToggleLabel: { fontSize: 12, fontWeight: '600', color: '#6b7280' },
+  statsBlock: {
+    gap: 8, paddingVertical: 14, paddingHorizontal: 16,
+    borderTopWidth: 1, borderTopColor: '#e5e7eb',
+  },
+  statsBlockTitle: {
+    fontSize: 11, fontWeight: '700', color: '#6b7280',
+    textTransform: 'uppercase', letterSpacing: 0.4,
+  },
+
+  // ── Shared mini bar chart (category / country) ──────────────
+  // Magnitude comparison: one hue, sorted, direct-labeled.
+  barChart: { gap: 8 },
+  barRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  barRowLabel: { width: 108, fontSize: 12, fontWeight: '600', color: '#111827' },
+  barRowTrack: {
+    flex: 1, height: 8, borderRadius: 4,
+    backgroundColor: '#e5e7eb', overflow: 'hidden',
+  },
+  barRowFill: { height: '100%', minWidth: 3, borderRadius: 4, backgroundColor: '#E8743B' },
+  // Country bars get the app's other brand hue, not to encode identity per
+  // row, just so the two stacked sections tell apart from each other.
+  barRowFillCountry: { backgroundColor: '#1A535C' },
+  barRowValue: {
+    width: 56, fontSize: 12, fontWeight: '700', color: '#111827', textAlign: 'right',
+  },
+
+  // ── Fuel price trend ─────────────────────────────────────────
+  // Bars, not a line: each point is a discrete fill-up, not a continuous
+  // quantity, so the chart shouldn't visually interpolate between them.
+  fuelTrendChart: { flexDirection: 'row', alignItems: 'flex-end', gap: 14 },
+  fuelTrendCol: { alignItems: 'center', gap: 4 },
+  fuelTrendValue: { fontSize: 11, fontWeight: '700', color: '#111827' },
+  fuelTrendBarTrack: { width: 20, height: 64, justifyContent: 'flex-end' },
+  fuelTrendBar: { width: '100%', minHeight: 4, borderRadius: 4, backgroundColor: '#E8743B' },
+  fuelTrendDate: { fontSize: 10, color: '#9ca3af' },
 
   chips: { paddingHorizontal: 16, gap: 8, paddingBottom: 8 },
   chip: {
@@ -377,25 +631,40 @@ const styles = StyleSheet.create({
 
   list: { padding: 12, gap: 10 },
 
+  sectionHeader: {
+    flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between',
+    paddingHorizontal: 4, paddingTop: 6, paddingBottom: 8,
+  },
+  sectionHeaderLabel: {
+    fontSize: 12, fontWeight: '700', color: '#6b7280',
+    textTransform: 'uppercase', letterSpacing: 0.4,
+  },
+  sectionHeaderTotal: { fontSize: 13, fontWeight: '700', color: '#111827' },
+
+  // Stacked, not two side-by-side columns: a two-column split (text on the
+  // left, amount on the right, for the full card height) left a wide dead
+  // gap on any entry whose text was short, and squeezed the description
+  // into a narrower box than the card actually had to give it. The amount
+  // only needs to sit apart from the category/date row above it.
   entry: {
-    flexDirection: 'row', justifyContent: 'space-between',
     backgroundColor: '#fff', borderRadius: 12,
     borderWidth: 1, borderColor: '#e5e7eb',
-    padding: 12, gap: 10,
+    padding: 12, gap: 3,
   },
   entrySkeleton: { height: 76, backgroundColor: '#f3f4f6', borderColor: '#f3f4f6' },
-  entryMain: { flex: 1 },
-  entryTopRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 8 },
+  entryTopRow: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    flexWrap: 'wrap', gap: 8,
+  },
+  entryTopLeft: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 8 },
+  entryTopRight: { flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 0 },
   entryCategory: { fontSize: 13, fontWeight: '700', color: '#111827' },
   entryDate: { fontSize: 11, color: '#9ca3af' },
   entryTitle: { fontSize: 13, color: '#374151', marginTop: 4 },
   entryLocation: { fontSize: 12, color: '#6b7280', marginTop: 2 },
   entryNotes: { fontSize: 12, color: '#9ca3af', marginTop: 4 },
-  entrySide: { alignItems: 'flex-end', justifyContent: 'space-between' },
   entryAmount: { fontSize: 14, fontWeight: '800', color: '#111827' },
-  entryPricePerLiter: { fontSize: 11, color: '#9ca3af', marginTop: 2 },
-  entryActions: { flexDirection: 'row', gap: 10, marginTop: 8 },
-  entryActionBtn: { padding: 2 },
+  entryMenuBtn: { padding: 4 },
 
   empty: { alignItems: 'center', paddingTop: 56, paddingHorizontal: 32 },
   emptyEmoji: { fontSize: 40, marginBottom: 12 },

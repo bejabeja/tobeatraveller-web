@@ -133,7 +133,12 @@ const SuppliesScreen = ({ navigation }) => {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
         <View style={styles.titleRow}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backBtn}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            accessibilityLabel={t('common.back')}
+          >
             <Text style={styles.backText}>←</Text>
           </TouchableOpacity>
           <Text style={styles.title}>{s('title')}</Text>
@@ -141,6 +146,7 @@ const SuppliesScreen = ({ navigation }) => {
             <TouchableOpacity
               style={styles.newBtn}
               onPress={() => navigation.navigate('SupplyForm', { listType: tab, existingItems: knownItems })}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
               <Text style={styles.newBtnText}>+ {s('addItem')}</Text>
             </TouchableOpacity>

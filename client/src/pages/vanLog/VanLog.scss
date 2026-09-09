@@ -4,6 +4,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap;
     gap: 1rem;
     margin-bottom: 1.5rem;
 
@@ -16,74 +17,423 @@
   }
 
   &__title {
+    width: fit-content;
     font-size: 1.5rem;
     font-weight: 800;
     color: var(--text-color);
   }
 
-  &__stats {
+  // Entries vs. Stats: logging an expense and analyzing spend are different
+  // tasks, so the log stays list-first while the full breakdown gets its own
+  // tab instead of competing for space above the list.
+  &__tabs {
     width: auto;
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  &__tab {
+    width: fit-content;
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-family: inherit;
+    color: var(--text-secondary-color);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    padding: 0.6rem 0.25rem;
+    cursor: pointer;
+    white-space: nowrap;
+
+    &:not(:first-child) { margin-left: 1rem; }
+
+    &--active {
+      color: var(--primary-color);
+      border-bottom-color: var(--primary-color);
+    }
+  }
+
+  &__search {
+    width: auto;
+    max-width: 420px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--white-color);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 0.55rem 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+
+  &__search-icon {
+    width: fit-content;
+    flex-shrink: 0;
+    color: var(--text-secondary-color);
+    font-size: 1.1rem;
+  }
+
+  &__search-input {
+    width: 100%;
+    border: none;
+    outline: none;
+    font-size: 0.9rem;
+    font-family: inherit;
+    color: var(--text-color);
+    background: transparent;
+  }
+
+  &__search-clear {
+    width: fit-content;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: var(--text-secondary-color);
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.15rem;
+    border-radius: 50%;
+
+    &:hover {
+      background: var(--surface-color);
+      color: var(--text-color);
+    }
+  }
+
+  // Just the headline number on the Entries tab, no card chrome: the full
+  // hero+breakdown card lives on the Stats tab now.
+  &__total-banner {
+    width: auto;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
     margin-bottom: 1.75rem;
   }
 
-  &__stat {
-    width: fit-content;
+  // One unified card: a hero total up top, then a stack of labeled
+  // sub-sections (by category, by country, fuel trend). Previously these
+  // were three visually disconnected pieces (a floating total chip, a
+  // bordered chart card, a row of loose country chips); grouping them
+  // reads as one "overview" instead of three unrelated widgets.
+  &__stats {
+    width: auto;
     display: flex;
     flex-direction: column;
-    gap: 0.15rem;
-    background: var(--surface-color);
+    background: var(--white-color);
     border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 0.65rem 1rem;
+    border-radius: 14px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+    margin-bottom: 1.75rem;
+    overflow: hidden;
+  }
 
-    span {
-      width: auto;
-      font-size: 0.7rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      color: var(--text-secondary-color);
-      white-space: nowrap;
-    }
+  &__stats-total {
+    width: auto;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    background: var(--accent-color);
+    padding: 1rem 1.25rem;
+  }
+
+  &__stats-total-label {
+    width: auto;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  // A flex row of one <strong> per currency (usually just one) instead of a
+  // single joined string, so two+ currencies wrap onto their own line
+  // instead of overflowing the banner on narrow screens.
+  &__stats-total-value {
+    width: auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: baseline;
+    gap: 0.2rem 0.6rem;
 
     strong {
       width: auto;
-      font-size: 1.1rem;
-      color: var(--text-color);
-    }
-
-    &-last {
-      width: auto;
-      font-size: 0.68rem;
-      font-weight: 500;
-      color: var(--text-secondary-color);
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--white-color);
       white-space: nowrap;
-    }
-
-    &--total {
-      background: var(--accent-color);
-      border-color: var(--accent-color);
-
-      span, strong { color: var(--white-color); }
-    }
-
-    &--country {
-      border-color: var(--primary-color);
-
-      span { color: var(--primary-color); }
     }
   }
 
-  &__filters {
+  &__stats-block {
+    width: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem 1.25rem;
+    border-top: 1px solid var(--border-color);
+  }
+
+  &__stats-block-title {
+    width: auto;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-secondary-color);
+  }
+
+  // ── Shared mini bar chart (category / country) ──────────────
+  // Magnitude comparison: one hue, sorted, direct-labeled. No legend
+  // needed (the label rides each row already).
+  &__bar-chart {
+    width: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  &__bar-row {
+    width: auto;
+    display: grid;
+    grid-template-columns: minmax(90px, 30%) 1fr auto;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  &__bar-row-label {
+    width: auto;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__bar-row-track {
+    width: auto;
+    height: 10px;
+    background: var(--border-color);
+    border-radius: 5px;
+    overflow: hidden;
+  }
+
+  &__bar-row-fill {
+    height: 100%;
+    min-width: 4px;
+    background: var(--primary-color);
+    border-radius: 5px 4px 4px 5px;
+  }
+
+  // By-country bars get the app's other brand hue instead of reusing
+  // by-category's orange: not to encode identity per row (a magnitude bar
+  // chart shouldn't recolor every row, see by-category above), just to make
+  // the two stacked sections tell apart from each other at a glance.
+  &__bar-chart--country &__bar-row-fill {
+    background: var(--accent-color);
+  }
+
+  &__bar-row-value {
+    width: auto;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-color);
+    text-align: right;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  // ── Fuel price trend ─────────────────────────────────────────
+  // Bars, not a line: each point is a discrete fill-up, not a continuous
+  // quantity, so the chart shouldn't visually interpolate between them.
+  &__fuel-trend-chart {
+    width: auto;
+    display: flex;
+    align-items: flex-end;
+    gap: 0.75rem;
+    overflow-x: auto;
+    padding-bottom: 0.15rem;
+  }
+
+  &__fuel-trend-col {
+    width: auto;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  &__fuel-trend-value {
+    width: auto;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--text-color);
+    white-space: nowrap;
+  }
+
+  &__fuel-trend-bar-track {
+    width: 22px;
+    height: 70px;
+    display: flex;
+    align-items: flex-end;
+  }
+
+  &__fuel-trend-bar {
+    width: 100%;
+    min-height: 4px;
+    background: var(--primary-color);
+    border-radius: 4px 4px 2px 2px;
+  }
+
+  &__fuel-trend-date {
+    width: auto;
+    font-size: 0.65rem;
+    color: var(--text-secondary-color);
+    white-space: nowrap;
+  }
+
+  // A single toggle + active-filter chips instead of five always-open
+  // fields: most visits don't filter anything, so the common case shouldn't
+  // pay for a full row of controls before reaching the stats/entry list.
+  &__filter-bar {
     width: auto;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.6rem;
+    gap: 0.5rem;
     margin-bottom: 1.25rem;
+  }
+
+  &__filter-toggle-wrap {
+    position: relative;
+    width: fit-content;
+  }
+
+  &__filter-toggle {
+    width: fit-content;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-family: inherit;
+    color: var(--text-color);
+    background: var(--white-color);
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    padding: 0.5rem 0.9rem;
+    cursor: pointer;
+
+    &:hover {
+      border-color: var(--primary-color);
+    }
+
+    &--active {
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+    }
+  }
+
+  &__filter-count {
+    width: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.1rem;
+    height: 1.1rem;
+    padding: 0 0.3rem;
+    border-radius: 999px;
+    background: var(--primary-color);
+    color: var(--white-color);
+    font-size: 0.65rem;
+    font-weight: 700;
+  }
+
+  &__filter-panel {
+    position: absolute;
+    top: calc(100% + 0.4rem);
+    left: 0;
+    z-index: 20;
+    width: max-content;
+    min-width: 260px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    background: var(--white-color);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    padding: 1rem;
+
+    .van-log__filter-select,
+    .van-log__filter-date {
+      width: 100%;
+    }
+  }
+
+  &__filter-panel-row {
+    width: auto;
+    display: flex;
+    gap: 0.6rem;
+
+    .van-log__filter-field { flex: 1; }
+  }
+
+  &__filter-chip {
+    width: fit-content;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-color);
+    background: var(--surface-color);
+    border-radius: 999px;
+    padding: 0.4rem 0.5rem 0.4rem 0.8rem;
+
+    button {
+      width: fit-content;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      color: var(--text-secondary-color);
+      font-size: 0.7rem;
+      cursor: pointer;
+      padding: 0.15rem;
+      border-radius: 50%;
+
+      &:hover {
+        background: var(--border-color);
+        color: var(--text-color);
+      }
+    }
+  }
+
+  &__filter-field {
+    width: fit-content;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  &__filter-field-label {
+    width: auto;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-secondary-color);
   }
 
   &__filter-select,
@@ -95,7 +445,30 @@
     background: var(--white-color);
     border: 1px solid var(--border-color);
     border-radius: 10px;
-    padding: 0.5rem 0.75rem;
+    padding: 0.55rem 0.75rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+
+    &:hover {
+      border-color: var(--primary-color);
+    }
+
+    &:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(232, 116, 59, 0.15);
+    }
+  }
+
+  &__filter-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    cursor: pointer;
+    padding-right: 2.25em;
+    background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23666' stroke-width='1.5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.85em center;
+    background-size: 0.6em;
   }
 
   &__filter-clear {
@@ -106,7 +479,7 @@
     background: none;
     border: none;
     cursor: pointer;
-    padding: 0.5rem 0.25rem;
+    padding: 0.55rem 0.25rem;
 
     &:hover { color: var(--text-color); }
   }
@@ -115,15 +488,51 @@
     width: auto;
     display: flex;
     flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  &__group {
+    width: auto;
+    display: flex;
+    flex-direction: column;
     gap: 0.75rem;
   }
 
+  &__group-header {
+    width: auto;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 0 0.25rem;
+  }
+
+  &__group-label {
+    width: auto;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-secondary-color);
+  }
+
+  &__group-total {
+    width: auto;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-color);
+    font-variant-numeric: tabular-nums;
+  }
+
+  // Stacked, not two side-by-side columns: a two-column split (text on the
+  // left, amount on the right, for the full card height) left a wide dead
+  // gap in the middle on any entry whose text was short, and squeezed the
+  // description into a narrower box than the card actually had to give it.
+  // The amount only needs to sit apart from the category/date row above it.
   &__entry {
     width: auto;
     display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 1rem;
+    flex-direction: column;
+    gap: 0.3rem;
     background: var(--white-color);
     border: 1px solid var(--border-color);
     border-radius: 14px;
@@ -131,19 +540,35 @@
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
   }
 
-  &__entry-main {
+  // Deliberately not one flex-wrap row: with category/date/amount and the
+  // menu button all as siblings, a long category+date pair would push the
+  // whole amount+menu group onto its own line together. The menu should
+  // never move off the first line, so it sits outside the wrapping part
+  // (entry-top-content) as a sibling that only this outer row can't wrap;
+  // the amount, nested inside entry-top-content, is free to drop alone.
+  &__entry-top {
+    width: auto;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  &__entry-top-content {
     width: auto;
     flex: 1;
     min-width: 0;
     display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.4rem 0.75rem;
   }
 
-  &__entry-top {
+  &__entry-top-left {
     width: auto;
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 0.6rem;
   }
 
@@ -193,51 +618,75 @@
     overflow-wrap: anywhere;
   }
 
-  &__entry-side {
-    width: fit-content;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 0.5rem;
-    flex-shrink: 0;
-  }
-
   &__entry-amount {
     width: auto;
     font-size: 1rem;
+    font-weight: 700;
     color: var(--text-color);
     white-space: nowrap;
   }
 
-  &__entry-price-per-liter {
-    width: auto;
-    font-size: 0.8rem;
-    color: var(--text-secondary-color);
-    white-space: nowrap;
+  // A single "⋮" affordance instead of two permanently-visible icon
+  // buttons: edit/delete are rare actions and don't need their own column.
+  &__entry-menu {
+    position: relative;
+    width: fit-content;
+    flex-shrink: 0;
   }
 
-  &__entry-actions {
+  &__entry-menu-btn {
     width: fit-content;
     display: flex;
-    gap: 0.4rem;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: var(--text-secondary-color);
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.4rem;
+    border-radius: 8px;
+
+    &:hover {
+      background: var(--surface-color);
+      color: var(--text-color);
+    }
+  }
+
+  &__entry-menu-dropdown {
+    position: absolute;
+    top: calc(100% + 0.25rem);
+    right: 0;
+    z-index: 10;
+    width: max-content;
+    min-width: 120px;
+    background: var(--white-color);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    padding: 0.35rem;
+    display: flex;
+    flex-direction: column;
 
     button {
-      width: fit-content;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width: auto;
+      text-align: left;
       background: none;
       border: none;
-      color: var(--text-secondary-color);
-      font-size: 1rem;
+      font-size: 0.85rem;
+      font-family: inherit;
+      color: var(--text-color);
       cursor: pointer;
-      padding: 0.3rem;
-      border-radius: 8px;
+      padding: 0.5rem 0.6rem;
+      border-radius: 6px;
 
       &:hover {
         background: var(--surface-color);
-        color: var(--text-color);
       }
+    }
+
+    .van-log__entry-menu-danger {
+      color: var(--error-color);
     }
   }
 

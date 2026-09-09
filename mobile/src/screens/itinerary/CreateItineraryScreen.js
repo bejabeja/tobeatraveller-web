@@ -203,7 +203,12 @@ const CreateItineraryScreen = ({ navigation }) => {
     <View style={ls.root}>
       {/* Header */}
       <View style={[ls.header, { paddingTop: insets.top + 4 }]}>
-        <TouchableOpacity style={ls.headerBack} onPress={handleBack}>
+        <TouchableOpacity
+          style={ls.headerBack}
+          onPress={handleBack}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          accessibilityLabel={t('common.back')}
+        >
           <Text style={ls.headerBackText}>←</Text>
         </TouchableOpacity>
         <View style={ls.headerCenter}>

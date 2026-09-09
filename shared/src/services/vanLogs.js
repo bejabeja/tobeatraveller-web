@@ -4,7 +4,7 @@ import { parseError } from "../utils/parseError";
 
 const baseUrl = () => `${getApiUrl()}/van-logs`;
 
-export const getVanLogEntries = async (filters = {}) => {
+const buildQuery = (filters = {}) => {
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {
         if (value !== "" && value !== null && value !== undefined) {
@@ -12,8 +12,11 @@ export const getVanLogEntries = async (filters = {}) => {
         }
     });
     const query = params.toString();
+    return query ? `?${query}` : "";
+};
 
-    const response = await authFetch(`${baseUrl()}${query ? `?${query}` : ""}`, {
+export const getVanLogEntries = async (filters = {}) => {
+    const response = await authFetch(`${baseUrl()}${buildQuery(filters)}`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
     });
@@ -56,8 +59,8 @@ export const deleteVanLogEntry = async (id) => {
     }
 };
 
-export const getVanLogStats = async () => {
-    const response = await authFetch(`${baseUrl()}/stats`, {
+export const getVanLogStats = async (filters = {}) => {
+    const response = await authFetch(`${baseUrl()}/stats${buildQuery(filters)}`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
     });

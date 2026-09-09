@@ -228,6 +228,8 @@ const ItineraryScreen = ({ route, navigation }) => {
         <TouchableOpacity
           style={[styles.backBtn, { top: insets.top + 12 }]}
           onPress={() => navigation.goBack()}
+          hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
+          accessibilityLabel={t('common.back')}
         >
           <Text style={styles.backBtnText}>←</Text>
         </TouchableOpacity>

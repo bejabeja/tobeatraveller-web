@@ -21,8 +21,8 @@ export class VanLogController {
 
     async getMyEntries(req, res, next) {
         try {
-            const { category, country, dateFrom, dateTo } = req.query;
-            const entries = await this.vanLogService.getEntriesByUser(req.user.id, { category, country, dateFrom, dateTo });
+            const { category, country, currency, dateFrom, dateTo } = req.query;
+            const entries = await this.vanLogService.getEntriesByUser(req.user.id, { category, country, currency, dateFrom, dateTo });
             res.status(200).json(entries);
         } catch (error) {
             next(error);
@@ -55,7 +55,8 @@ export class VanLogController {
 
     async getStats(req, res, next) {
         try {
-            const stats = await this.vanLogService.getStats(req.user.id);
+            const { category, country, currency, dateFrom, dateTo } = req.query;
+            const stats = await this.vanLogService.getStats(req.user.id, { category, country, currency, dateFrom, dateTo });
             res.status(200).json(stats);
         } catch (error) {
             next(error);

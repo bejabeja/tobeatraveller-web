@@ -1,0 +1,17 @@
+.currency-field {
+  &__back {
+    width: fit-content;
+    font-size: 0.8rem;
+    font-weight: 600;
+    font-family: inherit;
+    color: var(--text-secondary-color);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.3rem 0 0;
+
+    &:hover {
+      color: var(--text-color);
+    }
+  }
+}

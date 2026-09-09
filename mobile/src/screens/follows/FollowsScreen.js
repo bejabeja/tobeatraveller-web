@@ -52,7 +52,12 @@ const FollowsScreen = ({ route, navigation }) => {
       <View style={styles.handle} />
       <View style={styles.header}>
         <Text style={styles.title}>{title}</Text>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.closeBtn}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.closeBtn}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          accessibilityLabel={t('common.close')}
+        >
           <Text style={styles.closeText}>✕</Text>
         </TouchableOpacity>
       </View>

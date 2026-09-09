@@ -168,7 +168,12 @@ const ProfileScreen = ({ route, navigation }) => {
         style={[styles.banner, canGoBack && { paddingTop: insets.top + 8 }]}
       >
         {canGoBack && (
-          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+          <TouchableOpacity
+            style={styles.backBtn}
+            onPress={() => navigation.goBack()}
+            hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
+            accessibilityLabel={t('common.back')}
+          >
             <Text style={styles.backBtnText}>←</Text>
           </TouchableOpacity>
         )}

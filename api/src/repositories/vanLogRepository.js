@@ -45,6 +45,14 @@ export class VanLogRepository {
             values.push(filters.country);
         }
 
+        // OR currency IS NULL: a free/no-amount entry (e.g. a fresh water tap
+        // refill logged with no cost) has no currency to conflict with the
+        // filter, so it stays visible regardless of which currency is selected.
+        if (filters.currency) {
+            conditions.push(`(currency = $${i++} OR currency IS NULL)`);
+            values.push(filters.currency);
+        }
+
         if (filters.dateFrom) {
             conditions.push(`entry_date >= $${i++}::date`);
             values.push(filters.dateFrom);
@@ -105,35 +113,54 @@ export class VanLogRepository {
         await client.query(`DELETE FROM van_log_entries WHERE id = $1`, [id]);
     }
 
-    async getTotalsByCategory(userId) {
+    // Grouped by currency too (not just category): summing across currencies
+    // would silently add e.g. EUR and USD amounts together into one meaningless
+    // number, so each currency present gets its own row.
+    async getTotalsByCategory(userId, filters = {}) {
+        const { conditions, values } = this.buildFilters(userId, filters);
         const result = await client.query(
-            `SELECT category, COALESCE(SUM(amount), 0) AS total, COUNT(*)::int AS count, MAX(entry_date) AS last_date
+            `SELECT category, currency, COALESCE(SUM(amount), 0) AS total, COUNT(*)::int AS count, MAX(entry_date) AS last_date
              FROM van_log_entries
-             WHERE user_id = $1
-             GROUP BY category`,
-            [userId]
+             WHERE ${conditions.join(" AND ")}
+             GROUP BY category, currency`,
+            values
         );
         return result.rows.map(row => ({
             category: row.category,
+            currency: row.currency,
             total: Number(row.total),
             count: row.count,
             lastDate: toDateOnlyString(row.last_date),
         }));
     }
 
-    async getTotalsByCountry(userId) {
+    async getTotalsByCountry(userId, filters = {}) {
+        const { conditions, values } = this.buildFilters(userId, filters);
         const result = await client.query(
-            `SELECT location_country AS country, COALESCE(SUM(amount), 0) AS total, COUNT(*)::int AS count
+            `SELECT location_country AS country, currency, COALESCE(SUM(amount), 0) AS total, COUNT(*)::int AS count
              FROM van_log_entries
-             WHERE user_id = $1 AND location_country IS NOT NULL
-             GROUP BY location_country
+             WHERE ${conditions.join(" AND ")} AND location_country IS NOT NULL
+             GROUP BY location_country, currency
              ORDER BY total DESC`,
-            [userId]
+            values
         );
         return result.rows.map(row => ({
             country: row.country,
+            currency: row.currency,
             total: Number(row.total),
             count: row.count,
         }));
+    }
+
+    async getDistinctCurrencies(userId, filters = {}) {
+        const { conditions, values } = this.buildFilters(userId, filters);
+        const result = await client.query(
+            `SELECT DISTINCT currency
+             FROM van_log_entries
+             WHERE ${conditions.join(" AND ")} AND currency IS NOT NULL
+             ORDER BY currency`,
+            values
+        );
+        return result.rows.map(row => row.currency);
     }
 }

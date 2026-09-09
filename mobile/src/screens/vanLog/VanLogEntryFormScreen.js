@@ -5,15 +5,12 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
-import { createVanLogEntry, updateVanLogEntry, vanLogCategories, vanLogEntrySchema } from '@tobeatraveller/shared';
+import {
+  createVanLogEntry, updateVanLogEntry, vanLogCategories, vanLogCategoryEmoji as CATEGORY_EMOJI,
+  vanLogEntrySchema,
+} from '@tobeatraveller/shared';
 import { shadow } from '../../utils/styles';
 import { GEOAPIFY_KEY } from '../../utils/config';
-
-const CATEGORY_EMOJI = {
-  gas_bottle: '🔥', water_fresh: '💧', water_grey: '🚿', water_black: '🚽',
-  trash: '🗑️', fuel: '⛽', groceries: '🛒', laundry: '🧺',
-  parking: '🅿️', tolls: '🛣️', overnight_stay: '🌙', maintenance: '🔧', other: '📍',
-};
 
 const today = () => new Date().toISOString().split('T')[0];
 
@@ -150,7 +147,12 @@ const VanLogEntryFormScreen = ({ navigation, route }) => {
   return (
     <View style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + 4 }]}>
-        <TouchableOpacity style={styles.headerBack} onPress={handleBack}>
+        <TouchableOpacity
+          style={styles.headerBack}
+          onPress={handleBack}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          accessibilityLabel={t('common.back')}
+        >
           <Text style={styles.headerBackText}>←</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{isEditing ? t('vanLog.editEntry') : t('vanLog.addEntry')}</Text>

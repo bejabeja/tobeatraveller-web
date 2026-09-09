@@ -99,7 +99,12 @@ const SupplyFormScreen = ({ navigation, route }) => {
   return (
     <View style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + 4 }]}>
-        <TouchableOpacity style={styles.headerBack} onPress={handleBack}>
+        <TouchableOpacity
+          style={styles.headerBack}
+          onPress={handleBack}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          accessibilityLabel={t('common.back')}
+        >
           <Text style={styles.headerBackText}>←</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{isEditing ? s('editItem') : s('addItem')}</Text>

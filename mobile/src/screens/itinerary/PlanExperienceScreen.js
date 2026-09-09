@@ -288,6 +288,8 @@ const PlanExperienceScreen = ({ navigation }) => {
         <TouchableOpacity
           style={ls.backBtn}
           onPress={() => phase === 'review' ? setPhase('input') : navigation.goBack()}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          accessibilityLabel={t('common.back')}
         >
           <Ionicons name="arrow-back" size={22} color="#fff" />
         </TouchableOpacity>
