@@ -68,6 +68,7 @@ const CurrencyField = ({ label, name, control, error, required = false }) => {
           aria-invalid={!!error}
           aria-describedby={error ? errorId : undefined}
         >
+          {!field.value && <option value="" hidden />}
           {vanLogCommonCurrencies.map((currency) => (
             <option key={currency} value={currency}>{currency}</option>
           ))}

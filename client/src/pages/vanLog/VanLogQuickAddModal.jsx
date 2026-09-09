@@ -52,7 +52,7 @@ const VanLogQuickAddModal = ({ onClose, onSaved }) => {
         category: data.category,
         title: data.title || null,
         amount: data.amount,
-        currency: data.amount != null ? (data.currency || "EUR") : null,
+        currency: data.amount != null ? (data.currency || null) : null,
         pricePerLiter: data.category === "fuel" ? data.pricePerLiter : null,
         location: hasLocation
           ? {

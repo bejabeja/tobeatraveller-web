@@ -22,8 +22,8 @@ export const updateUserSchema = z.object({
         .max(50, "Username must be less than 50 characters")
         .regex(/^\S+$/, "Username cannot contain spaces"),
     location: z.string()
-        .min(2, "Location is required")
-        .max(50, "No valid location"),
+        .max(50, "No valid location")
+        .nullable(),
     name: z
         .string()
         .max(50, "Max 50 characters")

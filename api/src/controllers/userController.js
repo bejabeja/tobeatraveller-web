@@ -45,6 +45,9 @@ export class UserController {
         } catch {
             return next(new ValidationError("Invalid profile data"));
         }
+        if (typeof rawBody !== "object" || rawBody === null) {
+            return next(new ValidationError("Invalid profile data"));
+        }
         const { removeAvatar, ...bodyForValidation } = rawBody;
         const validation = updateUserSchema.safeParse(bodyForValidation);
         if (!validation.success) {

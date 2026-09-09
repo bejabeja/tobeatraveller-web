@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import {
   createVanLogEntry, updateVanLogEntry, vanLogCategories, vanLogCategoryEmoji as CATEGORY_EMOJI,
-  vanLogEntrySchema,
+  vanLogCommonCurrencies, vanLogEntrySchema,
 } from '@tobeatraveller/shared';
 import { shadow } from '../../utils/styles';
 import { GEOAPIFY_KEY } from '../../utils/config';
@@ -30,6 +30,14 @@ const VanLogEntryFormScreen = ({ navigation, route }) => {
   const [title, setTitle] = useState(entry?.title ?? '');
   const [amount, setAmount] = useState(entry?.amount != null ? String(entry.amount) : '');
   const [currency, setCurrency] = useState(entry?.currency ?? 'EUR');
+  // A chip picker of common currencies instead of free text: a typo like
+  // "EURO" silently creates its own bucket in the by-currency stats/filter
+  // (both key off the exact string), so this keeps values reliable while
+  // still allowing any code via the "Other" escape hatch, since van-life
+  // crosses into currencies well outside this preset list.
+  const [customCurrency, setCustomCurrency] = useState(
+    Boolean(entry?.currency) && !vanLogCommonCurrencies.includes(entry.currency)
+  );
   const [pricePerLiter, setPricePerLiter] = useState(entry?.pricePerLiter != null ? String(entry.pricePerLiter) : '');
   const [entryDate, setEntryDate] = useState(entry?.entryDate ? entry.entryDate.slice(0, 10) : today());
   const [location, setLocation] = useState(() => normalizeLocation(entry?.location));
@@ -200,28 +208,60 @@ const VanLogEntryFormScreen = ({ navigation, route }) => {
               />
             </Field>
 
-            <View style={styles.row}>
-              <Field label={t('vanLog.amountLabel')} error={errors.amount} style={{ flex: 1 }}>
-                <TextInput
-                  style={styles.input}
-                  value={amount}
-                  onChangeText={v => { setAmount(v); setErrors(e => ({ ...e, amount: null })); setIsDirty(true); }}
-                  placeholder="0.00"
-                  placeholderTextColor="#9ca3af"
-                  keyboardType="decimal-pad"
-                />
-              </Field>
-              <View style={{ width: 12 }} />
-              <Field label={t('vanLog.currencyLabel')} error={errors.currency} style={{ flex: 1 }}>
-                <TextInput
-                  style={styles.input}
-                  value={currency}
-                  onChangeText={v => { setCurrency(v); setErrors(e => ({ ...e, currency: null })); setIsDirty(true); }}
-                  autoCapitalize="characters"
-                  maxLength={3}
-                />
-              </Field>
-            </View>
+            <Field label={t('vanLog.amountLabel')} error={errors.amount}>
+              <TextInput
+                style={styles.input}
+                value={amount}
+                onChangeText={v => { setAmount(v); setErrors(e => ({ ...e, amount: null })); setIsDirty(true); }}
+                placeholder="0.00"
+                placeholderTextColor="#9ca3af"
+                keyboardType="decimal-pad"
+              />
+            </Field>
+
+            <Field label={t('vanLog.currencyLabel')} error={errors.currency}>
+              {customCurrency ? (
+                <View style={styles.currencyCustomRow}>
+                  <TextInput
+                    style={[styles.input, styles.currencyCustomInput]}
+                    value={currency}
+                    onChangeText={v => { setCurrency(v.toUpperCase()); setErrors(e => ({ ...e, currency: null })); setIsDirty(true); }}
+                    autoCapitalize="characters"
+                    maxLength={3}
+                    placeholder="XXX"
+                    placeholderTextColor="#9ca3af"
+                  />
+                  <TouchableOpacity
+                    onPress={() => {
+                      setCustomCurrency(false);
+                      setCurrency(vanLogCommonCurrencies[0]);
+                      setErrors(e => ({ ...e, currency: null }));
+                      setIsDirty(true);
+                    }}
+                  >
+                    <Text style={styles.currencyBackText}>{t('vanLog.chooseFromList')}</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
+                  {vanLogCommonCurrencies.map(c => (
+                    <TouchableOpacity
+                      key={c}
+                      style={[styles.chip, currency === c && styles.chipActive]}
+                      onPress={() => { setCurrency(c); setErrors(e => ({ ...e, currency: null })); setIsDirty(true); }}
+                    >
+                      <Text style={[styles.chipLabel, currency === c && styles.chipLabelActive]}>{c}</Text>
+                    </TouchableOpacity>
+                  ))}
+                  <TouchableOpacity
+                    style={styles.chip}
+                    onPress={() => { setCustomCurrency(true); setCurrency(''); setIsDirty(true); }}
+                  >
+                    <Text style={styles.chipLabel}>{t('vanLog.otherCurrency')}</Text>
+                  </TouchableOpacity>
+                </ScrollView>
+              )}
+            </Field>
 
             {category === 'fuel' && (
               <Field label={t('vanLog.pricePerLiterLabel')} error={errors.pricePerLiter}>
@@ -338,7 +378,9 @@ const styles = StyleSheet.create({
     ...shadow(2, 0.06, 8, 2),
   },
 
-  row: { flexDirection: 'row' },
+  currencyCustomRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  currencyCustomInput: { flex: 1 },
+  currencyBackText: { fontSize: 13, fontWeight: '600', color: '#E8743B' },
 
   chips: { gap: 8, paddingVertical: 2 },
   chip: {

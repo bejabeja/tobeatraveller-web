@@ -84,6 +84,7 @@ const EditProfile = () => {
   const hasChanges = isDirty || !!avatarFile || removeAvatar;
 
   const saveUser = async (data) => {
+    setErrorSubmit(null);
     try {
       const formData = new FormData();
       formData.append("user", JSON.stringify({ ...data, ...(removeAvatar && { removeAvatar: true }) }));

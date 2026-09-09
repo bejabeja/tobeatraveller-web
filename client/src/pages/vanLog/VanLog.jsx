@@ -2,7 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { IoCloseOutline, IoEllipsisVertical, IoFlashOutline, IoFunnelOutline, IoSearchOutline } from "react-icons/io5";
-import { isPremiumRequiredError, normalizeSearchText, vanLogCategories, vanLogCategoryEmoji } from "@tobeatraveller/shared";
+import {
+  getVanLogFuelPriceTrend, groupVanLogEntriesByMonth, isPremiumRequiredError,
+  normalizeSearchText, vanLogCategories, vanLogCategoryEmoji,
+} from "@tobeatraveller/shared";
 import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState";
 import Modal from "../../components/modal/Modal";
 import { deleteVanLogEntry, getVanLogEntries, getVanLogStats } from "../../services/vanLogs";
@@ -10,11 +13,7 @@ import VanLogFormModal from "./VanLogFormModal";
 import VanLogQuickAddModal from "./VanLogQuickAddModal";
 import "./VanLog.scss";
 
-// EUR by default: the app targets Europe for now, so expenses in another
-// currency only show up once the user deliberately switches this filter,
-// instead of being silently added into a mixed-currency total.
-const DEFAULT_CURRENCY = "EUR";
-const EMPTY_FILTERS = { category: "", country: "", currency: DEFAULT_CURRENCY, dateFrom: "", dateTo: "" };
+const EMPTY_FILTERS = { category: "", country: "", currency: "", dateFrom: "", dateTo: "" };
 
 const daysSince = (dateStr) => {
   if (!dateStr) return null;
@@ -33,64 +32,9 @@ const daysSinceLabel = (dateStr, t) => {
   return t("vanLog.daysAgo", { count: days });
 };
 
-// Entries come back newest-first from the API, so grouping preserves that
-// order both across months and within a month.
-const groupEntriesByMonth = (entries) => {
-  const groups = [];
-  const byKey = new Map();
-
-  for (const entry of entries) {
-    const [year, month] = entry.entryDate.split("-");
-    const key = `${year}-${month}`;
-    let group = byKey.get(key);
-    if (!group) {
-      group = {
-        key,
-        label: new Date(Number(year), Number(month) - 1, 1)
-          .toLocaleDateString(undefined, { year: "numeric", month: "long" }),
-        total: 0,
-        currency: undefined,
-        entries: [],
-      };
-      byKey.set(key, group);
-      groups.push(group);
-    }
-    group.entries.push(entry);
-    if (entry.amount != null) {
-      const currency = entry.currency || "";
-      // Only a single-currency month can be summed into one meaningful total;
-      // once a mismatch is found it stays unsummable for the rest of the month.
-      if (group.currency === undefined) group.currency = currency;
-      group.total = (group.total === null || group.currency !== currency)
-        ? null
-        : group.total + entry.amount;
-    }
-  }
-
-  return groups;
-};
-
 const shortDate = (dateStr) => {
   const [year, month, day] = dateStr.split("-").map(Number);
   return new Date(year, month - 1, day).toLocaleDateString(undefined, { month: "short", day: "numeric" });
-};
-
-// A single-currency price/liter series across fuel fill-ups, oldest first.
-// Bars (not a line) on purpose: each point is a discrete refuel, not a
-// continuous quantity, so nothing should be visually interpolated between them.
-// Needs 3+ points: with only 1-2 fill-ups the chart is mostly empty space and
-// reads as broken rather than as a trend.
-const getFuelPriceTrend = (entries) => {
-  const points = entries
-    .filter((e) => e.category === "fuel" && e.pricePerLiter != null)
-    .slice()
-    .sort((a, b) => a.entryDate.localeCompare(b.entryDate));
-  if (points.length < 3) return null;
-
-  const currency = points[0].currency || "";
-  if (points.some((p) => (p.currency || "") !== currency)) return null;
-
-  return { points, currency, maxPrice: Math.max(...points.map((p) => p.pricePerLiter)) };
 };
 
 const VanLog = () => {
@@ -193,9 +137,7 @@ const VanLog = () => {
 
   const updateFilter = (key, value) => setFilters((prev) => ({ ...prev, [key]: value }));
   const clearFilters = () => setFilters(EMPTY_FILTERS);
-  // Currency isn't counted here: it always has a value (EUR by default), so
-  // it shouldn't make the reset link appear or turn on the "filtered" empty state.
-  const hasActiveFilters = Boolean(filters.category || filters.country || filters.dateFrom || filters.dateTo);
+  const hasActiveFilters = Boolean(filters.category || filters.country || filters.currency || filters.dateFrom || filters.dateTo);
 
   const categoryLabel = (value) => {
     const fallback = vanLogCategories.find(c => c.value === value)?.label ?? value;
@@ -213,13 +155,17 @@ const VanLog = () => {
   const totalsByCurrency = stats?.totalsByCurrency ?? [];
   const categoryTotals = stats?.byCategory ?? [];
   const countryTotals = stats?.byCountry ?? [];
+  // byCountry ignores the country filter on purpose (see vanLogService.getStats)
+  // so this dropdown keeps listing every country the user has ever logged.
   const countryOptions = [...new Set(countryTotals.map(({ country }) => country))];
-  // EUR is always offered, even before the user has any EUR entries yet,
-  // since it's the default currency for this filter.
-  const currencyOptions = [...new Set([DEFAULT_CURRENCY, ...(stats?.availableCurrencies ?? [])])];
+  const currencyOptions = stats?.availableCurrencies ?? [];
   const sortedCategoryTotals = [...categoryTotals].sort((a, b) => b.total - a.total);
   const maxCategoryTotal = sortedCategoryTotals[0]?.total ?? 0;
-  const sortedCountryTotals = [...countryTotals].sort((a, b) => b.total - a.total);
+  // Unlike the dropdown above, the chart below must reflect the active
+  // country filter, so it's narrowed back down here before sorting.
+  const sortedCountryTotals = countryTotals
+    .filter((c) => !filters.country || c.country.toLowerCase() === filters.country.toLowerCase())
+    .sort((a, b) => b.total - a.total);
   const maxCountryTotal = sortedCountryTotals[0]?.total ?? 0;
   // Client-side only: entries aren't paginated, so everything matching the
   // structured filters is already in `entries` and free-text search just
@@ -233,8 +179,8 @@ const VanLog = () => {
         return haystack.includes(searchQuery);
       })
     : entries;
-  const groupedEntries = groupEntriesByMonth(searchedEntries);
-  const fuelTrend = getFuelPriceTrend(entries);
+  const groupedEntries = groupVanLogEntriesByMonth(searchedEntries);
+  const fuelTrend = getVanLogFuelPriceTrend(entries);
   const hasBreakdown = sortedCategoryTotals.length > 0 || sortedCountryTotals.length > 0 || Boolean(fuelTrend);
 
   // Chips summarize the active filters next to the toggle so the "you're
@@ -252,8 +198,8 @@ const VanLog = () => {
   if (filters.country) {
     filterChips.push({ key: "country", label: filters.country, onRemove: () => updateFilter("country", "") });
   }
-  if (filters.currency !== DEFAULT_CURRENCY) {
-    filterChips.push({ key: "currency", label: filters.currency, onRemove: () => updateFilter("currency", DEFAULT_CURRENCY) });
+  if (filters.currency) {
+    filterChips.push({ key: "currency", label: filters.currency, onRemove: () => updateFilter("currency", "") });
   }
   if (filters.dateFrom && filters.dateTo) {
     filterChips.push({
@@ -321,6 +267,7 @@ const VanLog = () => {
                   value={filters.currency}
                   onChange={(e) => updateFilter("currency", e.target.value)}
                 >
+                  <option value="">{t("vanLog.allCurrencies")}</option>
                   {currencyOptions.map((currency) => (
                     <option key={currency} value={currency}>{currency}</option>
                   ))}
