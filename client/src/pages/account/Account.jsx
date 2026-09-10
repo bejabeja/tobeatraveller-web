@@ -51,7 +51,7 @@ const Account = () => {
       title: t("nav.yourTools"),
       mobileOnly: true,
       items: [
-        { to: "/van-log", Icon: IoBookOutline, label: t("nav.vanLog"), premium: true },
+        { to: "/van-log", Icon: IoBookOutline, label: t("nav.vanLog") },
         { to: "/supplies", Icon: IoCartOutline, label: t("nav.supplies"), premium: true },
         { to: "/packing-checklist", Icon: IoBriefcaseOutline, label: t("nav.packingChecklist"), premium: true },
         { to: "/life-diary", Icon: IoJournalOutline, label: t("nav.lifeDiary"), premium: true },

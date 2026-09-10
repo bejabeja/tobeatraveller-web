@@ -30,6 +30,14 @@ export class VanLogRepository {
         return VanLogEntry.fromDb(result.rows[0]);
     }
 
+    async countByUserId(userId) {
+        const result = await client.query(
+            `SELECT COUNT(*)::int AS count FROM van_log_entries WHERE user_id = $1`,
+            [userId]
+        );
+        return result.rows[0].count;
+    }
+
     buildFilters(userId, filters = {}) {
         const conditions = [`user_id = $1`];
         const values = [userId];

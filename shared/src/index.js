@@ -44,7 +44,7 @@ export { authFetch } from './utils/authFetch.js';
 export { getDestinations } from './services/itineraries.js';
 export { setApiUrl } from './utils/apiConfig.js';
 export { setTokenStorage } from './utils/tokenStorage.js';
-export { parseError, isPremiumRequiredError } from './utils/parseError.js';
+export { parseError, isPremiumRequiredError, isVanLogCapReachedError } from './utils/parseError.js';
 export { normalizeSearchText } from './utils/normalizeSearchText.js';
 export { groupVanLogEntriesByMonth, getVanLogFuelPriceTrend } from './utils/vanLogStats.js';
 export { translateAuthError } from './utils/authErrorMessages.js';

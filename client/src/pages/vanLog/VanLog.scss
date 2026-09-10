@@ -16,11 +16,34 @@
     }
   }
 
+  &__header-titles {
+    width: auto;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+
   &__title {
     width: fit-content;
     font-size: 1.5rem;
     font-weight: 800;
     color: var(--text-color);
+  }
+
+  // A compact reminder next to the title instead of a full-width banner, so
+  // it doesn't compete with the filters/search toolbar for its own row.
+  &__free-tier-pill {
+    width: fit-content;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    background: var(--primary-light, rgba(232, 116, 59, 0.1));
+    padding: 0.3rem 0.65rem;
+    border-radius: 999px;
+    text-decoration: none;
+
+    &:hover { text-decoration: underline; }
   }
 
   // Entries vs. Stats: logging an expense and analyzing spend are different
@@ -56,8 +79,12 @@
     }
   }
 
+  // Lives inside .van-log__filter-bar (a shared flex row with the filter
+  // toggle) so search and filters read as one toolbar instead of two
+  // stacked bars; flex: 1 lets it take the leading space on that row while
+  // wrapping to its own full-width line first if the row gets too narrow.
   &__search {
-    width: auto;
+    flex: 1 1 220px;
     max-width: 420px;
     display: flex;
     align-items: center;
@@ -66,7 +93,6 @@
     border: 1px solid var(--border-color);
     border-radius: 10px;
     padding: 0.55rem 0.75rem;
-    margin-bottom: 1.25rem;
   }
 
   &__search-icon {
@@ -106,8 +132,10 @@
     }
   }
 
-  // Just the headline number on the Entries tab, no card chrome: the full
-  // hero+breakdown card lives on the Stats tab now.
+  // The one hero total, shown above the tabs regardless of which is active
+  // (previously duplicated: a condensed copy on Entries, a full one on
+  // Stats); the Stats tab now only adds the category/country/fuel breakdown
+  // below it.
   &__total-banner {
     width: auto;
     border-radius: 14px;

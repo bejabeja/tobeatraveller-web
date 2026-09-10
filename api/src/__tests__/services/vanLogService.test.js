@@ -10,6 +10,7 @@ const makeEntry = (overrides = {}) => ({
 
 describe('VanLogService', () => {
     let repository;
+    let userRepository;
     let service;
 
     beforeEach(() => {
@@ -18,11 +19,52 @@ describe('VanLogService', () => {
             findById: async () => makeEntry(),
             update: async () => makeEntry(),
             delete: async () => {},
+            countByUserId: async () => 0,
             getTotalsByCategory: async () => [],
             getTotalsByCountry: async () => [],
             getDistinctCurrencies: async () => [],
         };
-        service = new VanLogService(repository);
+        userRepository = {
+            getUserById: async () => ({ role: 'user', isPremium: () => false }),
+        };
+        service = new VanLogService(repository, userRepository);
+    });
+
+    describe('createEntry()', () => {
+        it('creates the entry when a free user is under the free-tier limit', async () => {
+            repository.countByUserId = async () => 9;
+
+            const result = await service.createEntry({ category: 'fuel' }, 'user-1');
+
+            expect(result.userId).toBe('user-1');
+        });
+
+        it('throws a ForbiddenError tagged "vanLogCap" once a free user already has 10 entries', async () => {
+            repository.countByUserId = async () => 10;
+
+            await expect(service.createEntry({ category: 'fuel' }, 'user-1')).rejects.toMatchObject({
+                statusCode: 403,
+                field: 'vanLogCap',
+            });
+        });
+
+        it('lets a premium user past the free-tier cap', async () => {
+            userRepository.getUserById = async () => ({ role: 'user', isPremium: () => true });
+            repository.countByUserId = async () => 50;
+
+            const result = await service.createEntry({ category: 'fuel' }, 'user-1');
+
+            expect(result.userId).toBe('user-1');
+        });
+
+        it('lets staff past the free-tier cap', async () => {
+            userRepository.getUserById = async () => ({ role: 'admin', isPremium: () => false });
+            repository.countByUserId = async () => 50;
+
+            const result = await service.createEntry({ category: 'fuel' }, 'user-1');
+
+            expect(result.userId).toBe('user-1');
+        });
     });
 
     describe('updateEntry() / deleteEntry()', () => {
@@ -89,6 +131,22 @@ describe('VanLogService', () => {
 
             expect(stats.totalsByCurrency).toEqual([]);
             expect(stats.byCategory).toEqual([]);
+        });
+
+        it('includes how many free-tier entries a free user has used, unfiltered by the active filters', async () => {
+            repository.countByUserId = async () => 7;
+
+            const stats = await service.getStats('user-1', { category: 'fuel' });
+
+            expect(stats.freeTierUsage).toEqual({ limited: true, used: 7, limit: 10 });
+        });
+
+        it('reports an unlimited free tier for premium users, with no used count', async () => {
+            userRepository.getUserById = async () => ({ role: 'user', isPremium: () => true });
+
+            const stats = await service.getStats('user-1');
+
+            expect(stats.freeTierUsage).toEqual({ limited: false, used: null, limit: 10 });
         });
 
         it('includes the per-country breakdown alongside the per-category one', async () => {

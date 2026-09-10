@@ -53,7 +53,11 @@ app.use('/favorites', authenticate, createFavoritesRouter());
 app.use('/likes', authenticate, createLikesRouter());
 app.use('/comments', createCommentsRouter());
 app.use('/notifications', authenticate, createNotificationsRouter());
-app.use('/van-logs', authenticate, premiumOnly, createVanLogsRouter());
+// Not premium-gated at the mount point (unlike supplies/packing-checklist/
+// life-diary below): Van Log is the freemium pilot, free to browse and to
+// add entries up to a cap enforced in VanLogService, so the gate lives there
+// instead of blocking the whole route tree.
+app.use('/van-logs', authenticate, createVanLogsRouter());
 app.use('/supplies', authenticate, premiumOnly, createSuppliesRouter());
 app.use('/packing-checklist', authenticate, premiumOnly, createPackingChecklistRouter());
 app.use('/life-diary', authenticate, premiumOnly, createLifeDiaryRouter());

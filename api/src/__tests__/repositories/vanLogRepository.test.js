@@ -105,6 +105,18 @@ describe('VanLogRepository', () => {
         expect(params).toEqual(['user-1', 'fuel']);
     });
 
+    it('counts how many entries belong to the given user', async () => {
+        client.query.mockResolvedValue({ rows: [{ count: 3 }] });
+
+        const count = await repo.countByUserId('user-1');
+
+        expect(count).toBe(3);
+        const [queryText, params] = client.query.mock.calls[0];
+        expect(queryText).toMatch(/COUNT\(\*\)/);
+        expect(queryText).toMatch(/WHERE user_id = \$1/);
+        expect(params).toEqual(['user-1']);
+    });
+
     it('returns null when updating/finding a non-existent entry', async () => {
         client.query.mockResolvedValue({ rows: [] });
 

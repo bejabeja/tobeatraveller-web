@@ -12,7 +12,12 @@ export const parseError = async (response, defaultMsg = "Something went wrong") 
   throw error;
 }
 
-// A parseError()-thrown error whose status is 403 always means requirePremium
-// blocked the request (see api/src/middlewares/requirePremium.js) - named here
-// so client/mobile call sites don't each hardcode the magic number.
-export const isPremiumRequiredError = (error) => error?.status === 403;
+// A parseError()-thrown error with status 403 is Forbidden, but that now
+// covers two distinct cases: requirePremium blocking a fully premium-gated
+// feature (see api/src/middlewares/requirePremium.js), and a freemium
+// feature's free-tier cap being reached (see VanLogService's `field:
+// 'vanLogCap'`). The plain 403 has no `field`, so its absence is what marks
+// the "whole feature needs premium" case specifically.
+export const isPremiumRequiredError = (error) => error?.status === 403 && !error?.field;
+
+export const isVanLogCapReachedError = (error) => error?.status === 403 && error?.field === 'vanLogCap';

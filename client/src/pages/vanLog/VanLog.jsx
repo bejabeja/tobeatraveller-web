@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { IoCloseOutline, IoEllipsisVertical, IoFlashOutline, IoFunnelOutline, IoSearchOutline } from "react-icons/io5";
+import { Link } from "react-router-dom";
 import {
   getVanLogFuelPriceTrend, groupVanLogEntriesByMonth, isPremiumRequiredError,
   normalizeSearchText, vanLogCategories, vanLogCategoryEmoji,
@@ -152,6 +153,8 @@ const VanLog = () => {
     );
   }
 
+  const freeTierUsage = stats?.freeTierUsage;
+  const atFreeTierCap = !!freeTierUsage?.limited && freeTierUsage.used >= freeTierUsage.limit;
   const totalsByCurrency = stats?.totalsByCurrency ?? [];
   const categoryTotals = stats?.byCategory ?? [];
   const countryTotals = stats?.byCountry ?? [];
@@ -224,13 +227,70 @@ const VanLog = () => {
   return (
     <section className="van-log section__container">
       <div className="van-log__header">
-        <h1 className="van-log__title">{t("vanLog.title")}</h1>
+        <div className="van-log__header-titles">
+          <h1 className="van-log__title">{t("vanLog.title")}</h1>
+          {freeTierUsage?.limited && (
+            <Link to="/subscription" className="van-log__free-tier-pill">
+              {t("vanLog.freeTierUsage", { used: freeTierUsage.used, limit: freeTierUsage.limit })}
+            </Link>
+          )}
+        </div>
         <button type="button" className="btn btn--primary" onClick={() => setQuickAddOpen(true)}>
           <IoFlashOutline /> {t("vanLog.quickAdd")}
         </button>
       </div>
 
+      {stats && hasBreakdown && (
+        <div className="van-log__total-banner">
+          <div className="van-log__stats-total">
+            <span className="van-log__stats-total-label">{t("vanLog.totalSpent")}</span>
+            <div className="van-log__stats-total-value">
+              {totalsByCurrency.length > 0
+                ? totalsByCurrency.map((ct) => (
+                    <strong key={ct.currency}>{ct.total.toFixed(2)} {ct.currency}</strong>
+                  ))
+                : <strong>0.00</strong>}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="van-log__tabs">
+        <button
+          type="button"
+          className={`van-log__tab${activeTab === "entries" ? " van-log__tab--active" : ""}`}
+          onClick={() => setActiveTab("entries")}
+        >
+          {t("vanLog.entriesTab")}
+        </button>
+        <button
+          type="button"
+          className={`van-log__tab${activeTab === "stats" ? " van-log__tab--active" : ""}`}
+          onClick={() => setActiveTab("stats")}
+        >
+          {t("vanLog.statsTab")}
+        </button>
+      </div>
+
       <div className="van-log__filter-bar">
+        {activeTab === "entries" && (
+          <div className="van-log__search">
+            <IoSearchOutline className="van-log__search-icon" />
+            <input
+              type="text"
+              className="van-log__search-input"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t("vanLog.searchPlaceholder")}
+            />
+            {search && (
+              <button type="button" className="van-log__search-clear" onClick={() => setSearch("")} aria-label={t("common.close")}>
+                <IoCloseOutline />
+              </button>
+            )}
+          </div>
+        )}
+
         <div className="van-log__filter-toggle-wrap" ref={filtersRef}>
           <button
             type="button"
@@ -326,56 +386,8 @@ const VanLog = () => {
         ))}
       </div>
 
-      <div className="van-log__tabs">
-        <button
-          type="button"
-          className={`van-log__tab${activeTab === "entries" ? " van-log__tab--active" : ""}`}
-          onClick={() => setActiveTab("entries")}
-        >
-          {t("vanLog.entriesTab")}
-        </button>
-        <button
-          type="button"
-          className={`van-log__tab${activeTab === "stats" ? " van-log__tab--active" : ""}`}
-          onClick={() => setActiveTab("stats")}
-        >
-          {t("vanLog.statsTab")}
-        </button>
-      </div>
-
       {activeTab === "entries" && (
         <>
-          {stats && hasBreakdown && (
-            <div className="van-log__total-banner">
-              <div className="van-log__stats-total">
-                <span className="van-log__stats-total-label">{t("vanLog.totalSpent")}</span>
-                <div className="van-log__stats-total-value">
-                  {totalsByCurrency.length > 0
-                    ? totalsByCurrency.map((ct) => (
-                        <strong key={ct.currency}>{ct.total.toFixed(2)} {ct.currency}</strong>
-                      ))
-                    : <strong>0.00</strong>}
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div className="van-log__search">
-            <IoSearchOutline className="van-log__search-icon" />
-            <input
-              type="text"
-              className="van-log__search-input"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder={t("vanLog.searchPlaceholder")}
-            />
-            {search && (
-              <button type="button" className="van-log__search-clear" onClick={() => setSearch("")} aria-label={t("common.close")}>
-                <IoCloseOutline />
-              </button>
-            )}
-          </div>
-
           {loading ? (
             <div className="van-log__list">
               {Array.from({ length: 4 }).map((_, i) => (
@@ -471,17 +483,6 @@ const VanLog = () => {
       {activeTab === "stats" && (
         stats && hasBreakdown ? (
           <div className="van-log__stats">
-            <div className="van-log__stats-total">
-              <span className="van-log__stats-total-label">{t("vanLog.totalSpent")}</span>
-              <div className="van-log__stats-total-value">
-                {totalsByCurrency.length > 0
-                  ? totalsByCurrency.map((ct) => (
-                      <strong key={ct.currency}>{ct.total.toFixed(2)} {ct.currency}</strong>
-                    ))
-                  : <strong>0.00</strong>}
-              </div>
-            </div>
-
             {sortedCategoryTotals.length > 0 && (
               <div className="van-log__stats-block">
                 <span className="van-log__stats-block-title">{t("vanLog.byCategory")}</span>
@@ -575,6 +576,7 @@ const VanLog = () => {
         <VanLogQuickAddModal
           onClose={closeQuickAdd}
           onSaved={handleQuickAddSaved}
+          initialCapReached={atFreeTierCap}
         />
       )}
 

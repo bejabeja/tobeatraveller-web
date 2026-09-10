@@ -38,8 +38,11 @@ const LANGUAGES = [
 // Premium (see PREMIUM_FEATURES in @tobeatraveller/shared); showing them here too
 // (not just buried inside Mi cuenta) so a free user keeps seeing exactly
 // what they're missing, badge and all, wherever they look for the nav.
+// Van Log is the freemium pilot (free to browse, capped at 10 entries), so
+// it's excluded from the "PREMIUM" badge below; the other three stay fully
+// gated until they get their own cap.
 const PREMIUM_TOOLS = [
-  { to: "/van-log", Icon: IoBookOutline, labelKey: "nav.vanLog" },
+  { to: "/van-log", Icon: IoBookOutline, labelKey: "nav.vanLog", premiumOnly: false },
   { to: "/supplies", Icon: IoCartOutline, labelKey: "nav.supplies" },
   { to: "/packing-checklist", Icon: IoBriefcaseOutline, labelKey: "nav.packingChecklist", iconClassName: "nav-icon--briefcase" },
   { to: "/life-diary", Icon: IoJournalOutline, labelKey: "nav.lifeDiary" },
@@ -247,11 +250,11 @@ const Navbar = ({ onOpenSearch }) => {
 
           <div className="nav-section">
             <h3>{t("nav.yourTools")}</h3>
-            {PREMIUM_TOOLS.map(({ to, Icon, labelKey, iconClassName }) => (
+            {PREMIUM_TOOLS.map(({ to, Icon, labelKey, iconClassName, premiumOnly = true }) => (
               <NavLink key={to} to={to} className="nav-item" title={t(labelKey)}>
                 <Icon className={iconClassName ? `nav-icon ${iconClassName}` : "nav-icon"} />
                 <span>{t(labelKey)}</span>
-                {!userMe?.isPremium && (
+                {premiumOnly && !userMe?.isPremium && (
                   <span className="nav-item__premium-badge">{t("admin.premium")}</span>
                 )}
               </NavLink>

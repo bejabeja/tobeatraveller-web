@@ -3,8 +3,9 @@ import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
-import { IoChevronDown } from "react-icons/io5";
-import { vanLogCategories, vanLogCategoryEmoji } from "@tobeatraveller/shared";
+import { IoChevronDown, IoLockClosedOutline } from "react-icons/io5";
+import { Link } from "react-router-dom";
+import { isVanLogCapReachedError, vanLogCategories, vanLogCategoryEmoji } from "@tobeatraveller/shared";
 import { InputForm, TextAreaForm } from "../../components/form/InputForm";
 import AutocompleteObjectInput from "../../components/form/AutocompleteObjectInput";
 import SubmitButton from "../../components/form/SubmitButton";
@@ -31,9 +32,13 @@ const defaultValues = {
 // one (title, price/L, date, location, notes): "more details" expands the
 // same form in place instead of handing off to a second modal, which used to
 // read as two disconnected flows for what is really a single "add entry" action.
-const VanLogQuickAddModal = ({ onClose, onSaved }) => {
+const VanLogQuickAddModal = ({ onClose, onSaved, initialCapReached = false }) => {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
+  // Starting already at the cap (parent already knows from the stats it just
+  // loaded) skips straight to the upsell instead of only discovering it after
+  // the user fills out the form and submits.
+  const [capReached, setCapReached] = useState(initialCapReached);
   const { control, register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(vanLogEntrySchema),
     defaultValues,
@@ -69,6 +74,10 @@ const VanLogQuickAddModal = ({ onClose, onSaved }) => {
       toast.success(t("vanLog.created"));
       onSaved();
     } catch (error) {
+      if (isVanLogCapReachedError(error)) {
+        setCapReached(true);
+        return;
+      }
       toast.error(error.message || t("vanLog.saveError"));
     }
   };
@@ -81,6 +90,14 @@ const VanLogQuickAddModal = ({ onClose, onSaved }) => {
           <button type="button" className="van-log-form__close" onClick={onClose} aria-label={t("common.close")}>✕</button>
         </div>
 
+        {capReached ? (
+          <div className="van-log-form__cap-reached">
+            <IoLockClosedOutline className="van-log-form__cap-reached-icon" aria-hidden="true" />
+            <p className="van-log-form__cap-reached-title">{t("vanLog.capReachedTitle")}</p>
+            <p className="van-log-form__cap-reached-desc">{t("vanLog.capReachedDesc")}</p>
+            <Link to="/subscription" className="btn btn--primary">{t("premium.requiredCta")}</Link>
+          </div>
+        ) : (
         <form className="van-log-form__body" onSubmit={handleSubmit(onSubmit)}>
           <div className="van-log-quick-add__grid">
             {vanLogCategories.map(({ value }) => (
@@ -185,6 +202,7 @@ const VanLogQuickAddModal = ({ onClose, onSaved }) => {
             <SubmitButton loading={isSubmitting} disabled={!category} label={t("vanLog.quickAdd")} />
           </div>
         </form>
+        )}
       </div>
     </div>
   );
