@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { IoAddOutline, IoLocationOutline, IoPencilOutline, IoTrashOutline } from "react-icons/io5";
+import { Link } from "react-router-dom";
 import { isPremiumRequiredError } from "@tobeatraveller/shared";
 import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState";
 import Modal from "../../components/modal/Modal";
-import { deleteLifeDiaryEntry, getLifeDiaryEntries } from "../../services/lifeDiary";
+import { deleteLifeDiaryEntry, getLifeDiaryEntries, getLifeDiaryUsage } from "../../services/lifeDiary";
 import LifeDiaryFormModal from "./LifeDiaryFormModal";
 import "./LifeDiary.scss";
 
@@ -21,6 +22,7 @@ const LifeDiary = () => {
   const [deletingId, setDeletingId] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [expandedId, setExpandedId] = useState(null);
+  const [freeTierUsage, setFreeTierUsage] = useState(null);
 
   const loadEntries = () => {
     setLoading(true);
@@ -30,7 +32,13 @@ const LifeDiary = () => {
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { loadEntries(); }, []);
+  const loadUsage = () => {
+    getLifeDiaryUsage().then(setFreeTierUsage).catch(() => {});
+  };
+
+  useEffect(() => { loadEntries(); loadUsage(); }, []);
+
+  const atFreeTierCap = !!freeTierUsage?.limited && freeTierUsage.used >= freeTierUsage.limit;
 
   const openCreate = () => { setEditingEntry(null); setFormOpen(true); };
   const openEdit = (entry) => { setEditingEntry(entry); setFormOpen(true); };
@@ -39,6 +47,7 @@ const LifeDiary = () => {
   const handleSaved = () => {
     closeForm();
     loadEntries();
+    loadUsage();
   };
 
   const confirmDelete = async () => {
@@ -68,7 +77,14 @@ const LifeDiary = () => {
   return (
     <section className="life-diary section__container">
       <div className="life-diary__header">
-        <h1 className="life-diary__title">{d("title")}</h1>
+        <div className="life-diary__header-titles">
+          <h1 className="life-diary__title">{d("title")}</h1>
+          {freeTierUsage?.limited && (
+            <Link to="/subscription" className="life-diary__free-tier-pill">
+              {d("freeTierUsage", { used: freeTierUsage.used, limit: freeTierUsage.limit })}
+            </Link>
+          )}
+        </div>
         <button type="button" className="btn btn--primary" onClick={openCreate}>
           <IoAddOutline /> {d("addEntry")}
         </button>
@@ -154,7 +170,12 @@ const LifeDiary = () => {
       )}
 
       {formOpen && (
-        <LifeDiaryFormModal entry={editingEntry} onClose={closeForm} onSaved={handleSaved} />
+        <LifeDiaryFormModal
+          entry={editingEntry}
+          onClose={closeForm}
+          onSaved={handleSaved}
+          initialCapReached={!editingEntry && atFreeTierCap}
+        />
       )}
 
       <Modal

@@ -15,6 +15,15 @@ export class SuppliesController {
         return result.data;
     }
 
+    async getFreeTierUsage(req, res, next) {
+        try {
+            const usage = await this.suppliesService.getFreeTierUsage(req.user.id);
+            res.status(200).json(usage);
+        } catch (error) {
+            next(error);
+        }
+    }
+
     // ─── Shopping list ──────────────────────────────────────────────────
     async getShoppingList(req, res, next) {
         try {

@@ -31,6 +31,14 @@ export class ShoppingListRepository {
         return result.rows.length ? ShoppingListItem.fromDb(result.rows[0]) : null;
     }
 
+    async countByUserId(userId) {
+        const result = await client.query(
+            `SELECT COUNT(*)::int AS count FROM shopping_list_items WHERE user_id = $1`,
+            [userId]
+        );
+        return result.rows[0].count;
+    }
+
     async findByNameAndUnit(userId, name, unit) {
         const result = await client.query(
             `SELECT * FROM shopping_list_items WHERE user_id = $1 AND LOWER(name) = LOWER($2) AND unit = $3`,

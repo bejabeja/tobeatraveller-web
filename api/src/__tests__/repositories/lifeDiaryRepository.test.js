@@ -53,6 +53,18 @@ describe('LifeDiaryRepository', () => {
         expect(params).toEqual(['user-1']);
     });
 
+    it('counts how many entries belong to the given user', async () => {
+        client.query.mockResolvedValue({ rows: [{ count: 4 }] });
+
+        const count = await repo.countByUserId('user-1');
+
+        expect(count).toBe(4);
+        const [queryText, params] = client.query.mock.calls[0];
+        expect(queryText).toMatch(/COUNT\(\*\)/);
+        expect(queryText).toMatch(/WHERE user_id = \$1/);
+        expect(params).toEqual(['user-1']);
+    });
+
     it('returns null when finding a non-existent entry', async () => {
         client.query.mockResolvedValue({ rows: [] });
 

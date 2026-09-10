@@ -16,6 +16,7 @@ const makeInventoryItem = (overrides = {}) => ({
 describe('SuppliesService', () => {
     let inventoryRepository;
     let shoppingListRepository;
+    let userRepository;
     let service;
 
     beforeEach(() => {
@@ -25,6 +26,7 @@ describe('SuppliesService', () => {
             update: async (id, data) => makeInventoryItem({ id, ...data }),
             findById: async () => makeInventoryItem(),
             delete: async () => {},
+            countByUserId: async () => 0,
         };
         shoppingListRepository = {
             findById: async () => makeShoppingListItem(),
@@ -32,8 +34,12 @@ describe('SuppliesService', () => {
             delete: async () => {},
             create: async (data) => makeShoppingListItem({ ...data, id: 'sl-new' }),
             update: async (id, data) => makeShoppingListItem({ id, ...data }),
+            countByUserId: async () => 0,
         };
-        service = new SuppliesService(inventoryRepository, shoppingListRepository);
+        userRepository = {
+            getUserById: async () => ({ role: 'user', isPremium: () => false }),
+        };
+        service = new SuppliesService(inventoryRepository, shoppingListRepository, userRepository);
     });
 
     describe('addShoppingListItem()', () => {
@@ -89,6 +95,32 @@ describe('SuppliesService', () => {
             expect(updateArgs.data.notes).toBe('2x para tarta');
             expect(updateArgs.data.amount).toBe(3);
         });
+
+        it('throws a ForbiddenError tagged "shoppingListCap" once a free user already has 10 items', async () => {
+            shoppingListRepository.countByUserId = async () => 10;
+
+            await expect(
+                service.addShoppingListItem({ name: 'Manzanas', category: 'food', amount: 1, unit: 'units' }, 'user-1')
+            ).rejects.toMatchObject({ statusCode: 403, field: 'shoppingListCap' });
+        });
+
+        it('does not block merging into an item the user already owns, even at the cap', async () => {
+            shoppingListRepository.countByUserId = async () => 10;
+            shoppingListRepository.findByNameAndUnit = async () => makeShoppingListItem({ amount: 2 });
+
+            const result = await service.addShoppingListItem({ name: 'Manzanas', category: 'food', amount: 1, unit: 'units' }, 'user-1');
+
+            expect(result.amount).toBe(3);
+        });
+
+        it('lets a premium user past the shopping list free-tier cap', async () => {
+            userRepository.getUserById = async () => ({ role: 'user', isPremium: () => true });
+            shoppingListRepository.countByUserId = async () => 50;
+
+            const result = await service.addShoppingListItem({ name: 'Manzanas', category: 'food', amount: 1, unit: 'units' }, 'user-1');
+
+            expect(result.id).toBe('sl-new');
+        });
     });
 
     describe('addInventoryItem()', () => {
@@ -115,6 +147,48 @@ describe('SuppliesService', () => {
             expect(createArgs.amount).toBe(6);
             expect(shoppingListCreateCalled).toBe(false);
             expect(result.id).toBe('inv-new');
+        });
+
+        it('throws a ForbiddenError tagged "inventoryCap" once a free user already has 10 items', async () => {
+            inventoryRepository.countByUserId = async () => 10;
+
+            await expect(
+                service.addInventoryItem({ name: 'Latas de atún', category: 'food', amount: 1, unit: 'cans' }, 'user-1')
+            ).rejects.toMatchObject({ statusCode: 403, field: 'inventoryCap' });
+        });
+
+        it('does not block merging into an item the user already owns, even at the cap', async () => {
+            inventoryRepository.countByUserId = async () => 10;
+            inventoryRepository.findByNameAndUnit = async () => makeInventoryItem({ amount: 100 });
+
+            const result = await service.addInventoryItem({ name: 'Pasta', category: 'food', amount: 50, unit: 'g' }, 'user-1');
+
+            expect(result.amount).toBe(150);
+        });
+    });
+
+    describe('getFreeTierUsage()', () => {
+        it('reports how many items a free user has used on each list independently', async () => {
+            shoppingListRepository.countByUserId = async () => 3;
+            inventoryRepository.countByUserId = async () => 7;
+
+            const usage = await service.getFreeTierUsage('user-1');
+
+            expect(usage).toEqual({
+                shoppingList: { limited: true, used: 3, limit: 10 },
+                inventory: { limited: true, used: 7, limit: 10 },
+            });
+        });
+
+        it('reports an unlimited free tier on both lists for premium users', async () => {
+            userRepository.getUserById = async () => ({ role: 'user', isPremium: () => true });
+
+            const usage = await service.getFreeTierUsage('user-1');
+
+            expect(usage).toEqual({
+                shoppingList: { limited: false, used: null, limit: 10 },
+                inventory: { limited: false, used: null, limit: 10 },
+            });
         });
     });
 

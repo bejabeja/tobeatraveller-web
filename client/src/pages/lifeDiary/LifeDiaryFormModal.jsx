@@ -3,6 +3,9 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
+import { IoLockClosedOutline } from "react-icons/io5";
+import { Link } from "react-router-dom";
+import { isLifeDiaryCapReachedError } from "@tobeatraveller/shared";
 import { InputForm, TextAreaForm } from "../../components/form/InputForm";
 import AutocompleteObjectInput from "../../components/form/AutocompleteObjectInput";
 import SubmitButton from "../../components/form/SubmitButton";
@@ -42,7 +45,7 @@ const buildDefaultValues = (entry) => {
   };
 };
 
-const LifeDiaryFormModal = ({ entry, onClose, onSaved }) => {
+const LifeDiaryFormModal = ({ entry, onClose, onSaved, initialCapReached = false }) => {
   const { t } = useTranslation();
   const d = (key, vars) => t(`lifeDiary.${key}`, vars);
   const isEditing = !!entry;
@@ -54,6 +57,9 @@ const LifeDiaryFormModal = ({ entry, onClose, onSaved }) => {
 
   const wouldReturn = watch("wouldReturn");
   const [photos, setPhotos] = useState(entry?.images ?? []);
+  // Only meaningful for a new entry: editing an existing one must never be
+  // blocked by the cap, since it doesn't add a net-new entry.
+  const [capReached, setCapReached] = useState(!isEditing && initialCapReached);
 
   const onSubmit = async (data) => {
     const hasLocation = data.location?.name;
@@ -90,6 +96,10 @@ const LifeDiaryFormModal = ({ entry, onClose, onSaved }) => {
       }
       onSaved();
     } catch (error) {
+      if (!isEditing && isLifeDiaryCapReachedError(error)) {
+        setCapReached(true);
+        return;
+      }
       toast.error(error.message || d("saveError"));
     }
   };
@@ -102,6 +112,14 @@ const LifeDiaryFormModal = ({ entry, onClose, onSaved }) => {
           <button type="button" className="life-diary-form__close" onClick={onClose} aria-label={t("common.close")}>✕</button>
         </div>
 
+        {capReached ? (
+          <div className="life-diary-form__cap-reached">
+            <IoLockClosedOutline className="life-diary-form__cap-reached-icon" aria-hidden="true" />
+            <p className="life-diary-form__cap-reached-title">{d("capReachedTitle")}</p>
+            <p className="life-diary-form__cap-reached-desc">{d("capReachedDesc")}</p>
+            <Link to="/subscription" className="btn btn--primary">{t("premium.requiredCta")}</Link>
+          </div>
+        ) : (
         <form onSubmit={handleSubmit(onSubmit)} className="life-diary-form__body">
           <InputForm
             label={d("dateLabel")}
@@ -182,6 +200,7 @@ const LifeDiaryFormModal = ({ entry, onClose, onSaved }) => {
             <SubmitButton loading={isSubmitting} label={isEditing ? t("common.save") : d("addEntry")} />
           </div>
         </form>
+        )}
       </div>
     </div>
   );

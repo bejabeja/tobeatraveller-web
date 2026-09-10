@@ -53,14 +53,16 @@ app.use('/favorites', authenticate, createFavoritesRouter());
 app.use('/likes', authenticate, createLikesRouter());
 app.use('/comments', createCommentsRouter());
 app.use('/notifications', authenticate, createNotificationsRouter());
-// Not premium-gated at the mount point (unlike supplies/packing-checklist/
-// life-diary below): Van Log is the freemium pilot, free to browse and to
-// add entries up to a cap enforced in VanLogService, so the gate lives there
-// instead of blocking the whole route tree.
+// Not premium-gated at the mount point (unlike packing-checklist below):
+// Van Log, Life Diary and Supplies are free to browse and to add
+// entries/items up to a cap enforced in their own service, so the gate lives
+// there instead of blocking the whole route tree. Packing Checklist stays
+// fully gated: it seeds ~65 default items on first use, so a small per-item
+// free cap would break immediately rather than act as a real limit.
 app.use('/van-logs', authenticate, createVanLogsRouter());
-app.use('/supplies', authenticate, premiumOnly, createSuppliesRouter());
+app.use('/supplies', authenticate, createSuppliesRouter());
 app.use('/packing-checklist', authenticate, premiumOnly, createPackingChecklistRouter());
-app.use('/life-diary', authenticate, premiumOnly, createLifeDiaryRouter());
+app.use('/life-diary', authenticate, createLifeDiaryRouter());
 app.use('/subscription', authenticate, createSubscriptionRouter());
 // Auth/role checks live inside the router itself: the scheduled-purge route
 // is triggered by Vercel Cron with a shared secret instead of a user JWT, so

@@ -38,14 +38,14 @@ const LANGUAGES = [
 // Premium (see PREMIUM_FEATURES in @tobeatraveller/shared); showing them here too
 // (not just buried inside Mi cuenta) so a free user keeps seeing exactly
 // what they're missing, badge and all, wherever they look for the nav.
-// Van Log is the freemium pilot (free to browse, capped at 10 entries), so
-// it's excluded from the "PREMIUM" badge below; the other three stay fully
-// gated until they get their own cap.
+// Van Log, Life Diary and Supplies are free to browse (capped at 10 entries/
+// items each), so they're excluded from the "PREMIUM" badge below; Packing
+// Checklist stays fully gated until/unless it gets its own cap.
 const PREMIUM_TOOLS = [
   { to: "/van-log", Icon: IoBookOutline, labelKey: "nav.vanLog", premiumOnly: false },
-  { to: "/supplies", Icon: IoCartOutline, labelKey: "nav.supplies" },
+  { to: "/supplies", Icon: IoCartOutline, labelKey: "nav.supplies", premiumOnly: false },
   { to: "/packing-checklist", Icon: IoBriefcaseOutline, labelKey: "nav.packingChecklist", iconClassName: "nav-icon--briefcase" },
-  { to: "/life-diary", Icon: IoJournalOutline, labelKey: "nav.lifeDiary" },
+  { to: "/life-diary", Icon: IoJournalOutline, labelKey: "nav.lifeDiary", premiumOnly: false },
 ];
 
 // Self-contained (not lifted into Navbar's own state) so it can be mounted

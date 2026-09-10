@@ -2,6 +2,7 @@ import { Router } from "express";
 import { SuppliesController } from "../controllers/suppliesController.js";
 import { InventoryRepository } from "../repositories/inventoryRepository.js";
 import { ShoppingListRepository } from "../repositories/shoppingListRepository.js";
+import { UserRepository } from "../repositories/userRepository.js";
 import { SuppliesService } from "../services/suppliesService.js";
 
 export const createSuppliesRouter = () => {
@@ -9,8 +10,11 @@ export const createSuppliesRouter = () => {
 
     const inventoryRepository = new InventoryRepository();
     const shoppingListRepository = new ShoppingListRepository();
-    const suppliesService = new SuppliesService(inventoryRepository, shoppingListRepository);
+    const userRepository = new UserRepository();
+    const suppliesService = new SuppliesService(inventoryRepository, shoppingListRepository, userRepository);
     const suppliesController = new SuppliesController(suppliesService);
+
+    router.get('/usage', suppliesController.getFreeTierUsage.bind(suppliesController));
 
     router.get('/shopping-list', suppliesController.getShoppingList.bind(suppliesController));
     router.post('/shopping-list', suppliesController.addShoppingListItem.bind(suppliesController));

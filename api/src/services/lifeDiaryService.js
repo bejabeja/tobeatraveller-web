@@ -1,14 +1,23 @@
+import { ForbiddenError } from '../errors/ForbiddenError.js';
+import { STAFF_ROLES } from '../utils/roles.js';
 import { getOwnedEntity } from '../utils/ownedEntity.js';
 
 const CLOUDINARY_FOLDER = 'life-diary';
 
+// Freemium: free to browse and to add entries up to this many, then requires
+// Premium for unlimited entries. Staff and premium users bypass it entirely,
+// same model as VanLogService's FREE_ENTRY_LIMIT.
+const FREE_ENTRY_LIMIT = 10;
+
 export class LifeDiaryService {
-    constructor(lifeDiaryRepository, cloudinaryService) {
+    constructor(lifeDiaryRepository, cloudinaryService, userRepository) {
         this.lifeDiaryRepository = lifeDiaryRepository;
         this.cloudinaryService = cloudinaryService;
+        this.userRepository = userRepository;
     }
 
     async createEntry(data, files, userId) {
+        await this._assertCanCreateEntry(userId);
         const entry = await this.lifeDiaryRepository.create({ ...data, userId });
         await this._addImages(entry, files ?? []);
         return entry.toDTO();
@@ -81,5 +90,25 @@ export class LifeDiaryService {
 
     async _getOwnedEntry(id, userId) {
         return getOwnedEntity(this.lifeDiaryRepository, id, userId, "Life diary entry not found");
+    }
+
+    async getFreeTierUsage(userId) {
+        const user = await this.userRepository.getUserById(userId);
+        if (STAFF_ROLES.includes(user?.role) || user?.isPremium()) {
+            return { limited: false, used: null, limit: FREE_ENTRY_LIMIT };
+        }
+
+        const used = await this.lifeDiaryRepository.countByUserId(userId);
+        return { limited: true, used, limit: FREE_ENTRY_LIMIT };
+    }
+
+    async _assertCanCreateEntry(userId) {
+        const usage = await this.getFreeTierUsage(userId);
+        if (usage.limited && usage.used >= usage.limit) {
+            throw new ForbiddenError(
+                `Free plan limit of ${FREE_ENTRY_LIMIT} life diary entries reached`,
+                'lifeDiaryCap'
+            );
+        }
     }
 }

@@ -38,6 +38,14 @@ export class LifeDiaryRepository {
         return result.rows.map(LifeDiaryEntry.fromDb);
     }
 
+    async countByUserId(userId) {
+        const result = await client.query(
+            `SELECT COUNT(*)::int AS count FROM life_diary_entries WHERE user_id = $1`,
+            [userId]
+        );
+        return result.rows[0].count;
+    }
+
     async findById(id) {
         const result = await client.query(`SELECT * FROM life_diary_entries WHERE id = $1`, [id]);
         return result.rows.length ? LifeDiaryEntry.fromDb(result.rows[0]) : null;

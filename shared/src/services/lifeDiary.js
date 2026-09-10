@@ -49,3 +49,14 @@ export const deleteLifeDiaryEntry = async (id) => {
         await parseError(response, "Failed to delete life diary entry");
     }
 };
+
+export const getLifeDiaryUsage = async () => {
+    const response = await authFetch(`${baseUrl()}/usage`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+    });
+    if (!response.ok) {
+        await parseError(response, "Failed to get life diary usage");
+    }
+    return response.json();
+};

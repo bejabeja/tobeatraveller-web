@@ -15,6 +15,9 @@ const jsonRequest = async (path, options, errorMessage) => {
     return response.status === 204 ? null : response.json();
 };
 
+export const getSuppliesUsage = () =>
+    jsonRequest("/usage", { method: "GET" }, "Failed to get supplies usage");
+
 // ─── Shopping list ──────────────────────────────────────────────────────
 export const getShoppingList = () =>
     jsonRequest("/shopping-list", { method: "GET" }, "Failed to get shopping list");

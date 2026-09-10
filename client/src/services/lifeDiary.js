@@ -1,1 +1,1 @@
-export { getLifeDiaryEntries, createLifeDiaryEntry, updateLifeDiaryEntry, deleteLifeDiaryEntry } from '@tobeatraveller/shared';
+export { getLifeDiaryEntries, createLifeDiaryEntry, updateLifeDiaryEntry, deleteLifeDiaryEntry, getLifeDiaryUsage } from '@tobeatraveller/shared';

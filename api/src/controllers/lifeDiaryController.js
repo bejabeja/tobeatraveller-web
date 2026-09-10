@@ -29,6 +29,15 @@ export class LifeDiaryController {
         }
     }
 
+    async getFreeTierUsage(req, res, next) {
+        try {
+            const usage = await this.lifeDiaryService.getFreeTierUsage(req.user.id);
+            res.status(200).json(usage);
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async updateEntry(req, res, next) {
         const result = lifeDiaryEntrySchema.safeParse(JSON.parse(req.body.entry));
         if (!result.success) {

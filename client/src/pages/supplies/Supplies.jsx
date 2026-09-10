@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { IoAddOutline, IoBagCheckOutline, IoCartOutline, IoCloseOutline, IoPencilOutline, IoRefreshOutline, IoSearchOutline, IoTrashOutline } from "react-icons/io5";
+import { Link } from "react-router-dom";
 import { isPremiumRequiredError, normalizeSearchText, supplyCategories, supplyUnits } from "@tobeatraveller/shared";
 import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState";
 import Modal from "../../components/modal/Modal";
 import {
   addInventoryItem, addShoppingListItem, deleteInventoryItem, deleteShoppingListItem, getInventory, getShoppingList,
-  markInventoryItemUsedUp, markShoppingListItemPurchased, updateInventoryItem, updateShoppingListItem,
+  getSuppliesUsage, markInventoryItemUsedUp, markShoppingListItemPurchased, updateInventoryItem, updateShoppingListItem,
 } from "../../services/supplies";
 import SupplyFormModal from "./SupplyFormModal";
 import "./Supplies.scss";
@@ -28,6 +29,7 @@ const Supplies = () => {
   const [quantityPrompt, setQuantityPrompt] = useState(null); // { type: 'purchase' | 'consume', item }
   const [quantityValue, setQuantityValue] = useState("");
   const [confirmingQuantity, setConfirmingQuantity] = useState(false);
+  const [freeTierUsage, setFreeTierUsage] = useState(null);
 
   const loadData = () => {
     setLoading(true);
@@ -41,7 +43,15 @@ const Supplies = () => {
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { loadData(); }, []);
+  const loadUsage = () => {
+    getSuppliesUsage().then(setFreeTierUsage).catch(() => {});
+  };
+
+  useEffect(() => { loadData(); loadUsage(); }, []);
+
+  // The active tab's own usage, since each list has its own independent cap.
+  const currentListUsage = tab === "shopping" ? freeTierUsage?.shoppingList : freeTierUsage?.inventory;
+  const atCurrentListCap = !!currentListUsage?.limited && currentListUsage.used >= currentListUsage.limit;
 
   const categoryLabel = (value) => {
     const fallback = supplyCategories.find(c => c.value === value)?.label ?? value;
@@ -66,6 +76,7 @@ const Supplies = () => {
     }
     closeForm();
     loadData();
+    loadUsage();
   };
 
   const openQuantityPrompt = (type, item) => {
@@ -91,6 +102,7 @@ const Supplies = () => {
       }
       setQuantityPrompt(null);
       loadData();
+      loadUsage();
     } catch (err) {
       toast.error(err.message || s("saveError"));
     } finally {
@@ -111,6 +123,7 @@ const Supplies = () => {
       toast.success(s("deleted"));
       setDeleteTarget(null);
       loadData();
+      loadUsage();
     } catch (err) {
       toast.error(err.message || s("deleteError"));
     } finally {
@@ -141,7 +154,14 @@ const Supplies = () => {
   return (
     <section className="supplies section__container">
       <div className="supplies__header">
-        <h1 className="supplies__title">{s("title")}</h1>
+        <div className="supplies__header-titles">
+          <h1 className="supplies__title">{s("title")}</h1>
+          {currentListUsage?.limited && (
+            <Link to="/subscription" className="supplies__free-tier-pill">
+              {s("freeTierUsage", { used: currentListUsage.used, limit: currentListUsage.limit })}
+            </Link>
+          )}
+        </div>
         <button type="button" className="btn btn--primary" onClick={() => setFormTarget({ mode: tab === "shopping" ? "add-shopping" : "add-inventory" })}>
           <IoAddOutline /> {s("addItem")}
         </button>
@@ -246,6 +266,8 @@ const Supplies = () => {
           title={formTarget.mode.startsWith("add") ? s("addItem") : s("editItem")}
           saveLabel={formTarget.mode.startsWith("add") ? s("addItem") : t("common.save")}
           existingItems={knownItems}
+          listType={formTarget.mode.includes("shopping") ? "shopping" : "inventory"}
+          initialCapReached={formTarget.mode.startsWith("add") && atCurrentListCap}
           onClose={closeForm}
           onSave={handleSave}
         />

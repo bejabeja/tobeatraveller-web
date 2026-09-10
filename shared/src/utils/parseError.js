@@ -21,3 +21,9 @@ export const parseError = async (response, defaultMsg = "Something went wrong") 
 export const isPremiumRequiredError = (error) => error?.status === 403 && !error?.field;
 
 export const isVanLogCapReachedError = (error) => error?.status === 403 && error?.field === 'vanLogCap';
+
+export const isLifeDiaryCapReachedError = (error) => error?.status === 403 && error?.field === 'lifeDiaryCap';
+
+export const isShoppingListCapReachedError = (error) => error?.status === 403 && error?.field === 'shoppingListCap';
+
+export const isInventoryCapReachedError = (error) => error?.status === 403 && error?.field === 'inventoryCap';

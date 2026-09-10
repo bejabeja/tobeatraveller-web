@@ -80,4 +80,29 @@
 
     .btn { width: fit-content; }
   }
+
+  &__cap-reached {
+    width: auto;
+    padding: 2rem 1.5rem;
+    text-align: center;
+
+    .btn { width: fit-content; margin: 0 auto; }
+  }
+
+  &__cap-reached-icon {
+    width: auto;
+    font-size: 2rem;
+    color: var(--text-secondary-color, #666);
+    margin-bottom: 0.75rem;
+  }
+
+  &__cap-reached-title {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  &__cap-reached-desc {
+    color: var(--text-secondary-color, #666);
+    margin-bottom: 1.5rem;
+  }
 }

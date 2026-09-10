@@ -3,7 +3,9 @@ import { useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
-import { supplyCategories, supplyUnits } from "@tobeatraveller/shared";
+import { IoLockClosedOutline } from "react-icons/io5";
+import { Link } from "react-router-dom";
+import { isInventoryCapReachedError, isShoppingListCapReachedError, supplyCategories, supplyUnits } from "@tobeatraveller/shared";
 import { DropdownForm, InputForm, TextAreaForm } from "../../components/form/InputForm";
 import SubmitButton from "../../components/form/SubmitButton";
 import { supplyItemSchema } from "../../utils/schemasValidation";
@@ -22,12 +24,16 @@ const buildDefaultValues = (item) => ({
 // user already has prevents "Manzana" vs "Manzanas" from silently becoming duplicates.
 const MAX_SUGGESTIONS = 5;
 
-const SupplyFormModal = ({ item, title, saveLabel, existingItems = [], onClose, onSave }) => {
+const SupplyFormModal = ({ item, title, saveLabel, existingItems = [], listType, initialCapReached = false, onClose, onSave }) => {
   const { t } = useTranslation();
   const s = (key, vars) => t(`supplies.${key}`, vars);
+  const isEditing = !!item;
 
   const [suggestions, setSuggestions] = useState([]);
   const suggestionsRef = useRef(null);
+  // Only meaningful when adding a new item: editing one that already exists
+  // must never be blocked by the cap, since it doesn't add a net-new item.
+  const [capReached, setCapReached] = useState(!isEditing && initialCapReached);
 
   const { control, handleSubmit, watch, setValue, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(supplyItemSchema),
@@ -72,6 +78,11 @@ const SupplyFormModal = ({ item, title, saveLabel, existingItems = [], onClose, 
         notes: data.notes || null,
       });
     } catch (error) {
+      const isCapReached = listType === "shopping" ? isShoppingListCapReachedError(error) : isInventoryCapReachedError(error);
+      if (!isEditing && isCapReached) {
+        setCapReached(true);
+        return;
+      }
       toast.error(error.message || s("saveError"));
     }
   };
@@ -84,6 +95,16 @@ const SupplyFormModal = ({ item, title, saveLabel, existingItems = [], onClose, 
           <button type="button" className="supply-form__close" onClick={onClose} aria-label={t("common.close")}>✕</button>
         </div>
 
+        {capReached ? (
+          <div className="supply-form__cap-reached">
+            <IoLockClosedOutline className="supply-form__cap-reached-icon" aria-hidden="true" />
+            <p className="supply-form__cap-reached-title">{s("capReachedTitle")}</p>
+            <p className="supply-form__cap-reached-desc">
+              {s("capReachedDesc", { list: s(listType === "shopping" ? "shoppingListTab" : "inventoryTab") })}
+            </p>
+            <Link to="/subscription" className="btn btn--primary">{t("premium.requiredCta")}</Link>
+          </div>
+        ) : (
         <form onSubmit={handleSubmit(onSubmit)} className="supply-form__body">
           <div className="autocomplete-input" ref={suggestionsRef}>
             <label htmlFor="name" className="input__label">
@@ -166,6 +187,7 @@ const SupplyFormModal = ({ item, title, saveLabel, existingItems = [], onClose, 
             <SubmitButton loading={isSubmitting} label={saveLabel} />
           </div>
         </form>
+        )}
       </div>
     </div>
   );

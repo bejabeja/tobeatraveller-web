@@ -1,3 +1,5 @@
+import { ForbiddenError } from '../errors/ForbiddenError.js';
+import { STAFF_ROLES } from '../utils/roles.js';
 import { getOwnedEntity } from '../utils/ownedEntity.js';
 
 // Wraps a freshly-typed note with the quantity it came with (e.g. "2x for the pie"),
@@ -13,10 +15,18 @@ const appendNotes = (existingNotes, incomingNotes) => {
     return existingNotes ? `${existingNotes}, ${incomingNotes}` : incomingNotes;
 };
 
+// Freemium: shopping list and inventory are each free to browse and to add
+// items to, up to this many, then require Premium for unlimited items. Each
+// list has its own independent cap (they're modeled as two separate stores);
+// merging an amount into an item the user already owns doesn't add a row, so
+// it never counts against the cap, only creating a net-new item does.
+const FREE_ITEM_LIMIT = 10;
+
 export class SuppliesService {
-    constructor(inventoryRepository, shoppingListRepository) {
+    constructor(inventoryRepository, shoppingListRepository, userRepository) {
         this.inventoryRepository = inventoryRepository;
         this.shoppingListRepository = shoppingListRepository;
+        this.userRepository = userRepository;
     }
 
     // ─── Shopping list ──────────────────────────────────────────────────
@@ -29,6 +39,7 @@ export class SuppliesService {
     // instead of creating a duplicate row, mirroring how a purchase merges into inventory.
     async addShoppingListItem(data, userId) {
         const existing = await this.shoppingListRepository.findByNameAndUnit(userId, data.name, data.unit);
+        if (!existing) await this._assertCanAddShoppingListItem(userId);
         const incomingNotes = formatNoteSegment(data.amount, data.notes);
 
         const item = existing
@@ -100,6 +111,7 @@ export class SuppliesService {
     // into an existing item with the same name + unit, same as everywhere else.
     async addInventoryItem(data, userId) {
         const existing = await this.inventoryRepository.findByNameAndUnit(userId, data.name, data.unit);
+        if (!existing) await this._assertCanAddInventoryItem(userId);
         const incomingNotes = formatNoteSegment(data.amount, data.notes);
 
         const item = existing
@@ -164,5 +176,48 @@ export class SuppliesService {
 
     async _getOwnedInventoryItem(id, userId) {
         return getOwnedEntity(this.inventoryRepository, id, userId, "Inventory item not found");
+    }
+
+    // ─── Freemium ───────────────────────────────────────────────────────
+    async getFreeTierUsage(userId) {
+        const [shoppingList, inventory] = await Promise.all([
+            this.getShoppingListFreeTierUsage(userId),
+            this.getInventoryFreeTierUsage(userId),
+        ]);
+        return { shoppingList, inventory };
+    }
+
+    async getShoppingListFreeTierUsage(userId) {
+        const user = await this.userRepository.getUserById(userId);
+        if (STAFF_ROLES.includes(user?.role) || user?.isPremium()) {
+            return { limited: false, used: null, limit: FREE_ITEM_LIMIT };
+        }
+
+        const used = await this.shoppingListRepository.countByUserId(userId);
+        return { limited: true, used, limit: FREE_ITEM_LIMIT };
+    }
+
+    async getInventoryFreeTierUsage(userId) {
+        const user = await this.userRepository.getUserById(userId);
+        if (STAFF_ROLES.includes(user?.role) || user?.isPremium()) {
+            return { limited: false, used: null, limit: FREE_ITEM_LIMIT };
+        }
+
+        const used = await this.inventoryRepository.countByUserId(userId);
+        return { limited: true, used, limit: FREE_ITEM_LIMIT };
+    }
+
+    async _assertCanAddShoppingListItem(userId) {
+        const usage = await this.getShoppingListFreeTierUsage(userId);
+        if (usage.limited && usage.used >= usage.limit) {
+            throw new ForbiddenError(`Free plan limit of ${FREE_ITEM_LIMIT} shopping list items reached`, 'shoppingListCap');
+        }
+    }
+
+    async _assertCanAddInventoryItem(userId) {
+        const usage = await this.getInventoryFreeTierUsage(userId);
+        if (usage.limited && usage.used >= usage.limit) {
+            throw new ForbiddenError(`Free plan limit of ${FREE_ITEM_LIMIT} inventory items reached`, 'inventoryCap');
+        }
     }
 }

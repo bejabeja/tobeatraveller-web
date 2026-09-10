@@ -34,4 +34,16 @@ describe('ShoppingListRepository', () => {
 
         expect(result).toBeNull();
     });
+
+    it('counts how many items belong to the given user', async () => {
+        client.query.mockResolvedValue({ rows: [{ count: 5 }] });
+
+        const count = await repo.countByUserId('user-1');
+
+        expect(count).toBe(5);
+        const [queryText, params] = client.query.mock.calls[0];
+        expect(queryText).toMatch(/COUNT\(\*\)/);
+        expect(queryText).toMatch(/WHERE user_id = \$1/);
+        expect(params).toEqual(['user-1']);
+    });
 });

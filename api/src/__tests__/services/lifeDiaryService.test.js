@@ -13,6 +13,7 @@ const makeEntry = (overrides = {}) => ({
 describe('LifeDiaryService', () => {
     let repository;
     let cloudinaryService;
+    let userRepository;
     let service;
 
     beforeEach(() => {
@@ -22,6 +23,7 @@ describe('LifeDiaryService', () => {
             findById: async () => makeEntry(),
             update: async () => makeEntry(),
             delete: async () => {},
+            countByUserId: async () => 0,
             linkImage: async (entryId, photoUrl, photoPublicId, orderIndex) => ({ id: `img-${orderIndex}`, entryId, photoUrl, photoPublicId, orderIndex }),
             unlinkImage: async () => {},
             getImagesByEntryIds: async () => [],
@@ -30,11 +32,41 @@ describe('LifeDiaryService', () => {
             uploadImageFromBuffer: async () => ({ secure_url: 'https://cdn.example.com/photo.jpg', public_id: 'pub-1' }),
             deleteImage: async () => {},
         };
-        service = new LifeDiaryService(repository, cloudinaryService);
+        userRepository = {
+            getUserById: async () => ({ role: 'user', isPremium: () => false }),
+        };
+        service = new LifeDiaryService(repository, cloudinaryService, userRepository);
     });
 
     describe('createEntry()', () => {
         it('creates the entry for the given user', async () => {
+            const result = await service.createEntry({ entryDate: '2026-03-01' }, [], 'user-1');
+
+            expect(result.userId).toBe('user-1');
+        });
+
+        it('throws a ForbiddenError tagged "lifeDiaryCap" once a free user already has 10 entries', async () => {
+            repository.countByUserId = async () => 10;
+
+            await expect(service.createEntry({ entryDate: '2026-03-01' }, [], 'user-1')).rejects.toMatchObject({
+                statusCode: 403,
+                field: 'lifeDiaryCap',
+            });
+        });
+
+        it('lets a premium user past the free-tier cap', async () => {
+            userRepository.getUserById = async () => ({ role: 'user', isPremium: () => true });
+            repository.countByUserId = async () => 50;
+
+            const result = await service.createEntry({ entryDate: '2026-03-01' }, [], 'user-1');
+
+            expect(result.userId).toBe('user-1');
+        });
+
+        it('lets staff past the free-tier cap', async () => {
+            userRepository.getUserById = async () => ({ role: 'admin', isPremium: () => false });
+            repository.countByUserId = async () => 50;
+
             const result = await service.createEntry({ entryDate: '2026-03-01' }, [], 'user-1');
 
             expect(result.userId).toBe('user-1');
@@ -52,6 +84,24 @@ describe('LifeDiaryService', () => {
 
             expect(linked).toHaveLength(2);
             expect(result.images).toHaveLength(2);
+        });
+    });
+
+    describe('getFreeTierUsage()', () => {
+        it('reports how many entries a free user has used', async () => {
+            repository.countByUserId = async () => 4;
+
+            const usage = await service.getFreeTierUsage('user-1');
+
+            expect(usage).toEqual({ limited: true, used: 4, limit: 10 });
+        });
+
+        it('reports an unlimited free tier for premium users, with no used count', async () => {
+            userRepository.getUserById = async () => ({ role: 'user', isPremium: () => true });
+
+            const usage = await service.getFreeTierUsage('user-1');
+
+            expect(usage).toEqual({ limited: false, used: null, limit: 10 });
         });
     });
 

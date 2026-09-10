@@ -15,10 +15,33 @@
     }
   }
 
+  &__header-titles {
+    width: auto;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+
   &__title {
     font-size: 1.5rem;
     font-weight: 800;
     color: var(--text-color);
+  }
+
+  // A compact reminder next to the title, reflecting the currently active
+  // tab's own usage (each list has its own independent free-tier cap).
+  &__free-tier-pill {
+    width: fit-content;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    background: var(--primary-light, rgba(232, 116, 59, 0.1));
+    padding: 0.3rem 0.65rem;
+    border-radius: 999px;
+    text-decoration: none;
+
+    &:hover { text-decoration: underline; }
   }
 
   &__tabs {
