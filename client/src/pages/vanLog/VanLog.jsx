@@ -147,7 +147,7 @@ const VanLog = () => {
   if (error) {
     return (
       <section className="section__container">
-        <FeatureLoadState status={error} onRetry={loadEntries} />
+        <FeatureLoadState status={error} feature="vanLog" onRetry={loadEntries} />
       </section>
     );
   }

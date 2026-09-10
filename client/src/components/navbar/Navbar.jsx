@@ -35,7 +35,7 @@ const LANGUAGES = [
 ];
 
 // The four tools the subscription page itself sells as the reason to go
-// Premium (see PREMIUM_FEATURES in Subscription.jsx); showing them here too
+// Premium (see PREMIUM_FEATURES in @tobeatraveller/shared); showing them here too
 // (not just buried inside Mi cuenta) so a free user keeps seeing exactly
 // what they're missing, badge and all, wherever they look for the nav.
 const PREMIUM_TOOLS = [

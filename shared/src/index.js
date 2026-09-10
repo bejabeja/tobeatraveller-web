@@ -52,4 +52,5 @@ export * from './utils/schemasValidation.js';
 export * from './utils/constants/colors.js';
 export * from './utils/constants/constants.js';
 export * from './utils/constants/currencies.js';
+export * from './utils/constants/premiumFeatures.js';
 export * from './utils/roles.js';

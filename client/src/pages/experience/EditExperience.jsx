@@ -259,7 +259,7 @@ const EditExperience = () => {
       setPhase("review");
     } catch (error) {
       if (isPremiumRequiredError(error)) {
-        toast.error(t("premium.requiredDesc"));
+        toast.error(`${t("premium.requiredTitle")}: ${t("subscription.featureAiItinerariesDesc")}`);
       } else {
         toast.error(error.message === GENERATE_TIMEOUT_MESSAGE ? ce("generateTimeout") : (error.message || ce("generateError")));
       }

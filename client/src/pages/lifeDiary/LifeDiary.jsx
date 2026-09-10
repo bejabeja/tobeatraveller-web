@@ -60,7 +60,7 @@ const LifeDiary = () => {
   if (error) {
     return (
       <section className="section__container">
-        <FeatureLoadState status={error} onRetry={loadEntries} />
+        <FeatureLoadState status={error} feature="lifeDiary" onRetry={loadEntries} />
       </section>
     );
   }

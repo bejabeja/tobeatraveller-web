@@ -7,20 +7,9 @@ import { useTranslation } from "react-i18next";
 import { selectAuthUser, selectIsAuthenticated } from "../../store/auth/authSelectors";
 import { selectMe } from "../../store/user/userInfoSelectors";
 import { setUserInfo } from "../../store/user/userInfoActions";
+import { PREMIUM_FEATURES } from "@tobeatraveller/shared";
 import { createCheckoutSession, createPortalSession, getMySubscription, resumeSubscription } from "../../services/subscription";
 import "./Subscription.scss";
-
-// The emoji itself is the icon (in the colored badge), so titles here are
-// plain text, separate from the nav.* labels used in the sidebar/account
-// page (a nav item shouldn't be this playful, but a pricing page can be).
-const PREMIUM_FEATURES = [
-  { key: "subscription.featureVanLogTitle", descriptionKey: "subscription.featureVanLogDesc", emoji: "🚐", color: "#E8743B" },
-  { key: "subscription.featureSuppliesTitle", descriptionKey: "subscription.featureSuppliesDesc", emoji: "🛒", color: "#2E86AB" },
-  { key: "subscription.featurePackingChecklistTitle", descriptionKey: "subscription.featurePackingChecklistDesc", emoji: "🎒", color: "#6B4C9A" },
-  { key: "subscription.featureLifeDiaryTitle", descriptionKey: "subscription.featureLifeDiaryDesc", emoji: "📖", color: "#C2447B" },
-  { key: "subscription.featureAiItineraries", descriptionKey: "subscription.featureAiItinerariesDesc", emoji: "✨", color: "#1A535C" },
-  { key: "subscription.featureNoAdsTitle", descriptionKey: "subscription.featureNoAdsDesc", emoji: "🚫", color: "#546E7A" },
-];
 
 const PLANS = [
   {
@@ -232,13 +221,13 @@ const Subscription = () => {
         <>
           <p className="subscription__features-title">{t("subscription.featuresTitle")}</p>
           <ul className="subscription__features">
-            {PREMIUM_FEATURES.map(({ key, descriptionKey, emoji, color }) => (
-              <li key={key} className="subscription__feature">
+            {PREMIUM_FEATURES.map(({ id, titleKey, descriptionKey, emoji, color }) => (
+              <li key={id} className="subscription__feature">
                 <span className="subscription__feature-icon-badge" style={{ background: `${color}1A` }} aria-hidden="true">
                   {emoji}
                 </span>
                 <span className="subscription__feature-text">
-                  <strong>{t(key)}</strong>
+                  <strong>{t(titleKey)}</strong>
                   <span>{t(descriptionKey)}</span>
                 </span>
               </li>

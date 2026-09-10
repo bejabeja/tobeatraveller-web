@@ -180,7 +180,7 @@ const PackingChecklist = () => {
   if (error) {
     return (
       <section className="section__container">
-        <FeatureLoadState status={error} onRetry={loadData} />
+        <FeatureLoadState status={error} feature="packingChecklist" onRetry={loadData} />
       </section>
     );
   }

@@ -121,7 +121,7 @@ const Supplies = () => {
   if (error) {
     return (
       <section className="section__container">
-        <FeatureLoadState status={error} onRetry={loadData} />
+        <FeatureLoadState status={error} feature="supplies" onRetry={loadData} />
       </section>
     );
   }
