@@ -27,6 +27,7 @@ const Login = () => {
   const imageAuthLoaded = useSelector(selectimageAuthLoaded);
   const errorInAuth = useSelector(selectAuthError);
   const location = useLocation();
+  const redirectTo = location.state?.redirectTo;
 
   useEffect(() => {
     if (imageAuthLoaded) return;
@@ -53,7 +54,7 @@ const Login = () => {
   }, [errorInAuth, setError, t]);
 
   const checkUser = (data) =>
-    dispatch(loginUser(data, () => navigate("/")));
+    dispatch(loginUser(data, () => navigate(redirectTo || "/")));
 
   const loginAsGuest = () =>
     dispatch(loginUser({ email: GUEST_EMAIL, password: GUEST_PASSWORD }, () => navigate("/")));

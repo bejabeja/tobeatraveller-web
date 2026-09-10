@@ -143,6 +143,14 @@ describe('SubscriptionService', () => {
                 expect.objectContaining({ subscription_data: undefined })
             );
         });
+
+        it('does not force card collection upfront, so the free trial has no payment method friction', async () => {
+            await service.createCheckoutSession('user-1', 'monthly');
+
+            expect(stripeClient.checkout.sessions.create).toHaveBeenCalledWith(
+                expect.objectContaining({ payment_method_collection: 'if_required' })
+            );
+        });
     });
 
     describe('getMySubscription()', () => {

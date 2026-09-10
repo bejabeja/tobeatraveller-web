@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { IoAlertCircleOutline, IoCheckmarkCircle, IoHourglassOutline, IoSparkles } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { selectAuthUser, selectIsAuthenticated } from "../../store/auth/authSelectors";
 import { selectMe } from "../../store/user/userInfoSelectors";
@@ -48,6 +48,7 @@ const Subscription = () => {
   // method or they'll eventually lose Premium when retries run out.
   const isPaymentFailed = subscription?.status === "past_due";
   const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
 
   // The `isPremium` flag alone can't tell a normal active subscription apart
   // from a trial or one that's been canceled but hasn't run out yet, so the
@@ -92,6 +93,15 @@ const Subscription = () => {
     return () => timeouts.forEach(clearTimeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
+
+  // Reaching this page with the plans hash already in the URL (e.g. coming
+  // back from register/onboarding after clicking "Try Premium free" while
+  // logged out) is a full navigation, not the same-page anchor click, so the
+  // browser never auto-scrolls here the way it does for the logged-in CTA.
+  useEffect(() => {
+    if (location.hash !== "#subscription-plans" || isPremium) return;
+    document.getElementById("subscription-plans")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [location.hash, isPremium]);
 
   const handleSubscribeClick = async (planId) => {
     setLoadingPlanId(planId);
@@ -138,15 +148,22 @@ const Subscription = () => {
         <p className="subscription__subtitle">{t("subscription.subtitle")}</p>
 
         {!isPremium && (
-          isAuthenticated ? (
-            <a href="#subscription-plans" className="btn btn--primary subscription__trial-cta">
-              {t("subscription.ctaFreeTrial")}
-            </a>
-          ) : (
-            <Link to="/register" className="btn btn--primary subscription__trial-cta">
-              {t("subscription.ctaFreeTrial")}
-            </Link>
-          )
+          <>
+            {isAuthenticated ? (
+              <a href="#subscription-plans" className="btn btn--primary subscription__trial-cta">
+                {t("subscription.ctaFreeTrial")}
+              </a>
+            ) : (
+              <Link
+                to="/register"
+                state={{ redirectTo: "/subscription#subscription-plans" }}
+                className="btn btn--primary subscription__trial-cta"
+              >
+                {t("subscription.ctaFreeTrial")}
+              </Link>
+            )}
+            <p className="subscription__trial-note">{t("subscription.trialNoCard")}</p>
+          </>
         )}
       </header>
 

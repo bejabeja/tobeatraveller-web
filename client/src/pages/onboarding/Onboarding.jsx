@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { followUser, getSuggestedUsers, selectAuthUser, setUserInfo, unfollowUser } from "@tobeatraveller/shared";
 import { generateAvatar } from "../../utils/constants/constants";
@@ -12,6 +12,8 @@ const Onboarding = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
+  const redirectTo = location.state?.redirectTo;
   const authUser = useSelector(selectAuthUser);
   const [users, setUsers] = useState([]);
   const [following, setFollowing] = useState(new Set());
@@ -48,7 +50,7 @@ const Onboarding = () => {
 
   const handleFinish = () => {
     if (authUser?.id) dispatch(setUserInfo(authUser.id));
-    navigate("/");
+    navigate(redirectTo || "/");
   };
 
   const progressLabel = noSuggestions

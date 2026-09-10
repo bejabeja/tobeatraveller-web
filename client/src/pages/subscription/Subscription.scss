@@ -39,6 +39,12 @@
     padding: 0.85rem 1.75rem;
   }
 
+  &__trial-note {
+    margin: 10px auto 0;
+    color: var(--text-secondary-color);
+    font-size: 13px;
+  }
+
   // Width/padding come from .section__container (index.scss), matching
   // Explore/Home/Community so the page's edges line up with the nav above it
   // instead of using a narrower width of its own.

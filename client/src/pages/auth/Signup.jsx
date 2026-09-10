@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { InputForm } from "../../components/form/InputForm";
 import { PasswordInputForm } from "../../components/form/PasswordInputForm";
 import SubmitButton from "../../components/form/SubmitButton";
@@ -22,6 +22,8 @@ const Signup = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
+  const redirectTo = location.state?.redirectTo;
   const imageAuthLoaded = useSelector(selectimageAuthLoaded);
   const errorInAuth = useSelector(selectAuthError);
   const [usernameStatus, setUsernameStatus] = useState(null); // null | "checking" | "available" | "taken"
@@ -102,7 +104,7 @@ const Signup = () => {
         (cErrors.ageConfirmed ? ageCheckboxRef : termsCheckboxRef).current?.focus();
         return;
       }
-      return dispatch(createUser({ ...data, termsAccepted, ageConfirmed }, () => navigate("/welcome")));
+      return dispatch(createUser({ ...data, termsAccepted, ageConfirmed }, () => navigate("/welcome", { state: redirectTo ? { redirectTo } : undefined })));
     })();
   };
 
@@ -200,7 +202,7 @@ const Signup = () => {
 
           <div className="auth__form-link">
             <SubmitButton label={t("auth.createAccount")} loading={isSubmitting} disabled={usernameStatus === "taken" || usernameStatus === "checking"} />
-            <Link to="/login">{t("auth.alreadyHaveAccount")} <strong>{t("auth.signInLink")}</strong></Link>
+            <Link to="/login" state={redirectTo ? { redirectTo } : undefined}>{t("auth.alreadyHaveAccount")} <strong>{t("auth.signInLink")}</strong></Link>
             <Link to="/explore" className="auth__form-browse">
               {t("auth.exploreWithout")}
             </Link>

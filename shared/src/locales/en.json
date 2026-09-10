@@ -269,6 +269,7 @@
     "ctaSubscribe": "Subscribe",
     "ctaCreateAccount": "Create a free account",
     "ctaFreeTrial": "Try Premium free for 7 days",
+    "trialNoCard": "No credit card required",
     "ctaLoading": "One moment…",
     "checkoutSuccessToast": "Welcome to Premium! It may take a few seconds to activate.",
     "checkoutCancelToast": "Checkout canceled, you haven't been charged.",

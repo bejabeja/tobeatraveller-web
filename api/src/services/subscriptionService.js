@@ -61,6 +61,14 @@ export class SubscriptionService {
             mode: 'subscription',
             line_items: [{ price: PRICE_IDS_BY_PLAN[plan], quantity: 1 }],
             subscription_data: isFirstSubscription ? { trial_period_days: FREE_TRIAL_DAYS } : undefined,
+            // Only skips card collection when nothing is due today, which is
+            // exactly the free trial case (amount due $0); a resubscribe with
+            // no trial still owes the full price immediately, so Stripe still
+            // asks for a card then. If the trial ends with no card on file,
+            // the renewal invoice fails and the subscription status moves out
+            // of ACTIVE_SUBSCRIPTION_STATUSES, so premiumUntil still expires
+            // on schedule and requirePremium reverts the user to free.
+            payment_method_collection: 'if_required',
             success_url: `${config.appUrl}/subscription?checkout=success`,
             cancel_url: `${config.appUrl}/subscription?checkout=cancel`,
         });
