@@ -165,6 +165,17 @@ describe('User model', () => {
             const dto = user.toDTO();
             expect(dto.createdAt).toBe(baseRow.created_at);
         });
+
+        it('defaults isTrialEligible to false when the service never set it', () => {
+            const user = User.fromDb(baseRow);
+            expect(user.toDTO().isTrialEligible).toBe(false);
+        });
+
+        it('exposes isTrialEligible as set by the service', () => {
+            const user = User.fromDb(baseRow);
+            user.isTrialEligible = true;
+            expect(user.toDTO().isTrialEligible).toBe(true);
+        });
     });
 
     describe('toPublicDTO()', () => {
@@ -175,6 +186,14 @@ describe('User model', () => {
             expect(dto).not.toHaveProperty('email');
             expect(dto).not.toHaveProperty('premiumUntil');
             expect(dto).toHaveProperty('isPremium', true);
+        });
+
+        it('does NOT expose isTrialEligible, since a viewer should not see someone else\'s trial status', () => {
+            const user = User.fromDb(baseRow);
+            user.isTrialEligible = true;
+            const dto = user.toPublicDTO();
+
+            expect(dto).not.toHaveProperty('isTrialEligible');
         });
     });
 

@@ -29,4 +29,12 @@
     color: var(--text-secondary-color, #666);
     margin-bottom: 1.5rem;
   }
+
+  &__trial {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--primary-color, #E8743B);
+    margin-top: -1rem;
+    margin-bottom: 1.5rem;
+  }
 }

@@ -6,6 +6,7 @@ import { RiSparklingLine } from "react-icons/ri";
 import toast from "react-hot-toast";
 import { aiPaceOptions, DEFAULT_AI_PACE, isPremiumRequiredError } from "@tobeatraveller/shared";
 import { getCategoryIcon } from "../../../assets/icons";
+import AiGenerationUpsell from "../../../components/aiGenerationUpsell/AiGenerationUpsell";
 import AutocompletePlaceInput from "../../../components/form/AutocompletePlaceInput";
 import Modal from "../../../components/modal/Modal";
 import { TextAreaForm } from "../../../components/form/InputForm";
@@ -27,6 +28,7 @@ const PlacesForm = ({
   const [confirmRemoveDay, setConfirmRemoveDay] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [showRegenConfirm, setShowRegenConfirm] = useState(false);
+  const [aiPremiumRequired, setAiPremiumRequired] = useState(false);
   const [uncontrolledPace, setUncontrolledPace] = useState(DEFAULT_AI_PACE);
   const pace = controlledPace ?? uncontrolledPace;
   const setPace = setControlledPace ?? setUncontrolledPace;
@@ -91,6 +93,7 @@ const PlacesForm = ({
 
   const runGenerateWithAI = async () => {
     setShowRegenConfirm(false);
+    setAiPremiumRequired(false);
     const totalDays = tripDays || days.length || 1;
     setIsGenerating(true);
     try {
@@ -117,7 +120,7 @@ const PlacesForm = ({
       toast.success(f("generated"));
     } catch (error) {
       if (isPremiumRequiredError(error)) {
-        toast.error(`${t("premium.requiredTitle")}: ${t("subscription.featureAiItinerariesDesc")}`);
+        setAiPremiumRequired(true);
       } else {
         toast.error(error.message === GENERATE_TIMEOUT_MESSAGE ? f("generateTimeout") : (error.message || f("errorGenerate")));
       }
@@ -164,6 +167,10 @@ const PlacesForm = ({
           </button>
         </div>
       </div>
+
+      {aiPremiumRequired && (
+        <AiGenerationUpsell onDismiss={() => setAiPremiumRequired(false)} />
+      )}
 
       {tripDays > days.length && (
         <div className="form__days-sync-hint">

@@ -20,7 +20,8 @@ export class UserService {
     constructor(
         userRepository, itinerariesRepository, followRepository, emailService = null,
         lifeDiaryRepository = null, auditLogService = null, vanLogRepository = null,
-        inventoryRepository = null, shoppingListRepository = null, packingChecklistRepository = null
+        inventoryRepository = null, shoppingListRepository = null, packingChecklistRepository = null,
+        subscriptionRepository = null
     ) {
         this.userRepository = userRepository;
         this.itinerariesRepository = itinerariesRepository;
@@ -32,6 +33,7 @@ export class UserService {
         this.inventoryRepository = inventoryRepository;
         this.shoppingListRepository = shoppingListRepository;
         this.packingChecklistRepository = packingChecklistRepository;
+        this.subscriptionRepository = subscriptionRepository;
     }
 
     async create(userData, { ip, userAgent } = {}) {
@@ -183,7 +185,20 @@ export class UserService {
         user.followingListIds = followingListIds;
         user.activeTrip = activeTrip ? activeTrip.toSimpleDTO() : null;
 
-        return requestingUserId === id ? user.toDTO() : user.toPublicDTO();
+        if (requestingUserId !== id) {
+            return user.toPublicDTO();
+        }
+
+        // Only meaningful for the self view (toPublicDTO() strips it anyway),
+        // so skip the extra query when viewing someone else's profile. Same
+        // "first ever subscription" check createCheckoutSession relies on;
+        // defaults to false (no trial offered) if subscriptionRepository
+        // isn't wired, rather than risk advertising an unverifiable trial.
+        user.isTrialEligible = this.subscriptionRepository
+            ? !(await this.subscriptionRepository.hasAnySubscription(id))
+            : false;
+
+        return user.toDTO();
     }
 
     async updateUser(id, userData) {

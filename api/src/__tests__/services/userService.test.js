@@ -25,12 +25,17 @@ describe('UserService.getUserById()', () => {
     let userRepository;
     let itinerariesRepository;
     let followRepository;
+    let subscriptionRepository;
 
     beforeEach(() => {
         userRepository = { getUserById: async () => makeUser() };
         itinerariesRepository = { findPublicByUserId: async () => [], findActiveByUserId: async () => null };
         followRepository = { getFollowers: async () => [], getFollowing: async () => [] };
-        service = new UserService(userRepository, itinerariesRepository, followRepository);
+        subscriptionRepository = { hasAnySubscription: async () => false };
+        service = new UserService(
+            userRepository, itinerariesRepository, followRepository, null,
+            null, null, null, null, null, null, subscriptionRepository
+        );
     });
 
     it('includes the email when the requester is viewing their own profile', async () => {
@@ -65,6 +70,45 @@ describe('UserService.getUserById()', () => {
         const result = await service.getUserById('user-1', 'user-1');
 
         expect(result.activeTrip).toEqual({ id: 'trip-1', title: 'Roman holiday' });
+    });
+
+    it('marks isTrialEligible true when the user has never had a subscription', async () => {
+        subscriptionRepository.hasAnySubscription = async () => false;
+
+        const result = await service.getUserById('user-1', 'user-1');
+
+        expect(result.isTrialEligible).toBe(true);
+    });
+
+    it('marks isTrialEligible false when the user already had a subscription, so they cannot repeat the free trial', async () => {
+        subscriptionRepository.hasAnySubscription = async () => true;
+
+        const result = await service.getUserById('user-1', 'user-1');
+
+        expect(result.isTrialEligible).toBe(false);
+    });
+
+    it('defaults isTrialEligible to false when no subscriptionRepository is wired, instead of advertising an unverifiable trial', async () => {
+        service = new UserService(userRepository, itinerariesRepository, followRepository);
+
+        const result = await service.getUserById('user-1', 'user-1');
+
+        expect(result.isTrialEligible).toBe(false);
+    });
+
+    it('does not expose isTrialEligible when viewing someone else\'s profile', async () => {
+        const result = await service.getUserById('user-1', 'someone-else');
+
+        expect(result.isTrialEligible).toBeUndefined();
+    });
+
+    it('does not query subscription eligibility when viewing someone else\'s profile', async () => {
+        let called = false;
+        subscriptionRepository.hasAnySubscription = async () => { called = true; return false; };
+
+        await service.getUserById('user-1', 'someone-else');
+
+        expect(called).toBe(false);
     });
 });
 

@@ -10,6 +10,7 @@ import { ItineraryRepository } from "../repositories/itineraryRepository.js";
 import { LifeDiaryRepository } from "../repositories/lifeDiaryRepository.js";
 import { PackingChecklistRepository } from "../repositories/packingChecklistRepository.js";
 import { ShoppingListRepository } from "../repositories/shoppingListRepository.js";
+import { SubscriptionRepository } from "../repositories/subscriptionRepository.js";
 import { UserRepository } from "../repositories/userRepository.js";
 import { VanLogRepository } from "../repositories/vanLogRepository.js";
 import { auditLogService } from "../services/sharedAuditLogService.js";
@@ -27,11 +28,13 @@ export const createUsersRouter = () => {
     const inventoryRepository = new InventoryRepository();
     const shoppingListRepository = new ShoppingListRepository();
     const packingChecklistRepository = new PackingChecklistRepository();
+    const subscriptionRepository = new SubscriptionRepository();
     const emailService = new EmailService();
     const userService = new UserService(
         userRepository, itinerariesRepository, followRepository, emailService,
         lifeDiaryRepository, auditLogService, vanLogRepository,
-        inventoryRepository, shoppingListRepository, packingChecklistRepository
+        inventoryRepository, shoppingListRepository, packingChecklistRepository,
+        subscriptionRepository
     );
     const cloudinaryService = new CloudinaryService();
     const userController = new UserController(userService, cloudinaryService);

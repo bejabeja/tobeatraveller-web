@@ -27,6 +27,7 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { aiPaceOptions, DEFAULT_AI_PACE, isPremiumRequiredError } from "@tobeatraveller/shared";
+import AiGenerationUpsell from "../../components/aiGenerationUpsell/AiGenerationUpsell";
 import Modal from "../../components/modal/Modal";
 import ImageUpload from "../itinerary/sectionsForm/ImageUpload";
 import { GENERATE_TIMEOUT_MESSAGE, generateSmartItinerary } from "../../services/itineraries";
@@ -155,6 +156,7 @@ const EditExperience = () => {
   const [saving, setSaving]             = useState(false);
   const [ownerId, setOwnerId]           = useState(null);
   const [showRegenConfirm, setShowRegenConfirm] = useState(false);
+  const [aiPremiumRequired, setAiPremiumRequired] = useState(false);
 
   const searchTimer = useRef(null);
   const ce = (key, vars) => t(`createExperience.${key}`, vars);
@@ -235,6 +237,7 @@ const EditExperience = () => {
 
   const runGenerate = async () => {
     setShowRegenConfirm(false);
+    setAiPremiumRequired(false);
     setGenerating(true);
     try {
       const data = await generateSmartItinerary({
@@ -259,7 +262,7 @@ const EditExperience = () => {
       setPhase("review");
     } catch (error) {
       if (isPremiumRequiredError(error)) {
-        toast.error(`${t("premium.requiredTitle")}: ${t("subscription.featureAiItinerariesDesc")}`);
+        setAiPremiumRequired(true);
       } else {
         toast.error(error.message === GENERATE_TIMEOUT_MESSAGE ? ce("generateTimeout") : (error.message || ce("generateError")));
       }
@@ -517,6 +520,9 @@ const EditExperience = () => {
             )}
           </button>
           {!destination && <p className="cexp__generate-hint">{ce("enterDest")}</p>}
+          {aiPremiumRequired && (
+            <AiGenerationUpsell onDismiss={() => setAiPremiumRequired(false)} />
+          )}
         </div>
 
       ) : (

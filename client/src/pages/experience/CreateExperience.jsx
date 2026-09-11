@@ -27,6 +27,7 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { aiPaceOptions, DEFAULT_AI_PACE, isPremiumRequiredError } from "@tobeatraveller/shared";
+import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState";
 import Modal from "../../components/modal/Modal";
 import ImageUpload from "../itinerary/sectionsForm/ImageUpload";
 import { GENERATE_TIMEOUT_MESSAGE, generateSmartItinerary } from "../../services/itineraries";
@@ -313,6 +314,20 @@ const CreateExperience = () => {
   const isMultiDay = dayNumbers.length > 1;
 
   const dayUnit = days === 1 ? ce("day") : ce("days");
+
+  // Unlike a regular itinerary (where AI is an optional shortcut and every
+  // field can be filled in by hand), an Experience has no manual path at
+  // all: the "input" phase's only way forward is a successful AI generation,
+  // so a free user can never actually finish one. Gating this upfront (before
+  // they fill in destination/days/category/pace/intention) instead of only
+  // discovering it when Generate fails avoids wasting that effort.
+  if (!userMe?.isPremium) {
+    return (
+      <div className="cexp section__container">
+        <FeatureLoadState status="premium" feature="aiItineraries" />
+      </div>
+    );
+  }
 
   return (
     <div className="cexp section__container">

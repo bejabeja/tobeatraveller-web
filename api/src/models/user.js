@@ -104,11 +104,12 @@ export class User {
             bio: this.bio,
             about: this.about,
             activeTrip: this.activeTrip || null,
+            isTrialEligible: this.isTrialEligible ?? false,
         };
     }
 
     toPublicDTO() {
-        const { email, premiumUntil, ...publicFields } = this.toDTO();
+        const { email, premiumUntil, isTrialEligible, ...publicFields } = this.toDTO();
         return publicFields;
     }
 

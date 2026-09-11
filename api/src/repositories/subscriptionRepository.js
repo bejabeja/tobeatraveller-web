@@ -42,4 +42,12 @@ export class SubscriptionRepository {
         );
         return result.rows.map(Subscription.fromDb);
     }
+
+    async hasAnySubscription(userId) {
+        const result = await client.query(
+            `SELECT EXISTS(SELECT 1 FROM subscriptions WHERE user_id = $1) AS exists`,
+            [userId]
+        );
+        return result.rows[0].exists;
+    }
 }
