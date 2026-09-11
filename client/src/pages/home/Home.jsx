@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { selectIsAuthenticated } from "../../store/auth/authSelectors.js";
 
 import { Link } from "react-router-dom";
+import FeatureShowcase from "../../components/featureShowcase/FeatureShowcase.jsx";
 import Hero from "../../components/hero/Hero.jsx";
 import ItinerariesSection from "../../components/itineraries/ItinerariesSection.jsx";
 import UsersSection from "../../components/users/UsersSection.jsx";
@@ -74,6 +75,10 @@ const Home = () => {
       )}
 
       <div className="section__container home__container">
+
+        {/* Shows a logged-out visitor what they'll find after signing up,
+            before any real (but generic) itinerary/people content below. */}
+        {!isAuthenticated && <FeatureShowcase />}
 
         {/* Feed tabs: only for authenticated users */}
         {isAuthenticated && (

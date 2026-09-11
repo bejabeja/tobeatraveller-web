@@ -112,10 +112,129 @@
 
   &__features-title {
     text-align: center;
-    margin: 0 0 36px;
+    margin: 0 0 8px;
     font-size: 22px;
     font-weight: 800;
     color: var(--text-color);
+  }
+
+  &__features-subtitle {
+    text-align: center;
+    max-width: 480px;
+    margin: 0 auto 36px;
+    color: var(--text-secondary-color);
+    font-size: 13.5px;
+    line-height: 1.6;
+  }
+
+  // The proof-of-value mockup: shows what generateSmartItinerary actually
+  // produces instead of only describing it in a feature bullet, mirroring
+  // the day-group/place-card language of the real itinerary view
+  // (Itinerary.scss) so it reads as an authentic preview, not decoration.
+  // Deliberately compact (small type, tight spacing): it's a supporting
+  // aside before the pricing content, not a section of its own weight.
+  &__preview {
+    max-width: 480px;
+    margin: 0 auto 48px;
+    text-align: center;
+  }
+
+  &__preview-badge {
+    display: inline-block;
+    width: fit-content;
+    margin: 0 0 6px;
+    padding: 3px 10px;
+    background: var(--primary-light);
+    color: var(--primary-color);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: 999px;
+  }
+
+  &__preview-title {
+    margin: 0 0 16px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-color);
+  }
+
+  &__preview-card {
+    text-align: left;
+    background: var(--white-color);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 18px 20px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  }
+
+  &__preview-destination {
+    margin: 0 0 14px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-color);
+  }
+
+  &__preview-day {
+    margin-bottom: 14px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  &__preview-day-label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+  }
+
+  &__preview-places {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__preview-place {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 9px 12px;
+    background: var(--surface-color);
+    border-left: 3px solid var(--primary-color);
+    border-radius: 8px;
+  }
+
+  &__preview-place-icon {
+    width: 1em;
+    height: 1em;
+    flex-shrink: 0;
+    margin-top: 2px;
+    font-size: 0.95rem;
+    color: var(--primary-color);
+  }
+
+  &__preview-place-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+
+    strong {
+      font-size: 0.82rem;
+      color: var(--text-color);
+    }
+
+    span {
+      font-size: 0.75rem;
+      color: var(--text-secondary-color);
+      line-height: 1.45;
+    }
   }
 
   &__price-amount {

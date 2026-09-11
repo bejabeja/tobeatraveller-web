@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { FaCity } from "react-icons/fa";
 import { IoAlertCircleOutline, IoCheckmarkCircle, IoHourglassOutline, IoSparkles } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
@@ -9,7 +10,29 @@ import { selectMe } from "../../store/user/userInfoSelectors";
 import { setUserInfo } from "../../store/user/userInfoActions";
 import { PREMIUM_FEATURES } from "@tobeatraveller/shared";
 import { createCheckoutSession, createPortalSession, getMySubscription, resumeSubscription } from "../../services/subscription";
+import { getCategoryIcon } from "../../assets/icons";
 import "./Subscription.scss";
+
+// Static example, not real AI output: shown so a free user sees what the
+// generator actually produces before paying for it, instead of only reading
+// a one-line feature description (see subscription.featureAiItinerariesDesc).
+// Kept short (2 days, 3 places) so the proof stays a compact aside rather
+// than competing in size with the actual pricing content below it.
+const PREVIEW_ITINERARY = [
+  {
+    day: 1,
+    places: [
+      { category: "monument", nameKey: "subscription.previewPlace1Name", descKey: "subscription.previewPlace1Desc" },
+      { category: "city", nameKey: "subscription.previewPlace2Name", descKey: "subscription.previewPlace2Desc" },
+    ],
+  },
+  {
+    day: 2,
+    places: [
+      { category: "culture", nameKey: "subscription.previewPlace3Name", descKey: "subscription.previewPlace3Desc" },
+    ],
+  },
+];
 
 const PLANS = [
   {
@@ -236,7 +259,35 @@ const Subscription = () => {
         </div>
       ) : (
         <>
+          <div className="subscription__preview">
+            <p className="subscription__preview-badge">{t("subscription.previewBadge")}</p>
+            <h2 className="subscription__preview-title">{t("subscription.previewTitle")}</h2>
+            <div className="subscription__preview-card">
+              <p className="subscription__preview-destination">{t("subscription.previewDestination")}</p>
+              {PREVIEW_ITINERARY.map(({ day, places }) => (
+                <div className="subscription__preview-day" key={day}>
+                  <span className="subscription__preview-day-label">{t("itinerary.dayHeader", { n: day })}</span>
+                  <div className="subscription__preview-places">
+                    {places.map((place) => {
+                      const Icon = getCategoryIcon(place.category) || FaCity;
+                      return (
+                        <div className="subscription__preview-place" key={place.nameKey}>
+                          <Icon className="subscription__preview-place-icon" aria-hidden="true" />
+                          <div className="subscription__preview-place-text">
+                            <strong>{t(place.nameKey)}</strong>
+                            <span>{t(place.descKey)}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <p className="subscription__features-title">{t("subscription.featuresTitle")}</p>
+          <p className="subscription__features-subtitle">{t("subscription.featuresFreeNote")}</p>
           <ul className="subscription__features">
             {PREMIUM_FEATURES.map(({ id, titleKey, descriptionKey, emoji, color }) => (
               <li key={id} className="subscription__feature">

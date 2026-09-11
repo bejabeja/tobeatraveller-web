@@ -1,0 +1,115 @@
+.feature-showcase {
+  text-align: center;
+  padding: 48px 0 56px;
+
+  &__title {
+    margin: 0 0 8px;
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--text-color);
+  }
+
+  &__subtitle {
+    margin: 0 0 28px;
+    color: var(--text-secondary-color);
+    font-size: 15px;
+  }
+
+  &__tabs {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin: 0 auto 24px;
+  }
+
+  // flex-shrink: 0 + white-space: nowrap keep each pill at its natural
+  // width instead of the flex row silently compressing it (which wrapped
+  // the label text mid-pill); flex-wrap on the row above is what moves
+  // whole pills to the next line if the viewport is too narrow, not this.
+  &__tab {
+    width: fit-content;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0.55rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    background: var(--white-color);
+    color: var(--text-secondary-color);
+    font-size: 13.5px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+
+    &:hover {
+      border-color: var(--primary-color);
+      color: var(--text-color);
+    }
+
+    &--active {
+      background: var(--primary-color);
+      border-color: var(--primary-color);
+      color: var(--white-color);
+    }
+  }
+
+  &__active-info {
+    max-width: 420px;
+    margin: 0 auto 20px;
+  }
+
+  &__active-desc {
+    margin: 0;
+    font-size: 14.5px;
+    font-weight: 500;
+    color: var(--text-color);
+    line-height: 1.5;
+  }
+
+  // Phone mockup (not a browser window): this product's screens only ever
+  // ship as an app/responsive-mobile view, and most visitors land on this
+  // page from their own phone too, so a portrait device frame reads at
+  // its natural size instead of needing to zoom into a wide desktop shot.
+  &__frame {
+    max-width: 300px;
+    margin: 0 auto;
+    padding: 16px 12px;
+    background: var(--white-color);
+    border: 1px solid var(--border-color);
+    border-radius: 40px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  }
+
+  &__frame-notch {
+    width: 70px;
+    height: 18px;
+    margin: 0 auto 10px;
+    background: var(--text-color);
+    border-radius: 999px;
+  }
+
+  &__frame-body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 9 / 19.5;
+    background: var(--surface-color);
+    border-radius: 24px;
+    overflow: hidden;
+  }
+
+  &__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+  }
+
+  &__placeholder {
+    font-size: 3rem;
+    line-height: 1;
+  }
+}
