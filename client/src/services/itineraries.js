@@ -1,7 +1,7 @@
 export {
     getStats,
     getItinerariesByFilters,
-    getfeaturedItineraries,
+    getFeaturedItineraries,
     generateSmartItinerary,
     GENERATE_TIMEOUT_MESSAGE,
     getDestinations,

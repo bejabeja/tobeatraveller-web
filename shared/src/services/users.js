@@ -22,7 +22,7 @@ export const getUserForAuth = async () => {
         return null;
     }
 }
-export const getfeaturedUsers = async () => {
+export const getFeaturedUsers = async () => {
     try {
         const response = await fetch(`${baseUrl()}/featured`, {
             method: 'GET',

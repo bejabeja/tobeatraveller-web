@@ -285,8 +285,10 @@ const Settings = () => {
             </p>
             <div className="modal__input-wrap">
               <input
+                id="delete-confirm-input"
                 className="ep__modal-input"
                 type="text"
+                aria-label={t("editProfile.deleteAccountConfirmLabel")}
                 placeholder={userMe?.username}
                 value={deleteConfirmInput}
                 onChange={(e) => setDeleteConfirmInput(e.target.value)}
@@ -330,8 +332,10 @@ const Settings = () => {
             </div>
             <div className="modal__input-wrap">
               <input
+                id="current-password-input"
                 className="ep__modal-input"
                 type="password"
+                aria-label={t("editProfile.currentPasswordLabel")}
                 placeholder={t("editProfile.currentPasswordLabel")}
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
@@ -340,8 +344,10 @@ const Settings = () => {
             </div>
             <div className="modal__input-wrap">
               <input
+                id="new-password-input"
                 className="ep__modal-input"
                 type="password"
+                aria-label={t("editProfile.newPasswordLabel")}
                 placeholder={t("editProfile.newPasswordLabel")}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
@@ -349,8 +355,10 @@ const Settings = () => {
             </div>
             <div className="modal__input-wrap">
               <input
+                id="confirm-new-password-input"
                 className="ep__modal-input"
                 type="password"
+                aria-label={t("editProfile.confirmNewPasswordLabel")}
                 placeholder={t("editProfile.confirmNewPasswordLabel")}
                 value={confirmNewPassword}
                 onChange={(e) => setConfirmNewPassword(e.target.value)}

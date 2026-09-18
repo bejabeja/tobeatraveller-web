@@ -38,7 +38,7 @@ export const getItinerariesByFilters = async (filters = {}) => {
     return response.json();
 }
 
-export const getfeaturedItineraries = async () => {
+export const getFeaturedItineraries = async () => {
     const response = await fetch(`${baseUrl()}/featured`, {
         method: 'GET',
         headers: {

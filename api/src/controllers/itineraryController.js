@@ -1,3 +1,13 @@
+import { createItineraryDataSchema, updateItineraryDataSchema } from "../utils/schemasValidation.js";
+import { ValidationError } from "../errors/ValidationError.js";
+
+const parseItineraryBody = (rawBody) => {
+    try {
+        return { data: JSON.parse(rawBody) };
+    } catch {
+        return { error: new ValidationError("Invalid itinerary data") };
+    }
+};
 
 export class ItineraryController {
     constructor(itineraryService) {
@@ -14,11 +24,19 @@ export class ItineraryController {
     }
 
     async createItinerary(req, res, next) {
+        const { data: rawItinerary, error: parseError } = parseItineraryBody(req.body.itinerary);
+        if (parseError) return next(parseError);
+
+        const validation = createItineraryDataSchema.safeParse(rawItinerary);
+        if (!validation.success) {
+            const firstError = validation.error.errors[0];
+            return next(new ValidationError(firstError?.message || "Itinerary validation failed", firstError?.path?.[0]));
+        }
+
         try {
             const file = req.files?.file?.[0];
             const images = req.files?.images || [];
-            const itineraryData = JSON.parse(req.body.itinerary);
-            const newItinerary = await this.itineraryService.createItinerary(itineraryData, file, images, req.user.id);
+            const newItinerary = await this.itineraryService.createItinerary(validation.data, file, images, req.user.id);
             res.status(201).json(newItinerary);
         } catch (error) {
             next(error);
@@ -46,12 +64,20 @@ export class ItineraryController {
     }
 
     async updateItinerary(req, res, next) {
+        const { data: rawItinerary, error: parseError } = parseItineraryBody(req.body.itinerary);
+        if (parseError) return next(parseError);
+
+        const validation = updateItineraryDataSchema.safeParse(rawItinerary);
+        if (!validation.success) {
+            const firstError = validation.error.errors[0];
+            return next(new ValidationError(firstError?.message || "Itinerary validation failed", firstError?.path?.[0]));
+        }
+
         try {
             const { id } = req.params;
             const file = req.files?.file?.[0];
             const images = req.files?.images || [];
-            const itineraryData = JSON.parse(req.body.itinerary);
-            await this.itineraryService.updateItinerary(id, itineraryData, file, images, req.user.id);
+            await this.itineraryService.updateItinerary(id, validation.data, file, images, req.user.id);
             res.status(200).json({ message: "Itinerary updated successfully" });
 
         } catch (error) {

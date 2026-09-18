@@ -3,8 +3,8 @@ import { IoClose, IoSearchOutline } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import useDebouncedEffect from "../../hooks/useDebounced";
-import { getItinerariesByFilters, getfeaturedItineraries } from "../../services/itineraries";
-import { getAllUsers, getfeaturedUsers } from "../../services/users";
+import { getItinerariesByFilters, getFeaturedItineraries } from "../../services/itineraries";
+import { getAllUsers, getFeaturedUsers } from "../../services/users";
 import { optimizedCloudinaryUrl } from "../../utils/cloudinaryUrl";
 import "./GlobalSearch.scss";
 
@@ -39,7 +39,7 @@ const GlobalSearch = ({ isOpen, onClose }) => {
     const requestId = ++requestIdRef.current;
     setSearched(false);
     setLoading(true);
-    Promise.all([getfeaturedItineraries(), getfeaturedUsers()])
+    Promise.all([getFeaturedItineraries(), getFeaturedUsers()])
       .then(([featuredItineraries, featuredUsers]) => {
         if (requestId !== requestIdRef.current) return;
         setItineraries(featuredItineraries || []);

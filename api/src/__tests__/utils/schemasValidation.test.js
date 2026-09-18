@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { signupSchema, resetPasswordSchema, vanLogEntrySchema } from '../../utils/schemasValidation.js';
+import {
+    signupSchema, resetPasswordSchema, vanLogEntrySchema,
+    createItineraryDataSchema, updateItineraryDataSchema,
+} from '../../utils/schemasValidation.js';
 
 const validSignupData = {
     username: 'traveller',
@@ -47,6 +50,115 @@ describe('vanLogEntrySchema restricts pricePerLiter to the fuel category', () =>
 
     it('accepts a fuel entry with no pricePerLiter at all', () => {
         const result = vanLogEntrySchema.safeParse({ ...baseEntry, category: 'fuel', pricePerLiter: null });
+
+        expect(result.success).toBe(true);
+    });
+});
+
+// Regression coverage: createItinerary/updateItinerary used to JSON.parse the
+// request body straight into the service with no validation at all, so a
+// malformed or malicious payload (bad dates, an out-of-range category, a
+// non-numeric budget) reached the repository untouched.
+describe('createItineraryDataSchema', () => {
+    const baseItinerary = {
+        title: 'A weekend in Rome',
+        location: { name: 'Rome', label: 'Rome, Italy', lat: 41.9, lon: 12.5 },
+        startDate: '2026-01-01',
+        endDate: '2026-01-05',
+        numberOfPeople: 2,
+        category: 'roadtrip',
+        currency: 'EUR',
+    };
+
+    it('accepts a well-formed itinerary with no places', () => {
+        const result = createItineraryDataSchema.safeParse(baseItinerary);
+
+        expect(result.success).toBe(true);
+        expect(result.data.places).toEqual([]);
+    });
+
+    it('rejects an end date before the start date', () => {
+        const result = createItineraryDataSchema.safeParse({ ...baseItinerary, endDate: '2025-12-31' });
+
+        expect(result.success).toBe(false);
+    });
+
+    it('rejects a category outside the known list', () => {
+        const result = createItineraryDataSchema.safeParse({ ...baseItinerary, category: 'not-a-real-category' });
+
+        expect(result.success).toBe(false);
+    });
+
+    it('leaves budget as null instead of defaulting to 0 when left blank', () => {
+        const result = createItineraryDataSchema.safeParse({ ...baseItinerary, budget: '' });
+
+        expect(result.success).toBe(true);
+        expect(result.data.budget).toBeNull();
+    });
+
+    it('parses a numeric-string budget', () => {
+        const result = createItineraryDataSchema.safeParse({ ...baseItinerary, budget: '500' });
+
+        expect(result.success).toBe(true);
+        expect(result.data.budget).toBe(500);
+    });
+
+    it('keeps an explicit zero budget instead of treating it as blank', () => {
+        const result = createItineraryDataSchema.safeParse({ ...baseItinerary, budget: 0 });
+
+        expect(result.success).toBe(true);
+        expect(result.data.budget).toBe(0);
+    });
+
+    it('accepts the experience source used by the AI trip planner', () => {
+        const result = createItineraryDataSchema.safeParse({ ...baseItinerary, source: 'experience' });
+
+        expect(result.success).toBe(true);
+        expect(result.data.source).toBe('experience');
+    });
+
+    it('rejects a place missing its infoPlace', () => {
+        const result = createItineraryDataSchema.safeParse({
+            ...baseItinerary,
+            places: [{ orderIndex: 0, dayNumber: 1 }],
+        });
+
+        expect(result.success).toBe(false);
+    });
+
+    it('defaults a place with no dayNumber to day 1', () => {
+        const result = createItineraryDataSchema.safeParse({
+            ...baseItinerary,
+            places: [{ orderIndex: 0, infoPlace: { name: 'Colosseum', lat: 41.89, lon: 12.49 } }],
+        });
+
+        expect(result.success).toBe(true);
+        expect(result.data.places[0].dayNumber).toBe(1);
+    });
+});
+
+describe('updateItineraryDataSchema', () => {
+    const baseItinerary = {
+        title: 'A weekend in Rome',
+        location: { name: 'Rome', label: 'Rome, Italy', lat: 41.9, lon: 12.5 },
+        startDate: '2026-01-01',
+        endDate: '2026-01-05',
+        numberOfPeople: 2,
+        category: 'roadtrip',
+        currency: 'EUR',
+    };
+
+    it('accepts an existing place carrying its real id', () => {
+        const result = updateItineraryDataSchema.safeParse({
+            ...baseItinerary,
+            places: [{ id: '123e4567-e89b-12d3-a456-426614174000', orderIndex: 0, infoPlace: { name: 'Colosseum', lat: 41.89, lon: 12.49 } }],
+        });
+
+        expect(result.success).toBe(true);
+    });
+
+    it('accepts keepImageIds for gallery diffing', () => {
+        const result = updateItineraryDataSchema.safeParse({ ...baseItinerary, keepImageIds: ['abc', 'def'] });
 
         expect(result.success).toBe(true);
     });

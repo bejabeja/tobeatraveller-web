@@ -4,7 +4,7 @@ import { parseError } from "../utils/parseError";
 export {
     checkUsernameAvailable,
     getUserForAuth,
-    getfeaturedUsers,
+    getFeaturedUsers,
     getUserById,
     updateUser,
     changePassword,

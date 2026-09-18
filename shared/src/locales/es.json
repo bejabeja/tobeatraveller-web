@@ -437,6 +437,7 @@
     "discardChangesDesc": "Tienes cambios sin guardar. ¿Seguro que quieres descartarlos?",
     "deleteAccountModal": "¿Eliminar cuenta?",
     "deleteAccountDesc": "Esto eliminará permanentemente tu cuenta y todos tus datos. Escribe <strong>{{username}}</strong> para confirmar.",
+    "deleteAccountConfirmLabel": "Escribe tu nombre de usuario para confirmar",
     "deleting": "Eliminando…",
     "accountDeleted": "Tu cuenta y todos tus datos se han eliminado.",
     "permissionNeeded": "Permiso necesario",
@@ -470,6 +471,7 @@
     "unlike": "Ya no me gusta",
     "linkCopied": "¡Enlace copiado!",
     "couldntCopyLink": "No se pudo copiar el enlace",
+    "couldntShareLink": "No se pudo compartir el enlace",
     "confirmDeletion": "Confirmar eliminación",
     "deleteDesc": "¿Seguro que quieres eliminar este itinerario? Esta acción no se puede deshacer.",
     "delete": "Eliminar",
@@ -982,7 +984,6 @@
     "notificationPreferencesUpdateFailed": "No se pudieron actualizar tus preferencias de notificación. Por favor, inténtalo más tarde.",
     "notificationPreferencesLoadFailed": "No se pudieron cargar tus preferencias de notificación.",
     "changePasswordFailed": "No se pudo actualizar tu contraseña. Por favor, inténtalo más tarde.",
-    "passwordsDontMatch": "Las contraseñas no coinciden",
     "updateProfileFailed": "No se pudo actualizar el perfil",
     "profileUpdated": "¡Perfil actualizado!",
     "couldNotSend": "No se pudo enviar tu mensaje. Por favor, inténtalo más tarde."

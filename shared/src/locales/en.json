@@ -437,6 +437,7 @@
     "discardChangesDesc": "You have unsaved changes. Are you sure you want to discard them?",
     "deleteAccountModal": "Delete account?",
     "deleteAccountDesc": "This will permanently delete your account and all your data. Type <strong>{{username}}</strong> to confirm.",
+    "deleteAccountConfirmLabel": "Type your username to confirm",
     "deleting": "Deleting…",
     "accountDeleted": "Your account and all your data have been deleted.",
     "permissionNeeded": "Permission needed",
@@ -470,6 +471,7 @@
     "unlike": "Unlike",
     "linkCopied": "Link copied!",
     "couldntCopyLink": "Couldn't copy link",
+    "couldntShareLink": "Couldn't share link",
     "confirmDeletion": "Confirm Deletion",
     "deleteDesc": "Are you sure you want to delete this itinerary? This action cannot be undone.",
     "delete": "Delete",
@@ -982,7 +984,6 @@
     "notificationPreferencesUpdateFailed": "Could not update your notification preferences. Please try again.",
     "notificationPreferencesLoadFailed": "Could not load your notification preferences.",
     "changePasswordFailed": "Could not update your password. Please try again.",
-    "passwordsDontMatch": "Passwords don't match",
     "updateProfileFailed": "Failed to update profile",
     "profileUpdated": "Profile updated!",
     "couldNotSend": "Could not send your message. Please try again."

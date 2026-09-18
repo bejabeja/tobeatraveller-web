@@ -1,4 +1,4 @@
-import { getItinerariesByFilters, getfeaturedItineraries, getStats } from "../../services/itineraries.js";
+import { getItinerariesByFilters, getFeaturedItineraries, getStats } from "../../services/itineraries.js";
 
 export const START_LOADING_FEATURED_ITINERARIES = "@featuredItineraries/init/start";
 export const SET_FEATURED_ITINERARIES = "@featuredItineraries/init/success";
@@ -21,7 +21,7 @@ export const initFeaturedItineraries = () => {
         dispatch({ type: START_LOADING_FEATURED_ITINERARIES });
 
         try {
-            const featuredItineraries = await getfeaturedItineraries();
+            const featuredItineraries = await getFeaturedItineraries();
 
             dispatch({
                 type: SET_FEATURED_ITINERARIES,

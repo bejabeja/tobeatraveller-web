@@ -1,4 +1,4 @@
-import { getAllUsers, getfeaturedUsers } from "../../services/users";
+import { getAllUsers, getFeaturedUsers } from "../../services/users";
 
 export const initAllUsers = (filters) => async (dispatch) => {
     dispatch({ type: "@users/all/start" });
@@ -16,7 +16,7 @@ export const initAllUsers = (filters) => async (dispatch) => {
 export const initFeaturedUsers = () => async (dispatch) => {
     dispatch({ type: "@users/featured/start" });
     try {
-        const users = await getfeaturedUsers();
+        const users = await getFeaturedUsers();
         dispatch({ type: "@users/featured/success", payload: users });
     } catch (err) {
         dispatch({ type: "@users/featured/fail", payload: err.message });

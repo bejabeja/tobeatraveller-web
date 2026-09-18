@@ -84,6 +84,77 @@ export const resetPasswordSchema = z.object({
         .refine((password) => password.trim().length >= 6, "Password must be at least 6 characters"),
 });
 
+// Keep in sync with shared/src/utils/constants/constants.js#itineraryCategories and
+// #placeCategories (api/ has no dependency on shared/, so these are duplicated by
+// necessity, not oversight).
+const ITINERARY_CATEGORIES = [
+    "adventure", "relax", "culture", "romantic", "roadtrip", "family",
+    "backpacking", "wellness", "gastronomic", "party", "sport", "other",
+];
+const PLACE_CATEGORIES = [
+    "transport", "flight", "accommodation", "activity", "local_tip",
+    "nature", "beach", "city", "park", "monument", "camping", "island",
+    "sport", "vineyard", "other",
+];
+
+const itineraryLocationSchema = z.object({
+    name: z.string().min(1, "Location name is required"),
+    label: z.string().nullable().optional(),
+    lat: z.number(),
+    lon: z.number(),
+});
+
+const itineraryPlaceSchema = z.object({
+    id: z.string().uuid().optional(),
+    description: z.string().max(500, "Place description must be less than 500 characters").nullable().optional(),
+    category: z.enum(PLACE_CATEGORIES, { errorMap: () => ({ message: "Invalid place category" }) }).nullable().optional().default("other"),
+    orderIndex: z.number().int().nonnegative(),
+    dayNumber: z.number().int().min(1).nullable().optional().transform((value) => value ?? 1),
+    infoPlace: z.object({
+        name: z.string().min(1, "Place name is required"),
+        label: z.string().nullable().optional(),
+        lat: z.number(),
+        lon: z.number(),
+    }),
+});
+
+const itineraryBudgetSchema = z.union([z.number(), z.string()])
+    .nullable()
+    .optional()
+    .transform((value) => {
+        if (value === null || value === undefined || value === "") return null;
+        const parsed = typeof value === "number" ? value : parseFloat(value);
+        return Number.isNaN(parsed) ? null : parsed;
+    });
+
+const itineraryDataFields = {
+    title: z.string().min(2, "Title is required").max(255, "Title must be less than 255 characters"),
+    description: z.string().max(500, "Description must be less than 500 characters").nullable().optional(),
+    location: itineraryLocationSchema,
+    startDate: z.string().min(1, "Start date is required"),
+    endDate: z.string().min(1, "End date is required"),
+    numberOfPeople: z.number().int().positive("Number of travellers must be greater than zero"),
+    budget: itineraryBudgetSchema,
+    currency: z.string().max(3, "Currency code too long").nullable().optional(),
+    category: z.enum(ITINERARY_CATEGORIES, { errorMap: () => ({ message: "Invalid category" }) }),
+    isPublic: z.boolean().optional(),
+    places: z.array(itineraryPlaceSchema).optional().default([]),
+};
+
+const validateItineraryDateRange = (data) => data.endDate >= data.startDate;
+const itineraryDateRangeIssue = { message: "End date must be after or equal to start date", path: ["endDate"] };
+
+export const createItineraryDataSchema = z.object({
+    ...itineraryDataFields,
+    source: z.enum(["itinerary", "experience"]).optional(),
+})
+    .refine(validateItineraryDateRange, itineraryDateRangeIssue);
+
+export const updateItineraryDataSchema = z.object({
+    ...itineraryDataFields,
+    keepImageIds: z.array(z.string()).optional(),
+}).refine(validateItineraryDateRange, itineraryDateRangeIssue);
+
 // Keep in sync with shared/src/utils/schemasValidation.js's contactSchema and
 // shared/src/utils/constants/constants.js#MAX_COMMENT_LENGTH (api/ has no dependency on
 // shared/, so these limits are duplicated by necessity, not oversight).

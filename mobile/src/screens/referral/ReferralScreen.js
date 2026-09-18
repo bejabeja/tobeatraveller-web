@@ -1,5 +1,6 @@
-import { useCallback, useState } from 'react';
-import { Image, ScrollView, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Alert, Image, ScrollView, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -8,6 +9,8 @@ import { getMyReferralInfo } from '@tobeatraveller/shared';
 import { WEB_URL } from '../../utils/config';
 import { shadow } from '../../utils/styles';
 
+const COPIED_FEEDBACK_DURATION_MS = 2000;
+
 const STEP_KEYS = ['howItWorksStep1', 'howItWorksStep2', 'howItWorksStep3'];
 
 const ReferralScreen = ({ navigation }) => {
@@ -15,6 +18,10 @@ const ReferralScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const [info, setInfo] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
+  const copiedTimeoutRef = useRef(null);
+
+  useEffect(() => () => clearTimeout(copiedTimeoutRef.current), []);
 
   // Refetches on every focus (not just mount), same as SubscriptionScreen:
   // a reward can land while the user is elsewhere in the app, so the counts
@@ -32,11 +39,25 @@ const ReferralScreen = ({ navigation }) => {
 
   const inviteLink = info?.referralCode ? `${WEB_URL}/register?ref=${info.referralCode}` : '';
 
+  const handleCopy = async () => {
+    if (!inviteLink) return;
+    try {
+      await Clipboard.setStringAsync(inviteLink);
+      setCopied(true);
+      clearTimeout(copiedTimeoutRef.current);
+      copiedTimeoutRef.current = setTimeout(() => setCopied(false), COPIED_FEEDBACK_DURATION_MS);
+    } catch {
+      Alert.alert(t('itinerary.couldntCopyLink'));
+    }
+  };
+
   const handleShare = async () => {
     if (!inviteLink) return;
     try {
       await Share.share({ message: `${t('referral.shareText')} ${inviteLink}`, url: inviteLink });
-    } catch {}
+    } catch {
+      Alert.alert(t('itinerary.couldntShareLink'));
+    }
   };
 
   return (
@@ -77,11 +98,19 @@ const ReferralScreen = ({ navigation }) => {
 
         <View style={styles.linkCard}>
           <Text style={styles.linkLabel}>{t('referral.linkLabel')}</Text>
-          {/* selectable so someone can still long-press to copy manually,
-              without pulling in a clipboard native module for this one row. */}
-          <Text style={styles.linkText} selectable numberOfLines={1}>
-            {loading ? t('referral.loading') : inviteLink}
-          </Text>
+          <View style={styles.linkRow}>
+            <Text style={styles.linkText} selectable numberOfLines={1}>
+              {loading ? t('referral.loading') : inviteLink}
+            </Text>
+            <TouchableOpacity
+              style={styles.copyBtn}
+              onPress={handleCopy}
+              disabled={loading || !inviteLink}
+              accessibilityLabel={t('referral.copyButton')}
+            >
+              <Ionicons name={copied ? 'checkmark' : 'copy-outline'} size={18} color={copied ? '#16a34a' : '#374151'} />
+            </TouchableOpacity>
+          </View>
           <TouchableOpacity style={styles.shareBtn} onPress={handleShare} disabled={loading || !inviteLink}>
             <Ionicons name="share-social-outline" size={18} color="#fff" />
             <Text style={styles.shareBtnText}>{t('referral.shareButton')}</Text>
@@ -169,10 +198,15 @@ const styles = StyleSheet.create({
     ...shadow(2, 0.05, 6, 2),
   },
   linkLabel: { fontSize: 12, fontWeight: '700', color: '#6b7280', marginBottom: 8 },
+  linkRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
   linkText: {
-    fontSize: 14, color: '#111827',
+    flex: 1, fontSize: 14, color: '#111827',
     backgroundColor: '#f7f9fc', borderRadius: 10,
-    paddingVertical: 10, paddingHorizontal: 12, marginBottom: 12,
+    paddingVertical: 10, paddingHorizontal: 12,
+  },
+  copyBtn: {
+    width: 40, height: 40, borderRadius: 10,
+    backgroundColor: '#f7f9fc', alignItems: 'center', justifyContent: 'center',
   },
   shareBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
