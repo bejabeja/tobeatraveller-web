@@ -1,0 +1,74 @@
+.internal-referrals {
+  &__stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  &__stat {
+    flex: 1 1 160px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--border-color, #eee);
+    border-radius: 10px;
+
+    strong {
+      font-size: 1.75rem;
+      font-weight: 800;
+    }
+
+    span {
+      font-size: 0.8rem;
+      color: var(--text-secondary-color, #666);
+    }
+
+    &--capped strong {
+      color: #b91c1c;
+    }
+  }
+
+  &__section-title {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+  }
+
+  &__empty {
+    color: var(--text-secondary-color, #666);
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    list-style: none;
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color, #eee);
+    border-radius: 10px;
+  }
+
+  &__username {
+    font-weight: 600;
+    margin-right: auto;
+  }
+
+  &__count {
+    font-size: 0.85rem;
+    color: var(--text-secondary-color, #666);
+
+    &--rewarded {
+      color: #16a34a;
+      font-weight: 600;
+    }
+  }
+}

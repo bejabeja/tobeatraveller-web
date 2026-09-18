@@ -381,6 +381,12 @@ const ProfileScreen = ({ route, navigation }) => {
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.contactBtn}
+              onPress={() => navigation.navigate('Referral')}
+            >
+              <Text style={styles.contactText}>🎁 {t('referral.accountCardTitle')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.contactBtn}
               onPress={() => navigation.navigate('Contact')}
             >
               <Text style={styles.contactText}>{t('profile.contactUs')}</Text>

@@ -29,6 +29,7 @@ import { createPackingChecklistRouter } from './src/routes/packingChecklistRoute
 import { createLifeDiaryRouter } from './src/routes/lifeDiaryRouter.js';
 import { createSubscriptionRouter } from './src/routes/subscriptionRouter.js';
 import { createSubscriptionWebhookRouter } from './src/routes/subscriptionWebhookRouter.js';
+import { createReferralRouter } from './src/routes/referralRouter.js';
 
 const app = express();
 const premiumOnly = requirePremium(new UserRepository());
@@ -64,6 +65,7 @@ app.use('/supplies', authenticate, createSuppliesRouter());
 app.use('/packing-checklist', authenticate, premiumOnly, createPackingChecklistRouter());
 app.use('/life-diary', authenticate, createLifeDiaryRouter());
 app.use('/subscription', authenticate, createSubscriptionRouter());
+app.use('/referrals', authenticate, createReferralRouter());
 // Auth/role checks live inside the router itself: the scheduled-purge route
 // is triggered by Vercel Cron with a shared secret instead of a user JWT, so
 // it can't sit behind a blanket authenticate() at the mount point.

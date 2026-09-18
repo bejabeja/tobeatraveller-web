@@ -4,6 +4,7 @@ import {
   IoCardOutline,
   IoCartOutline,
   IoChevronForward,
+  IoGiftOutline,
   IoJournalOutline,
   IoListOutline,
   IoSaveOutline,
@@ -102,6 +103,15 @@ const Account = () => {
           <IoChevronForward className="account__upsell-arrow" aria-hidden="true" />
         </Link>
       )}
+
+      <Link to="/invite" className="account__upsell">
+        <IoGiftOutline className="account__upsell-icon" aria-hidden="true" />
+        <div>
+          <p className="account__upsell-title">{t("referral.accountCardTitle")}</p>
+          <p className="account__upsell-desc">{t("referral.accountCardDesc")}</p>
+        </div>
+        <IoChevronForward className="account__upsell-arrow" aria-hidden="true" />
+      </Link>
 
       {sections.map((section, i) => (
         <div

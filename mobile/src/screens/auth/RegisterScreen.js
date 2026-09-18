@@ -33,6 +33,7 @@ const RegisterScreen = ({ navigation }) => {
   const [usernameStatus, setUsernameStatus] = useState(null); // null | "checking" | "available" | "taken"
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [ageConfirmed, setAgeConfirmed] = useState(false);
+  const [referralCode, setReferralCode] = useState('');
 
   const timer = useRef(null);
   const latestUsernameRef = useRef('');
@@ -78,7 +79,10 @@ const RegisterScreen = ({ navigation }) => {
     setLoading(true);
     try {
       await dispatch(registerUser(
-        { email: email.trim(), username: username.trim(), password, confirmPassword, termsAccepted, ageConfirmed },
+        {
+          email: email.trim(), username: username.trim(), password, confirmPassword, termsAccepted, ageConfirmed,
+          referralCode: referralCode.trim() || undefined,
+        },
         () => navigation.navigate('Onboarding')
       ));
     } catch {
@@ -200,6 +204,16 @@ const RegisterScreen = ({ navigation }) => {
                   </TouchableOpacity>
                 }
               />
+
+              <Field
+                label={t('referral.mobileCodeLabel')}
+                value={referralCode}
+                onChangeText={setReferralCode}
+                autoCapitalize="none"
+                autoCorrect={false}
+                placeholder={t('referral.mobileCodePlaceholder')}
+              />
+              <Text style={fieldStyles.hint}>{t('referral.mobileCodeHint')}</Text>
 
               {/* Age + Terms consent */}
               <View style={styles.consentBox}>

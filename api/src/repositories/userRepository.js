@@ -5,20 +5,42 @@ export class UserRepository {
     async save(user) {
         const {
             uuid, username, email, password, location, avatarUrl, termsAcceptedAt,
-            signupCountryCode, signupUserAgent,
+            signupCountryCode, signupUserAgent, referralCode,
         } = user;
         const result = await db.query(
             `INSERT INTO users (
                 id, username, email, password, location, avatar_url, terms_accepted_at,
-                signup_country_code, signup_user_agent
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+                signup_country_code, signup_user_agent, referral_code
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
             [
                 uuid, username, email.trim().toLowerCase(), password, location, avatarUrl, termsAcceptedAt ?? null,
-                signupCountryCode ?? null, signupUserAgent ?? null,
+                signupCountryCode ?? null, signupUserAgent ?? null, referralCode ?? null,
             ]
         );
 
         return User.fromDb(result.rows[0]);
+    }
+
+    async findByReferralCode(code) {
+        const result = await db.query(
+            "SELECT * FROM users WHERE referral_code = $1",
+            [code]
+        );
+        if (result.rows.length === 0) return null;
+
+        return User.fromDb(result.rows[0]);
+    }
+
+    // Guarded on referral_code IS NULL for the same reason as
+    // setStripeCustomerIdIfUnset: lets a lazy on-demand generation (the
+    // first time a user opens the invite page) stay safe under concurrent
+    // requests without a retry loop, since only one write can ever win.
+    async setReferralCodeIfUnset(id, referralCode) {
+        const result = await db.query(
+            "UPDATE users SET referral_code = $1, updated_at = NOW() WHERE id = $2 AND referral_code IS NULL RETURNING *",
+            [referralCode, id]
+        );
+        return result.rows.length ? User.fromDb(result.rows[0]) : null;
     }
 
     async findByName(username) {

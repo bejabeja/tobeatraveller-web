@@ -14,7 +14,7 @@ import {
 import { UserRowSkeleton } from '../../components/Skeleton';
 import { shadow } from '../../utils/styles';
 
-const TYPE_ICON = { follow: '👤', like: '❤️', comment: '💬' };
+const TYPE_ICON = { follow: '👤', like: '❤️', comment: '💬', referral_reward: '🎁' };
 
 const NotificationsScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -43,6 +43,7 @@ const NotificationsScreen = ({ navigation }) => {
 
   const handlePress = (n) => {
     if (n.type === 'follow') navigation.navigate('UserProfile', { id: n.actor?.id });
+    else if (n.type === 'referral_reward') navigation.navigate('Referral');
     else if (n.itinerary?.id) {
       navigation.navigate('Itinerary', {
         id: n.itinerary.id,
@@ -120,6 +121,7 @@ const NotificationsScreen = ({ navigation }) => {
                   {n.type === 'follow' && t(`notifications.startedFollowing${n.count > 1 ? 'Plural' : ''}`)}
                   {n.type === 'like' && <Text>{t(`notifications.liked${n.count > 1 ? 'Plural' : ''}`)}<Text style={styles.italic}>{n.itinerary?.title}</Text></Text>}
                   {n.type === 'comment' && <Text>{t(`notifications.commented${n.count > 1 ? 'Plural' : ''}`)}<Text style={styles.italic}>{n.itinerary?.title}</Text></Text>}
+                  {n.type === 'referral_reward' && <Text> {t('notifications.referralRewardMiddle')} {t('notifications.referralRewardSuffix')}</Text>}
                 </Text>
                 <Text style={styles.time}>{n.postedAgo}</Text>
               </View>

@@ -6,7 +6,7 @@ export class User {
         id, username, email, password, location, avatarUrl, avatarPublicId,
         createdAt, updatedAt, name, followersListIds,
         followingListIds, itineraries, bio, about, totalItineraries, role, premiumUntil,
-        stripeCustomerId
+        stripeCustomerId, referralCode
     }) {
         this.id = id;
         this.username = username;
@@ -18,6 +18,7 @@ export class User {
         this.role = role || 'user';
         this.premiumUntil = premiumUntil || null;
         this.stripeCustomerId = stripeCustomerId || null;
+        this.referralCode = referralCode || null;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.name = name || null;
@@ -41,6 +42,7 @@ export class User {
             role: row.role,
             premiumUntil: row.premium_until,
             stripeCustomerId: row.stripe_customer_id,
+            referralCode: row.referral_code,
             createdAt: row.created_at,
             updatedAt: row.updated_at,
             name: row.name,
@@ -89,6 +91,7 @@ export class User {
             role: this.role,
             premiumUntil: this.premiumUntil,
             isPremium: this.isPremium(),
+            referralCode: this.referralCode,
             // Left raw (not formatDate()'d like updatedAt below): formatDate()
             // hardcodes en-US, so a Spanish-language viewer would see "Joined
             // August 2026" mid-sentence. The client formats this with the
@@ -109,7 +112,7 @@ export class User {
     }
 
     toPublicDTO() {
-        const { email, premiumUntil, isTrialEligible, ...publicFields } = this.toDTO();
+        const { email, premiumUntil, isTrialEligible, referralCode, ...publicFields } = this.toDTO();
         return publicFields;
     }
 

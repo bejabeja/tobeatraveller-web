@@ -1,0 +1,222 @@
+.referral {
+  &__hero {
+    padding: 96px 24px 56px;
+    text-align: center;
+  }
+
+  &__hero-icon {
+    width: 1em;
+    height: 1em;
+    font-size: 44px;
+    color: var(--primary-color);
+    margin-bottom: 16px;
+  }
+
+  &__title {
+    max-width: 700px;
+    margin: 0 auto 16px;
+    font-size: 40px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: var(--text-color);
+  }
+
+  &__subtitle {
+    max-width: 560px;
+    margin: 0 auto;
+    color: var(--text-secondary-color);
+    font-size: 17px;
+    line-height: 1.7;
+  }
+
+  &__content {
+    padding-top: 24px;
+    padding-bottom: 88px;
+    max-width: 560px;
+    margin: 0 auto;
+  }
+
+  &__stats {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  &__stat {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 20px 12px;
+    background: var(--white-color);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+
+    strong {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--text-color);
+    }
+
+    span {
+      font-size: 13px;
+      color: var(--text-secondary-color);
+      text-align: center;
+    }
+  }
+
+  &__link-card {
+    background: var(--white-color);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 32px;
+  }
+
+  &__link-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary-color);
+    margin-bottom: 8px;
+  }
+
+  &__link-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  &__link-input {
+    flex: 1;
+    min-width: 0;
+    padding: 0.7rem 0.9rem;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    font-size: 14px;
+    color: var(--text-color);
+    background: var(--background-color, transparent);
+  }
+
+  &__copy-btn,
+  &__share-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+
+  &__share-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  &__invites {
+    margin-bottom: 32px;
+  }
+
+  &__invites-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-color);
+    margin-bottom: 12px;
+  }
+
+  &__invites-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__invite {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--white-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+  }
+
+  &__invite-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  &__invite-username {
+    flex: 1;
+    min-width: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__invite-status {
+    flex-shrink: 0;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--border-color);
+    color: var(--text-secondary-color);
+
+    &--rewarded {
+      background: rgba(46, 160, 67, 0.15);
+      color: #2ea043;
+    }
+  }
+
+  &__how {
+    text-align: center;
+  }
+
+  &__how-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-color);
+    margin-bottom: 20px;
+  }
+
+  &__steps {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    text-align: left;
+  }
+
+  &__step {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    color: var(--text-secondary-color);
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  &__step-number {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    color: var(--white-color);
+    font-size: 13px;
+    font-weight: 700;
+  }
+}

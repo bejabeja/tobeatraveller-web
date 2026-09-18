@@ -7,12 +7,17 @@ import { globalAiRateLimit, perUserAiRateLimit } from "../middlewares/aiGenerati
 import { requirePremium } from "../middlewares/requirePremium.js";
 import { PlacesRepository } from "../repositories/placesRepository.js";
 import { ItineraryRepository } from "../repositories/itineraryRepository.js";
+import { NotificationsRepository } from "../repositories/notificationsRepository.js";
+import { ReferralRepository } from "../repositories/referralRepository.js";
 import { UserRepository } from "../repositories/userRepository.js";
 import { AIService } from "../services/AIService.js";
 import { auditLogService } from "../services/sharedAuditLogService.js";
 import { CloudinaryService } from "../services/cloudinaryService.js";
+import { EmailService } from "../services/emailService.js";
 import { ItineraryService } from "../services/itineraryService.js";
 import { ItinerariesService } from "../services/itinerariesService.js";
+import { NotificationsService } from "../services/notificationsService.js";
+import { ReferralService } from "../services/referralService.js";
 
 export const createItinerariesRouter = () => {
     const router = Router();
@@ -20,10 +25,15 @@ export const createItinerariesRouter = () => {
     const itinerariesRepository = new ItineraryRepository();
     const placesRepository = new PlacesRepository();
     const userRepository = new UserRepository();
+    const referralRepository = new ReferralRepository();
+    const notificationsRepository = new NotificationsRepository();
     const cloudinaryService = new CloudinaryService();
     const aiService = new AIService();
+    const emailService = new EmailService();
+    const notificationsService = new NotificationsService(notificationsRepository);
+    const referralService = new ReferralService(referralRepository, userRepository, auditLogService, notificationsService, emailService);
 
-    const itineraryService = new ItineraryService(itinerariesRepository, placesRepository, userRepository, cloudinaryService, aiService, auditLogService);
+    const itineraryService = new ItineraryService(itinerariesRepository, placesRepository, userRepository, cloudinaryService, aiService, auditLogService, referralService);
     const itinerariesService = new ItinerariesService(itinerariesRepository, userRepository, placesRepository);
 
     const itineraryController = new ItineraryController(itineraryService);

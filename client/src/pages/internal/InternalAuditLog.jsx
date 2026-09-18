@@ -34,6 +34,12 @@ const AUDIT_DESCRIPTIONS = {
     actor: entry.actorUsername, deletedCount: entry.metadata?.deletedCount,
     months: entry.metadata?.months, trigger: entry.metadata?.trigger,
   }),
+  referral_reward_granted: (entry, t) => t("admin.auditReferralRewardGranted", {
+    target: entry.targetUsername ?? entry.targetUserId, rewardDays: entry.metadata?.rewardDays,
+  }),
+  referral_reward_capped: (entry, t) => t("admin.auditReferralRewardCapped", {
+    target: entry.targetUsername ?? entry.targetUserId, monthlyLimit: entry.metadata?.monthlyLimit,
+  }),
 };
 
 const describeEntry = (entry, t) => {

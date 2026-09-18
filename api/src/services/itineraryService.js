@@ -12,13 +12,31 @@ import { AUDIT_EVENTS } from "../utils/auditEvents.js";
 const MONTHLY_AI_GENERATION_LIMIT = 50;
 
 export class ItineraryService {
-    constructor(itinerariesRepository, placesRepository, userRepository, cloudinaryService, aiService, auditLogService = null) {
+    constructor(
+        itinerariesRepository, placesRepository, userRepository, cloudinaryService, aiService,
+        auditLogService = null, referralService = null
+    ) {
         this.itinerariesRepository = itinerariesRepository;
         this.placesRepository = placesRepository;
         this.userRepository = userRepository;
         this.cloudinaryService = cloudinaryService;
         this.aiService = aiService;
         this.auditLogService = auditLogService;
+        this.referralService = referralService;
+    }
+
+    // Fire-and-forget, same pattern as CommentsService -> NotificationsService:
+    // a referral reward is a side effect that must never break itinerary
+    // creation. Only fires on someone's very first itinerary (whichever way
+    // it was created), which is the "did they actually engage" signal a
+    // referral reward should be gated on, not just signing up.
+    async _rewardIfFirstItinerary(userId, itineraryId) {
+        if (!this.referralService) return;
+
+        const total = await this.itinerariesRepository.getTotalByUserId(userId);
+        if (total === 1) {
+            this.referralService.rewardFirstItinerary(userId, itineraryId).catch(() => {});
+        }
     }
     async getItineraryById(id, requestingUserId) {
         const itinerary = await this.itinerariesRepository.findById(id);
@@ -68,6 +86,7 @@ export class ItineraryService {
         }
 
         await this._addGalleryImages(itinerary, images ?? []);
+        await this._rewardIfFirstItinerary(userId, itinerary.id);
 
         return itinerary.toDTO();
     }
@@ -125,6 +144,7 @@ export class ItineraryService {
             return newPlace;
         }));
         newPlaces.forEach(newPlace => itinerary.addPlace(newPlace));
+        await this._rewardIfFirstItinerary(userId, itinerary.id);
 
         return itinerary.toDTO();
     }

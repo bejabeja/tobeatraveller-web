@@ -367,6 +367,53 @@ describe('UserService.create()', () => {
         expect(savedUser.signupCountryCode).toBeNull();
         expect(savedUser.signupUserAgent).toBeNull();
     });
+
+    describe('referral registration', () => {
+        let referralService;
+        let serviceWithReferral;
+
+        beforeEach(() => {
+            referralService = {
+                registerSignup: vi.fn().mockResolvedValue(undefined),
+                codeFromUsername: vi.fn((username) => username.toLowerCase()),
+            };
+            serviceWithReferral = new UserService(
+                userRepository, { findPublicByUserId: async () => [] }, {}, null,
+                null, null, null, null, null, null, null, referralService
+            );
+        });
+
+        it("derives the new user's own referral code from their username", async () => {
+            let savedUser;
+            userRepository.save = async (user) => { savedUser = user; return makeUser(user); };
+
+            await serviceWithReferral.create({ username: 'JaneDoe', email: 'jane@example.com', password: 'secret1' });
+
+            expect(savedUser.referralCode).toBe('janedoe');
+        });
+
+        it('registers the referral with the new user id once signup succeeds', async () => {
+            await serviceWithReferral.create({
+                username: 'jane', email: 'jane@example.com', password: 'secret1', referralCode: 'abc123',
+            });
+
+            expect(referralService.registerSignup).toHaveBeenCalledWith('abc123', 'user-1');
+        });
+
+        it('does not attempt to register a referral when no code was provided', async () => {
+            await serviceWithReferral.create({ username: 'jane', email: 'jane@example.com', password: 'secret1' });
+
+            expect(referralService.registerSignup).not.toHaveBeenCalled();
+        });
+
+        it('does not let a failing referral registration break signup', async () => {
+            referralService.registerSignup.mockRejectedValue(new Error('db down'));
+
+            await expect(serviceWithReferral.create({
+                username: 'jane', email: 'jane@example.com', password: 'secret1', referralCode: 'abc123',
+            })).resolves.toBeDefined();
+        });
+    });
 });
 
 describe('UserService.exportUserData()', () => {

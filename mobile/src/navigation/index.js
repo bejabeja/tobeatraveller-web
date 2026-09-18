@@ -22,6 +22,7 @@ import ProfileScreen from '../screens/profile/ProfileScreen';
 import EditProfileScreen from '../screens/profile/EditProfileScreen';
 import SettingsScreen from '../screens/settings/SettingsScreen';
 import SubscriptionScreen from '../screens/subscription/SubscriptionScreen';
+import ReferralScreen from '../screens/referral/ReferralScreen';
 import ItineraryScreen from '../screens/itinerary/ItineraryScreen';
 import EditItineraryScreen from '../screens/itinerary/EditItineraryScreen';
 import EditExperienceScreen from '../screens/itinerary/EditExperienceScreen';
@@ -215,6 +216,7 @@ const Navigation = () => {
         <Stack.Screen name="EditProfile" component={EditProfileScreen} />
         <Stack.Screen name="Settings" component={SettingsScreen} />
         <Stack.Screen name="Subscription" component={SubscriptionScreen} />
+        <Stack.Screen name="Referral" component={ReferralScreen} />
         <Stack.Screen name="EditItinerary" component={EditItineraryScreen} />
         <Stack.Screen name="EditExperience" component={EditExperienceScreen} />
         <Stack.Screen name="CreateItinerary" component={CreateItineraryScreen} />

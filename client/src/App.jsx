@@ -47,6 +47,7 @@ const Favorites = lazy(() => import("./pages/favorites/Favorites"));
 const EditProfile = lazy(() => import("./pages/profile/EditProfile"));
 const Settings = lazy(() => import("./pages/settings/Settings"));
 const Subscription = lazy(() => import("./pages/subscription/Subscription"));
+const Referral = lazy(() => import("./pages/referral/Referral"));
 const Account = lazy(() => import("./pages/account/Account"));
 const VanLog = lazy(() => import("./pages/vanLog/VanLog"));
 const Supplies = lazy(() => import("./pages/supplies/Supplies"));
@@ -59,6 +60,7 @@ const EditItinerary = lazy(() => import("./pages/itinerary/edit/EditItinerary"))
 const InternalDashboard = lazy(() => import("./pages/internal/InternalDashboard"));
 const InternalUsers = lazy(() => import("./pages/internal/InternalUsers"));
 const InternalAuditLog = lazy(() => import("./pages/internal/InternalAuditLog"));
+const InternalReferrals = lazy(() => import("./pages/internal/InternalReferrals"));
 
 const App = () => {
   const dispatch = useDispatch();
@@ -157,6 +159,7 @@ const App = () => {
                 <Route path="/welcome" element={<Onboarding />} />
                 <Route path="/notifications" element={<Notifications />} />
                 <Route path="/account" element={<Account />} />
+                <Route path="/invite" element={<Referral />} />
                 <Route path="/my-itineraries" element={<MyItineraries />} />
                 <Route path="/itineraries/saved" element={<Favorites />} />
                 <Route path="/van-log" element={<VanLog />} />
@@ -176,6 +179,7 @@ const App = () => {
                     <Route index element={<Navigate to="/internal/users" replace />} />
                     <Route path="users" element={<InternalUsers />} />
                     <Route path="audit-log" element={<InternalAuditLog />} />
+                    <Route path="referrals" element={<InternalReferrals />} />
                   </Route>
                 </Route>
               </Route>

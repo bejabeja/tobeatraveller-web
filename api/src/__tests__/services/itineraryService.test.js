@@ -46,6 +46,7 @@ describe('ItineraryService', () => {
       linkImage: vi.fn(),
       unlinkImage: vi.fn(),
       getImagesByItineraryId: vi.fn().mockResolvedValue([]),
+      getTotalByUserId: vi.fn(),
     };
     placesRepository = {
       getPlacesByItineraryId: vi.fn().mockResolvedValue([]),
@@ -204,6 +205,24 @@ describe('ItineraryService', () => {
       expect(itinerariesRepository.linkPlace).toHaveBeenCalledWith('itin-2', 'place-2', 0, 1, 'A big arena');
       expect(clone.addPlace).toHaveBeenCalledWith(insertedPlace);
     });
+
+    it('rewards the referral when the clone is the cloner\'s first ever itinerary', async () => {
+      const source = makeItinerary({ isPublic: true });
+      const clone = makeItinerary({ id: 'itin-2' });
+      const referralService = { rewardFirstItinerary: vi.fn().mockResolvedValue(undefined) };
+      const serviceWithReferral = new ItineraryService(
+        itinerariesRepository, placesRepository, userRepository, cloudinaryService, aiService,
+        null, referralService
+      );
+      itinerariesRepository.findById.mockResolvedValue(source);
+      placesRepository.getPlacesByItineraryId.mockResolvedValue([]);
+      itinerariesRepository.create.mockResolvedValue(clone);
+      itinerariesRepository.getTotalByUserId.mockResolvedValue(1);
+
+      await serviceWithReferral.cloneItinerary('itin-1', 'cloner-1');
+
+      expect(referralService.rewardFirstItinerary).toHaveBeenCalledWith('cloner-1', 'itin-2');
+    });
   });
 
   describe('createItinerary()', () => {
@@ -311,6 +330,45 @@ describe('ItineraryService', () => {
       expect(itinerariesRepository.linkImage).toHaveBeenNthCalledWith(1, 'itin-1', 'https://cloudinary.com/a.jpg', 'pub-a', 0);
       expect(itinerariesRepository.linkImage).toHaveBeenNthCalledWith(2, 'itin-1', 'https://cloudinary.com/b.jpg', 'pub-b', 1);
       expect(itinerary.addImage).toHaveBeenCalledTimes(2);
+    });
+
+    describe('referral reward (via ReferralService)', () => {
+      let referralService;
+      let serviceWithReferral;
+
+      beforeEach(() => {
+        referralService = { rewardFirstItinerary: vi.fn().mockResolvedValue(undefined) };
+        serviceWithReferral = new ItineraryService(
+          itinerariesRepository, placesRepository, userRepository, cloudinaryService, aiService,
+          null, referralService
+        );
+      });
+
+      it('rewards the referral when this is the user\'s first ever itinerary', async () => {
+        itinerariesRepository.create.mockResolvedValue(makeItinerary());
+        itinerariesRepository.getTotalByUserId.mockResolvedValue(1);
+
+        await serviceWithReferral.createItinerary(baseData, null, [], 'user-1');
+
+        expect(referralService.rewardFirstItinerary).toHaveBeenCalledWith('user-1', 'itin-1');
+      });
+
+      it('does not reward when the user already has other itineraries', async () => {
+        itinerariesRepository.create.mockResolvedValue(makeItinerary());
+        itinerariesRepository.getTotalByUserId.mockResolvedValue(2);
+
+        await serviceWithReferral.createItinerary(baseData, null, [], 'user-1');
+
+        expect(referralService.rewardFirstItinerary).not.toHaveBeenCalled();
+      });
+
+      it('does not touch the referral repository at all without a ReferralService', async () => {
+        itinerariesRepository.create.mockResolvedValue(makeItinerary());
+
+        await service.createItinerary(baseData, null, [], 'user-1');
+
+        expect(itinerariesRepository.getTotalByUserId).not.toHaveBeenCalled();
+      });
     });
   });
 

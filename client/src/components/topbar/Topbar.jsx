@@ -3,6 +3,7 @@ import { GoPerson, GoSignOut } from "react-icons/go";
 import {
   IoCardOutline,
   IoChevronDownOutline,
+  IoGiftOutline,
   IoListOutline,
   IoNotificationsOutline,
   IoSaveOutline,
@@ -117,6 +118,10 @@ const Topbar = ({ onOpenSearch }) => {
             <Link to="/subscription" className="topbar__menu-item" onClick={() => setMenuOpen(false)}>
               <IoCardOutline className="topbar__menu-icon" />
               <span>{t("nav.subscription")}</span>
+            </Link>
+            <Link to="/invite" className="topbar__menu-item" onClick={() => setMenuOpen(false)}>
+              <IoGiftOutline className="topbar__menu-icon" />
+              <span>{t("referral.accountCardTitle")}</span>
             </Link>
             <div className="topbar__menu-divider" />
             <Link to="/logout" className="topbar__menu-item topbar__menu-item--danger">

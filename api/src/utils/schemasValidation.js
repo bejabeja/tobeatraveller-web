@@ -60,6 +60,7 @@ export const signupSchema = z.object({
     ageConfirmed: z.literal(true, {
         errorMap: () => ({ message: "You must confirm you are at least 16 years old" }),
     }),
+    referralCode: z.string().trim().max(20).optional().or(z.literal("")),
 }).refine((data) => {
     return data.password === data.confirmPassword;
 }, {

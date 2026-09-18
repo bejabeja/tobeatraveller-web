@@ -341,7 +341,17 @@
     "auditFilterDateFromLabel": "From",
     "auditFilterDateToLabel": "To",
     "auditLoadMore": "Load more",
-    "auditShowingCount": "Showing {{shown}} of {{total}}"
+    "auditShowingCount": "Showing {{shown}} of {{total}}",
+    "auditReferralRewardGranted": "Referral reward granted to {{target}} ({{rewardDays}} days of Premium)",
+    "auditReferralRewardCapped": "Referral reward for {{target}} withheld: monthly cap of {{monthlyLimit}} reached",
+    "referralsTitle": "Referrals",
+    "referralsTotalInvited": "Total invites",
+    "referralsTotalRewarded": "Total rewarded",
+    "referralsCappedCount": "Rewards withheld (monthly cap)",
+    "referralsTopReferrersTitle": "Top referrers",
+    "referralsNoData": "No referrals yet.",
+    "referralsInvitedCount": "{{count}} invited",
+    "referralsRewardedCount": "{{count}} rewarded"
   },
   "profile": {
     "metaDescriptionFallback": "{{username}}'s travel itineraries on ToBeATraveller",
@@ -745,7 +755,10 @@
     "commentedPlural": " commented on ",
     "andOthers_one": " and {{count}} other",
     "andOthers_other": " and {{count}} others",
-    "seeAll": "See all notifications"
+    "seeAll": "See all notifications",
+    "referralRewardPrefix": "You and",
+    "referralRewardMiddle": "and you",
+    "referralRewardSuffix": "both got 1 month of Premium"
   },
   "comments": {
     "title": "Comments",
@@ -1232,5 +1245,31 @@
     "learnMore": "Learn more",
     "accept": "Accept",
     "decline": "Decline"
+  },
+  "referral": {
+    "title": "Invite friends, earn Premium",
+    "subtitle": "For every friend who joins with your link and shares their first trip, you both get 1 month of Premium, free.",
+    "howItWorksTitle": "How it works",
+    "howItWorksStep1": "Share your personal invite link",
+    "howItWorksStep2": "A friend creates an account with it",
+    "howItWorksStep3": "Once they share their first trip, you both unlock 1 month of Premium",
+    "linkLabel": "Your invite link",
+    "loading": "Loading your invite link…",
+    "copyButton": "Copy",
+    "shareButton": "Share invite",
+    "shareTitle": "Join me on ToBeATraveller",
+    "shareText": "I'm using ToBeATraveller to plan and share road trips. Join with my link and we both get a free month of Premium!",
+    "statsInvited": "Friends invited",
+    "statsRewarded": "Months of Premium earned",
+    "accountCardTitle": "Invite friends",
+    "accountCardDesc": "Get a free month of Premium for every friend who joins",
+    "signupBannerTitle": "You've been invited to ToBeATraveller 🎉",
+    "loadErrorToast": "Couldn't load your invite link",
+    "invitesTitle": "Your invites",
+    "inviteStatusPending": "Waiting for their first trip",
+    "inviteStatusRewarded": "Premium unlocked 🎁",
+    "mobileCodeLabel": "Invite code (optional)",
+    "mobileCodePlaceholder": "e.g. a friend's username",
+    "mobileCodeHint": "Were you invited by a friend? Enter their username here."
   }
 }

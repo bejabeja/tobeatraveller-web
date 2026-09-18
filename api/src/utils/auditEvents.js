@@ -18,4 +18,6 @@ export const AUDIT_EVENTS = Object.freeze({
     AI_ITINERARY_GENERATED: 'ai_itinerary_generated',
     SUBSCRIPTION_STARTED: 'subscription_started',
     SUBSCRIPTION_CANCELED: 'subscription_canceled',
+    REFERRAL_REWARD_GRANTED: 'referral_reward_granted',
+    REFERRAL_REWARD_CAPPED: 'referral_reward_capped',
 });

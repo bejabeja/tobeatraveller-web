@@ -277,6 +277,16 @@
       width: auto;
     }
 
+    &-referral-banner {
+      margin-top: 0.75rem;
+      padding: 0.6rem 0.85rem;
+      border-radius: 12px;
+      background: rgba(232, 116, 59, 0.1);
+      color: var(--primary-color);
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
     .input {
       margin-bottom: 0;
 

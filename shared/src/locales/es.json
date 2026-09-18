@@ -341,7 +341,17 @@
     "auditFilterDateFromLabel": "Desde",
     "auditFilterDateToLabel": "Hasta",
     "auditLoadMore": "Cargar más",
-    "auditShowingCount": "Mostrando {{shown}} de {{total}}"
+    "auditShowingCount": "Mostrando {{shown}} de {{total}}",
+    "auditReferralRewardGranted": "Recompensa de referido concedida a {{target}} ({{rewardDays}} días de Premium)",
+    "auditReferralRewardCapped": "Recompensa de referido para {{target}} retenida: se alcanzó el tope mensual de {{monthlyLimit}}",
+    "referralsTitle": "Referidos",
+    "referralsTotalInvited": "Invitaciones totales",
+    "referralsTotalRewarded": "Total recompensados",
+    "referralsCappedCount": "Recompensas retenidas (tope mensual)",
+    "referralsTopReferrersTitle": "Top de invitadores",
+    "referralsNoData": "Todavía no hay referidos.",
+    "referralsInvitedCount": "{{count}} invitados",
+    "referralsRewardedCount": "{{count}} recompensados"
   },
   "profile": {
     "metaDescriptionFallback": "Los itinerarios de viaje de {{username}} en ToBeATraveller",
@@ -722,7 +732,10 @@
     "commentedPlural": " comentaron en ",
     "andOthers_one": " y {{count}} más",
     "andOthers_other": " y {{count}} más",
-    "seeAll": "Ver todas las notificaciones"
+    "seeAll": "Ver todas las notificaciones",
+    "referralRewardPrefix": "Tú y",
+    "referralRewardMiddle": "y tú",
+    "referralRewardSuffix": "habéis ganado 1 mes de Premium"
   },
   "comments": {
     "title": "Comentarios",
@@ -1232,5 +1245,31 @@
     "learnMore": "Más información",
     "accept": "Aceptar",
     "decline": "Rechazar"
+  },
+  "referral": {
+    "title": "Invita a amigos, gana Premium",
+    "subtitle": "Por cada amigo que se una con tu enlace y comparta su primer viaje, los dos ganáis 1 mes de Premium gratis.",
+    "howItWorksTitle": "Cómo funciona",
+    "howItWorksStep1": "Comparte tu enlace de invitación personal",
+    "howItWorksStep2": "Un amigo crea una cuenta con él",
+    "howItWorksStep3": "Cuando comparta su primer viaje, los dos desbloqueáis 1 mes de Premium",
+    "linkLabel": "Tu enlace de invitación",
+    "loading": "Cargando tu enlace de invitación…",
+    "copyButton": "Copiar",
+    "shareButton": "Compartir invitación",
+    "shareTitle": "Únete a mí en ToBeATraveller",
+    "shareText": "Estoy usando ToBeATraveller para planear y compartir viajes en carretera. ¡Únete con mi enlace y los dos ganamos un mes gratis de Premium!",
+    "statsInvited": "Amigos invitados",
+    "statsRewarded": "Meses de Premium ganados",
+    "accountCardTitle": "Invita a amigos",
+    "accountCardDesc": "Gana un mes gratis de Premium por cada amigo que se una",
+    "signupBannerTitle": "Te han invitado a ToBeATraveller 🎉",
+    "loadErrorToast": "No se ha podido cargar tu enlace de invitación",
+    "invitesTitle": "Tus invitaciones",
+    "inviteStatusPending": "Esperando su primer viaje",
+    "inviteStatusRewarded": "Premium desbloqueado 🎁",
+    "mobileCodeLabel": "Código de invitación (opcional)",
+    "mobileCodePlaceholder": "ej. el nombre de usuario de un amigo",
+    "mobileCodeHint": "¿Te invitó un amigo? Escribe aquí su nombre de usuario."
   }
 }

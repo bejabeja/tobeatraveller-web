@@ -16,14 +16,17 @@ const NotificationItem = ({ notification: n, onClick }) => {
     follow:  () => <><strong>@{n.actor?.username}</strong>{others}{verb("startedFollowing")}</>,
     like:    () => <><strong>@{n.actor?.username}</strong>{others}{verb("liked")}<em>{n.itinerary?.title}</em></>,
     comment: () => <><strong>@{n.actor?.username}</strong>{others}{verb("commented")}<em>{n.itinerary?.title}</em></>,
+    referral_reward: () => <>🎁 {t("notifications.referralRewardPrefix")}<strong>@{n.actor?.username}</strong> {t("notifications.referralRewardSuffix")}</>,
   };
   const label = TYPE_LABELS[n.type]?.();
 
   const href = n.type === "follow"
     ? `/profile/${n.actor?.id}`
-    : n.itinerary?.id
-      ? `/itinerary/${n.itinerary.id}${n.type === "comment" && n.commentId ? `#comment-${n.commentId}` : ""}`
-      : "#";
+    : n.type === "referral_reward"
+      ? "/invite"
+      : n.itinerary?.id
+        ? `/itinerary/${n.itinerary.id}${n.type === "comment" && n.commentId ? `#comment-${n.commentId}` : ""}`
+        : "#";
 
   return (
     <Link to={href} className={`notif-item${n.isRead ? "" : " notif-item--unread"}`} onClick={onClick}>

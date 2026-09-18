@@ -5,6 +5,7 @@ import { contactConfirmationTemplate } from '../emails/templates/contactConfirma
 import { contactTemplate } from '../emails/templates/contact.js';
 import { passwordChangedTemplate } from '../emails/templates/passwordChanged.js';
 import { passwordResetTemplate } from '../emails/templates/passwordReset.js';
+import { referralRewardTemplate } from '../emails/templates/referralReward.js';
 import { welcomeTemplate } from '../emails/templates/welcome.js';
 import { logger } from '../utils/logger.js';
 
@@ -72,6 +73,11 @@ export class EmailService {
 
     async sendAccountDeleted({ username, email }) {
         const { subject, html } = accountDeletedTemplate({ username });
+        await this._send({ to: email, subject, html });
+    }
+
+    async sendReferralReward({ username, email, friendUsername }) {
+        const { subject, html } = referralRewardTemplate({ username, friendUsername });
         await this._send({ to: email, subject, html });
     }
 

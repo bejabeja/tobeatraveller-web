@@ -21,7 +21,7 @@ export class UserService {
         userRepository, itinerariesRepository, followRepository, emailService = null,
         lifeDiaryRepository = null, auditLogService = null, vanLogRepository = null,
         inventoryRepository = null, shoppingListRepository = null, packingChecklistRepository = null,
-        subscriptionRepository = null
+        subscriptionRepository = null, referralService = null
     ) {
         this.userRepository = userRepository;
         this.itinerariesRepository = itinerariesRepository;
@@ -34,10 +34,11 @@ export class UserService {
         this.shoppingListRepository = shoppingListRepository;
         this.packingChecklistRepository = packingChecklistRepository;
         this.subscriptionRepository = subscriptionRepository;
+        this.referralService = referralService;
     }
 
     async create(userData, { ip, userAgent } = {}) {
-        const { password, username, email, location, termsAccepted } = userData;
+        const { password, username, email, location, termsAccepted, referralCode } = userData;
 
         await this._ensureUsernameAvailable(username);
         await this._ensureEmailAvailable(email);
@@ -54,12 +55,20 @@ export class UserService {
             termsAcceptedAt: termsAccepted ? new Date() : null,
             signupCountryCode: await countryCodeFromIp(ip),
             signupUserAgent: userAgent || null,
+            // This new user's own shareable code (not to be confused with the
+            // `referralCode` they may have signed up *with*, handled below).
+            referralCode: this.referralService?.codeFromUsername(username) ?? null,
         };
 
         const savedUser = await this.userRepository.save(userToSave);
 
         this.emailService?.sendWelcome({ username, email })
             .catch(err => logger.error('[email] welcome failed:', err));
+
+        if (referralCode) {
+            this.referralService?.registerSignup(referralCode, savedUser.id)
+                .catch(err => logger.error('[referral] register signup failed:', err));
+        }
 
         return savedUser;
     }
@@ -367,6 +376,7 @@ export class UserService {
                 about: user.about,
                 location: user.location,
                 avatarUrl: user.avatarUrl,
+                referralCode: user.referralCode,
                 createdAt: user.createdAt,
             },
             itineraries: itineraries.map(i => i.toDTO()),
