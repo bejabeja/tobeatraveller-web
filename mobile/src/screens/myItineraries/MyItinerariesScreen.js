@@ -12,6 +12,7 @@ import {
 } from '@tobeatraveller/shared';
 import ItineraryCard from '../../components/ItineraryCard';
 import { ItineraryCardSkeleton } from '../../components/Skeleton';
+import { buildSkeletonItems, FILLER_ITEM_ID, padForTwoColumns } from '../../utils/gridListHelpers';
 import { shadow } from '../../utils/styles';
 
 const CATEGORY_EMOJI = {
@@ -143,8 +144,8 @@ const MyItinerariesScreen = ({ navigation }) => {
       {/* Grid */}
       <FlatList
         data={loading && !filtered.length
-          ? Array.from({ length: 6 }, (_, i) => ({ id: `sk-${i}`, _skeleton: true }))
-          : filtered.length % 2 !== 0 ? [...filtered, { id: '__filler__' }] : filtered
+          ? buildSkeletonItems()
+          : padForTwoColumns(filtered)
         }
         keyExtractor={item => item.id}
         numColumns={2}
@@ -181,7 +182,7 @@ const MyItinerariesScreen = ({ navigation }) => {
         renderItem={({ item }) => (
           <View style={styles.gridItem}>
             {item._skeleton ? <ItineraryCardSkeleton />
-              : item.id === '__filler__' ? null
+              : item.id === FILLER_ITEM_ID ? null
               : <ItineraryCard itinerary={item} onPress={() => navigation.navigate('Itinerary', { id: item.id })} />
             }
           </View>

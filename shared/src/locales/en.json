@@ -236,6 +236,8 @@
     "errorMsg": "We couldn't load the community page. Please try again later.",
     "loadMore": "Load more",
     "trips": "{{count}} trips",
+    "lastTripPrefix": "Last trip:",
+    "noTripsYet": "No trips shared yet",
     "following": "Following",
     "follow": "Follow"
   },
@@ -246,7 +248,7 @@
     "loadErrorDesc": "Could not load your data. Please try again."
   },
   "subscription": {
-    "title": "Go Premium 🚐",
+    "title": "Go Premium",
     "subtitle": "Everything you need for life on the road, in your pocket. Track it, pack it, remember it, and let AI plan the next one.",
     "previewBadge": "AI-generated example",
     "previewTitle": "This is what the AI generates for you in seconds",

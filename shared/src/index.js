@@ -58,3 +58,4 @@ export * from './utils/constants/constants.js';
 export * from './utils/constants/currencies.js';
 export * from './utils/constants/premiumFeatures.js';
 export * from './utils/roles.js';
+export * from './utils/preloadImg.js';

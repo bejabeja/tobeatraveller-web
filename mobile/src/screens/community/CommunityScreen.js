@@ -13,6 +13,7 @@ import {
   selectIsAuthenticated, selectMe, selectAuthUser, setUserInfo,
 } from '@tobeatraveller/shared';
 import { UserCardSkeleton } from '../../components/Skeleton';
+import { buildSkeletonItems, FILLER_ITEM_ID, padForTwoColumns } from '../../utils/gridListHelpers';
 import { shadow } from '../../utils/styles';
 
 const CommunityScreen = ({ navigation }) => {
@@ -123,12 +124,9 @@ const CommunityScreen = ({ navigation }) => {
       )}
 
       <FlatList
-        data={(() => {
-          if (loading && !(users ?? []).length)
-            return Array.from({ length: 6 }, (_, i) => ({ id: `sk-${i}`, _skeleton: true }));
-          const arr = users ?? [];
-          return arr.length % 2 !== 0 ? [...arr, { id: '__filler__' }] : arr;
-        })()}
+        data={loading && !(users ?? []).length
+          ? buildSkeletonItems()
+          : padForTwoColumns(users ?? [])}
         keyExtractor={item => item.id}
         numColumns={2}
         columnWrapperStyle={styles.row}
@@ -160,7 +158,7 @@ const CommunityScreen = ({ navigation }) => {
         renderItem={({ item }) => (
           <View style={styles.cardWrapper}>
             {item._skeleton ? <UserCardSkeleton />
-              : item.id === '__filler__' ? null
+              : item.id === FILLER_ITEM_ID ? null
               : <UserCard
                   user={item} me={me} isAuthenticated={isAuthenticated}
                   onPress={() => isAuthenticated

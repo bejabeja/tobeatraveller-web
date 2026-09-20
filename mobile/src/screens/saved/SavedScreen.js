@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { getUserFavorites, selectIsAuthenticated } from '@tobeatraveller/shared';
 import ItineraryCard from '../../components/ItineraryCard';
 import { ItineraryCardSkeleton } from '../../components/Skeleton';
+import { buildSkeletonItems, FILLER_ITEM_ID, padForTwoColumns } from '../../utils/gridListHelpers';
 
 const SavedScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -76,8 +77,8 @@ const SavedScreen = ({ navigation }) => {
       <Header count={itineraries.length} t={t} />
       <FlatList
         data={loading && !itineraries.length
-          ? Array.from({ length: 6 }, (_, i) => ({ id: `sk-${i}`, _skeleton: true }))
-          : itineraries.length % 2 !== 0 ? [...itineraries, { id: '__filler__' }] : itineraries
+          ? buildSkeletonItems()
+          : padForTwoColumns(itineraries)
         }
         keyExtractor={item => item.id}
         numColumns={2}
@@ -99,7 +100,7 @@ const SavedScreen = ({ navigation }) => {
         renderItem={({ item }) => (
           <View style={styles.cardWrapper}>
             {item._skeleton ? <ItineraryCardSkeleton />
-              : item.id === '__filler__' ? null
+              : item.id === FILLER_ITEM_ID ? null
               : <ItineraryCard itinerary={item} onPress={() => navigation.navigate('Itinerary', { id: item.id })} />
             }
           </View>

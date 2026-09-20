@@ -8,15 +8,15 @@ import UsersSection from "../../components/users/UsersSection.jsx";
 import useDebouncedEffect from "../../hooks/useDebounced.js";
 import { usePageMeta } from "../../hooks/usePageMeta.js";
 import { selectIsAuthenticated } from "../../store/auth/authSelectors.js";
-import { initAllUsers, loadMoreUsers } from "../../store/users/usersActions";
 import {
+  initAllUsers, loadMoreUsers,
   selectAllUsers,
   selectAllUsersCurrentPage,
   selectAllUsersError,
   selectAllUsersLoading,
   selectAllUsersLoadingMore,
   selectAllUsersTotalPages,
-} from "../../store/users/usersSelectors";
+} from "@tobeatraveller/shared";
 import Error from "../error/Error.jsx";
 import "./Community.scss";
 
@@ -35,14 +35,16 @@ const Community = () => {
 
   usePageMeta({ title: t("community.title"), description: t("community.subtitle") });
 
+  // Defaults to "most trips" rather than alphabetical: browsing travellers
+  // A-Z reads like a directory/admin table, not social discovery.
   const [searchName, setSearchName] = useState("");
-  const [sortBy, setSortBy] = useState("username");
+  const [sortBy, setSortBy] = useState("itineraries");
   const loadMoreRef = useRef(null);
   const hasMore = currentPage < totalPages;
 
   const SORT_OPTIONS = [
+    { value: "itineraries", label: t("community.sortMostTrips") },
     { value: "username", label: t("community.sortAZ") },
-    { value: "itineraries", label: t("community.sortMostItineraries") },
   ];
 
   const handleLoadMore = () => {
@@ -58,7 +60,7 @@ const Community = () => {
   const handleSortChange = (e) => setSortBy(e.target.value);
   const handleReset = () => {
     setSearchName("");
-    setSortBy("username");
+    setSortBy("itineraries");
   };
 
   useDebouncedEffect(
@@ -73,7 +75,7 @@ const Community = () => {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      dispatch(initAllUsers({ page: 1 }));
+      dispatch(initAllUsers({ page: 1, sortBy: "itineraries" }));
     }
   }, [isAuthenticated, dispatch]);
 

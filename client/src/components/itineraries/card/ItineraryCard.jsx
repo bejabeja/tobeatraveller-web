@@ -1,9 +1,9 @@
-import { useEffect, useRef } from "react";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { FaRegComment } from "react-icons/fa6";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useLike } from "../../../hooks/useLike";
+import { useScrollReveal } from "../../../hooks/useScrollReveal";
 import { optimizedCloudinaryUrl } from "../../../utils/cloudinaryUrl";
 import OfficialBadge from "../../users/OfficialBadge";
 
@@ -26,23 +26,7 @@ const ItineraryCard = ({ itinerary, user: userProp }) => {
   const { username = "Anonymous", avatarUrl = "", role } = user;
 
   const { isLiked, likesCount, handleToggleLike } = useLike(id, initialLikesCount);
-  const cardRef = useRef(null);
-
-  useEffect(() => {
-    const el = cardRef.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          el.classList.add("itinerary-card--visible");
-          observer.unobserve(el);
-        }
-      },
-      { threshold: 0.08, rootMargin: "0px 0px -32px 0px" }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
+  const cardRef = useScrollReveal("itinerary-card");
 
   return (
     <div className="itinerary-card" ref={cardRef}>

@@ -52,6 +52,14 @@
     width: 120px;
     height: 16px;
   }
+
+  &.tagline {
+    width: 90%;
+  }
+
+  &.tagline-short {
+    width: 55%;
+  }
 }
 
 .skeleton--image {

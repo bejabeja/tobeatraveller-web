@@ -13,12 +13,10 @@ import {
   selectFeaturedItineraries, selectFeaturedItinerariesLoading,
   selectFeed, selectFeedLoading, selectFeedPage, selectFeedTotalPages,
   selectStats,
-} from "@tobeatraveller/shared";
-import { initFeaturedUsers } from "../../store/users/usersActions.js";
-import {
+  initFeaturedUsers,
   selectFeaturedUsers,
   selectFeaturedUsersLoading,
-} from "../../store/users/usersSelectors.js";
+} from "@tobeatraveller/shared";
 import WorldMap from "../../components/home/WorldMap.jsx";
 import LoadingButton from "../../components/LoadingButton.jsx";
 import { FEATURES } from "../../utils/constants/constants.js";
@@ -75,10 +73,6 @@ const Home = () => {
       )}
 
       <div className="section__container home__container">
-
-        {/* Shows a logged-out visitor what they'll find after signing up,
-            before any real (but generic) itinerary/people content below. */}
-        {!isAuthenticated && <FeatureShowcase />}
 
         {/* Feed tabs: only for authenticated users */}
         {isAuthenticated && (
@@ -160,6 +154,12 @@ const Home = () => {
               </div>
               <WorldMap />
             </div>
+            {/* Real content (trips, people, the map) comes first so a
+                logged-out visitor sees the community is real before the
+                pitch for what's behind sign-up; showing this pitch above
+                the fold used to mean the first thing anyone saw was an
+                all-premium feature list. */}
+            {!isAuthenticated && <FeatureShowcase />}
             {!isAuthenticated && (
               <div className="home__cta">
                 <h2>{t("home.joinCommunity")}</h2>

@@ -236,6 +236,8 @@
     "errorMsg": "No pudimos cargar la página de la comunidad. Por favor, inténtalo más tarde.",
     "loadMore": "Cargar más",
     "trips": "{{count}} viajes",
+    "lastTripPrefix": "Último viaje:",
+    "noTripsYet": "Todavía no ha compartido viajes",
     "following": "Siguiendo",
     "follow": "Seguir"
   },
@@ -246,7 +248,7 @@
     "loadErrorDesc": "No se pudieron cargar tus datos. Inténtalo de nuevo."
   },
   "subscription": {
-    "title": "Hazte Premium 🚐",
+    "title": "Hazte Premium",
     "subtitle": "Todo lo que necesitas para la vida en la carretera, en tu bolsillo. Regístralo, empaquétalo, recuérdalo, y deja que la IA planifique el siguiente viaje.",
     "previewBadge": "Ejemplo generado por IA",
     "previewTitle": "Así es un itinerario que la IA genera en segundos",

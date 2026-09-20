@@ -207,13 +207,14 @@ describe('User model', () => {
     });
 
     describe('toFeaturedDTO()', () => {
-        it('returns id, username, location, totalItineraries, and avatarUrl', () => {
+        it('returns id, username, location, bio, totalItineraries, and avatarUrl', () => {
             const user = User.fromDb(baseRow);
             const dto = user.toFeaturedDTO();
 
             expect(dto).toHaveProperty('id');
             expect(dto).toHaveProperty('username');
             expect(dto).toHaveProperty('location');
+            expect(dto.bio).toBe('Traveller at heart');
             expect(dto).toHaveProperty('totalItineraries');
             expect(dto).toHaveProperty('avatarUrl');
             expect(dto).not.toHaveProperty('email');

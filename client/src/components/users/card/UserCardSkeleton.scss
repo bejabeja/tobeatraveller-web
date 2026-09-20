@@ -2,26 +2,4 @@
 
 .user-card--skeleton {
   pointer-events: none;
-
-  .user-card__banner {
-    background: var(--secondary-color);
-  }
-}
-
-.skeleton--card-avatar {
-  position: absolute;
-  bottom: -28px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  border: 3px solid var(--background-color);
-}
-
-.skeleton--follow-badge {
-  width: 60px;
-  height: 22px;
-  border-radius: 999px;
-  flex-shrink: 0;
 }

@@ -15,6 +15,7 @@ import {
   IoJournalOutline,
   IoListOutline,
   IoNotificationsOutline,
+  IoPeopleOutline,
   IoSearchOutline,
 } from "react-icons/io5";
 import { useSelector } from "react-redux";
@@ -246,6 +247,15 @@ const Navbar = ({ onOpenSearch }) => {
               <IoCompassOutline className="nav-icon" />
               <span>{t("nav.explore")}</span>
             </NavLink>
+            {/* Was reachable only via Home's "People you may like -> See
+                all" link once logged in (the guest marketing nav shows it
+                as a top-level item, the authenticated sidebar didn't), so a
+                social app's own directory of people had no persistent nav
+                entry for the users who'd actually use it day to day. */}
+            <NavLink to="/community" className="nav-item" title={t("community.title")}>
+              <IoPeopleOutline className="nav-icon" />
+              <span>{t("community.title")}</span>
+            </NavLink>
           </div>
 
           <div className="nav-section">
@@ -322,6 +332,15 @@ const Navbar = ({ onOpenSearch }) => {
           <NavLink to="/subscription" className="bottom-nav__item">
             <IoCardOutline className="bottom-nav__icon" />
             <span>{t("nav.subscription")}</span>
+          </NavLink>
+        )}
+        {/* Same gap as the desktop sidebar (see the nav-section above):
+            logged-in mobile users had no persistent way to reach Community
+            either, only a link buried in Home. */}
+        {isAuthenticated && (
+          <NavLink to="/community" className="bottom-nav__item">
+            <IoPeopleOutline className="bottom-nav__icon" />
+            <span>{t("community.title")}</span>
           </NavLink>
         )}
         <button type="button" className="bottom-nav__item" onClick={onOpenSearch}>

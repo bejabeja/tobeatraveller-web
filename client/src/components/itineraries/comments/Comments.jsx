@@ -3,13 +3,12 @@ import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "react-router-dom";
-import { COMMENT_HIGHLIGHT_DURATION_MS, MAX_COMMENT_LENGTH } from "@tobeatraveller/shared";
+import { COMMENT_HIGHLIGHT_DURATION_MS, MAX_COMMENT_LENGTH, updateCommentsCount } from "@tobeatraveller/shared";
 import {
   addComment,
   deleteComment,
   getCommentsByItineraryId,
 } from "../../../services/comments";
-import { updateCommentsCount } from "../../../store/itineraries/itinerariesActions";
 import { selectMe } from "../../../store/user/userInfoSelectors";
 import Modal from "../../modal/Modal";
 import "./Comments.scss";

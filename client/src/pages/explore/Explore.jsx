@@ -14,9 +14,6 @@ import {
   initExploreItineraries,
   loadMoreExploreItineraries,
   setExplorePagination,
-} from "../../store/itineraries/itinerariesActions.js";
-
-import {
   selectExploreItineraries,
   selectExploreItinerariesError,
   selectExploreItinerariesLoading,
@@ -24,7 +21,7 @@ import {
   selectExplorePage,
   selectExploreTotalItems,
   selectExploreTotalPages,
-} from "../../store/itineraries/itinerariesSelectors.js";
+} from "@tobeatraveller/shared";
 
 import "./Explore.scss";
 

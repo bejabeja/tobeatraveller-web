@@ -11,7 +11,16 @@ import { setUserInfo } from "../../store/user/userInfoActions";
 import { PREMIUM_FEATURES } from "@tobeatraveller/shared";
 import { createCheckoutSession, createPortalSession, getMySubscription, resumeSubscription } from "../../services/subscription";
 import { getCategoryIcon } from "../../assets/icons";
+import { preloadImg } from "../../utils/preloadImg";
+import { useScrollReveal } from "../../hooks/useScrollReveal";
 import "./Subscription.scss";
+
+// A different photo from Home's hero.jpg (van-life specific, not the
+// general travel shot), so it can't share Home's imageHeroLoaded Redux
+// flag: that flag is keyed to hero.jpg specifically, and reusing it here
+// would either skip this image's own fade-in or wrongly mark hero.jpg as
+// loaded. Local state instead.
+const SUBSCRIPTION_HERO_IMAGE = "/images/subscription-hero.jpg";
 
 // Static example, not real AI output: shown so a free user sees what the
 // generator actually produces before paying for it, instead of only reading
@@ -58,10 +67,17 @@ const Subscription = () => {
   const authUser = useSelector(selectAuthUser);
   const userMe = useSelector(selectMe);
   const isPremium = !!userMe?.isPremium;
+  const [imageHeroLoaded, setImageHeroLoaded] = useState(false);
+
+  useEffect(() => {
+    if (imageHeroLoaded) return;
+    preloadImg(SUBSCRIPTION_HERO_IMAGE, () => setImageHeroLoaded(true));
+  }, [imageHeroLoaded]);
   const [loadingPlanId, setLoadingPlanId] = useState(null);
   const [loadingPortal, setLoadingPortal] = useState(false);
   const [subscription, setSubscription] = useState(null);
   const [resuming, setResuming] = useState(false);
+  const previewRef = useScrollReveal("subscription__preview");
   // Distinct from a canceled *paid* subscription: this user never got
   // charged and has nothing to lose by resuming, so it's a retention moment
   // worth a more persuasive treatment than the plain "already premium" card.
@@ -163,33 +179,43 @@ const Subscription = () => {
 
   return (
     <div className="subscription">
-      {/* Full-bleed hero band, same pattern as Explore's/Home's, so this page
-          gets the same "arrival moment" instead of just being plain text. */}
-      <header className="subscription__hero">
-        <IoSparkles className="subscription__hero-icon" aria-hidden="true" />
-        <h1 className="subscription__title">{t("subscription.title")}</h1>
-        <p className="subscription__subtitle">{t("subscription.subtitle")}</p>
+      {/* Same full-viewport photo hero as Home's guest hero (Hero.jsx/scss):
+          real destination photo instead of a plain white band, at the cost
+          of the price now sitting below one scroll again. That's a
+          deliberate trade the user asked for over the shorter, no-scroll
+          version this page had before. */}
+      <header className={`subscription__hero${imageHeroLoaded ? " loaded" : ""}`}>
+        <div className="subscription__hero-overlay" />
+        <div className="subscription__hero-content">
+          <h1 className="subscription__title">
+            <IoSparkles className="subscription__hero-icon" aria-hidden="true" />
+            {t("subscription.title")}
+          </h1>
+          <p className="subscription__subtitle">{t("subscription.subtitle")}</p>
 
-        {!isPremium && (
-          <>
-            {isAuthenticated ? (
-              <a href="#subscription-plans" className="btn btn--primary subscription__trial-cta">
-                {t("subscription.ctaFreeTrial")}
-              </a>
-            ) : (
-              <Link
-                to="/register"
-                state={{ redirectTo: "/subscription#subscription-plans" }}
-                className="btn btn--primary subscription__trial-cta"
-              >
-                {t("subscription.ctaFreeTrial")}
-              </Link>
-            )}
-            <p className="subscription__trial-note">{t("subscription.trialNoCard")}</p>
-          </>
-        )}
+          {!isPremium && (
+            <>
+              {isAuthenticated ? (
+                <a href="#subscription-plans" className="btn btn--primary subscription__trial-cta">
+                  {t("subscription.ctaFreeTrial")}
+                </a>
+              ) : (
+                <Link
+                  to="/register"
+                  state={{ redirectTo: "/subscription#subscription-plans" }}
+                  className="btn btn--primary subscription__trial-cta"
+                >
+                  {t("subscription.ctaFreeTrial")}
+                </Link>
+              )}
+              <p className="subscription__trial-note">{t("subscription.trialNoCard")}</p>
+            </>
+          )}
+        </div>
       </header>
 
+      {isTrialCanceled || isPaymentFailed || isPremium ? (
+      <div className="subscription__pricing-backdrop">
       <section className="subscription__content section__container">
       {isTrialCanceled ? (
         <div className="subscription__win-back">
@@ -257,9 +283,39 @@ const Subscription = () => {
             </button>
           </div>
         </div>
+      ) : null}
+      </section>
+      </div>
       ) : (
         <>
-          <div className="subscription__preview">
+          {/* Pricing comes right after the hero, not after several screens
+              of proof: the hero's own CTA used to jump-scroll all the way
+              down to this section, which was the tell that it was buried
+              too deep. Everything below (AI preview, feature grid) is for
+              whoever wants more convincing before deciding, not a gate in
+              front of the price. One shared backdrop covers pricing AND the
+              AI preview instead of two adjacent bands with different
+              treatments (white-with-blobs, then flat gray): that boundary
+              between them was its own visible seam. */}
+          <div className="subscription__pricing-backdrop">
+          <section className="subscription__content section__container">
+            <div id="subscription-plans" className="subscription__plans">
+              {PLANS.map((plan) => (
+                <PlanCard
+                  key={plan.id}
+                  plan={plan}
+                  isAuthenticated={isAuthenticated}
+                  loadingPlanId={loadingPlanId}
+                  onSubscribe={handleSubscribeClick}
+                  t={t}
+                />
+              ))}
+            </div>
+
+            <p className="subscription__disclaimer">{t("subscription.disclaimer")}</p>
+          </section>
+
+          <div className="subscription__preview" ref={previewRef}>
             <p className="subscription__preview-badge">{t("subscription.previewBadge")}</p>
             <h2 className="subscription__preview-title">{t("subscription.previewTitle")}</h2>
             <div className="subscription__preview-card">
@@ -285,58 +341,62 @@ const Subscription = () => {
               ))}
             </div>
           </div>
-
-          <p className="subscription__features-title">{t("subscription.featuresTitle")}</p>
-          <p className="subscription__features-subtitle">{t("subscription.featuresFreeNote")}</p>
-          <ul className="subscription__features">
-            {PREMIUM_FEATURES.map(({ id, titleKey, descriptionKey, emoji, color }) => (
-              <li key={id} className="subscription__feature">
-                <span className="subscription__feature-icon-badge" style={{ background: `${color}1A` }} aria-hidden="true">
-                  {emoji}
-                </span>
-                <span className="subscription__feature-text">
-                  <strong>{t(titleKey)}</strong>
-                  <span>{t(descriptionKey)}</span>
-                </span>
-              </li>
-            ))}
-          </ul>
-
-          <div id="subscription-plans" className="subscription__plans">
-            {PLANS.map((plan) => (
-              <div
-                key={plan.id}
-                className={`subscription__plan${plan.highlighted ? " subscription__plan--highlighted" : ""}`}
-              >
-                {plan.badgeKey && <span className="subscription__plan-badge">{t(plan.badgeKey)}</span>}
-                <p className="subscription__plan-name">{t(plan.nameKey)}</p>
-                <p className="subscription__price">
-                  <span className="subscription__price-amount">{t(plan.priceKey)}</span>
-                  <span className="subscription__price-period">{t(plan.periodKey)}</span>
-                </p>
-
-                {isAuthenticated ? (
-                  <button
-                    type="button"
-                    className="btn btn--primary subscription__cta"
-                    disabled={loadingPlanId === plan.id}
-                    onClick={() => handleSubscribeClick(plan.id)}
-                  >
-                    {loadingPlanId === plan.id ? t("subscription.ctaLoading") : t("subscription.ctaSubscribe")}
-                  </button>
-                ) : (
-                  <Link to="/register" className="btn btn--primary subscription__cta">
-                    {t("subscription.ctaCreateAccount")}
-                  </Link>
-                )}
-              </div>
-            ))}
           </div>
 
-          <p className="subscription__disclaimer">{t("subscription.disclaimer")}</p>
+          <section className="subscription__features-section section__container">
+            <p className="subscription__features-title">{t("subscription.featuresTitle")}</p>
+            <p className="subscription__features-subtitle">{t("subscription.featuresFreeNote")}</p>
+            <ul className="subscription__features">
+              {PREMIUM_FEATURES.map(({ id, titleKey, descriptionKey, emoji, color }) => (
+                <li key={id} className="subscription__feature">
+                  <span className="subscription__feature-icon-badge" style={{ background: `${color}1A` }} aria-hidden="true">
+                    {emoji}
+                  </span>
+                  <span className="subscription__feature-text">
+                    <strong>{t(titleKey)}</strong>
+                    <span>{t(descriptionKey)}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
         </>
       )}
-      </section>
+    </div>
+  );
+};
+
+// Its own component (not inlined in PLANS.map) because a hook, useScrollReveal,
+// can't be called from inside a .map() callback per React's Rules of Hooks.
+const PlanCard = ({ plan, isAuthenticated, loadingPlanId, onSubscribe, t }) => {
+  const cardRef = useScrollReveal("subscription__plan");
+
+  return (
+    <div
+      ref={cardRef}
+      className={`subscription__plan${plan.highlighted ? " subscription__plan--highlighted" : ""}`}
+    >
+      {plan.badgeKey && <span className="subscription__plan-badge">{t(plan.badgeKey)}</span>}
+      <p className="subscription__plan-name">{t(plan.nameKey)}</p>
+      <p className="subscription__price">
+        <span className="subscription__price-amount">{t(plan.priceKey)}</span>
+        <span className="subscription__price-period">{t(plan.periodKey)}</span>
+      </p>
+
+      {isAuthenticated ? (
+        <button
+          type="button"
+          className="btn btn--primary subscription__cta"
+          disabled={loadingPlanId === plan.id}
+          onClick={() => onSubscribe(plan.id)}
+        >
+          {loadingPlanId === plan.id ? t("subscription.ctaLoading") : t("subscription.ctaSubscribe")}
+        </button>
+      ) : (
+        <Link to="/register" className="btn btn--primary subscription__cta">
+          {t("subscription.ctaCreateAccount")}
+        </Link>
+      )}
     </div>
   );
 };

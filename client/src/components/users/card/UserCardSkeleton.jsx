@@ -3,16 +3,14 @@ import "./UserCardSkeleton.scss";
 const UserCardSkeleton = () => {
   return (
     <div className="user-card user-card--skeleton">
-      <div className="user-card__banner skeleton">
-        <div className="skeleton skeleton--card-avatar" />
-      </div>
-      <div className="user-card__body">
-        <div className="user-card__name-row">
-          <div className="skeleton skeleton--text skeleton--username" />
-          <div className="skeleton skeleton--follow-badge" />
+      <div className="user-card__image-wrapper skeleton" />
+      <div className="user-card__info">
+        <div className="skeleton skeleton--text tagline" />
+        <div className="skeleton skeleton--text tagline-short" />
+        <div className="user-card__meta">
+          <div className="skeleton skeleton--text location" />
+          <div className="skeleton skeleton--text trips" />
         </div>
-        <div className="skeleton skeleton--text skeleton--location" />
-        <div className="skeleton skeleton--text skeleton--trips" />
       </div>
     </div>
   );

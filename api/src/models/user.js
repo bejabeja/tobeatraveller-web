@@ -131,6 +131,7 @@ export class User {
             id: this.id,
             username: this.username,
             location: this.location,
+            bio: this.bio,
             totalItineraries: this.countItineraries(),
             avatarUrl: this.avatarUrl,
             lastItinerary: this.lastItinerary || null,

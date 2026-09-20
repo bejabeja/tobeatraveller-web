@@ -15,6 +15,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import ItineraryCard from '../../components/ItineraryCard';
 import { ItineraryCardSkeleton } from '../../components/Skeleton';
+import { buildSkeletonItems, FILLER_ITEM_ID, padForTwoColumns } from '../../utils/gridListHelpers';
 import { COLORS, shadow } from '../../utils/styles';
 
 const CATEGORY_EMOJI = {
@@ -203,12 +204,9 @@ const ExploreScreen = ({ navigation, route }) => {
 
       {/* Results */}
       <FlatList
-        data={(() => {
-          if (loading && !(itineraries ?? []).length)
-            return Array.from({ length: 6 }, (_, i) => ({ id: `sk-${i}`, _skeleton: true }));
-          const arr = itineraries ?? [];
-          return arr.length % 2 !== 0 ? [...arr, { id: '__filler__' }] : arr;
-        })()}
+        data={loading && !(itineraries ?? []).length
+          ? buildSkeletonItems()
+          : padForTwoColumns(itineraries ?? [])}
         keyExtractor={item => item.id}
         numColumns={2}
         columnWrapperStyle={styles.row}
@@ -251,7 +249,7 @@ const ExploreScreen = ({ navigation, route }) => {
           <View style={styles.gridItem}>
             {item._skeleton
               ? <ItineraryCardSkeleton />
-              : item.id === '__filler__'
+              : item.id === FILLER_ITEM_ID
                 ? null
                 : <ItineraryCard
                     itinerary={item}

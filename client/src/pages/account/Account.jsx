@@ -37,17 +37,21 @@ const Account = () => {
   // lists the tools and the Topbar's account menu already has logout.
   // Grouped into titled sections (like iOS Settings/Airbnb's account page)
   // rather than one flat list, now that it's grown to 9 rows.
+  // Rendered right after the header, before the upsell cards: a returning
+  // user opening "Me" is almost always after their own trips, not the
+  // premium/referral pitch, so that's what should be one tap away first.
+  const primarySection = {
+    // Profile itself isn't repeated here: the header card above already
+    // links to it (see the comment on that Link), so listing it again a
+    // few rows down would be the exact "same destination twice on one
+    // screen" issue this page keeps needing to avoid.
+    items: [
+      { to: "/my-itineraries", Icon: IoListOutline, label: t("nav.myTrips") },
+      { to: "/itineraries/saved", Icon: IoSaveOutline, label: t("nav.savedTrips") },
+    ],
+  };
+
   const sections = [
-    {
-      // Profile itself isn't repeated here: the header card above already
-      // links to it (see the comment on that Link), so listing it again a
-      // few rows down would be the exact "same destination twice on one
-      // screen" issue this page keeps needing to avoid.
-      items: [
-        { to: "/my-itineraries", Icon: IoListOutline, label: t("nav.myTrips") },
-        { to: "/itineraries/saved", Icon: IoSaveOutline, label: t("nav.savedTrips") },
-      ],
-    },
     {
       title: t("nav.yourTools"),
       mobileOnly: true,
@@ -66,6 +70,29 @@ const Account = () => {
     },
   ];
 
+  const renderSection = (section, key) => (
+    <div
+      key={key}
+      className={`account__section${section.mobileOnly ? " account__section--mobile-only" : ""}`}
+    >
+      {section.title && <h3 className="account__section-title">{section.title}</h3>}
+      <ul className="account__links">
+        {section.items.map(({ to, Icon, label, premium, mobileOnly, danger }) => (
+          <li key={to} className={mobileOnly ? "account__link-item--mobile-only" : undefined}>
+            <Link to={to} className={`account__link${danger ? " account__link--danger" : ""}`}>
+              <Icon className="account__link-icon" aria-hidden="true" />
+              <span className="account__link-label">{label}</span>
+              {premium && !isPremium && (
+                <span className="account__link-badge">{t("admin.premium")}</span>
+              )}
+              <IoChevronForward className="account__link-arrow" aria-hidden="true" />
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+
   return (
     <section className="account">
       {/* The card itself is the profile shortcut (Instagram/X/TikTok pattern):
@@ -83,6 +110,8 @@ const Account = () => {
         </div>
         <IoChevronForward className="account__header-arrow" aria-hidden="true" />
       </Link>
+
+      {renderSection(primarySection, "primary")}
 
       {!isPremium && (
         <Link to="/subscription" className="account__upsell">
@@ -113,28 +142,7 @@ const Account = () => {
         <IoChevronForward className="account__upsell-arrow" aria-hidden="true" />
       </Link>
 
-      {sections.map((section, i) => (
-        <div
-          key={section.title ?? i}
-          className={`account__section${section.mobileOnly ? " account__section--mobile-only" : ""}`}
-        >
-          {section.title && <h3 className="account__section-title">{section.title}</h3>}
-          <ul className="account__links">
-            {section.items.map(({ to, Icon, label, premium, mobileOnly, danger }) => (
-              <li key={to} className={mobileOnly ? "account__link-item--mobile-only" : undefined}>
-                <Link to={to} className={`account__link${danger ? " account__link--danger" : ""}`}>
-                  <Icon className="account__link-icon" aria-hidden="true" />
-                  <span className="account__link-label">{label}</span>
-                  {premium && !isPremium && (
-                    <span className="account__link-badge">{t("admin.premium")}</span>
-                  )}
-                  <IoChevronForward className="account__link-arrow" aria-hidden="true" />
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
+      {sections.map((section, i) => renderSection(section, section.title ?? i))}
     </section>
   );
 };
