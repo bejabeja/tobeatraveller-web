@@ -51,7 +51,9 @@ const UserCard = ({
             className="user-card__image"
           />
         ) : (
-          <div className="user-card__image-placeholder" aria-hidden="true" />
+          <div className="user-card__image-placeholder" aria-hidden="true">
+            <img src="/logo-white.svg" alt="" className="user-card__image-placeholder-logo" />
+          </div>
         )}
 
         <button

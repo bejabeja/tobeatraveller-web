@@ -6,11 +6,13 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import {
-  createVanLogEntry, updateVanLogEntry, vanLogCategories, vanLogCategoryEmoji as CATEGORY_EMOJI,
-  vanLogCommonCurrencies, vanLogEntrySchema,
+  createVanLogEntry, reverseGeocode, searchDestinations, updateVanLogEntry, vanLogCategories,
+  vanLogCategoryEmoji as CATEGORY_EMOJI, vanLogCommonCurrencies, vanLogEntrySchema,
 } from '@tobeatraveller/shared';
 import { shadow } from '../../utils/styles';
 import { GEOAPIFY_KEY } from '../../utils/config';
+import { useCurrentLocation } from '../../hooks/useCurrentLocation';
+import { UseCurrentLocationButton } from '../../components/UseCurrentLocationButton';
 
 const today = () => new Date().toISOString().split('T')[0];
 
@@ -51,6 +53,7 @@ const VanLogEntryFormScreen = ({ navigation, route }) => {
   const [isDirty, setIsDirty] = useState(false);
 
   const searchTimer = useRef(null);
+  const { getCurrentLocation, loading: locating } = useCurrentLocation();
 
   const handleBack = () => {
     if (!isDirty) { navigation.goBack(); return; }
@@ -70,18 +73,7 @@ const VanLogEntryFormScreen = ({ navigation, route }) => {
       if (!GEOAPIFY_KEY) return;
       setLocationSearching(true);
       try {
-        const params = new URLSearchParams({ text, apiKey: GEOAPIFY_KEY, limit: 5, lang: 'en' });
-        const res = await fetch(`https://api.geoapify.com/v1/geocode/autocomplete?${params}`);
-        const data = await res.json();
-        setLocationResults((data.features ?? []).map(f => {
-          const p = f.properties;
-          return {
-            name: p.city ?? p.county ?? p.state ?? p.country ?? p.name,
-            country: p.country,
-            label: p.formatted,
-            coordinates: { lat: p.lat, lon: p.lon },
-          };
-        }));
+        setLocationResults(await searchDestinations(text, { apiKey: GEOAPIFY_KEY }));
       } catch { setLocationResults([]); }
       finally { setLocationSearching(false); }
     }, 400);
@@ -91,6 +83,7 @@ const VanLogEntryFormScreen = ({ navigation, route }) => {
     setLocation(loc);
     setLocationQuery(loc.name);
     setLocationResults([]);
+    setIsDirty(true);
   };
 
   const clearLocation = () => {
@@ -98,6 +91,23 @@ const VanLogEntryFormScreen = ({ navigation, route }) => {
     setLocationQuery('');
     setLocationResults([]);
     setIsDirty(true);
+  };
+
+  const handleUseCurrentLocation = async () => {
+    let coords;
+    try {
+      coords = await getCurrentLocation();
+    } catch {
+      Alert.alert(t('common.locationPermissionDeniedToast'));
+      return;
+    }
+    try {
+      const place = await reverseGeocode({ ...coords, apiKey: GEOAPIFY_KEY });
+      if (place) selectLocation(place);
+      else Alert.alert(t('common.locationErrorToast'));
+    } catch {
+      Alert.alert(t('common.locationErrorToast'));
+    }
   };
 
   const handleSave = async () => {
@@ -317,6 +327,7 @@ const VanLogEntryFormScreen = ({ navigation, route }) => {
                   ))}
                 </View>
               )}
+              <UseCurrentLocationButton onPress={handleUseCurrentLocation} loading={locating} />
             </Field>
 
             <Field label={t('vanLog.notesLabel')} error={errors.notes} hint={`${notes.length}/1000`} hintWarn={notes.length > 900}>

@@ -31,7 +31,10 @@
     "yes": "Sí",
     "no": "No",
     "min": "Mín",
-    "max": "Máx"
+    "max": "Máx",
+    "useMyLocation": "Usar mi ubicación",
+    "locationPermissionDeniedToast": "Permiso de ubicación denegado. Puedes seguir buscando un lugar por nombre.",
+    "locationErrorToast": "No se pudo obtener tu ubicación. Inténtalo de nuevo o busca un lugar por nombre."
   },
   "auth": {
     "welcomeBack": "Bienvenido de nuevo",
@@ -213,6 +216,7 @@
   "community": {
     "title": "Comunidad",
     "subtitle": "Descubre viajeros de todo el mundo",
+    "travellers": "Viajeros a seguir",
     "members": "{{count}} miembros",
     "membersCount": "{{count}} miembros",
     "growingCommunity": "Una comunidad de viajeros en crecimiento",

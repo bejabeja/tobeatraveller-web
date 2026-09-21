@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { RiUserCommunityLine } from "react-icons/ri";
 import LoadingButton from "../../components/LoadingButton.jsx";
 import UsersSection from "../../components/users/UsersSection.jsx";
 import useDebouncedEffect from "../../hooks/useDebounced.js";
@@ -35,41 +34,34 @@ const Community = () => {
 
   usePageMeta({ title: t("community.title"), description: t("community.subtitle") });
 
-  // Defaults to "most trips" rather than alphabetical: browsing travellers
-  // A-Z reads like a directory/admin table, not social discovery.
+  // Fixed sort, no user-facing control: browsing travellers is social
+  // discovery, not a sortable directory (Instagram/LinkedIn's people
+  // discovery doesn't expose a sort toggle either). "Most trips" first is
+  // the closest proxy to relevance without a real recommendation engine.
+  const SORT_BY = "itineraries";
   const [searchName, setSearchName] = useState("");
-  const [sortBy, setSortBy] = useState("itineraries");
   const loadMoreRef = useRef(null);
   const hasMore = currentPage < totalPages;
 
-  const SORT_OPTIONS = [
-    { value: "itineraries", label: t("community.sortMostTrips") },
-    { value: "username", label: t("community.sortAZ") },
-  ];
-
   const handleLoadMore = () => {
     if (hasMore) {
-      dispatch(loadMoreUsers(currentPage + 1, searchName, sortBy)).then(() => {
+      dispatch(loadMoreUsers(currentPage + 1, searchName, SORT_BY)).then(() => {
         loadMoreRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
       });
     }
   };
 
-  const handleRetry = () => dispatch(initAllUsers({ searchName, sortBy, page: 1 }));
+  const handleRetry = () => dispatch(initAllUsers({ searchName, sortBy: SORT_BY, page: 1 }));
   const handleFilterChange = (e) => setSearchName(e.target.value);
-  const handleSortChange = (e) => setSortBy(e.target.value);
-  const handleReset = () => {
-    setSearchName("");
-    setSortBy("itineraries");
-  };
+  const handleReset = () => setSearchName("");
 
   useDebouncedEffect(
     () => {
       if (isAuthenticated) {
-        dispatch(initAllUsers({ searchName, sortBy, page: 1 }));
+        dispatch(initAllUsers({ searchName, sortBy: SORT_BY, page: 1 }));
       }
     },
-    [searchName, sortBy],
+    [searchName],
     400
   );
 
@@ -79,21 +71,9 @@ const Community = () => {
     }
   }, [isAuthenticated, dispatch]);
 
-  const hero = (
-    <div className="community__hero">
-      <RiUserCommunityLine className="community__hero-icon" />
-      <h1 className="community__hero-title">{t("community.title")}</h1>
-      <p className="community__hero-subtitle">
-        {t("community.subtitle")}
-      </p>
-      <span className="community__hero-count">{t("community.growingCommunity")}</span>
-    </div>
-  );
-
   if (!isAuthenticated) {
     return (
       <div className="community">
-        {hero}
         <div className="community__guest-preview section__container">
           <UsersSection users={users} isLoading={loading} />
           <div className="community__guest-blur" />
@@ -122,17 +102,15 @@ const Community = () => {
 
   return (
     <div className="community">
-      {hero}
       <div className="community__content section__container">
         <Filters
           searchName={searchName}
-          sortBy={sortBy}
           handleFilterChange={handleFilterChange}
-          handleSortChange={handleSortChange}
           handleReset={handleReset}
-          sortOptions={SORT_OPTIONS}
           t={t}
         />
+
+        <h1 className="community__results-title">{t("community.travellers")}</h1>
 
         <div className="community__results">
           {searchName && (
@@ -174,7 +152,7 @@ const Community = () => {
 
 export default Community;
 
-const Filters = ({ searchName, sortBy, handleFilterChange, handleSortChange, handleReset, sortOptions, t }) => (
+const Filters = ({ searchName, handleFilterChange, handleReset, t }) => (
   <div className="community__filters">
     <label>
       {t("community.search")}
@@ -185,17 +163,6 @@ const Filters = ({ searchName, sortBy, handleFilterChange, handleSortChange, han
         placeholder={t("community.searchPlaceholder")}
         onChange={handleFilterChange}
       />
-    </label>
-
-    <label>
-      {t("community.sortBy")}
-      <select name="sortBy" value={sortBy} onChange={handleSortChange}>
-        {sortOptions.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
     </label>
 
     <button onClick={handleReset} className="btn btn--ghost">

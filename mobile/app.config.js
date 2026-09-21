@@ -20,10 +20,15 @@ module.exports = ({ config }) => ({
     },
     // Allow HTTP connections (needed for local dev API and any non-HTTPS backend)
     usesCleartextTraffic: true,
-    permissions: ['READ_MEDIA_IMAGES', 'READ_EXTERNAL_STORAGE'],
+    permissions: ['READ_MEDIA_IMAGES', 'READ_EXTERNAL_STORAGE', 'ACCESS_COARSE_LOCATION'],
   },
   web: { favicon: './assets/favicon.png' },
-  plugins: ['expo-sharing'],
+  plugins: [
+    'expo-sharing',
+    ['expo-location', {
+      locationWhenInUsePermission: 'Allow To Be a Traveller to use your location to fill in nearby places.',
+    }],
+  ],
   extra: {
     eas: { projectId: '21b2c26e-ca30-4c39-8bf7-ad3bf5c4b408' },
     apiUrl: process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000',

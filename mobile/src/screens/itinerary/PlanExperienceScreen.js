@@ -12,13 +12,15 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
   aiPaceOptions, createItinerary, DEFAULT_AI_PACE, GENERATE_TIMEOUT_MESSAGE, generateSmartItinerary,
   isPremiumRequiredError, itineraryCategories, NEW_ITINERARY_DEFAULT_VISIBILITY, placeCategories,
-  selectAuthUser, selectMe,
+  reverseGeocode, searchDestinations, selectAuthUser, selectMe,
   setUserInfo, setUserInfoItineraries,
 } from '@tobeatraveller/shared';
 import { COLORS, shadow } from '../../utils/styles';
 import { getStepConfig, STEP_NAME_HINT } from '../../utils/stepConfig';
 import { GEOAPIFY_KEY } from '../../utils/config';
 import { PhotoPickerCard } from '../../components/PhotoPickerCard';
+import { useCurrentLocation } from '../../hooks/useCurrentLocation';
+import { UseCurrentLocationButton } from '../../components/UseCurrentLocationButton';
 
 const CATEGORY_EMOJI = {
   adventure:'🧗', relax:'🧘', culture:'🏛', romantic:'💕',
@@ -71,6 +73,7 @@ const PlanExperienceScreen = ({ navigation }) => {
 
   const destTimer = useRef(null);
   const locTimer  = useRef(null);
+  const { getCurrentLocation, loading: locating } = useCurrentLocation();
 
   // Location search (modal)
   const [locQuery, setLocQuery]         = useState('');
@@ -87,17 +90,7 @@ const PlanExperienceScreen = ({ navigation }) => {
       if (!GEOAPIFY_KEY) return;
       setDestSearching(true);
       try {
-        const params = new URLSearchParams({ text, apiKey: GEOAPIFY_KEY, limit: 5, lang: 'en' });
-        const res = await fetch(`https://api.geoapify.com/v1/geocode/autocomplete?${params}`);
-        const data = await res.json();
-        setDestResults((data.features ?? []).map(f => {
-          const p = f.properties;
-          return {
-            name: p.city ?? p.county ?? p.state ?? p.country ?? p.name,
-            label: p.formatted,
-            coordinates: { lat: p.lat, lon: p.lon },
-          };
-        }));
+        setDestResults(await searchDestinations(text, { apiKey: GEOAPIFY_KEY }));
       } catch { setDestResults([]); }
       finally { setDestSearching(false); }
     }, 400);
@@ -107,6 +100,23 @@ const PlanExperienceScreen = ({ navigation }) => {
     setDestination(dest);
     setDestQuery(dest.name);
     setDestResults([]);
+  };
+
+  const handleUseCurrentLocation = async () => {
+    let coords;
+    try {
+      coords = await getCurrentLocation();
+    } catch {
+      Alert.alert(t('common.locationPermissionDeniedToast'));
+      return;
+    }
+    try {
+      const place = await reverseGeocode({ ...coords, apiKey: GEOAPIFY_KEY });
+      if (place) selectDestination(place);
+      else Alert.alert(t('common.locationErrorToast'));
+    } catch {
+      Alert.alert(t('common.locationErrorToast'));
+    }
   };
 
   // ─── AI generation ────────────────────────────────────────────────────────
@@ -166,13 +176,7 @@ const PlanExperienceScreen = ({ navigation }) => {
       if (!GEOAPIFY_KEY) return;
       setLocSearching(true);
       try {
-        const params = new URLSearchParams({ text, apiKey: GEOAPIFY_KEY, limit: 5, lang: 'en' });
-        const res = await fetch(`https://api.geoapify.com/v1/geocode/autocomplete?${params}`);
-        const data = await res.json();
-        setLocResults((data.features ?? []).map(f => {
-          const p = f.properties;
-          return { name: p.city ?? p.county ?? p.state ?? p.country ?? p.name, label: p.formatted, coordinates: { lat: p.lat, lon: p.lon } };
-        }));
+        setLocResults(await searchDestinations(text, { apiKey: GEOAPIFY_KEY }));
       } catch { setLocResults([]); }
       finally { setLocSearching(false); }
     }, 400);
@@ -187,6 +191,23 @@ const PlanExperienceScreen = ({ navigation }) => {
     }));
     setLocQuery(result.name);
     setLocResults([]);
+  };
+
+  const handleUseCurrentLocationForStep = async () => {
+    let coords;
+    try {
+      coords = await getCurrentLocation();
+    } catch {
+      Alert.alert(t('common.locationPermissionDeniedToast'));
+      return;
+    }
+    try {
+      const place = await reverseGeocode({ ...coords, apiKey: GEOAPIFY_KEY });
+      if (place) selectLocation(place);
+      else Alert.alert(t('common.locationErrorToast'));
+    } catch {
+      Alert.alert(t('common.locationErrorToast'));
+    }
   };
 
   // ─── Step editing ─────────────────────────────────────────────────────────
@@ -356,6 +377,7 @@ const PlanExperienceScreen = ({ navigation }) => {
                   <Text style={ls.destConfirmedText} numberOfLines={1}>{destination.label ?? destination.name}</Text>
                 </View>
               )}
+              <UseCurrentLocationButton onPress={handleUseCurrentLocation} loading={locating} />
             </View>
 
             {/* Days + Travelers side by side */}
@@ -668,6 +690,7 @@ const PlanExperienceScreen = ({ navigation }) => {
                 ))}
               </View>
             )}
+            <UseCurrentLocationButton onPress={handleUseCurrentLocationForStep} loading={locating} />
 
             <TextInput
               style={[ls.editInput, ls.editTextarea]}

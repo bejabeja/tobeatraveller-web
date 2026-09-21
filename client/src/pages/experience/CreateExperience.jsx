@@ -36,6 +36,8 @@ import { setUserInfo, setUserInfoItineraries } from "../../store/user/userInfoAc
 import { selectMe } from "../../store/user/userInfoSelectors";
 import { itineraryCategories } from "../../utils/constants/constants";
 import { useGeocodeSearch } from "../../hooks/useGeocodeSearch";
+import { useCurrentLocation } from "../../hooks/useCurrentLocation";
+import UseCurrentLocationButton from "../../components/form/UseCurrentLocationButton";
 import { NEW_ITINERARY_DEFAULT_VISIBILITY } from "../../utils/schemasValidation";
 import "./CreateExperience.scss";
 
@@ -130,7 +132,8 @@ const CreateExperience = () => {
   const dispatch  = useDispatch();
   const navigate  = useNavigate();
   const userMe    = useSelector(selectMe);
-  const { searchDestinations } = useGeocodeSearch();
+  const { searchDestinations, reverseGeocode } = useGeocodeSearch();
+  const { getCurrentLocation, loading: locating } = useCurrentLocation();
 
   const [phase, setPhase]               = useState("input");
   const [destQuery, setDestQuery]       = useState("");
@@ -175,6 +178,23 @@ const CreateExperience = () => {
   };
 
   const selectDest = (dest) => { setDestination(dest); setDestQuery(dest.name); setDestResults([]); };
+
+  const handleUseCurrentLocationForDest = async () => {
+    let coords;
+    try {
+      coords = await getCurrentLocation();
+    } catch {
+      toast.error(t("common.locationPermissionDeniedToast"));
+      return;
+    }
+    try {
+      const place = await reverseGeocode(coords);
+      if (place) selectDest(place);
+      else toast.error(t("common.locationErrorToast"));
+    } catch {
+      toast.error(t("common.locationErrorToast"));
+    }
+  };
 
   // ─── AI generation ───────────────────────────────────────────────────────
   const handleGenerate = () => {
@@ -244,6 +264,23 @@ const CreateExperience = () => {
     }));
     setLocQuery(result.name);
     setLocResults([]);
+  };
+
+  const handleUseCurrentLocationForStep = async () => {
+    let coords;
+    try {
+      coords = await getCurrentLocation();
+    } catch {
+      toast.error(t("common.locationPermissionDeniedToast"));
+      return;
+    }
+    try {
+      const place = await reverseGeocode(coords);
+      if (place) selectLoc(place);
+      else toast.error(t("common.locationErrorToast"));
+    } catch {
+      toast.error(t("common.locationErrorToast"));
+    }
   };
 
   const openEdit  = (step) => {
@@ -389,6 +426,7 @@ const CreateExperience = () => {
                 <IoCheckmarkCircle size={13} /> {destination.label ?? destination.name}
               </span>
             )}
+            <UseCurrentLocationButton onClick={handleUseCurrentLocationForDest} loading={locating} />
           </div>
 
           {/* Days + Travelers: side by side */}
@@ -670,6 +708,7 @@ const CreateExperience = () => {
                   ))}
                 </ul>
               )}
+              <UseCurrentLocationButton onClick={handleUseCurrentLocationForStep} loading={locating} />
             </div>
 
             <textarea

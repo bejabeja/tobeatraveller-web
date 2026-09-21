@@ -31,7 +31,10 @@
     "yes": "Yes",
     "no": "No",
     "min": "Min",
-    "max": "Max"
+    "max": "Max",
+    "useMyLocation": "Use my location",
+    "locationPermissionDeniedToast": "Location permission denied. You can still search for a place by name.",
+    "locationErrorToast": "Couldn't get your location. Try again or search for a place by name."
   },
   "auth": {
     "welcomeBack": "Welcome back",
@@ -213,6 +216,7 @@
   "community": {
     "title": "Community",
     "subtitle": "Discover travellers from around the world",
+    "travellers": "Travellers to follow",
     "members": "{{count}} members",
     "membersCount": "{{count}} members",
     "growingCommunity": "A growing community of travelers",

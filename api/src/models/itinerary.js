@@ -1,5 +1,29 @@
 import { formatDateRange } from '../utils/date.js';
 
+// On-brand placeholder shown for itineraries without a cover photo, embedded as a
+// data URI so it never depends on an external host (the old fallback linked directly
+// to an Unsplash photo, which could change or disappear at any time).
+const PLACEHOLDER_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" role="img" aria-label="ToBeATraveller">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1A535C"/>
+      <stop offset="1" stop-color="#E8743B"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#g)"/>
+  <g transform="translate(137.5,165) scale(3)">
+    <circle cx="20" cy="20" r="19" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+    <path d="M 11 29 Q 20 20 29 11" stroke="rgba(255,255,255,0.6)" stroke-width="2" fill="none" stroke-dasharray="3 3" stroke-linecap="round"/>
+    <circle cx="11" cy="29" r="2.8" fill="rgba(255,255,255,0.6)"/>
+    <circle cx="20" cy="20" r="2.2" fill="white"/>
+    <circle cx="29" cy="11" r="5.5" fill="white"/>
+    <circle cx="29" cy="11" r="2.8" fill="rgba(255,255,255,0.25)"/>
+    <text x="50" y="15" font-family="'DM Sans','Helvetica Neue',Arial,sans-serif" font-size="10.5" font-weight="600" letter-spacing="2.8" fill="rgba(255,255,255,0.65)">TO BE A</text>
+    <text x="50" y="33" font-family="'DM Sans','Helvetica Neue',Arial,sans-serif" font-size="17" font-weight="800" letter-spacing="-0.4" fill="white">TRAVELLER</text>
+  </g>
+</svg>`;
+const PLACEHOLDER_IMAGE = `data:image/svg+xml;base64,${Buffer.from(PLACEHOLDER_SVG).toString('base64')}`;
+
 export class Itinerary {
     constructor({ id, userId, title, description, location, startDate, endDate, createdAt, updatedAt, photoUrl, photoPublicId, budget, numberOfPeople, likesCount, commentsCount, category, currency, isPublic, source }) {
         this.id = id;
@@ -116,6 +140,6 @@ export class Itinerary {
     }
 
     getPlaceholderImage() {
-        return "https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwzNjUyOXwwfDF8c2VhcmNofDJ8fHRyaXAlMjBpdGluZXJhcnl8ZW58MHx8fHwxNjg5NTY1NzA3&ixlib=rb-4.0.3&q=80&w=400";
+        return PLACEHOLDER_IMAGE;
     }
 }

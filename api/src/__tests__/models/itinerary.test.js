@@ -58,9 +58,9 @@ describe('Itinerary model', () => {
       expect(itinerary.places).toEqual([]);
     });
 
-    it('uses placeholder image when photo_url is null', () => {
+    it('uses an on-brand placeholder image when photo_url is null, not an external host', () => {
       const itinerary = Itinerary.fromDb({ ...baseRow, photo_url: null });
-      expect(itinerary.photoUrl).toContain('unsplash.com');
+      expect(itinerary.photoUrl).toMatch(/^data:image\/svg\+xml;base64,/);
     });
   });
 

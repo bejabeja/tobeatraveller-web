@@ -1,7 +1,7 @@
 import { BsBackpack4, BsThreeDots } from "react-icons/bs";
 import { FaCity, FaFutbol, FaHiking, FaLandmark, FaMountain, FaSpa, FaUmbrellaBeach } from "react-icons/fa";
 import { GiForestCamp, GiGreekTemple, GiIsland } from "react-icons/gi";
-import { IoSnowSharp } from "react-icons/io5";
+import { IoAirplaneOutline, IoBulbOutline, IoFlashOutline, IoHomeOutline, IoSnowSharp, IoTrainOutline } from "react-icons/io5";
 import {
     MdOutlinePark
 } from "react-icons/md";
@@ -10,6 +10,13 @@ import { FaBirthdayCake, FaCar, FaGlassCheers, FaUsers, FaWineBottle } from "rea
 import { MdOutlineFastfood, MdOutlineSelfImprovement } from "react-icons/md";
 
 export const categoryIcons = {
+    //experience step types
+    transport: IoTrainOutline,
+    flight: IoAirplaneOutline,
+    accommodation: IoHomeOutline,
+    activity: IoFlashOutline,
+    local_tip: IoBulbOutline,
+
     //placetypes
     nature: FaMountain,
     beach: FaUmbrellaBeach,

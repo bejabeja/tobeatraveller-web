@@ -145,7 +145,10 @@
 .autocomplete-input {
   display: flex;
   flex-direction: column;
-  position: relative;
+
+  &__field-wrapper {
+    position: relative;
+  }
 
   .autocomplete-dropdown {
     position: absolute;
@@ -176,6 +179,43 @@
   padding: 0.5rem;
   color: #999;
   font-style: italic;
+}
+
+.use-location-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  align-self: flex-start;
+  width: fit-content;
+  margin-top: -0.2rem;
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  cursor: pointer;
+  white-space: nowrap;
+
+  svg {
+    width: 14px !important;
+    height: 14px !important;
+    flex-shrink: 0;
+  }
+
+  &:disabled {
+    color: var(--text-secondary-color);
+    cursor: not-allowed;
+  }
+
+  &__icon--spinning {
+    animation: use-location-spin 0.9s linear infinite;
+  }
+}
+
+@keyframes use-location-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .input-password {

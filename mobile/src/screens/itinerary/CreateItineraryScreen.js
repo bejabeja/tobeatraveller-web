@@ -9,7 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
-  createItinerary, NEW_ITINERARY_DEFAULT_VISIBILITY, selectAuthUser, selectMe,
+  createItinerary, NEW_ITINERARY_DEFAULT_VISIBILITY, reverseGeocode, searchDestinations, selectAuthUser, selectMe,
   setUserInfo, setUserInfoItineraries,
 } from '@tobeatraveller/shared';
 import {
@@ -18,6 +18,8 @@ import {
 } from './ItineraryFormShared';
 import { shadow } from '../../utils/styles';
 import { GEOAPIFY_KEY } from '../../utils/config';
+import { useCurrentLocation } from '../../hooks/useCurrentLocation';
+import { UseCurrentLocationButton } from '../../components/UseCurrentLocationButton';
 
 const CreateItineraryScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -52,6 +54,7 @@ const CreateItineraryScreen = ({ navigation }) => {
 
   const destTimer = useRef(null);
   const pickGalleryPhotos = useGalleryPicker([], newPhotos, setNewPhotos);
+  const { getCurrentLocation, loading: locating } = useCurrentLocation();
 
   const tripDays = (() => {
     if (!startDate || !endDate) return 1;
@@ -85,17 +88,7 @@ const CreateItineraryScreen = ({ navigation }) => {
       if (!GEOAPIFY_KEY) return;
       setDestSearching(true);
       try {
-        const params = new URLSearchParams({ text, apiKey: GEOAPIFY_KEY, limit: 5, lang: 'en' });
-        const res = await fetch(`https://api.geoapify.com/v1/geocode/autocomplete?${params}`);
-        const data = await res.json();
-        setDestResults((data.features ?? []).map(f => {
-          const p = f.properties;
-          return {
-            name: p.city ?? p.county ?? p.state ?? p.country ?? p.name,
-            label: p.formatted,
-            coordinates: { lat: p.lat, lon: p.lon },
-          };
-        }));
+        setDestResults(await searchDestinations(text, { apiKey: GEOAPIFY_KEY }));
       } catch { setDestResults([]); }
       finally { setDestSearching(false); }
     }, 400);
@@ -106,6 +99,23 @@ const CreateItineraryScreen = ({ navigation }) => {
     setDestQuery(dest.name);
     setDestResults([]);
     setErrors(e => ({ ...e, destination: null }));
+  };
+
+  const handleUseCurrentLocation = async () => {
+    let coords;
+    try {
+      coords = await getCurrentLocation();
+    } catch {
+      Alert.alert(t('common.locationPermissionDeniedToast'));
+      return;
+    }
+    try {
+      const place = await reverseGeocode({ ...coords, apiKey: GEOAPIFY_KEY });
+      if (place) selectDestination(place);
+      else Alert.alert(t('common.locationErrorToast'));
+    } catch {
+      Alert.alert(t('common.locationErrorToast'));
+    }
   };
 
   const validate = () => {
@@ -310,6 +320,7 @@ const CreateItineraryScreen = ({ navigation }) => {
                     ))}
                   </View>
                 )}
+                <UseCurrentLocationButton onPress={handleUseCurrentLocation} loading={locating} />
               </View>
             </Field>
 

@@ -13,13 +13,15 @@ import {
   aiPaceOptions, DEFAULT_AI_PACE, EXISTING_ITINERARY_VISIBILITY_FALLBACK,
   GENERATE_TIMEOUT_MESSAGE, generateSmartItinerary, getItineraryById, isPremiumRequiredError, updateItinerary,
   itineraryCategories, placeCategories,
-  selectAuthUser, selectMe,
+  reverseGeocode, searchDestinations, selectAuthUser, selectMe,
   setUserInfo, setUserInfoItineraries,
 } from '@tobeatraveller/shared';
 import { COLORS, shadow } from '../../utils/styles';
 import { getStepConfig, STEP_NAME_HINT } from '../../utils/stepConfig';
 import { GEOAPIFY_KEY } from '../../utils/config';
 import { PhotoPickerCard } from '../../components/PhotoPickerCard';
+import { useCurrentLocation } from '../../hooks/useCurrentLocation';
+import { UseCurrentLocationButton } from '../../components/UseCurrentLocationButton';
 
 const CATEGORY_EMOJI = {
   adventure:'🧗', relax:'🧘', culture:'🏛', romantic:'💕',
@@ -74,6 +76,7 @@ const EditExperienceScreen = ({ navigation, route }) => {
   const [saving, setSaving]             = useState(false);
 
   const destTimer = useRef(null);
+  const { getCurrentLocation, loading: locating } = useCurrentLocation();
 
   // ─── Load existing itinerary ─────────────────────────────────────────────
   useEffect(() => {
@@ -130,19 +133,30 @@ const EditExperienceScreen = ({ navigation, route }) => {
       if (!GEOAPIFY_KEY) return;
       setDestSearching(true);
       try {
-        const params = new URLSearchParams({ text, apiKey: GEOAPIFY_KEY, limit: 5, lang: 'en' });
-        const res = await fetch(`https://api.geoapify.com/v1/geocode/autocomplete?${params}`);
-        const data = await res.json();
-        setDestResults((data.features ?? []).map(f => {
-          const p = f.properties;
-          return { name: p.city ?? p.county ?? p.state ?? p.country ?? p.name, label: p.formatted, coordinates: { lat: p.lat, lon: p.lon } };
-        }));
+        setDestResults(await searchDestinations(text, { apiKey: GEOAPIFY_KEY }));
       } catch { setDestResults([]); }
       finally { setDestSearching(false); }
     }, 400);
   };
 
   const selectDestination = (dest) => { setDestination(dest); setDestQuery(dest.name); setDestResults([]); };
+
+  const handleUseCurrentLocation = async () => {
+    let coords;
+    try {
+      coords = await getCurrentLocation();
+    } catch {
+      Alert.alert(t('common.locationPermissionDeniedToast'));
+      return;
+    }
+    try {
+      const place = await reverseGeocode({ ...coords, apiKey: GEOAPIFY_KEY });
+      if (place) selectDestination(place);
+      else Alert.alert(t('common.locationErrorToast'));
+    } catch {
+      Alert.alert(t('common.locationErrorToast'));
+    }
+  };
 
   // ─── Regenerate ─────────────────────────────────────────────────────────
   const handleGenerate = () => {
@@ -314,6 +328,7 @@ const EditExperienceScreen = ({ navigation, route }) => {
                   <Text style={ls.destConfirmedText} numberOfLines={1}>{destination.label ?? destination.name}</Text>
                 </View>
               )}
+              <UseCurrentLocationButton onPress={handleUseCurrentLocation} loading={locating} />
             </View>
 
             {/* Days + Travelers */}
