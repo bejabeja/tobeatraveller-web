@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 import { AppState, Platform } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Provider, useDispatch } from 'react-redux';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as SecureStore from 'expo-secure-store';
 import {
   store, setApiUrl, setTokenStorage, initAuthUser,
@@ -11,6 +12,7 @@ import {
 } from '@tobeatraveller/shared';
 import { useSelector } from 'react-redux';
 import Navigation from './src/navigation';
+import { OfflineBanner } from './src/components/OfflineBanner';
 import { API_URL } from './src/utils/config';
 
 setApiUrl(API_URL);
@@ -68,6 +70,7 @@ function AppContent() {
   return (
     <>
       <StatusBar style="auto" />
+      <OfflineBanner />
       <Navigation />
     </>
   );
@@ -75,8 +78,10 @@ function AppContent() {
 
 export default function App() {
   return (
-    <Provider store={store}>
-      <AppContent />
-    </Provider>
+    <SafeAreaProvider>
+      <Provider store={store}>
+        <AppContent />
+      </Provider>
+    </SafeAreaProvider>
   );
 }

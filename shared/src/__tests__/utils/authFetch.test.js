@@ -75,6 +75,14 @@ describe('authFetch', () => {
         expect(global.fetch).toHaveBeenCalledTimes(2);
     });
 
+    it('marks a raw fetch rejection (no network) as isNetworkError instead of letting it bubble unmarked', async () => {
+        global.fetch = vi.fn().mockRejectedValue(new TypeError('Network request failed'));
+
+        await expect(authFetch('http://api.test/itineraries/1')).rejects.toMatchObject({
+            isNetworkError: true,
+        });
+    });
+
     it('deduplicates concurrent refreshes into a single /auth/refresh call', async () => {
         global.fetch = vi.fn()
             .mockResolvedValueOnce({ ok: false, status: 401 }) // request A

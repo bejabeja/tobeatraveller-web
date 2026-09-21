@@ -34,7 +34,9 @@
     "max": "Max",
     "useMyLocation": "Use my location",
     "locationPermissionDeniedToast": "Location permission denied. You can still search for a place by name.",
-    "locationErrorToast": "Couldn't get your location. Try again or search for a place by name."
+    "locationErrorToast": "Couldn't get your location. Try again or search for a place by name.",
+    "offlineBanner": "You're offline. Some data may be out of date.",
+    "showingCachedData": "Showing saved data from your last visit."
   },
   "auth": {
     "welcomeBack": "Welcome back",

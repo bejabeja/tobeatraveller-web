@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseError, isPremiumRequiredError } from '../../utils/parseError.js';
+import { isNetworkError, isPremiumRequiredError, parseError } from '../../utils/parseError.js';
 
 // Regression coverage: callers need to tell a 403 (e.g. a premium-only
 // feature) apart from any other failure to show the right message, which
@@ -42,5 +42,21 @@ describe('isPremiumRequiredError', () => {
         expect(isPremiumRequiredError({ status: 500 })).toBe(false);
         expect(isPremiumRequiredError({})).toBe(false);
         expect(isPremiumRequiredError(undefined)).toBe(false);
+    });
+});
+
+describe('isNetworkError', () => {
+    it('is true when authFetch marked the error as a network failure', () => {
+        expect(isNetworkError({ isNetworkError: true })).toBe(true);
+    });
+
+    it('falls back to matching common raw fetch failure messages', () => {
+        expect(isNetworkError(new TypeError('Network request failed'))).toBe(true);
+        expect(isNetworkError(new TypeError('Failed to fetch'))).toBe(true);
+    });
+
+    it('is false for an ordinary server error', () => {
+        expect(isNetworkError({ status: 500, message: 'Internal server error' })).toBe(false);
+        expect(isNetworkError(undefined)).toBe(false);
     });
 });

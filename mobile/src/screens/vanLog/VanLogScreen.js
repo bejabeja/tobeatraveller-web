@@ -6,13 +6,15 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
   deleteVanLogEntry, getVanLogEntries, getVanLogFuelPriceTrend, getVanLogStats,
-  groupVanLogEntriesByMonth, isPremiumRequiredError,
+  groupVanLogEntriesByMonth, isNetworkError, isPremiumRequiredError, selectMe,
   vanLogCategories, vanLogCategoryEmoji as CATEGORY_EMOJI,
 } from '@tobeatraveller/shared';
 import FeatureLoadState from '../../components/FeatureLoadState';
+import { cacheGet, cacheSet } from '../../utils/offlineCache';
 import { shadow } from '../../utils/styles';
 
 const EMPTY_FILTERS = { category: '', country: '', currency: '', dateFrom: '', dateTo: '' };
@@ -40,6 +42,8 @@ const shortDate = (dateStr) => {
 const VanLogScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
+  const me = useSelector(selectMe);
+  const cacheKey = `vanlog:entries:${me?.id}`;
 
   const [entries, setEntries] = useState([]);
   const [stats, setStats] = useState(null);
@@ -47,6 +51,7 @@ const VanLogScreen = ({ navigation }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [filters, setFilters] = useState(EMPTY_FILTERS);
   const [loadError, setLoadError] = useState(null); // null | 'premium' | 'error'
+  const [showingCached, setShowingCached] = useState(false);
   const [statsExpanded, setStatsExpanded] = useState(false);
 
   const daysSinceLabel = (dateStr) => {
@@ -78,13 +83,26 @@ const VanLogScreen = ({ navigation }) => {
     try {
       const data = await getVanLogEntries(filters);
       if (requestId !== requestIdRef.current) return;
-      setEntries(Array.isArray(data) ? data : []);
+      const list = Array.isArray(data) ? data : [];
+      setEntries(list);
       setLoadError(null);
+      setShowingCached(false);
+      cacheSet(cacheKey, list);
     } catch (err) {
-      if (requestId === requestIdRef.current) {
-        setEntries([]);
-        setLoadError(isPremiumRequiredError(err) ? 'premium' : 'error');
+      if (requestId !== requestIdRef.current) return;
+      if (isNetworkError(err)) {
+        const cached = await cacheGet(cacheKey);
+        if (requestId !== requestIdRef.current) return;
+        if (cached) {
+          setEntries(cached);
+          setLoadError(null);
+          setShowingCached(true);
+          return;
+        }
       }
+      setEntries([]);
+      setShowingCached(false);
+      setLoadError(isPremiumRequiredError(err) ? 'premium' : 'error');
     }
   };
 
@@ -395,6 +413,12 @@ const VanLogScreen = ({ navigation }) => {
 
       </View>
 
+      {showingCached && (
+        <View style={styles.cachedBanner}>
+          <Text style={styles.cachedBannerText}>{t('common.showingCachedData')}</Text>
+        </View>
+      )}
+
       <SectionList
         sections={loading && !entries.length
           ? [{ key: 'skeleton', title: null, total: null, data: Array.from({ length: 4 }, (_, i) => ({ id: `sk-${i}`, _skeleton: true })) }]
@@ -480,6 +504,12 @@ const VanLogScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8fafc' },
+
+  cachedBanner: {
+    paddingVertical: 6, paddingHorizontal: 16,
+    backgroundColor: '#fef3c7',
+  },
+  cachedBannerText: { fontSize: 12, color: '#92400e', fontWeight: '600' },
 
   header: {
     backgroundColor: '#fff',

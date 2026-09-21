@@ -6,7 +6,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import {
-  addInventoryItem, addShoppingListItem, supplyCategories, supplyItemSchema, supplyUnits,
+  addInventoryItem, addShoppingListItem, isNetworkError, supplyCategories, supplyItemSchema, supplyUnits,
   updateInventoryItem, updateShoppingListItem,
 } from '@tobeatraveller/shared';
 import { shadow } from '../../utils/styles';
@@ -88,7 +88,7 @@ const SupplyFormScreen = ({ navigation, route }) => {
       }
       navigation.goBack();
     } catch (err) {
-      setSubmitError(err?.message || s('saveError'));
+      setSubmitError(isNetworkError(err) ? t('errors.networkError') : (err?.message || s('saveError')));
     } finally {
       setSaving(false);
     }

@@ -27,3 +27,11 @@ export const isLifeDiaryCapReachedError = (error) => error?.status === 403 && er
 export const isShoppingListCapReachedError = (error) => error?.status === 403 && error?.field === 'shoppingListCap';
 
 export const isInventoryCapReachedError = (error) => error?.status === 403 && error?.field === 'inventoryCap';
+
+// Marked by authFetch when the raw fetch() call itself rejects (no network),
+// as opposed to a resolved Response with a non-2xx status. The message match
+// is a fallback for call sites using plain fetch() instead of authFetch.
+const NETWORK_ERROR_MESSAGE_PATTERN = /network request failed|failed to fetch/i;
+
+export const isNetworkError = (error) =>
+    error?.isNetworkError === true || NETWORK_ERROR_MESSAGE_PATTERN.test(error?.message ?? '');

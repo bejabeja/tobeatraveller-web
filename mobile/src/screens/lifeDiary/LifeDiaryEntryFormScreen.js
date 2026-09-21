@@ -8,7 +8,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import {
-  createLifeDiaryEntry, lifeDiaryEntrySchema, reverseGeocode, searchDestinations, updateLifeDiaryEntry,
+  createLifeDiaryEntry, isNetworkError, lifeDiaryEntrySchema, reverseGeocode, searchDestinations,
+  updateLifeDiaryEntry,
 } from '@tobeatraveller/shared';
 import { shadow } from '../../utils/styles';
 import { GEOAPIFY_KEY } from '../../utils/config';
@@ -192,7 +193,7 @@ const LifeDiaryEntryFormScreen = ({ navigation, route }) => {
       else await createLifeDiaryEntry(formData);
       navigation.goBack();
     } catch (err) {
-      setSubmitError(err?.message || d('saveError'));
+      setSubmitError(isNetworkError(err) ? t('errors.networkError') : (err?.message || d('saveError')));
     } finally {
       setSaving(false);
     }

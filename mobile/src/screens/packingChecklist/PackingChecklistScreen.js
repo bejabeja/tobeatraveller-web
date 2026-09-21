@@ -6,13 +6,15 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
   addPackingChecklistItem, addShoppingListItem, defaultPackingItems, deletePackingChecklistItem,
-  getPackingChecklist, isPremiumRequiredError, normalizeSearchText, packingCategories,
-  resetPackingChecklistTrip, seedPackingChecklistDefaults, updatePackingChecklistItem,
+  getPackingChecklist, isNetworkError, isPremiumRequiredError, normalizeSearchText, packingCategories,
+  resetPackingChecklistTrip, seedPackingChecklistDefaults, selectMe, updatePackingChecklistItem,
 } from '@tobeatraveller/shared';
 import FeatureLoadState from '../../components/FeatureLoadState';
+import { cacheGet, cacheSet } from '../../utils/offlineCache';
 import { shadow } from '../../utils/styles';
 
 // No supply category maps cleanly onto every packing category, anything without
@@ -31,6 +33,8 @@ const PackingChecklistScreen = ({ navigation }) => {
   const { t, i18n } = useTranslation();
   const p = (key, vars) => t(`packingChecklist.${key}`, vars);
   const insets = useSafeAreaInsets();
+  const me = useSelector(selectMe);
+  const cacheKey = `packingchecklist:items:${me?.id}`;
 
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -42,6 +46,7 @@ const PackingChecklistScreen = ({ navigation }) => {
   const [search, setSearch] = useState('');
   const [pendingDeletes, setPendingDeletes] = useState([]); // [{ item, timeoutId }]
   const [loadError, setLoadError] = useState(null); // null | 'premium' | 'error'
+  const [showingCached, setShowingCached] = useState(false);
 
   const pendingDeletesRef = useRef([]);
   useEffect(() => { pendingDeletesRef.current = pendingDeletes; }, [pendingDeletes]);
@@ -59,10 +64,23 @@ const PackingChecklistScreen = ({ navigation }) => {
       if (Array.isArray(res) && res.length === 0) {
         res = await seedPackingChecklistDefaults(localizedDefaultItems(i18n));
       }
-      setItems(Array.isArray(res) ? res : []);
+      const list = Array.isArray(res) ? res : [];
+      setItems(list);
       setLoadError(null);
+      setShowingCached(false);
+      cacheSet(cacheKey, list);
     } catch (err) {
+      if (isNetworkError(err)) {
+        const cached = await cacheGet(cacheKey);
+        if (cached) {
+          setItems(cached);
+          setLoadError(null);
+          setShowingCached(true);
+          return;
+        }
+      }
       setItems([]);
+      setShowingCached(false);
       setLoadError(isPremiumRequiredError(err) ? 'premium' : 'error');
     }
   };
@@ -240,6 +258,12 @@ const PackingChecklistScreen = ({ navigation }) => {
         )}
       </View>
 
+      {showingCached && (
+        <View style={styles.cachedBanner}>
+          <Text style={styles.cachedBannerText}>{t('common.showingCachedData')}</Text>
+        </View>
+      )}
+
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView
           contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 24 }]}
@@ -346,6 +370,12 @@ const PackingChecklistScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8fafc' },
+
+  cachedBanner: {
+    paddingVertical: 6, paddingHorizontal: 16,
+    backgroundColor: '#fef3c7',
+  },
+  cachedBannerText: { fontSize: 12, color: '#92400e', fontWeight: '600' },
 
   header: {
     backgroundColor: '#fff',

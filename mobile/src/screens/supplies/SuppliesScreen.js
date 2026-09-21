@@ -6,12 +6,15 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
-  deleteInventoryItem, deleteShoppingListItem, getInventory, getShoppingList, isPremiumRequiredError,
-  markInventoryItemUsedUp, markShoppingListItemPurchased, normalizeSearchText, supplyUnits,
+  deleteInventoryItem, deleteShoppingListItem, getInventory, getShoppingList, isNetworkError,
+  isPremiumRequiredError, markInventoryItemUsedUp, markShoppingListItemPurchased, normalizeSearchText,
+  selectMe, supplyUnits,
 } from '@tobeatraveller/shared';
 import FeatureLoadState from '../../components/FeatureLoadState';
+import { cacheGet, cacheSet } from '../../utils/offlineCache';
 import { shadow } from '../../utils/styles';
 
 const CATEGORY_EMOJI = { food: '🍎', hygiene: '🧴', cleaning: '🧽', vehicle: '🚗', other: '📦' };
@@ -20,6 +23,8 @@ const SuppliesScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const s = (key, vars) => t(`supplies.${key}`, vars);
   const insets = useSafeAreaInsets();
+  const me = useSelector(selectMe);
+  const cacheKey = `supplies:${me?.id}`;
 
   const [tab, setTab] = useState('shopping');
   const [search, setSearch] = useState('');
@@ -31,6 +36,7 @@ const SuppliesScreen = ({ navigation }) => {
   const [quantityValue, setQuantityValue] = useState('');
   const [confirmingQuantity, setConfirmingQuantity] = useState(false);
   const [loadError, setLoadError] = useState(null); // null | 'premium' | 'error'
+  const [showingCached, setShowingCached] = useState(false);
 
   const categoryLabel = (value) => s(`category.${value}`, value);
   const unitLabel = (value) => s(`unit.${value}`, value);
@@ -38,12 +44,27 @@ const SuppliesScreen = ({ navigation }) => {
   const fetchData = async () => {
     try {
       const [shoppingRes, inventoryRes] = await Promise.all([getShoppingList(), getInventory()]);
-      setShoppingList(Array.isArray(shoppingRes) ? shoppingRes : []);
-      setInventory(Array.isArray(inventoryRes) ? inventoryRes : []);
+      const shopping = Array.isArray(shoppingRes) ? shoppingRes : [];
+      const items = Array.isArray(inventoryRes) ? inventoryRes : [];
+      setShoppingList(shopping);
+      setInventory(items);
       setLoadError(null);
+      setShowingCached(false);
+      cacheSet(cacheKey, { shoppingList: shopping, inventory: items });
     } catch (err) {
+      if (isNetworkError(err)) {
+        const cached = await cacheGet(cacheKey);
+        if (cached) {
+          setShoppingList(cached.shoppingList ?? []);
+          setInventory(cached.inventory ?? []);
+          setLoadError(null);
+          setShowingCached(true);
+          return;
+        }
+      }
       setShoppingList([]);
       setInventory([]);
+      setShowingCached(false);
       setLoadError(isPremiumRequiredError(err) ? 'premium' : 'error');
     }
   };
@@ -196,6 +217,12 @@ const SuppliesScreen = ({ navigation }) => {
         )}
       </View>
 
+      {showingCached && (
+        <View style={styles.cachedBanner}>
+          <Text style={styles.cachedBannerText}>{t('common.showingCachedData')}</Text>
+        </View>
+      )}
+
       <FlatList
         data={loading && !items.length
           ? Array.from({ length: 4 }, (_, i) => ({ id: `sk-${i}`, _skeleton: true }))
@@ -307,6 +334,12 @@ const SuppliesScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8fafc' },
+
+  cachedBanner: {
+    paddingVertical: 6, paddingHorizontal: 16,
+    backgroundColor: '#fef3c7',
+  },
+  cachedBannerText: { fontSize: 12, color: '#92400e', fontWeight: '600' },
 
   header: {
     backgroundColor: '#fff',

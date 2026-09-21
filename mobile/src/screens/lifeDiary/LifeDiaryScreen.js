@@ -6,29 +6,49 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { deleteLifeDiaryEntry, getLifeDiaryEntries, isPremiumRequiredError } from '@tobeatraveller/shared';
+import {
+  deleteLifeDiaryEntry, getLifeDiaryEntries, isNetworkError, isPremiumRequiredError, selectMe,
+} from '@tobeatraveller/shared';
 import FeatureLoadState from '../../components/FeatureLoadState';
+import { cacheGet, cacheSet } from '../../utils/offlineCache';
 import { shadow } from '../../utils/styles';
 
 const LifeDiaryScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const d = (key, vars) => t(`lifeDiary.${key}`, vars);
   const insets = useSafeAreaInsets();
+  const me = useSelector(selectMe);
+  const cacheKey = `lifediary:entries:${me?.id}`;
 
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [expandedId, setExpandedId] = useState(null);
   const [loadError, setLoadError] = useState(null); // null | 'premium' | 'error'
+  const [showingCached, setShowingCached] = useState(false);
 
   const fetchEntries = async () => {
     try {
       const data = await getLifeDiaryEntries();
-      setEntries(Array.isArray(data) ? data : []);
+      const list = Array.isArray(data) ? data : [];
+      setEntries(list);
       setLoadError(null);
+      setShowingCached(false);
+      cacheSet(cacheKey, list);
     } catch (err) {
+      if (isNetworkError(err)) {
+        const cached = await cacheGet(cacheKey);
+        if (cached) {
+          setEntries(cached);
+          setLoadError(null);
+          setShowingCached(true);
+          return;
+        }
+      }
       setEntries([]);
+      setShowingCached(false);
       setLoadError(isPremiumRequiredError(err) ? 'premium' : 'error');
     }
   };
@@ -92,6 +112,12 @@ const LifeDiaryScreen = ({ navigation }) => {
           </TouchableOpacity>
         )}
       </View>
+
+      {showingCached && (
+        <View style={styles.cachedBanner}>
+          <Text style={styles.cachedBannerText}>{t('common.showingCachedData')}</Text>
+        </View>
+      )}
 
       <FlatList
         data={loading && !entries.length
@@ -198,6 +224,12 @@ const LifeDiaryScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8fafc' },
+
+  cachedBanner: {
+    paddingVertical: 6, paddingHorizontal: 16,
+    backgroundColor: '#fef3c7',
+  },
+  cachedBannerText: { fontSize: 12, color: '#92400e', fontWeight: '600' },
 
   header: {
     flexDirection: 'row', alignItems: 'center',

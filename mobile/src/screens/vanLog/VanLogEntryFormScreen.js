@@ -6,8 +6,8 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import {
-  createVanLogEntry, reverseGeocode, searchDestinations, updateVanLogEntry, vanLogCategories,
-  vanLogCategoryEmoji as CATEGORY_EMOJI, vanLogCommonCurrencies, vanLogEntrySchema,
+  createVanLogEntry, isNetworkError, reverseGeocode, searchDestinations, updateVanLogEntry,
+  vanLogCategories, vanLogCategoryEmoji as CATEGORY_EMOJI, vanLogCommonCurrencies, vanLogEntrySchema,
 } from '@tobeatraveller/shared';
 import { shadow } from '../../utils/styles';
 import { GEOAPIFY_KEY } from '../../utils/config';
@@ -157,7 +157,7 @@ const VanLogEntryFormScreen = ({ navigation, route }) => {
       else await createVanLogEntry(payload);
       navigation.goBack();
     } catch (err) {
-      setSubmitError(err?.message || t('vanLog.saveError'));
+      setSubmitError(isNetworkError(err) ? t('errors.networkError') : (err?.message || t('vanLog.saveError')));
     } finally {
       setSaving(false);
     }
