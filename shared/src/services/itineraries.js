@@ -78,6 +78,13 @@ export const getDestinations = async () => {
     return response.json();
 };
 
+export const getPlacesInBounds = async ({ minLat, maxLat, minLon, maxLon }) => {
+    const params = new URLSearchParams({ minLat, maxLat, minLon, maxLon });
+    const response = await fetch(`${baseUrl()}/places-in-bounds?${params}`);
+    if (!response.ok) throw new Error('Failed to fetch places in bounds');
+    return response.json();
+};
+
 export const getFeedItineraries = async (page = 1) => {
     const response = await authFetch(`${baseUrl()}/feed?page=${page}`);
     if (!response.ok) throw new Error('Failed to fetch feed');

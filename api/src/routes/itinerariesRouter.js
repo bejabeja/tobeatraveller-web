@@ -42,6 +42,7 @@ export const createItinerariesRouter = () => {
     // ── Listing & filtering (specific routes must come before /:id) ───────────
     router.get("/stats",        itinerariesController.getStats.bind(itinerariesController));
     router.get("/destinations", itinerariesController.getDestinations.bind(itinerariesController));
+    router.get("/places-in-bounds", itinerariesController.getPlacesInBounds.bind(itinerariesController));
     router.get("/featured",     itinerariesController.featuredItineraries.bind(itinerariesController));
     router.get("/feed",         authenticate, itinerariesController.getFeed.bind(itinerariesController));
     router.get("/mine",         authenticate, itinerariesController.getMyItineraries.bind(itinerariesController));

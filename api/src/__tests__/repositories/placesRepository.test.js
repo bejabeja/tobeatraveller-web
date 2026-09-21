@@ -43,3 +43,34 @@ describe('PlacesRepository dayNumber propagation', () => {
         expect(place.dayNumber).toBe(2);
     });
 });
+
+describe('PlacesRepository.getPlacesInBounds()', () => {
+    const repo = new PlacesRepository();
+
+    it('queries with the bounds in minLat, maxLat, minLon, maxLon order', async () => {
+        client.query.mockResolvedValue({ rows: [] });
+
+        await repo.getPlacesInBounds({ minLat: 40, maxLat: 41, minLon: -1, maxLon: 1 });
+
+        const [, params] = client.query.mock.calls.at(-1);
+        expect(params).toEqual([40, 41, -1, 1]);
+    });
+
+    it('maps sample itinerary columns to camelCase', async () => {
+        client.query.mockResolvedValue({
+            rows: [{
+                id: 'place-1', title: 'Fushimi Inari', label: 'Fushimi Inari, Kyoto',
+                category: 'monument', lat: 34.9, lon: 135.7, count: 2,
+                sample_itinerary_id: 'itin-1', sample_itinerary_title: 'Japan trip', sample_photo_url: 'https://example.com/p.jpg',
+            }],
+        });
+
+        const [place] = await repo.getPlacesInBounds({ minLat: 0, maxLat: 90, minLon: 0, maxLon: 180 });
+
+        expect(place).toEqual({
+            id: 'place-1', name: 'Fushimi Inari', label: 'Fushimi Inari, Kyoto',
+            category: 'monument', lat: 34.9, lon: 135.7, count: 2,
+            sampleItineraryId: 'itin-1', sampleItineraryTitle: 'Japan trip', samplePhotoUrl: 'https://example.com/p.jpg',
+        });
+    });
+});

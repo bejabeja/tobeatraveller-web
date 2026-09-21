@@ -1,3 +1,5 @@
+import { ValidationError } from '../errors/ValidationError.js';
+
 export class ItinerariesController {
     constructor(itinerariesService) {
         this.itinerariesService = itinerariesService;
@@ -60,6 +62,27 @@ export class ItinerariesController {
         try {
             const destinations = await this.itinerariesService.getDestinations();
             res.status(200).json(destinations);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getPlacesInBounds(req, res, next) {
+        try {
+            const minLat = parseFloat(req.query.minLat);
+            const maxLat = parseFloat(req.query.maxLat);
+            const minLon = parseFloat(req.query.minLon);
+            const maxLon = parseFloat(req.query.maxLon);
+
+            if ([minLat, maxLat, minLon, maxLon].some(Number.isNaN)) {
+                return next(new ValidationError('minLat, maxLat, minLon and maxLon are required'));
+            }
+            if (minLat > maxLat || minLon > maxLon) {
+                return next(new ValidationError('Invalid bounds: min must not be greater than max'));
+            }
+
+            const places = await this.itinerariesService.getPlacesInBounds({ minLat, maxLat, minLon, maxLon });
+            res.status(200).json(places);
         } catch (error) {
             next(error);
         }

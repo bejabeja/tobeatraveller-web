@@ -49,6 +49,10 @@ export class ItinerariesService {
         return this.itinerariesRepository.getDestinations();
     }
 
+    async getPlacesInBounds(bounds) {
+        return this.placesRepository.getPlacesInBounds(bounds);
+    }
+
     async getFeed(userId, page = 1, limit = 20) {
         const offset = (page - 1) * limit;
         const [totalItems, itineraries] = await Promise.all([
