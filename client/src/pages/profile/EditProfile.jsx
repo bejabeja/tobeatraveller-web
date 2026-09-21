@@ -7,8 +7,11 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { InputForm, TextAreaForm } from "../../components/form/InputForm";
+import UseCurrentLocationButton from "../../components/form/UseCurrentLocationButton";
 import Modal from "../../components/modal/Modal";
 import { useAvatarUpload } from "../../hooks/useAvatarUpload";
+import { useCurrentLocation } from "../../hooks/useCurrentLocation";
+import { useGeocodeSearch } from "../../hooks/useGeocodeSearch";
 import { checkUsernameAvailable, updateUser } from "../../services/users";
 import { initAuthUser } from "../../store/auth/authActions";
 import { selectAuthUser } from "../../store/auth/authSelectors";
@@ -30,17 +33,37 @@ const EditProfile = () => {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [usernameStatus, setUsernameStatus] = useState(null);
   const { avatarFile, avatarPreview, removeAvatar, handleAvatarChange, handleRemoveAvatar, handleUndoRemove } = useAvatarUpload();
+  const { reverseGeocode } = useGeocodeSearch();
+  const { getCurrentLocation, loading: locating } = useCurrentLocation();
 
   const {
     control,
     handleSubmit,
     reset,
     setError,
+    setValue,
     formState: { errors, isSubmitting, isDirty },
   } = useForm({
     resolver: zodResolver(updateUserSchema),
     defaultValues: { username: "", name: "", bio: "", location: "", about: "" },
   });
+
+  const handleUseCurrentLocation = async () => {
+    let coords;
+    try {
+      coords = await getCurrentLocation();
+    } catch {
+      toast.error(t("common.locationPermissionDeniedToast"));
+      return;
+    }
+    try {
+      const place = await reverseGeocode(coords);
+      if (place) setValue("location", place.label, { shouldDirty: true, shouldValidate: true });
+      else toast.error(t("common.locationErrorToast"));
+    } catch {
+      toast.error(t("common.locationErrorToast"));
+    }
+  };
 
   const usernameValue = useWatch({ control, name: "username" });
 
@@ -169,8 +192,11 @@ const EditProfile = () => {
           <section className="ep__section">
             <p className="ep__section-label">{t("editProfile.locationAbout").toUpperCase()}</p>
             <div className="ep__fields">
-              <InputForm name="location" label="Location" control={control} type="text"
-                placeholder={t("editProfile.locationPlaceholder")} error={errors.location} maxLength={50} />
+              <div>
+                <InputForm name="location" label="Location" control={control} type="text"
+                  placeholder={t("editProfile.locationPlaceholder")} error={errors.location} maxLength={50} showCounter={false} />
+                <UseCurrentLocationButton onClick={handleUseCurrentLocation} loading={locating} />
+              </div>
               <TextAreaForm name="about" label="About" control={control}
                 placeholder={t("editProfile.aboutPlaceholder")} error={errors.about} maxLength={1000} />
             </div>

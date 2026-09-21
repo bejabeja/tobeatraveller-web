@@ -1,8 +1,8 @@
 import { Controller } from "react-hook-form";
 import "./InputForm.scss";
 
-const InputFooter = ({ error, errorId, field, maxLength }) => {
-  if (!error && !maxLength) return null;
+const InputFooter = ({ error, errorId, field, maxLength, showCounter }) => {
+  if (!error && !(maxLength && showCounter)) return null;
   return (
     <div className="input__footer">
       {error && (
@@ -10,7 +10,7 @@ const InputFooter = ({ error, errorId, field, maxLength }) => {
           {error.message}
         </div>
       )}
-      {maxLength && (
+      {maxLength && showCounter && (
         <span className={`input__counter${
           (field.value?.length || 0) >= maxLength ? " input__counter--at-limit" :
           (field.value?.length || 0) >= maxLength * 0.85 ? " input__counter--near-limit" : ""
@@ -31,6 +31,7 @@ export const InputForm = ({
   inputProps = {},
   required = false,
   maxLength,
+  showCounter = true,
   prefix,
   right,
   autoComplete,
@@ -90,7 +91,7 @@ export const InputForm = ({
                 aria-describedby={error ? errorId : undefined}
               />
             )}
-            <InputFooter error={error} errorId={errorId} field={field} maxLength={maxLength} />
+            <InputFooter error={error} errorId={errorId} field={field} maxLength={maxLength} showCounter={showCounter} />
           </>
         )}
       />
@@ -130,7 +131,7 @@ export const TextAreaForm = ({
               aria-invalid={!!error}
               aria-describedby={error ? errorId : undefined}
             />
-            <InputFooter error={error} errorId={errorId} field={field} maxLength={maxLength} />
+            <InputFooter error={error} errorId={errorId} field={field} maxLength={maxLength} showCounter />
           </>
         )}
       />

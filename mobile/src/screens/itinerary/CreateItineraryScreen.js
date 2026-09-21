@@ -54,7 +54,7 @@ const CreateItineraryScreen = ({ navigation }) => {
 
   const destTimer = useRef(null);
   const pickGalleryPhotos = useGalleryPicker([], newPhotos, setNewPhotos);
-  const { getCurrentLocation, loading: locating } = useCurrentLocation();
+  const { getCurrentLocation, getLocationIfPermitted, loading: locating } = useCurrentLocation();
 
   const tripDays = (() => {
     if (!startDate || !endDate) return 1;
@@ -88,7 +88,8 @@ const CreateItineraryScreen = ({ navigation }) => {
       if (!GEOAPIFY_KEY) return;
       setDestSearching(true);
       try {
-        setDestResults(await searchDestinations(text, { apiKey: GEOAPIFY_KEY }));
+        const bias = await getLocationIfPermitted();
+        setDestResults(await searchDestinations(text, { apiKey: GEOAPIFY_KEY, bias }));
       } catch { setDestResults([]); }
       finally { setDestSearching(false); }
     }, 400);

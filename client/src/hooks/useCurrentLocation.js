@@ -25,5 +25,26 @@ export const useCurrentLocation = () => {
         });
     };
 
-    return { getCurrentLocation, loading };
+    // Silent variant used to bias text search results: only returns a
+    // position when permission was already granted (e.g. from a previous
+    // click on "use my location"), never prompts on its own - typing in a
+    // search field shouldn't trigger a browser permission dialog.
+    const getLocationIfPermitted = async () => {
+        if (!navigator.geolocation || !navigator.permissions?.query) return null;
+        try {
+            const status = await navigator.permissions.query({ name: "geolocation" });
+            if (status.state !== "granted") return null;
+        } catch {
+            return null;
+        }
+        return new Promise((resolve) => {
+            navigator.geolocation.getCurrentPosition(
+                (position) => resolve({ lat: position.coords.latitude, lon: position.coords.longitude }),
+                () => resolve(null),
+                { enableHighAccuracy: false, timeout: 5000 }
+            );
+        });
+    };
+
+    return { getCurrentLocation, getLocationIfPermitted, loading };
 };

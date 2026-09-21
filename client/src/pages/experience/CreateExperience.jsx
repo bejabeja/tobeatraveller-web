@@ -133,7 +133,7 @@ const CreateExperience = () => {
   const navigate  = useNavigate();
   const userMe    = useSelector(selectMe);
   const { searchDestinations, reverseGeocode } = useGeocodeSearch();
-  const { getCurrentLocation, loading: locating } = useCurrentLocation();
+  const { getCurrentLocation, getLocationIfPermitted, loading: locating } = useCurrentLocation();
 
   const [phase, setPhase]               = useState("input");
   const [destQuery, setDestQuery]       = useState("");
@@ -171,7 +171,10 @@ const CreateExperience = () => {
     if (!value || value.length < 2) { setDestResults([]); return; }
     searchTimer.current = setTimeout(async () => {
       setDestSearching(true);
-      try { setDestResults(await searchDestinations(value)); }
+      try {
+        const bias = await getLocationIfPermitted();
+        setDestResults(await searchDestinations(value, bias));
+      }
       catch { setDestResults([]); }
       finally { setDestSearching(false); }
     }, 350);

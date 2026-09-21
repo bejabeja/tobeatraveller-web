@@ -187,7 +187,12 @@
   gap: 0.35rem;
   align-self: flex-start;
   width: fit-content;
-  margin-top: -0.2rem;
+  // Default spacing for standalone use (e.g. profile's plain location
+  // field, no footer before it). The autocomplete inputs override this
+  // below: their `__field-wrapper` always reserves a line of height for
+  // the (often empty) error message, so this button needs to pull up
+  // instead of adding more space on top of it.
+  margin-top: 0.35rem;
   padding: 0;
   border: none;
   background: none;
@@ -211,6 +216,10 @@
   &__icon--spinning {
     animation: use-location-spin 0.9s linear infinite;
   }
+}
+
+.autocomplete-input__field-wrapper + .use-location-btn {
+  margin-top: -0.2rem;
 }
 
 @keyframes use-location-spin {

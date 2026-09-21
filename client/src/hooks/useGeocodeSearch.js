@@ -7,7 +7,7 @@ import {
 const GEOAPIFY_KEY = import.meta.env.VITE_GEOAPIFY_KEY;
 
 export const useGeocodeSearch = () => {
-    const searchDestinations = (query) => searchDestinationsShared(query, { apiKey: GEOAPIFY_KEY });
+    const searchDestinations = (query, bias = null) => searchDestinationsShared(query, { apiKey: GEOAPIFY_KEY, bias });
 
     const searchPOIs = (query, destination = null) => {
         const bias = destination?.coordinates?.lat

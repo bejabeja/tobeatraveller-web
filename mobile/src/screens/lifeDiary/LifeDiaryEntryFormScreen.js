@@ -49,7 +49,7 @@ const LifeDiaryEntryFormScreen = ({ navigation, route }) => {
   const [isDirty, setIsDirty] = useState(false);
 
   const searchTimer = useRef(null);
-  const { getCurrentLocation, loading: locating } = useCurrentLocation();
+  const { getCurrentLocation, getLocationIfPermitted, loading: locating } = useCurrentLocation();
 
   const handleBack = () => {
     if (!isDirty) { navigation.goBack(); return; }
@@ -69,7 +69,8 @@ const LifeDiaryEntryFormScreen = ({ navigation, route }) => {
       if (!GEOAPIFY_KEY) return;
       setLocationSearching(true);
       try {
-        setLocationResults(await searchDestinations(text, { apiKey: GEOAPIFY_KEY }));
+        const bias = await getLocationIfPermitted();
+        setLocationResults(await searchDestinations(text, { apiKey: GEOAPIFY_KEY, bias }));
       } catch { setLocationResults([]); }
       finally { setLocationSearching(false); }
     }, 400);

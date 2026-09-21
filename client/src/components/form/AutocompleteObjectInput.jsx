@@ -21,7 +21,7 @@ const AutocompleteObjectInput = ({
   const [suggestions, setSuggestions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const { searchPlaces, reverseGeocode } = useGeocodeSearch();
-  const { getCurrentLocation, loading: locating } = useCurrentLocation();
+  const { getCurrentLocation, getLocationIfPermitted, loading: locating } = useCurrentLocation();
   const inputRef = useRef(null);
   const dropdownRef = useRef(null);
 
@@ -29,7 +29,8 @@ const AutocompleteObjectInput = ({
     debounce(async (val) => {
       if (val.length >= 3) {
         setIsLoading(true);
-        const results = await searchPlaces(val);
+        const bias = await getLocationIfPermitted();
+        const results = await searchPlaces(val, bias);
         setSuggestions(results);
         setIsLoading(false);
       } else {

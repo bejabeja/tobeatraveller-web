@@ -9,11 +9,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
-  checkUsernameAvailable, initAuthUser,
+  checkUsernameAvailable, initAuthUser, reverseGeocode,
   selectMe, selectAuthUser,
   setUserInfo, updateUser,
 } from '@tobeatraveller/shared';
 import { shadow } from '../../utils/styles';
+import { GEOAPIFY_KEY } from '../../utils/config';
+import { useCurrentLocation } from '../../hooks/useCurrentLocation';
+import { UseCurrentLocationButton } from '../../components/UseCurrentLocationButton';
 
 const EditProfileScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -35,6 +38,7 @@ const EditProfileScreen = ({ navigation }) => {
   const [isDirty, setIsDirty] = useState(false);
 
   const usernameTimer = useRef(null);
+  const { getCurrentLocation, loading: locating } = useCurrentLocation();
 
   useEffect(() => {
     if (user) {
@@ -67,6 +71,23 @@ const EditProfileScreen = ({ navigation }) => {
     setFields(f => ({ ...f, [key]: value }));
     setErrors(e => ({ ...e, [key]: null }));
     setIsDirty(true);
+  };
+
+  const handleUseCurrentLocation = async () => {
+    let coords;
+    try {
+      coords = await getCurrentLocation();
+    } catch {
+      Alert.alert(t('common.locationPermissionDeniedToast'));
+      return;
+    }
+    try {
+      const place = await reverseGeocode({ ...coords, apiKey: GEOAPIFY_KEY });
+      if (place) setField('location', place.label);
+      else Alert.alert(t('common.locationErrorToast'));
+    } catch {
+      Alert.alert(t('common.locationErrorToast'));
+    }
   };
 
   const validate = () => {
@@ -294,6 +315,7 @@ const EditProfileScreen = ({ navigation }) => {
                 placeholderTextColor="#9ca3af"
                 maxLength={50}
               />
+              <UseCurrentLocationButton onPress={handleUseCurrentLocation} loading={locating} />
             </Field>
 
             <Field label="About" error={errors.about} hint={`${fields.about.length}/1000`} hintWarn={fields.about.length > 900}>

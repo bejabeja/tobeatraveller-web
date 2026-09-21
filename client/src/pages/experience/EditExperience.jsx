@@ -135,7 +135,7 @@ const EditExperience = () => {
   const navigate   = useNavigate();
   const userMe     = useSelector(selectMe);
   const { searchDestinations, reverseGeocode } = useGeocodeSearch();
-  const { getCurrentLocation, loading: locating } = useCurrentLocation();
+  const { getCurrentLocation, getLocationIfPermitted, loading: locating } = useCurrentLocation();
 
   const [loading, setLoading]           = useState(true);
   const [phase, setPhase]               = useState("review");
@@ -220,7 +220,10 @@ const EditExperience = () => {
     if (!value || value.length < 2) { setDestResults([]); return; }
     searchTimer.current = setTimeout(async () => {
       setDestSearching(true);
-      try { setDestResults(await searchDestinations(value)); }
+      try {
+        const bias = await getLocationIfPermitted();
+        setDestResults(await searchDestinations(value, bias));
+      }
       catch { setDestResults([]); }
       finally { setDestSearching(false); }
     }, 350);
