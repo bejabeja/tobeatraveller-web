@@ -37,4 +37,12 @@ describe('useNetworkStatus', () => {
 
     expect(result.current.isConnected).toBe(true);
   });
+
+  it('shows offline on wifi that has no internet access behind it', async () => {
+    const { result } = await renderHook(() => useNetworkStatus());
+
+    await act(async () => capturedListener({ isConnected: true, isInternetReachable: false }));
+
+    expect(result.current.isConnected).toBe(false);
+  });
 });

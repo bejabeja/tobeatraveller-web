@@ -16,7 +16,8 @@ import {
 import ItineraryCard from '../../components/ItineraryCard';
 import { ItineraryCardSkeleton, ProfileSkeleton } from '../../components/Skeleton';
 import { shadow } from '../../utils/styles';
-import { unregisterCurrentPushToken } from '../../utils/pushNotifications';
+import { clearDeviceSessionData } from '../../utils/session';
+import { useOutbox } from '../../offline/useOutbox';
 
 const TRIP_BADGES = [
   { id: 'globetrotter', label: 'Globetrotter', emoji: '🌍', min: 10 },
@@ -41,8 +42,10 @@ const ProfileScreen = ({ route, navigation }) => {
   const me = meDetail ?? authUser;
   const myItineraries = useSelector(selectMyItineraries);
 
+  const { changes: unsyncedChanges } = useOutbox();
+
   const handleLogout = async () => {
-    await unregisterCurrentPushToken();
+    await clearDeviceSessionData();
     dispatch(logoutUser());
   };
 
@@ -401,7 +404,9 @@ const ProfileScreen = ({ route, navigation }) => {
               style={styles.logoutBtn}
               onPress={() => Alert.alert(
                 t('auth.confirmLogoutTitle'),
-                t('auth.confirmLogoutDesc'),
+                unsyncedChanges.length > 0
+                  ? t('offline.logoutLosesChanges', { count: unsyncedChanges.length })
+                  : t('auth.confirmLogoutDesc'),
                 [
                   { text: t('common.cancel'), style: 'cancel' },
                   { text: t('auth.logout'), style: 'destructive', onPress: handleLogout },

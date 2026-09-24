@@ -43,6 +43,30 @@ describe('SuppliesService', () => {
     });
 
     describe('addShoppingListItem()', () => {
+        // Adding merges into a same-name item, so a replayed add that isn't
+        // recognized would double the amount instead of just duplicating a row.
+        it('returns the item already created with that client id instead of merging the amount again', async () => {
+            shoppingListRepository.findById = async () => makeShoppingListItem({ id: 'client-id-1', amount: 3 });
+            let updated = false;
+            shoppingListRepository.findByNameAndUnit = async () => makeShoppingListItem({ id: 'client-id-1', amount: 3 });
+            shoppingListRepository.update = async () => { updated = true; };
+
+            const result = await service.addShoppingListItem({ id: 'client-id-1', name: 'Pasta', category: 'food', amount: 3, unit: 'g' }, 'user-1');
+
+            expect(result.amount).toBe(3);
+            expect(updated).toBe(false);
+        });
+
+        it('creates the item with the client id when nothing has that id yet', async () => {
+            shoppingListRepository.findById = async () => null;
+            let createArgs;
+            shoppingListRepository.create = async (data) => { createArgs = data; return makeShoppingListItem({ ...data }); };
+
+            await service.addShoppingListItem({ id: 'client-id-1', name: 'Pasta', category: 'food', amount: 3, unit: 'g' }, 'user-1');
+
+            expect(createArgs.id).toBe('client-id-1');
+        });
+
         it('sums the amount into an existing shopping list item with the same name and unit', async () => {
             shoppingListRepository.findByNameAndUnit = async () => makeShoppingListItem({ amount: 2 });
             let updateArgs;
@@ -124,6 +148,17 @@ describe('SuppliesService', () => {
     });
 
     describe('addInventoryItem()', () => {
+        it('returns the item already created with that client id instead of merging the amount again', async () => {
+            inventoryRepository.findById = async () => makeInventoryItem({ id: 'client-id-1', amount: 2 });
+            let updated = false;
+            inventoryRepository.update = async () => { updated = true; };
+
+            const result = await service.addInventoryItem({ id: 'client-id-1', name: 'Pasta', category: 'food', amount: 2, unit: 'g' }, 'user-1');
+
+            expect(result.id).toBe('client-id-1');
+            expect(updated).toBe(false);
+        });
+
         it('sums the amount into an existing inventory item with the same name and unit', async () => {
             inventoryRepository.findByNameAndUnit = async () => makeInventoryItem({ amount: 100 });
             let updateArgs;

@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import {
   Alert, RefreshControl, ScrollView, SectionList,
@@ -9,11 +9,18 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
-  deleteVanLogEntry, getVanLogEntries, getVanLogFuelPriceTrend, getVanLogStats,
+  getVanLogEntries, getVanLogFuelPriceTrend, getVanLogStats,
   groupVanLogEntriesByMonth, isNetworkError, isPremiumRequiredError, selectMe,
   vanLogCategories, vanLogCategoryEmoji as CATEGORY_EMOJI,
 } from '@tobeatraveller/shared';
 import FeatureLoadState from '../../components/FeatureLoadState';
+import { PendingChangesNotice } from '../../components/PendingChangesNotice';
+import { PendingSyncBadge } from '../../components/PendingSyncBadge';
+import { runOrQueue } from '../../offline/outbox';
+import {
+  applyPendingChanges, CHANGE_KINDS, COLLECTIONS, filterVanLogEntries, sortByEntryDateDesc,
+} from '../../offline/pendingChanges';
+import { useOutbox, useRefetchAfterSync } from '../../offline/useOutbox';
 import { cacheGet, cacheSet } from '../../utils/offlineCache';
 import { shadow } from '../../utils/styles';
 
@@ -45,7 +52,7 @@ const VanLogScreen = ({ navigation }) => {
   const me = useSelector(selectMe);
   const cacheKey = `vanlog:entries:${me?.id}`;
 
-  const [entries, setEntries] = useState([]);
+  const [serverEntries, setServerEntries] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -53,6 +60,15 @@ const VanLogScreen = ({ navigation }) => {
   const [loadError, setLoadError] = useState(null); // null | 'premium' | 'error'
   const [showingCached, setShowingCached] = useState(false);
   const [statsExpanded, setStatsExpanded] = useState(false);
+  const { changes } = useOutbox();
+  const hasActiveFilters = Boolean(filters.category || filters.country || filters.currency || filters.dateFrom || filters.dateTo);
+
+  // The cache holds the unfiltered list, so offline the filters (and any
+  // pending changes) are applied here the same way the server would.
+  const entries = useMemo(
+    () => sortByEntryDateDesc(filterVanLogEntries(applyPendingChanges(serverEntries, changes, COLLECTIONS.VAN_LOG), filters)),
+    [serverEntries, changes, filters]
+  );
 
   const daysSinceLabel = (dateStr) => {
     const days = daysSince(dateStr);
@@ -84,23 +100,23 @@ const VanLogScreen = ({ navigation }) => {
       const data = await getVanLogEntries(filters);
       if (requestId !== requestIdRef.current) return;
       const list = Array.isArray(data) ? data : [];
-      setEntries(list);
+      setServerEntries(list);
       setLoadError(null);
       setShowingCached(false);
-      cacheSet(cacheKey, list);
+      if (!hasActiveFilters) cacheSet(cacheKey, list);
     } catch (err) {
       if (requestId !== requestIdRef.current) return;
       if (isNetworkError(err)) {
         const cached = await cacheGet(cacheKey);
         if (requestId !== requestIdRef.current) return;
         if (cached) {
-          setEntries(cached);
+          setServerEntries(cached);
           setLoadError(null);
           setShowingCached(true);
           return;
         }
       }
-      setEntries([]);
+      setServerEntries([]);
       setShowingCached(false);
       setLoadError(isPremiumRequiredError(err) ? 'premium' : 'error');
     }
@@ -117,6 +133,8 @@ const VanLogScreen = ({ navigation }) => {
     useCallback(() => { refresh(); }, [filters])
   );
 
+  useRefetchAfterSync(refresh);
+
   const handleRefresh = async () => {
     setRefreshing(true);
     await refresh();
@@ -125,8 +143,6 @@ const VanLogScreen = ({ navigation }) => {
 
   const updateFilter = (key, value) => setFilters(prev => ({ ...prev, [key]: value }));
   const clearFilters = () => setFilters(EMPTY_FILTERS);
-  const hasActiveFilters = Boolean(filters.category || filters.country || filters.currency || filters.dateFrom || filters.dateTo);
-
   const handleDelete = (entry) => {
     Alert.alert(
       t('vanLog.deleteConfirmTitle'),
@@ -138,8 +154,13 @@ const VanLogScreen = ({ navigation }) => {
           style: 'destructive',
           onPress: async () => {
             try {
-              await deleteVanLogEntry(entry.id);
-              refresh();
+              const { queued } = await runOrQueue({
+                collection: COLLECTIONS.VAN_LOG,
+                kind: CHANGE_KINDS.DELETE,
+                entityId: entry.id,
+                label: entry.title || categoryLabel(entry.category),
+              });
+              if (!queued) refresh();
             } catch (err) {
               Alert.alert(t('errors.somethingWrong'), err?.message || t('vanLog.deleteError'));
             }
@@ -413,6 +434,7 @@ const VanLogScreen = ({ navigation }) => {
 
       </View>
 
+      <PendingChangesNotice />
       {showingCached && (
         <View style={styles.cachedBanner}>
           <Text style={styles.cachedBannerText}>{t('common.showingCachedData')}</Text>
@@ -494,6 +516,7 @@ const VanLogScreen = ({ navigation }) => {
                 </Text>
               ) : null}
               {item.notes ? <Text style={styles.entryNotes} numberOfLines={2}>{item.notes}</Text> : null}
+              <PendingSyncBadge item={item} />
             </View>
           );
         }}

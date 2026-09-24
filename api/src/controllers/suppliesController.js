@@ -1,13 +1,13 @@
 import { ValidationError } from '../errors/ValidationError.js';
-import { supplyItemSchema, purchaseAmountSchema, consumeAmountSchema } from '../utils/schemasValidation.js';
+import { createSupplyItemSchema, supplyItemSchema, purchaseAmountSchema, consumeAmountSchema } from '../utils/schemasValidation.js';
 
 export class SuppliesController {
     constructor(suppliesService) {
         this.suppliesService = suppliesService;
     }
 
-    _validate(req, next) {
-        const result = supplyItemSchema.safeParse(req.body);
+    _validate(req, next, schema = supplyItemSchema) {
+        const result = schema.safeParse(req.body);
         if (!result.success) {
             next(new ValidationError(result.error.errors[0]?.message || "Validation failed"));
             return null;
@@ -35,7 +35,7 @@ export class SuppliesController {
     }
 
     async addShoppingListItem(req, res, next) {
-        const data = this._validate(req, next);
+        const data = this._validate(req, next, createSupplyItemSchema);
         if (!data) return;
         try {
             const item = await this.suppliesService.addShoppingListItem(data, req.user.id);
@@ -89,7 +89,7 @@ export class SuppliesController {
     }
 
     async addInventoryItem(req, res, next) {
-        const data = this._validate(req, next);
+        const data = this._validate(req, next, createSupplyItemSchema);
         if (!data) return;
         try {
             const item = await this.suppliesService.addInventoryItem(data, req.user.id);

@@ -1,5 +1,5 @@
 import { ValidationError } from '../errors/ValidationError.js';
-import { vanLogEntrySchema } from '../utils/schemasValidation.js';
+import { createVanLogEntrySchema, vanLogEntrySchema } from '../utils/schemasValidation.js';
 
 export class VanLogController {
     constructor(vanLogService) {
@@ -7,7 +7,7 @@ export class VanLogController {
     }
 
     async createEntry(req, res, next) {
-        const result = vanLogEntrySchema.safeParse(req.body);
+        const result = createVanLogEntrySchema.safeParse(req.body);
         if (!result.success) {
             return next(new ValidationError(result.error.errors[0]?.message || "Validation failed"));
         }

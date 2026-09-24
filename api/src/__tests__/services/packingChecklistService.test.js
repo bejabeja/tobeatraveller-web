@@ -25,6 +25,25 @@ describe('PackingChecklistService', () => {
     });
 
     describe('addItem()', () => {
+        // Without this, replaying a create whose response was lost would hit
+        // the duplicate-name check against the item it inserted the first time.
+        it('returns the item already created with that client id instead of a duplicate-name conflict', async () => {
+            repository.findById = async () => makeItem({ id: 'client-id-1', category: 'clothing', name: 'Botas' });
+            repository.findByUserId = async () => [makeItem({ id: 'client-id-1', category: 'clothing', name: 'Botas' })];
+
+            const result = await service.addItem({ id: 'client-id-1', category: 'clothing', name: 'Botas' }, 'user-1');
+
+            expect(result.id).toBe('client-id-1');
+        });
+
+        it('creates the item with the client id when nothing has that id yet', async () => {
+            repository.findById = async () => null;
+
+            const result = await service.addItem({ id: 'client-id-1', category: 'clothing', name: 'Botas' }, 'user-1');
+
+            expect(result.id).toBe('client-id-1');
+        });
+
         it('creates the item when nothing with the same name and category exists yet', async () => {
             const result = await service.addItem({ category: 'clothing', name: 'Botas' }, 'user-1');
 

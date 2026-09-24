@@ -1,5 +1,5 @@
 import { ValidationError } from '../errors/ValidationError.js';
-import { packingItemSchema, packingSeedSchema } from '../utils/schemasValidation.js';
+import { createPackingItemSchema, packingItemSchema, packingSeedSchema } from '../utils/schemasValidation.js';
 
 export class PackingChecklistController {
     constructor(packingChecklistService) {
@@ -16,7 +16,7 @@ export class PackingChecklistController {
     }
 
     async addItem(req, res, next) {
-        const result = packingItemSchema.safeParse(req.body);
+        const result = createPackingItemSchema.safeParse(req.body);
         if (!result.success) {
             return next(new ValidationError(result.error.errors[0]?.message || "Validation failed"));
         }

@@ -1,5 +1,5 @@
 import { ValidationError } from '../errors/ValidationError.js';
-import { lifeDiaryEntrySchema } from '../utils/schemasValidation.js';
+import { createLifeDiaryEntrySchema, lifeDiaryEntrySchema } from '../utils/schemasValidation.js';
 
 export class LifeDiaryController {
     constructor(lifeDiaryService) {
@@ -7,7 +7,7 @@ export class LifeDiaryController {
     }
 
     async createEntry(req, res, next) {
-        const result = lifeDiaryEntrySchema.safeParse(JSON.parse(req.body.entry));
+        const result = createLifeDiaryEntrySchema.safeParse(JSON.parse(req.body.entry));
         if (!result.success) {
             return next(new ValidationError(result.error.errors[0]?.message || "Validation failed"));
         }

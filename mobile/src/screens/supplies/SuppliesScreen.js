@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import {
   ActivityIndicator, Alert, FlatList, Modal, RefreshControl,
@@ -9,11 +9,17 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
-  deleteInventoryItem, deleteShoppingListItem, getInventory, getShoppingList, isNetworkError,
-  isPremiumRequiredError, markInventoryItemUsedUp, markShoppingListItemPurchased, normalizeSearchText,
+  getInventory, getShoppingList, isNetworkError, isPremiumRequiredError, normalizeSearchText,
   selectMe, supplyUnits,
 } from '@tobeatraveller/shared';
 import FeatureLoadState from '../../components/FeatureLoadState';
+import { PendingChangesNotice } from '../../components/PendingChangesNotice';
+import { PendingSyncBadge } from '../../components/PendingSyncBadge';
+import { runOrQueue } from '../../offline/outbox';
+import {
+  applyPendingSupplyChanges, CHANGE_KINDS, COLLECTIONS, isDerivedItem,
+} from '../../offline/pendingChanges';
+import { useOutbox, useRefetchAfterSync } from '../../offline/useOutbox';
 import { cacheGet, cacheSet } from '../../utils/offlineCache';
 import { shadow } from '../../utils/styles';
 
@@ -28,8 +34,7 @@ const SuppliesScreen = ({ navigation }) => {
 
   const [tab, setTab] = useState('shopping');
   const [search, setSearch] = useState('');
-  const [shoppingList, setShoppingList] = useState([]);
-  const [inventory, setInventory] = useState([]);
+  const [serverSupplies, setServerSupplies] = useState({ shoppingList: [], inventory: [] });
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [quantityPrompt, setQuantityPrompt] = useState(null); // { type: 'purchase' | 'consume', item }
@@ -37,6 +42,11 @@ const SuppliesScreen = ({ navigation }) => {
   const [confirmingQuantity, setConfirmingQuantity] = useState(false);
   const [loadError, setLoadError] = useState(null); // null | 'premium' | 'error'
   const [showingCached, setShowingCached] = useState(false);
+  const { changes } = useOutbox();
+  const { shoppingList, inventory } = useMemo(
+    () => applyPendingSupplyChanges(serverSupplies, changes),
+    [serverSupplies, changes]
+  );
 
   const categoryLabel = (value) => s(`category.${value}`, value);
   const unitLabel = (value) => s(`unit.${value}`, value);
@@ -46,8 +56,7 @@ const SuppliesScreen = ({ navigation }) => {
       const [shoppingRes, inventoryRes] = await Promise.all([getShoppingList(), getInventory()]);
       const shopping = Array.isArray(shoppingRes) ? shoppingRes : [];
       const items = Array.isArray(inventoryRes) ? inventoryRes : [];
-      setShoppingList(shopping);
-      setInventory(items);
+      setServerSupplies({ shoppingList: shopping, inventory: items });
       setLoadError(null);
       setShowingCached(false);
       cacheSet(cacheKey, { shoppingList: shopping, inventory: items });
@@ -55,15 +64,13 @@ const SuppliesScreen = ({ navigation }) => {
       if (isNetworkError(err)) {
         const cached = await cacheGet(cacheKey);
         if (cached) {
-          setShoppingList(cached.shoppingList ?? []);
-          setInventory(cached.inventory ?? []);
+          setServerSupplies({ shoppingList: cached.shoppingList ?? [], inventory: cached.inventory ?? [] });
           setLoadError(null);
           setShowingCached(true);
           return;
         }
       }
-      setShoppingList([]);
-      setInventory([]);
+      setServerSupplies({ shoppingList: [], inventory: [] });
       setShowingCached(false);
       setLoadError(isPremiumRequiredError(err) ? 'premium' : 'error');
     }
@@ -75,6 +82,8 @@ const SuppliesScreen = ({ navigation }) => {
       fetchData().finally(() => setLoading(false));
     }, [])
   );
+
+  useRefetchAfterSync(fetchData);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -101,9 +110,13 @@ const SuppliesScreen = ({ navigation }) => {
           style: 'destructive',
           onPress: async () => {
             try {
-              if (tab === 'shopping') await deleteShoppingListItem(item.id);
-              else await deleteInventoryItem(item.id);
-              fetchData();
+              const { queued } = await runOrQueue({
+                collection: tab === 'shopping' ? COLLECTIONS.SHOPPING_LIST : COLLECTIONS.INVENTORY,
+                kind: CHANGE_KINDS.DELETE,
+                entityId: item.id,
+                label: item.name,
+              });
+              if (!queued) fetchData();
             } catch (err) {
               Alert.alert(t('errors.somethingWrong'), err?.message || s('deleteError'));
             }
@@ -131,13 +144,11 @@ const SuppliesScreen = ({ navigation }) => {
     const { type, item } = quantityPrompt;
     setConfirmingQuantity(true);
     try {
-      if (type === 'purchase') {
-        await markShoppingListItemPurchased(item.id, amount);
-      } else {
-        await markInventoryItemUsedUp(item.id, amount);
-      }
+      const { queued } = await runOrQueue(type === 'purchase'
+        ? { collection: COLLECTIONS.SHOPPING_LIST, kind: CHANGE_KINDS.PURCHASE, entityId: item.id, payload: { amount }, label: item.name }
+        : { collection: COLLECTIONS.INVENTORY, kind: CHANGE_KINDS.USE_UP, entityId: item.id, payload: { amount }, label: item.name });
       setQuantityPrompt(null);
-      fetchData();
+      if (!queued) fetchData();
     } catch (err) {
       Alert.alert(t('errors.somethingWrong'), err?.message || s('saveError'));
     } finally {
@@ -217,6 +228,7 @@ const SuppliesScreen = ({ navigation }) => {
         )}
       </View>
 
+      <PendingChangesNotice />
       {showingCached && (
         <View style={styles.cachedBanner}>
           <Text style={styles.cachedBannerText}>{t('common.showingCachedData')}</Text>
@@ -259,8 +271,11 @@ const SuppliesScreen = ({ navigation }) => {
               <Text style={styles.itemName}>{item.name}</Text>
               <Text style={styles.itemAmount}>{item.amount} {unitLabel(item.unit)}</Text>
               {item.notes ? <Text style={styles.itemNotes} numberOfLines={2}>{item.notes}</Text> : null}
+              <PendingSyncBadge item={item} />
             </View>
-            <View style={styles.itemActions}>
+            {/* An item a queued purchase/use-up will create has no server id
+                to act on until that change syncs. */}
+            {!isDerivedItem(item) && <View style={styles.itemActions}>
               <TouchableOpacity
                 style={styles.itemActionBtn}
                 onPress={() => openQuantityPrompt(tab === 'shopping' ? 'purchase' : 'consume', item)}
@@ -282,7 +297,7 @@ const SuppliesScreen = ({ navigation }) => {
               <TouchableOpacity style={styles.itemActionBtn} onPress={() => handleDelete(item)}>
                 <Ionicons name="trash-outline" size={16} color="#ef4444" />
               </TouchableOpacity>
-            </View>
+            </View>}
           </View>
         )}
       />

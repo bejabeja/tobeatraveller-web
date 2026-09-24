@@ -5,7 +5,7 @@ import { PackingChecklistItem } from '../models/packingChecklistItem.js';
 export class PackingChecklistRepository {
     async create(data) {
         const { userId, category, name, checked } = data;
-        const id = uuidv4();
+        const id = data.id ?? uuidv4();
 
         const query = `
             INSERT INTO packing_checklist_items (id, user_id, category, name, checked)

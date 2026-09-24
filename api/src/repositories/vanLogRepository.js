@@ -8,7 +8,7 @@ export class VanLogRepository {
             userId, category, title, amount, currency, pricePerLiter,
             location, notes, entryDate,
         } = data;
-        const id = uuidv4();
+        const id = data.id ?? uuidv4();
 
         const query = `
             INSERT INTO van_log_entries (

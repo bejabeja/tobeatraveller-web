@@ -17,6 +17,7 @@ import {
 import { shadow } from '../../utils/styles';
 import { RichText } from '../../components/RichText';
 import { registerForPushNotifications } from '../../utils/pushNotifications';
+import { clearDeviceSessionData } from '../../utils/session';
 
 const NOTIFICATION_PREFERENCE_TOGGLES = [
   // Push only exists in the native app, not in the web build of mobile.
@@ -68,6 +69,7 @@ const SettingsScreen = ({ navigation }) => {
     setDeleting(true);
     try {
       await deleteMyAccount();
+      await clearDeviceSessionData();
       dispatch(logoutUser());
     } catch {
       Alert.alert(t('common.cancel'), t('errors.deleteAccountFailed'));

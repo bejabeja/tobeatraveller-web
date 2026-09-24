@@ -31,6 +31,45 @@ describe('VanLogService', () => {
     });
 
     describe('createEntry()', () => {
+        it('returns the entry already created with that client id instead of inserting it again', async () => {
+            let created = false;
+            repository.create = async () => { created = true; return makeEntry(); };
+            repository.findById = async () => makeEntry({ id: 'client-id-1' });
+
+            const result = await service.createEntry({ id: 'client-id-1', category: 'fuel' }, 'user-1');
+
+            expect(result.id).toBe('client-id-1');
+            expect(created).toBe(false);
+        });
+
+        // A replay of the create that took the user to the cap must not come
+        // back as "limit reached": that entry already counts, it isn't new.
+        it('returns the already-created entry even when the free-tier cap is now reached', async () => {
+            repository.countByUserId = async () => 10;
+            repository.findById = async () => makeEntry({ id: 'client-id-1' });
+
+            const result = await service.createEntry({ id: 'client-id-1', category: 'fuel' }, 'user-1');
+
+            expect(result.id).toBe('client-id-1');
+        });
+
+        it('creates the entry with the client id when nothing has that id yet', async () => {
+            let createArgs;
+            repository.findById = async () => null;
+            repository.create = async (data) => { createArgs = data; return makeEntry({ id: data.id }); };
+
+            await service.createEntry({ id: 'client-id-1', category: 'fuel' }, 'user-1');
+
+            expect(createArgs.id).toBe('client-id-1');
+        });
+
+        it('throws ConflictError when the client id belongs to another user', async () => {
+            repository.findById = async () => makeEntry({ id: 'client-id-1', userId: 'someone-else' });
+
+            await expect(service.createEntry({ id: 'client-id-1', category: 'fuel' }, 'user-1'))
+                .rejects.toMatchObject({ statusCode: 409 });
+        });
+
         it('creates the entry when a free user is under the free-tier limit', async () => {
             repository.countByUserId = async () => 9;
 

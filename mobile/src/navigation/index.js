@@ -41,6 +41,7 @@ import LifeDiaryEntryFormScreen from '../screens/lifeDiary/LifeDiaryEntryFormScr
 import OnboardingScreen from '../screens/auth/OnboardingScreen';
 import TermsScreen from '../screens/legal/TermsScreen';
 import PrivacyPolicyScreen from '../screens/legal/PrivacyPolicyScreen';
+import PendingChangesScreen from '../screens/pendingChanges/PendingChangesScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -238,6 +239,7 @@ const Navigation = () => {
         <Stack.Screen name="LifeDiaryEntryForm" component={LifeDiaryEntryFormScreen} />
         <Stack.Screen name="Contact" component={ContactScreen} />
         <Stack.Screen name="Notifications" component={NotificationsScreen} />
+        <Stack.Screen name="PendingChanges" component={PendingChangesScreen} />
         <Stack.Screen name="Onboarding" component={OnboardingScreen} options={{ gestureEnabled: false }} />
         <Stack.Screen name="Terms" component={TermsScreen} />
         <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />

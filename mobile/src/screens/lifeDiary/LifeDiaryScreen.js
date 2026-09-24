@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import {
   Alert, FlatList, Image, RefreshControl,
@@ -9,9 +9,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
-  deleteLifeDiaryEntry, getLifeDiaryEntries, isNetworkError, isPremiumRequiredError, selectMe,
+  getLifeDiaryEntries, isNetworkError, isPremiumRequiredError, selectMe,
 } from '@tobeatraveller/shared';
 import FeatureLoadState from '../../components/FeatureLoadState';
+import { PendingChangesNotice } from '../../components/PendingChangesNotice';
+import { PendingSyncBadge } from '../../components/PendingSyncBadge';
+import { runOrQueue } from '../../offline/outbox';
+import { applyPendingChanges, CHANGE_KINDS, COLLECTIONS, sortByEntryDateDesc } from '../../offline/pendingChanges';
+import { useOutbox, useRefetchAfterSync } from '../../offline/useOutbox';
 import { cacheGet, cacheSet } from '../../utils/offlineCache';
 import { shadow } from '../../utils/styles';
 
@@ -22,18 +27,23 @@ const LifeDiaryScreen = ({ navigation }) => {
   const me = useSelector(selectMe);
   const cacheKey = `lifediary:entries:${me?.id}`;
 
-  const [entries, setEntries] = useState([]);
+  const [serverEntries, setServerEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [expandedId, setExpandedId] = useState(null);
   const [loadError, setLoadError] = useState(null); // null | 'premium' | 'error'
   const [showingCached, setShowingCached] = useState(false);
+  const { changes } = useOutbox();
+  const entries = useMemo(
+    () => sortByEntryDateDesc(applyPendingChanges(serverEntries, changes, COLLECTIONS.LIFE_DIARY)),
+    [serverEntries, changes]
+  );
 
   const fetchEntries = async () => {
     try {
       const data = await getLifeDiaryEntries();
       const list = Array.isArray(data) ? data : [];
-      setEntries(list);
+      setServerEntries(list);
       setLoadError(null);
       setShowingCached(false);
       cacheSet(cacheKey, list);
@@ -41,13 +51,13 @@ const LifeDiaryScreen = ({ navigation }) => {
       if (isNetworkError(err)) {
         const cached = await cacheGet(cacheKey);
         if (cached) {
-          setEntries(cached);
+          setServerEntries(cached);
           setLoadError(null);
           setShowingCached(true);
           return;
         }
       }
-      setEntries([]);
+      setServerEntries([]);
       setShowingCached(false);
       setLoadError(isPremiumRequiredError(err) ? 'premium' : 'error');
     }
@@ -59,6 +69,8 @@ const LifeDiaryScreen = ({ navigation }) => {
       fetchEntries().finally(() => setLoading(false));
     }, [])
   );
+
+  useRefetchAfterSync(fetchEntries);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -79,8 +91,13 @@ const LifeDiaryScreen = ({ navigation }) => {
           style: 'destructive',
           onPress: async () => {
             try {
-              await deleteLifeDiaryEntry(entry.id);
-              fetchEntries();
+              const { queued } = await runOrQueue({
+                collection: COLLECTIONS.LIFE_DIARY,
+                kind: CHANGE_KINDS.DELETE,
+                entityId: entry.id,
+                label: entry.location?.name || entry.entryDate,
+              });
+              if (!queued) fetchEntries();
             } catch (err) {
               Alert.alert(t('errors.somethingWrong'), err?.message || d('deleteError'));
             }
@@ -113,6 +130,7 @@ const LifeDiaryScreen = ({ navigation }) => {
         )}
       </View>
 
+      <PendingChangesNotice />
       {showingCached && (
         <View style={styles.cachedBanner}>
           <Text style={styles.cachedBannerText}>{t('common.showingCachedData')}</Text>
@@ -184,6 +202,8 @@ const LifeDiaryScreen = ({ navigation }) => {
               )}
 
               {item.bestMoment && <Text style={styles.excerpt}>"{item.bestMoment}"</Text>}
+
+              <PendingSyncBadge item={item} />
 
               {item.wouldReturn !== null && (
                 <View style={[styles.badge, item.wouldReturn ? styles.badgeYes : styles.badgeNo]}>

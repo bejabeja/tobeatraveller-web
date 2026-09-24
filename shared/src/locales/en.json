@@ -720,7 +720,8 @@
       "first_aid": "First aid kit",
       "cleaning": "Cleaning supplies",
       "other": "Other"
-    }
+    },
+    "itemAlreadyInCategory": "You already have this item in this category."
   },
   "lifeDiary": {
     "title": "Life diary",
@@ -753,7 +754,9 @@
     "deleteError": "Could not delete the entry. Please try again.",
     "deleteConfirmTitle": "Delete this entry?",
     "deleteConfirmDesc": "This can't be undone.",
-    "readMore": "Read more"
+    "readMore": "Read more",
+    "photosNeedConnection": "Photos need a connection. Save the entry without new photos, or try again once you are online.",
+    "photosAfterSync": "This entry hasn't synced yet. Add the photos once it has."
   },
   "notifications": {
     "title": "Notifications",
@@ -1286,5 +1289,44 @@
     "mobileCodeLabel": "Invite code (optional)",
     "mobileCodePlaceholder": "e.g. a friend's username",
     "mobileCodeHint": "Were you invited by a friend? Enter their username here."
+  },
+  "offline": {
+    "pendingSync": "Waiting to sync",
+    "notSynced": "Not synced",
+    "offlineWithPending_one": "You're offline. {{count}} change will sync when you're back online.",
+    "offlineWithPending_other": "You're offline. {{count}} changes will sync when you're back online.",
+    "syncing_one": "Syncing {{count}} change…",
+    "syncing_other": "Syncing {{count}} changes…",
+    "pendingNotice_one": "{{count}} change waiting to sync",
+    "pendingNotice_other": "{{count}} changes waiting to sync",
+    "failedNotice_one": "{{count}} change couldn't sync. Tap to review it.",
+    "failedNotice_other": "{{count}} changes couldn't sync. Tap to review them.",
+    "screenTitle": "Pending changes",
+    "screenDesc": "What you saved while offline. It is sent automatically as soon as you are back online.",
+    "allSynced": "Everything is synced.",
+    "retry": "Retry",
+    "retryAll": "Retry all",
+    "discard": "Discard",
+    "discardConfirmTitle": "Discard this change?",
+    "discardConfirmDesc": "What you saved offline will be lost. This cannot be undone.",
+    "statusPending": "Waiting to sync",
+    "statusFailed": "Sync failed",
+    "logoutLosesChanges_one": "You have {{count}} unsynced change. If you log out now, it will be lost.",
+    "logoutLosesChanges_other": "You have {{count}} unsynced changes. If you log out now, they will be lost.",
+    "collection": {
+      "vanLog": "Van log",
+      "lifeDiary": "Life diary",
+      "packingChecklist": "Packing checklist",
+      "shoppingList": "Shopping list",
+      "inventory": "Inventory"
+    },
+    "kind": {
+      "create": "New",
+      "update": "Edited",
+      "delete": "Deleted",
+      "purchase": "Bought",
+      "useUp": "Used",
+      "resetTrip": "New trip"
+    }
   }
 }

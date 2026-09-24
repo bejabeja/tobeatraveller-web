@@ -1,6 +1,6 @@
 import { ForbiddenError } from '../errors/ForbiddenError.js';
 import { STAFF_ROLES } from '../utils/roles.js';
-import { getOwnedEntity } from '../utils/ownedEntity.js';
+import { findClientCreatedEntity, getOwnedEntity } from '../utils/ownedEntity.js';
 
 // Wraps a freshly-typed note with the quantity it came with (e.g. "2x for the pie"),
 // so once several contributions of the same item get merged together, each one's
@@ -38,6 +38,9 @@ export class SuppliesService {
     // Adding an item that's already on the list (same name + unit) sums into it
     // instead of creating a duplicate row, mirroring how a purchase merges into inventory.
     async addShoppingListItem(data, userId) {
+        const alreadyCreated = await findClientCreatedEntity(this.shoppingListRepository, data.id, userId);
+        if (alreadyCreated) return alreadyCreated.toDTO();
+
         const existing = await this.shoppingListRepository.findByNameAndUnit(userId, data.name, data.unit);
         if (!existing) await this._assertCanAddShoppingListItem(userId);
         const incomingNotes = formatNoteSegment(data.amount, data.notes);
@@ -110,6 +113,9 @@ export class SuppliesService {
     // shop for it (e.g. setting up the app for the first time, or a gift). Merges
     // into an existing item with the same name + unit, same as everywhere else.
     async addInventoryItem(data, userId) {
+        const alreadyCreated = await findClientCreatedEntity(this.inventoryRepository, data.id, userId);
+        if (alreadyCreated) return alreadyCreated.toDTO();
+
         const existing = await this.inventoryRepository.findByNameAndUnit(userId, data.name, data.unit);
         if (!existing) await this._assertCanAddInventoryItem(userId);
         const incomingNotes = formatNoteSegment(data.amount, data.notes);

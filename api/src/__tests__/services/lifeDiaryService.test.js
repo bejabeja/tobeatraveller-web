@@ -39,6 +39,20 @@ describe('LifeDiaryService', () => {
     });
 
     describe('createEntry()', () => {
+        it('returns the entry already created with that client id, with its images, instead of inserting it again', async () => {
+            let created = false;
+            repository.create = async () => { created = true; return makeEntry(); };
+            repository.findById = async () => makeEntry({ id: 'client-id-1', images: [] });
+            repository.getImagesByEntryIds = async () => [{ id: 'img-1', entryId: 'client-id-1' }];
+            repository.countByUserId = async () => 10;
+
+            const result = await service.createEntry({ id: 'client-id-1', entryDate: '2026-03-01' }, [], 'user-1');
+
+            expect(result.id).toBe('client-id-1');
+            expect(result.images).toEqual([{ id: 'img-1', entryId: 'client-id-1' }]);
+            expect(created).toBe(false);
+        });
+
         it('creates the entry for the given user', async () => {
             const result = await service.createEntry({ entryDate: '2026-03-01' }, [], 'user-1');
 

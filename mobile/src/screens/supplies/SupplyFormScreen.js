@@ -5,10 +5,9 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
-import {
-  addInventoryItem, addShoppingListItem, isNetworkError, supplyCategories, supplyItemSchema, supplyUnits,
-  updateInventoryItem, updateShoppingListItem,
-} from '@tobeatraveller/shared';
+import { supplyCategories, supplyItemSchema, supplyUnits } from '@tobeatraveller/shared';
+import { newEntityId, runOrQueue } from '../../offline/outbox';
+import { CHANGE_KINDS, COLLECTIONS } from '../../offline/pendingChanges';
 import { shadow } from '../../utils/styles';
 
 const CATEGORY_EMOJI = { food: '🍎', hygiene: '🧴', cleaning: '🧽', vehicle: '🚗', other: '📦' };
@@ -78,17 +77,18 @@ const SupplyFormScreen = ({ navigation, route }) => {
       unit: data.unit,
       notes: data.notes || null,
     };
+    const entityId = isEditing ? item.id : newEntityId();
     try {
-      if (isEditing) {
-        if (listType === 'shopping') await updateShoppingListItem(item.id, payload);
-        else await updateInventoryItem(item.id, payload);
-      } else {
-        if (listType === 'shopping') await addShoppingListItem(payload);
-        else await addInventoryItem(payload);
-      }
+      await runOrQueue({
+        collection: listType === 'shopping' ? COLLECTIONS.SHOPPING_LIST : COLLECTIONS.INVENTORY,
+        kind: isEditing ? CHANGE_KINDS.UPDATE : CHANGE_KINDS.CREATE,
+        entityId,
+        payload: isEditing ? payload : { ...payload, id: entityId },
+        label: payload.name,
+      });
       navigation.goBack();
     } catch (err) {
-      setSubmitError(isNetworkError(err) ? t('errors.networkError') : (err?.message || s('saveError')));
+      setSubmitError(err?.message || s('saveError'));
     } finally {
       setSaving(false);
     }

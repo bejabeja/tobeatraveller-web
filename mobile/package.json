@@ -15,6 +15,7 @@
     "@tobeatraveller/shared": "*",
     "expo": "~56.0.4",
     "expo-clipboard": "~56.0.4",
+    "expo-crypto": "~56.0.5",
     "expo-dev-client": "~56.0.16",
     "expo-file-system": "~56.0.9",
     "expo-image-picker": "~56.0.14",
@@ -53,7 +54,8 @@
   "jest": {
     "preset": "jest-expo",
     "moduleNameMapper": {
-      "^@react-native-async-storage/async-storage$": "@react-native-async-storage/async-storage/jest/async-storage-mock"
+      "^@react-native-async-storage/async-storage$": "@react-native-async-storage/async-storage/jest/async-storage-mock",
+      "^@react-native-community/netinfo$": "@react-native-community/netinfo/jest/netinfo-mock.js"
     }
   }
 }

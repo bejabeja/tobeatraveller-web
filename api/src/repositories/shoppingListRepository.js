@@ -5,7 +5,7 @@ import { ShoppingListItem } from '../models/shoppingListItem.js';
 export class ShoppingListRepository {
     async create(data) {
         const { userId, name, category, amount, unit, notes } = data;
-        const id = uuidv4();
+        const id = data.id ?? uuidv4();
 
         const query = `
             INSERT INTO shopping_list_items (id, user_id, name, category, amount, unit, notes)

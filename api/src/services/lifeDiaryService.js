@@ -1,6 +1,6 @@
 import { ForbiddenError } from '../errors/ForbiddenError.js';
 import { STAFF_ROLES } from '../utils/roles.js';
-import { getOwnedEntity } from '../utils/ownedEntity.js';
+import { findClientCreatedEntity, getOwnedEntity } from '../utils/ownedEntity.js';
 
 const CLOUDINARY_FOLDER = 'life-diary';
 
@@ -17,6 +17,14 @@ export class LifeDiaryService {
     }
 
     async createEntry(data, files, userId) {
+        // Checked before the free-tier cap: replaying the create that reached
+        // the cap must return that entry, not a "limit reached" error.
+        const alreadyCreated = await findClientCreatedEntity(this.lifeDiaryRepository, data.id, userId);
+        if (alreadyCreated) {
+            alreadyCreated.images = await this.lifeDiaryRepository.getImagesByEntryIds([alreadyCreated.id]);
+            return alreadyCreated.toDTO();
+        }
+
         await this._assertCanCreateEntry(userId);
         const entry = await this.lifeDiaryRepository.create({ ...data, userId });
         await this._addImages(entry, files ?? []);

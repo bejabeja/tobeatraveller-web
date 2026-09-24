@@ -16,6 +16,7 @@ import Navigation from './src/navigation';
 import { OfflineBanner } from './src/components/OfflineBanner';
 import { API_URL } from './src/utils/config';
 import { usePushNotificationReceived, usePushTokenRegistration } from './src/hooks/usePushNotifications';
+import { useOutboxSync } from './src/offline/useOutbox';
 
 setApiUrl(API_URL);
 
@@ -40,6 +41,7 @@ function AppContent() {
   const { i18n } = useTranslation();
 
   usePushTokenRegistration(isAuthenticated, i18n.language);
+  useOutboxSync(isAuthenticated ? authUser?.id : null);
   usePushNotificationReceived(() => {
     if (isAuthenticated) dispatch(refreshUnreadCount());
   });

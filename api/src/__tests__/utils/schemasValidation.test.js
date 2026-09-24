@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
     signupSchema, resetPasswordSchema, vanLogEntrySchema,
     createItineraryDataSchema, updateItineraryDataSchema,
-    registerPushTokenSchema,
+    registerPushTokenSchema, createVanLogEntrySchema, vanLogEntrySchema as vanLogUpdateSchema,
 } from '../../utils/schemasValidation.js';
 
 const validSignupData = {
@@ -213,5 +213,37 @@ describe('registerPushTokenSchema', () => {
         const result = registerPushTokenSchema.safeParse({ token: 'ExponentPushToken[abc123]', platform: 'web' });
 
         expect(result.success).toBe(false);
+    });
+});
+
+describe('client-generated ids on create schemas', () => {
+    const entry = { category: 'fuel', entryDate: '2026-09-01' };
+
+    it('keeps a valid uuid on create', () => {
+        const id = '8a6e0804-2bd0-4672-b79d-d97027f9071a';
+
+        const result = createVanLogEntrySchema.safeParse({ ...entry, id });
+
+        expect(result.data.id).toBe(id);
+    });
+
+    it('rejects an id that is not a uuid', () => {
+        const result = createVanLogEntrySchema.safeParse({ ...entry, id: 'not-a-uuid' });
+
+        expect(result.success).toBe(false);
+    });
+
+    it('still applies the fuel-only price rule on create', () => {
+        const result = createVanLogEntrySchema.safeParse({ ...entry, category: 'groceries', pricePerLiter: 1.5 });
+
+        expect(result.error.errors[0].message).toBe('Price per liter only applies to the fuel category');
+
+        expect(result.success).toBe(false);
+    });
+
+    it('drops any id sent on update, where the id comes from the URL', () => {
+        const result = vanLogUpdateSchema.safeParse({ ...entry, id: '8a6e0804-2bd0-4672-b79d-d97027f9071a' });
+
+        expect(result.data.id).toBeUndefined();
     });
 });

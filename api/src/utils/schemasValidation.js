@@ -179,6 +179,10 @@ export const commentSchema = z.object({
     text: z.string().min(1, "Comment cannot be empty").max(COMMENT_MAX_LENGTH, `Comment must be at most ${COMMENT_MAX_LENGTH} characters`),
 });
 
+// Offline mobile clients generate the id of what they create, so replaying a
+// create whose response was lost returns the existing row instead of a duplicate.
+const clientGeneratedIdField = { id: z.string().uuid("Invalid id").optional() };
+
 const vanLogLocationSchema = z.object({
     name: z.string().max(255).nullable().optional(),
     country: z.string().max(255).nullable().optional(),
@@ -187,7 +191,7 @@ const vanLogLocationSchema = z.object({
     lon: z.number().nullable().optional(),
 }).nullable().optional();
 
-export const vanLogEntrySchema = z.object({
+const vanLogEntryFields = z.object({
     category: z.enum(VAN_LOG_CATEGORIES, { errorMap: () => ({ message: "Invalid category" }) }),
     title: z.string().max(255, "Title must be less than 255 characters").nullable().optional(),
     amount: z.number().nonnegative("Amount cannot be negative").nullable().optional(),
@@ -196,10 +200,15 @@ export const vanLogEntrySchema = z.object({
     location: vanLogLocationSchema,
     notes: z.string().max(1000, "Notes must be less than 1000 characters").nullable().optional(),
     entryDate: z.string().min(1, "Date is required"),
-}).refine((data) => data.category === 'fuel' || data.pricePerLiter == null, {
-    message: "Price per liter only applies to the fuel category",
-    path: ["pricePerLiter"],
 });
+
+const withPricePerLiterOnlyForFuel = (schema) => schema.refine(
+    (data) => data.category === 'fuel' || data.pricePerLiter == null,
+    { message: "Price per liter only applies to the fuel category", path: ["pricePerLiter"] }
+);
+
+export const vanLogEntrySchema = withPricePerLiterOnlyForFuel(vanLogEntryFields);
+export const createVanLogEntrySchema = withPricePerLiterOnlyForFuel(vanLogEntryFields.extend(clientGeneratedIdField));
 
 export const lifeDiaryEntrySchema = z.object({
     location: vanLogLocationSchema,
@@ -212,16 +221,23 @@ export const lifeDiaryEntrySchema = z.object({
     keepImageIds: z.array(z.string()).optional(),
 });
 
-export const supplyItemSchema = z.object({
+export const createLifeDiaryEntrySchema = lifeDiaryEntrySchema.extend(clientGeneratedIdField);
+
+const supplyItemFields = z.object({
     name: z.string().min(1, "Name is required").max(255, "Name must be less than 255 characters"),
     category: z.enum(SUPPLY_CATEGORIES, { errorMap: () => ({ message: "Invalid category" }) }).optional().default('other'),
     amount: z.number().positive("Amount must be greater than zero"),
     unit: z.enum(SUPPLY_UNITS, { errorMap: () => ({ message: "Invalid unit" }) }),
     notes: z.string().max(500, "Notes must be less than 500 characters").nullable().optional(),
-}).refine(data => !SUPPLY_WHOLE_UNITS.includes(data.unit) || Number.isInteger(data.amount), {
-    message: "This unit can't have decimals",
-    path: ["amount"],
 });
+
+const withWholeUnitsAsIntegers = (schema) => schema.refine(
+    data => !SUPPLY_WHOLE_UNITS.includes(data.unit) || Number.isInteger(data.amount),
+    { message: "This unit can't have decimals", path: ["amount"] }
+);
+
+export const supplyItemSchema = withWholeUnitsAsIntegers(supplyItemFields);
+export const createSupplyItemSchema = withWholeUnitsAsIntegers(supplyItemFields.extend(clientGeneratedIdField));
 
 export const purchaseAmountSchema = z.object({
     purchasedAmount: z.number().positive("Purchased amount must be greater than zero").optional(),
@@ -236,6 +252,8 @@ export const packingItemSchema = z.object({
     name: z.string().min(1, "Name is required").max(255, "Name must be less than 255 characters"),
     checked: z.boolean().optional(),
 });
+
+export const createPackingItemSchema = packingItemSchema.extend(clientGeneratedIdField);
 
 export const changePasswordSchema = z.object({
     currentPassword: z.string().min(1, "Current password is required"),

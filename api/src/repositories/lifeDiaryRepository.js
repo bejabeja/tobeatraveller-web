@@ -8,7 +8,7 @@ export class LifeDiaryRepository {
             userId, location, entryDate, bestMoment,
             lessonLearned, memories, peopleMet, wouldReturn,
         } = data;
-        const id = uuidv4();
+        const id = data.id ?? uuidv4();
 
         const query = `
             INSERT INTO life_diary_entries (

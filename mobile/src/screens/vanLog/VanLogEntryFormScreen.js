@@ -6,13 +6,15 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import {
-  createVanLogEntry, isNetworkError, reverseGeocode, searchDestinations, updateVanLogEntry,
+  reverseGeocode, searchDestinations,
   vanLogCategories, vanLogCategoryEmoji as CATEGORY_EMOJI, vanLogCommonCurrencies, vanLogEntrySchema,
 } from '@tobeatraveller/shared';
 import { shadow } from '../../utils/styles';
 import { GEOAPIFY_KEY } from '../../utils/config';
 import { useCurrentLocation } from '../../hooks/useCurrentLocation';
 import { UseCurrentLocationButton } from '../../components/UseCurrentLocationButton';
+import { newEntityId, runOrQueue } from '../../offline/outbox';
+import { CHANGE_KINDS, COLLECTIONS } from '../../offline/pendingChanges';
 
 const today = () => new Date().toISOString().split('T')[0];
 
@@ -152,12 +154,18 @@ const VanLogEntryFormScreen = ({ navigation, route }) => {
       notes: data.notes || null,
       entryDate: data.entryDate,
     };
+    const entityId = isEditing ? entry.id : newEntityId();
     try {
-      if (isEditing) await updateVanLogEntry(entry.id, payload);
-      else await createVanLogEntry(payload);
+      await runOrQueue({
+        collection: COLLECTIONS.VAN_LOG,
+        kind: isEditing ? CHANGE_KINDS.UPDATE : CHANGE_KINDS.CREATE,
+        entityId,
+        payload: isEditing ? payload : { ...payload, id: entityId },
+        label: payload.title || t(`vanLog.category.${payload.category}`),
+      });
       navigation.goBack();
     } catch (err) {
-      setSubmitError(isNetworkError(err) ? t('errors.networkError') : (err?.message || t('vanLog.saveError')));
+      setSubmitError(err?.message || t('vanLog.saveError'));
     } finally {
       setSaving(false);
     }

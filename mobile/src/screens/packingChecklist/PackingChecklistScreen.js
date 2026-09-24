@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import {
   ActivityIndicator, Alert, KeyboardAvoidingView, Platform,
@@ -9,11 +9,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
-  addPackingChecklistItem, addShoppingListItem, defaultPackingItems, deletePackingChecklistItem,
-  getPackingChecklist, isNetworkError, isPremiumRequiredError, normalizeSearchText, packingCategories,
-  resetPackingChecklistTrip, seedPackingChecklistDefaults, selectMe, updatePackingChecklistItem,
+  defaultPackingItems, getPackingChecklist, isNetworkError, isPremiumRequiredError, normalizeSearchText,
+  packingCategories, seedPackingChecklistDefaults, selectMe,
 } from '@tobeatraveller/shared';
 import FeatureLoadState from '../../components/FeatureLoadState';
+import { PendingChangesNotice } from '../../components/PendingChangesNotice';
+import { newEntityId, runOrQueue } from '../../offline/outbox';
+import { applyPendingChanges, CHANGE_KINDS, COLLECTIONS } from '../../offline/pendingChanges';
+import { useOutbox, useRefetchAfterSync } from '../../offline/useOutbox';
 import { cacheGet, cacheSet } from '../../utils/offlineCache';
 import { shadow } from '../../utils/styles';
 
@@ -36,7 +39,7 @@ const PackingChecklistScreen = ({ navigation }) => {
   const me = useSelector(selectMe);
   const cacheKey = `packingchecklist:items:${me?.id}`;
 
-  const [items, setItems] = useState([]);
+  const [serverItems, setServerItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [newItemInputs, setNewItemInputs] = useState({});
@@ -47,14 +50,27 @@ const PackingChecklistScreen = ({ navigation }) => {
   const [pendingDeletes, setPendingDeletes] = useState([]); // [{ item, timeoutId }]
   const [loadError, setLoadError] = useState(null); // null | 'premium' | 'error'
   const [showingCached, setShowingCached] = useState(false);
+  const { changes } = useOutbox();
+
+  // Items waiting out the undo window are hidden here rather than removed
+  // from state, so undo also works for items that only exist in the queue.
+  const items = useMemo(() => {
+    const hiddenIds = new Set(pendingDeletes.map(({ item }) => item.id));
+    return applyPendingChanges(serverItems, changes, COLLECTIONS.PACKING_CHECKLIST)
+      .filter(item => !hiddenIds.has(item.id));
+  }, [serverItems, changes, pendingDeletes]);
 
   const pendingDeletesRef = useRef([]);
   useEffect(() => { pendingDeletesRef.current = pendingDeletes; }, [pendingDeletes]);
 
+  const deleteItem = (item) => runOrQueue({
+    collection: COLLECTIONS.PACKING_CHECKLIST, kind: CHANGE_KINDS.DELETE, entityId: item.id, label: item.name,
+  });
+
   useEffect(() => () => {
     pendingDeletesRef.current.forEach(({ item, timeoutId }) => {
       clearTimeout(timeoutId);
-      deletePackingChecklistItem(item.id).catch(() => {});
+      deleteItem(item).catch(() => {});
     });
   }, []);
 
@@ -65,7 +81,7 @@ const PackingChecklistScreen = ({ navigation }) => {
         res = await seedPackingChecklistDefaults(localizedDefaultItems(i18n));
       }
       const list = Array.isArray(res) ? res : [];
-      setItems(list);
+      setServerItems(list);
       setLoadError(null);
       setShowingCached(false);
       cacheSet(cacheKey, list);
@@ -73,13 +89,13 @@ const PackingChecklistScreen = ({ navigation }) => {
       if (isNetworkError(err)) {
         const cached = await cacheGet(cacheKey);
         if (cached) {
-          setItems(cached);
+          setServerItems(cached);
           setLoadError(null);
           setShowingCached(true);
           return;
         }
       }
-      setItems([]);
+      setServerItems([]);
       setShowingCached(false);
       setLoadError(isPremiumRequiredError(err) ? 'premium' : 'error');
     }
@@ -92,6 +108,8 @@ const PackingChecklistScreen = ({ navigation }) => {
     }, [])
   );
 
+  useRefetchAfterSync(fetchData);
+
   const handleRefresh = async () => {
     setRefreshing(true);
     await fetchData();
@@ -103,12 +121,21 @@ const PackingChecklistScreen = ({ navigation }) => {
     return p(`category.${value}`, fallback);
   };
 
+  const setServerItemChecked = (itemId, checked) =>
+    setServerItems(prev => prev.map(i => i.id === itemId ? { ...i, checked } : i));
+
   const toggleChecked = async (item) => {
-    setItems(prev => prev.map(i => i.id === item.id ? { ...i, checked: !i.checked } : i));
+    setServerItemChecked(item.id, !item.checked);
     try {
-      await updatePackingChecklistItem(item.id, { checked: !item.checked });
+      await runOrQueue({
+        collection: COLLECTIONS.PACKING_CHECKLIST,
+        kind: CHANGE_KINDS.UPDATE,
+        entityId: item.id,
+        payload: { checked: !item.checked },
+        label: item.name,
+      });
     } catch (err) {
-      setItems(prev => prev.map(i => i.id === item.id ? { ...i, checked: item.checked } : i));
+      setServerItemChecked(item.id, item.checked);
       Alert.alert(t('errors.somethingWrong'), err?.message || p('saveError'));
     }
   };
@@ -118,18 +145,17 @@ const PackingChecklistScreen = ({ navigation }) => {
     if (!pending) return;
     clearTimeout(pending.timeoutId);
     setPendingDeletes(prev => prev.filter(entry => entry.item.id !== itemId));
-    setItems(prev => [...prev, pending.item]);
   };
 
   const removeItem = (item) => {
-    setItems(prev => prev.filter(i => i.id !== item.id));
     const timeoutId = setTimeout(async () => {
-      setPendingDeletes(prev => prev.filter(entry => entry.item.id !== item.id));
       try {
-        await deletePackingChecklistItem(item.id);
+        const { queued } = await deleteItem(item);
+        if (!queued) setServerItems(prev => prev.filter(i => i.id !== item.id));
       } catch (err) {
-        setItems(prev => [...prev, item]);
         Alert.alert(t('errors.somethingWrong'), err?.message || p('deleteError'));
+      } finally {
+        setPendingDeletes(prev => prev.filter(entry => entry.item.id !== item.id));
       }
     }, UNDO_DELETE_WINDOW_MS);
     setPendingDeletes(prev => [...prev, { item, timeoutId }]);
@@ -137,12 +163,20 @@ const PackingChecklistScreen = ({ navigation }) => {
 
   const addToShoppingList = async (item) => {
     setAddingToShoppingList(item.id);
+    const entityId = newEntityId();
     try {
-      await addShoppingListItem({
-        name: item.name,
-        category: PACKING_TO_SUPPLY_CATEGORY[item.category] ?? 'other',
-        amount: 1,
-        unit: 'units',
+      await runOrQueue({
+        collection: COLLECTIONS.SHOPPING_LIST,
+        kind: CHANGE_KINDS.CREATE,
+        entityId,
+        payload: {
+          id: entityId,
+          name: item.name,
+          category: PACKING_TO_SUPPLY_CATEGORY[item.category] ?? 'other',
+          amount: 1,
+          unit: 'units',
+        },
+        label: item.name,
       });
     } catch (err) {
       Alert.alert(t('errors.somethingWrong'), err?.message || p('saveError'));
@@ -154,22 +188,36 @@ const PackingChecklistScreen = ({ navigation }) => {
   const handleAddCustomItem = async (category) => {
     const name = (newItemInputs[category] || '').trim();
     if (!name) return;
+    // Same check the server does, so an offline add doesn't queue a change
+    // that is bound to fail once it syncs.
+    if (items.some(item => item.category === category && item.name.toLowerCase() === name.toLowerCase())) {
+      Alert.alert(t('errors.somethingWrong'), p('itemAlreadyInCategory'));
+      return;
+    }
+    const entityId = newEntityId();
     try {
-      const created = await addPackingChecklistItem({ category, name });
-      setItems(prev => [...prev, created]);
+      const { queued, result } = await runOrQueue({
+        collection: COLLECTIONS.PACKING_CHECKLIST,
+        kind: CHANGE_KINDS.CREATE,
+        entityId,
+        payload: { id: entityId, category, name },
+        label: name,
+      });
+      if (!queued) setServerItems(prev => [...prev, result]);
       setNewItemInputs(prev => ({ ...prev, [category]: '' }));
     } catch (err) {
       Alert.alert(t('errors.somethingWrong'), err?.message || p('saveError'));
     }
   };
 
+  // Restoring defaults needs the server's template merge, so it stays online-only.
   const restoreDefaults = async () => {
     setRestoring(true);
     try {
       const res = await seedPackingChecklistDefaults(localizedDefaultItems(i18n));
-      setItems(res);
+      setServerItems(res);
     } catch (err) {
-      Alert.alert(t('errors.somethingWrong'), err?.message || p('saveError'));
+      Alert.alert(t('errors.somethingWrong'), isNetworkError(err) ? t('errors.networkError') : (err?.message || p('saveError')));
     } finally {
       setRestoring(false);
     }
@@ -178,8 +226,10 @@ const PackingChecklistScreen = ({ navigation }) => {
   const startNewTrip = async () => {
     setResetting(true);
     try {
-      const res = await resetPackingChecklistTrip();
-      setItems(res);
+      const { queued, result } = await runOrQueue({
+        collection: COLLECTIONS.PACKING_CHECKLIST, kind: CHANGE_KINDS.RESET_TRIP, label: p('startNewTrip'),
+      });
+      if (!queued) setServerItems(result);
     } catch (err) {
       Alert.alert(t('errors.somethingWrong'), err?.message || p('saveError'));
     } finally {
@@ -258,6 +308,7 @@ const PackingChecklistScreen = ({ navigation }) => {
         )}
       </View>
 
+      <PendingChangesNotice />
       {showingCached && (
         <View style={styles.cachedBanner}>
           <Text style={styles.cachedBannerText}>{t('common.showingCachedData')}</Text>
@@ -310,6 +361,14 @@ const PackingChecklistScreen = ({ navigation }) => {
                           color={item.checked ? '#E8743B' : '#9ca3af'}
                         />
                         <Text style={[styles.itemName, item.checked && styles.itemNameChecked]}>{item.name}</Text>
+                        {item._pending && (
+                          <Ionicons
+                            name={item._syncFailed ? 'alert-circle-outline' : 'cloud-upload-outline'}
+                            size={14}
+                            color={item._syncFailed ? '#b91c1c' : '#92400e'}
+                            accessibilityLabel={item._syncFailed ? t('offline.notSynced') : t('offline.pendingSync')}
+                          />
+                        )}
                       </TouchableOpacity>
                       <View style={styles.itemActions}>
                         {!item.checked && (

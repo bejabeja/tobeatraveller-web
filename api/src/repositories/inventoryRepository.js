@@ -5,7 +5,7 @@ import { InventoryItem } from '../models/inventoryItem.js';
 export class InventoryRepository {
     async create(data) {
         const { userId, name, category, amount, unit, notes } = data;
-        const id = uuidv4();
+        const id = data.id ?? uuidv4();
 
         const query = `
             INSERT INTO inventory_items (id, user_id, name, category, amount, unit, notes)

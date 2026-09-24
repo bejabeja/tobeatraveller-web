@@ -15,6 +15,8 @@ import { shadow } from '../../utils/styles';
 import { GEOAPIFY_KEY } from '../../utils/config';
 import { useCurrentLocation } from '../../hooks/useCurrentLocation';
 import { UseCurrentLocationButton } from '../../components/UseCurrentLocationButton';
+import { newEntityId, runOrQueue } from '../../offline/outbox';
+import { CHANGE_KINDS, COLLECTIONS } from '../../offline/pendingChanges';
 
 const MAX_GALLERY_IMAGES = 6;
 const today = () => new Date().toISOString().split('T')[0];
@@ -144,6 +146,20 @@ const LifeDiaryEntryFormScreen = ({ navigation, route }) => {
     setIsDirty(true);
   };
 
+  // Photos can't wait in the offline queue: the picker's files may be gone
+  // by the time the connection is back. So an entry with new photos is only
+  // saved online, straight to the API.
+  const saveWithNewPhotos = async (payload) => {
+    // Going straight to the API would jump ahead of this entry's queued
+    // changes (or target an entry the server doesn't have yet).
+    if (entry?._pending) throw new Error(d('photosAfterSync'));
+    const formData = new FormData();
+    formData.append('entry', JSON.stringify(isEditing ? payload : { ...payload, id: newEntityId() }));
+    newPhotos.forEach(photo => formData.append('images', photo));
+    if (isEditing) await updateLifeDiaryEntry(entry.id, formData);
+    else await createLifeDiaryEntry(formData);
+  };
+
   const handleSave = async () => {
     const parsed = lifeDiaryEntrySchema.safeParse({
       entryDate,
@@ -184,16 +200,23 @@ const LifeDiaryEntryFormScreen = ({ navigation, route }) => {
       wouldReturn: data.wouldReturn,
       keepImageIds: existingImages.map(img => img.id),
     };
-    const formData = new FormData();
-    formData.append('entry', JSON.stringify(payload));
-    newPhotos.forEach(photo => formData.append('images', photo));
-
     try {
-      if (isEditing) await updateLifeDiaryEntry(entry.id, formData);
-      else await createLifeDiaryEntry(formData);
+      if (newPhotos.length > 0) {
+        await saveWithNewPhotos(payload);
+      } else {
+        const entityId = isEditing ? entry.id : newEntityId();
+        await runOrQueue({
+          collection: COLLECTIONS.LIFE_DIARY,
+          kind: isEditing ? CHANGE_KINDS.UPDATE : CHANGE_KINDS.CREATE,
+          entityId,
+          payload: isEditing ? payload : { ...payload, id: entityId },
+          label: payload.location?.name || payload.entryDate,
+        });
+      }
       navigation.goBack();
     } catch (err) {
-      setSubmitError(isNetworkError(err) ? t('errors.networkError') : (err?.message || d('saveError')));
+      // Photos are the one thing that can't be saved offline (see saveWithNewPhotos).
+      setSubmitError(isNetworkError(err) ? d('photosNeedConnection') : (err?.message || d('saveError')));
     } finally {
       setSaving(false);
     }

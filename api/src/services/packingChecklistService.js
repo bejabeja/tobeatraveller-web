@@ -1,5 +1,5 @@
 import { ConflictError } from '../errors/ConflictError.js';
-import { getOwnedEntity } from '../utils/ownedEntity.js';
+import { findClientCreatedEntity, getOwnedEntity } from '../utils/ownedEntity.js';
 
 export class PackingChecklistService {
     constructor(packingChecklistRepository) {
@@ -12,6 +12,11 @@ export class PackingChecklistService {
     }
 
     async addItem(data, userId) {
+        // Checked before the duplicate-name check, which a replayed create
+        // would otherwise trip over its own earlier insert.
+        const alreadyCreated = await findClientCreatedEntity(this.packingChecklistRepository, data.id, userId);
+        if (alreadyCreated) return alreadyCreated.toDTO();
+
         const existing = await this.packingChecklistRepository.findByUserId(userId);
         const isDuplicate = existing.some(item =>
             item.category === data.category && item.name.toLowerCase() === data.name.toLowerCase()

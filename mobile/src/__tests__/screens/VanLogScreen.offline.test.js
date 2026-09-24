@@ -46,6 +46,8 @@ import { getVanLogEntries, getVanLogStats, selectMe } from '@tobeatraveller/shar
 import { render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { cacheSet } from '../../utils/offlineCache';
+import { clearOutbox, loadOutbox, runOrQueue, setOutboxOnline } from '../../offline/outbox';
+import { CHANGE_KINDS, COLLECTIONS } from '../../offline/pendingChanges';
 import VanLogScreen from '../../screens/vanLog/VanLogScreen';
 
 // This test renders VanLogScreen in isolation, so it needs its own
@@ -70,6 +72,11 @@ const CACHED_ENTRY = {
   notes: null,
   pricePerLiter: null,
 };
+
+afterEach(async () => {
+  await clearOutbox();
+  setOutboxOnline(true);
+});
 
 beforeEach(async () => {
   jest.clearAllMocks();
@@ -108,4 +115,36 @@ it('shows the generic error state (not a crash) when offline with no cache avail
   await renderScreen(<VanLogScreen navigation={{}} />);
 
   expect(await screen.findByText('premium.loadErrorDesc')).toBeTruthy();
+});
+
+it('shows an expense saved offline next to the cached ones, marked as waiting to sync', async () => {
+  await cacheSet('vanlog:entries:user-1', [CACHED_ENTRY]);
+  getVanLogEntries.mockRejectedValue({ isNetworkError: true });
+  setOutboxOnline(false);
+  await loadOutbox('user-1');
+  await runOrQueue({
+    collection: COLLECTIONS.VAN_LOG,
+    kind: CHANGE_KINDS.CREATE,
+    entityId: 'entry-offline',
+    payload: { id: 'entry-offline', category: 'water_fresh', title: 'Offline water refill', amount: 2, currency: 'EUR', entryDate: '2026-01-16' },
+  });
+
+  await renderScreen(<VanLogScreen navigation={{}} />);
+
+  expect(await screen.findByText('Offline water refill')).toBeTruthy();
+  expect(screen.getByText('Cached fuel stop')).toBeTruthy();
+  expect(screen.getByText('offline.pendingSync')).toBeTruthy();
+});
+
+it('hides an expense deleted offline even though the cache still has it', async () => {
+  await cacheSet('vanlog:entries:user-1', [CACHED_ENTRY, { ...CACHED_ENTRY, id: 'entry-2', title: 'Deleted offline' }]);
+  getVanLogEntries.mockRejectedValue({ isNetworkError: true });
+  setOutboxOnline(false);
+  await loadOutbox('user-1');
+  await runOrQueue({ collection: COLLECTIONS.VAN_LOG, kind: CHANGE_KINDS.DELETE, entityId: 'entry-2' });
+
+  await renderScreen(<VanLogScreen navigation={{}} />);
+
+  expect(await screen.findByText('Cached fuel stop')).toBeTruthy();
+  expect(screen.queryByText('Deleted offline')).toBeNull();
 });

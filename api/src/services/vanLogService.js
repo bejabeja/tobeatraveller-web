@@ -1,6 +1,6 @@
 import { ForbiddenError } from '../errors/ForbiddenError.js';
 import { STAFF_ROLES } from '../utils/roles.js';
-import { getOwnedEntity } from '../utils/ownedEntity.js';
+import { findClientCreatedEntity, getOwnedEntity } from '../utils/ownedEntity.js';
 
 // Freemium pilot: Van Log is free to browse and to add entries to up to this
 // many, then requires Premium for unlimited entries. Staff and premium users
@@ -14,6 +14,11 @@ export class VanLogService {
     }
 
     async createEntry(data, userId) {
+        // Checked before the free-tier cap: replaying the create that reached
+        // the cap must return that entry, not a "limit reached" error.
+        const alreadyCreated = await findClientCreatedEntity(this.vanLogRepository, data.id, userId);
+        if (alreadyCreated) return alreadyCreated.toDTO();
+
         await this._assertCanCreateEntry(userId);
         const entry = await this.vanLogRepository.create({ ...data, userId });
         return entry.toDTO();
