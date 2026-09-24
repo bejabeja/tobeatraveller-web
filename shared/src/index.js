@@ -49,7 +49,7 @@ export { setApiUrl } from './utils/apiConfig.js';
 export { setTokenStorage } from './utils/tokenStorage.js';
 export {
     parseError, isPremiumRequiredError, isVanLogCapReachedError, isLifeDiaryCapReachedError,
-    isShoppingListCapReachedError, isInventoryCapReachedError, isNetworkError,
+    isShoppingListCapReachedError, isInventoryCapReachedError, isNetworkError, isTimeoutError,
 } from './utils/parseError.js';
 export { normalizeSearchText } from './utils/normalizeSearchText.js';
 export { groupVanLogEntriesByMonth, getVanLogFuelPriceTrend } from './utils/vanLogStats.js';

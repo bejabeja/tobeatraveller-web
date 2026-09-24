@@ -36,14 +36,18 @@ jest.mock('@tobeatraveller/shared', () => {
 });
 
 import { getPackingChecklist, selectMe } from '@tobeatraveller/shared';
-import { render, screen } from '@testing-library/react-native';
+import { act, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import PackingChecklistScreen from '../../screens/packingChecklist/PackingChecklistScreen';
 
 const INITIAL_METRICS = { frame: { x: 0, y: 0, width: 390, height: 844 }, insets: { top: 0, left: 0, right: 0, bottom: 0 } };
-const renderScreen = (ui) => render(
-  <SafeAreaProvider initialMetrics={INITIAL_METRICS}>{ui}</SafeAreaProvider>
-);
+// The screen loads its data in effects on mount; flushing them inside act()
+// lets those loads settle there instead of updating state after the test.
+const renderScreen = async (ui) => {
+  const result = render(<SafeAreaProvider initialMetrics={INITIAL_METRICS}>{ui}</SafeAreaProvider>);
+  await act(async () => {});
+  return result;
+};
 
 beforeEach(() => {
   jest.clearAllMocks();

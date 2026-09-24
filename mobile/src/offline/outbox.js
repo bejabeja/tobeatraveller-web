@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { randomUUID } from 'expo-crypto';
-import { isNetworkError } from '@tobeatraveller/shared';
+import { isNetworkError, isTimeoutError } from '@tobeatraveller/shared';
 import { executeChange } from './changeExecutors';
 import {
   CHANGE_KINDS, CHANGE_STATUS, discardChangeFromQueue, enqueueChange, nextChangeToSync, remapEntityId,
@@ -8,6 +8,14 @@ import {
 
 const STORAGE_PREFIX = 'offline-outbox:';
 const NOT_FOUND_STATUS = 404;
+const UNAUTHORIZED_STATUS = 401;
+export const UNCONFIRMED_ERROR_CODE = 'unconfirmed';
+
+// A timed-out request may still have reached the server. Creates (client
+// ids), edits and deletes are safe to send again; buying or using up an
+// amount is not, since the server would apply it twice.
+const NON_IDEMPOTENT_KINDS = new Set([CHANGE_KINDS.PURCHASE, CHANGE_KINDS.USE_UP]);
+const mayHaveBeenApplied = (change, err) => isTimeoutError(err) && NON_IDEMPOTENT_KINDS.has(change.kind);
 
 let state = {
   userId: null,
@@ -98,12 +106,21 @@ export const syncOutbox = async () => {
         updateChanges(userId, changes);
         sentSomething = true;
       } catch (err) {
-        if (isNetworkError(err)) break;
+        if (isNetworkError(err) && !mayHaveBeenApplied(change, err)) break;
+        // An expired session (a week offline outlives the refresh token) is
+        // not the change's fault: keep it queued until the user logs back in,
+        // which resumes the same queue.
+        if (err?.status === UNAUTHORIZED_STATUS) break;
         const alreadyGone = change.kind === CHANGE_KINDS.DELETE && err?.status === NOT_FOUND_STATUS;
         updateChanges(userId, alreadyGone
           ? state.changes.filter(existing => existing.id !== change.id)
           : state.changes.map(existing => existing.id === change.id
-            ? { ...existing, status: CHANGE_STATUS.FAILED, error: err?.message ?? null }
+            ? {
+              ...existing,
+              status: CHANGE_STATUS.FAILED,
+              error: mayHaveBeenApplied(change, err) ? null : err?.message ?? null,
+              errorCode: mayHaveBeenApplied(change, err) ? UNCONFIRMED_ERROR_CODE : null,
+            }
             : existing));
         sentSomething = sentSomething || alreadyGone;
       } finally {
@@ -156,7 +173,7 @@ export const runOrQueue = async ({ collection, kind, entityId = null, payload = 
     const result = await executeChange(change);
     return { queued: false, result };
   } catch (err) {
-    if (!isNetworkError(err)) throw err;
+    if (!isNetworkError(err) || mayHaveBeenApplied(change, err)) throw err;
     queueChange(change);
     return { queued: true };
   }
@@ -164,14 +181,14 @@ export const runOrQueue = async ({ collection, kind, entityId = null, payload = 
 
 export const retryChange = (changeId) => {
   updateChanges(state.userId, state.changes.map(change => change.id === changeId
-    ? { ...change, status: CHANGE_STATUS.PENDING, error: null }
+    ? { ...change, status: CHANGE_STATUS.PENDING, error: null, errorCode: null }
     : change));
   syncOutbox();
 };
 
 export const retryAllFailedChanges = () => {
   updateChanges(state.userId, state.changes.map(change => change.status === CHANGE_STATUS.FAILED
-    ? { ...change, status: CHANGE_STATUS.PENDING, error: null }
+    ? { ...change, status: CHANGE_STATUS.PENDING, error: null, errorCode: null }
     : change));
   syncOutbox();
 };

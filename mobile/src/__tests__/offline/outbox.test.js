@@ -6,8 +6,8 @@ jest.mock('expo-crypto', () => {
 jest.mock('../../offline/changeExecutors', () => ({ executeChange: jest.fn() }));
 
 jest.mock('@tobeatraveller/shared', () => {
-  const { isNetworkError } = jest.requireActual('../../../../shared/src/utils/parseError.js');
-  return { isNetworkError };
+  const { isNetworkError, isTimeoutError } = jest.requireActual('../../../../shared/src/utils/parseError.js');
+  return { isNetworkError, isTimeoutError };
 });
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -16,6 +16,7 @@ import * as pendingChanges from '../../offline/pendingChanges';
 import { executeChange } from '../../offline/changeExecutors';
 
 const networkError = () => Object.assign(new Error('Network request failed'), { isNetworkError: true });
+const timeoutError = () => Object.assign(new Error('Request timed out'), { isNetworkError: true, isTimeout: true });
 const httpError = (status, message) => Object.assign(new Error(message), { status });
 
 const USER_ID = 'user-1';
@@ -89,6 +90,44 @@ describe('runOrQueue', () => {
   });
 });
 
+describe('requests that time out', () => {
+  const purchase = (entityId) => ({
+    collection: pendingChanges.COLLECTIONS.SHOPPING_LIST, kind: pendingChanges.CHANGE_KINDS.PURCHASE,
+    entityId, payload: { amount: 1 }, label: entityId,
+  });
+
+  it('queues a timed-out create, which the client id makes safe to send again', async () => {
+    executeChange.mockRejectedValue(timeoutError());
+
+    const outcome = await outbox.runOrQueue(vanLogCreate('entry-1'));
+
+    expect(outcome).toEqual({ queued: true });
+  });
+
+  // The server may already have moved the amount to inventory; sending it
+  // again would buy it twice.
+  it('does not queue a timed-out purchase, and hands the error back to the screen', async () => {
+    executeChange.mockRejectedValue(timeoutError());
+
+    await expect(outbox.runOrQueue(purchase('sl-1'))).rejects.toMatchObject({ isTimeout: true });
+    expect(outbox.getOutboxState().changes).toEqual([]);
+  });
+
+  it('marks a purchase that timed out while syncing as unconfirmed instead of resending it', async () => {
+    outbox.setOutboxOnline(false);
+    await outbox.runOrQueue(purchase('sl-1'));
+    executeChange.mockRejectedValue(timeoutError());
+
+    outbox.setOutboxOnline(true);
+    while (outbox.getOutboxState().syncing) await new Promise(resolve => setImmediate(resolve));
+
+    expect(executeChange).toHaveBeenCalledTimes(1);
+    expect(outbox.getOutboxState().changes).toEqual([
+      expect.objectContaining({ status: pendingChanges.CHANGE_STATUS.FAILED, errorCode: outbox.UNCONFIRMED_ERROR_CODE }),
+    ]);
+  });
+});
+
 describe('runOrQueue before the queue has loaded', () => {
   // Regression: queued under a "no user" key, the change was then wiped
   // when loadOutbox replaced the in-memory queue with the user's own.
@@ -159,6 +198,16 @@ describe('syncOutbox', () => {
         error: 'Free plan limit of 10 van log entries reached',
       }),
     ]);
+  });
+
+  it('keeps changes queued, not failed, when the session has expired', async () => {
+    executeChange.mockRejectedValue(httpError(401, 'Unauthorized'));
+
+    await queueOffline(vanLogCreate('entry-1'), vanLogCreate('entry-2'));
+
+    expect(executeChange).toHaveBeenCalledTimes(1);
+    expect(outbox.getOutboxState().changes.map(change => change.status))
+      .toEqual([pendingChanges.CHANGE_STATUS.PENDING, pendingChanges.CHANGE_STATUS.PENDING]);
   });
 
   it('treats deleting something already gone from the server as done', async () => {

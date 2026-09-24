@@ -132,7 +132,8 @@
     "createSheetItineraryDesc": "Planifica día a día: lugares, presupuesto y todos los detalles.",
     "createSheetExperience": "Experiencia",
     "createSheetExperienceDesc": "Dile a la IA adónde vas, ella construye el viaje.",
-    "createSheetCancel": "Cancelar"
+    "createSheetCancel": "Cancelar",
+    "settings": "Ajustes"
   },
   "globalSearch": {
     "trigger": "Buscar",
@@ -611,7 +612,9 @@
       "overnight_stay": "Pernocta",
       "maintenance": "Mantenimiento",
       "other": "Otros"
-    }
+    },
+    "viewBreakdown": "Ver desglose",
+    "hideBreakdown": "Ocultar desglose"
   },
   "supplies": {
     "title": "Lista de la compra",
@@ -1327,6 +1330,7 @@
       "purchase": "Comprado",
       "useUp": "Usado",
       "resetTrip": "Viaje nuevo"
-    }
+    },
+    "actionUnconfirmed": "No pudimos confirmar si se guardó: la conexión tardó demasiado. Revisa la lista antes de repetirlo."
   }
 }

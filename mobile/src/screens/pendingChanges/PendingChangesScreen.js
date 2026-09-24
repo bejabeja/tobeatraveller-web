@@ -2,7 +2,7 @@ import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
-import { discardChange, retryAllFailedChanges, retryChange } from '../../offline/outbox';
+import { discardChange, retryAllFailedChanges, retryChange, UNCONFIRMED_ERROR_CODE } from '../../offline/outbox';
 import { CHANGE_STATUS } from '../../offline/pendingChanges';
 import { useOutbox } from '../../offline/useOutbox';
 import { shadow } from '../../utils/styles';
@@ -32,6 +32,9 @@ const PendingChangesScreen = ({ navigation }) => {
           </Text>
         </View>
         {change.label ? <Text style={styles.changeLabel}>{change.label}</Text> : null}
+        {failed && change.errorCode === UNCONFIRMED_ERROR_CODE
+          ? <Text style={styles.error}>{t('offline.actionUnconfirmed')}</Text>
+          : null}
         {failed && change.error ? <Text style={styles.error}>{change.error}</Text> : null}
         <View style={styles.actions}>
           {failed && (

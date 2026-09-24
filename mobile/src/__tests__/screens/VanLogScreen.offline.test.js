@@ -43,7 +43,7 @@ jest.mock('@tobeatraveller/shared', () => {
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getVanLogEntries, getVanLogStats, selectMe } from '@tobeatraveller/shared';
-import { render, screen } from '@testing-library/react-native';
+import { act, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { cacheSet } from '../../utils/offlineCache';
 import { clearOutbox, loadOutbox, runOrQueue, setOutboxOnline } from '../../offline/outbox';
@@ -57,9 +57,13 @@ import VanLogScreen from '../../screens/vanLog/VanLogScreen';
 // all (since fixed): useSafeAreaInsets() throws identically in Jest and
 // in a real app, it's plain React Context with no native fallback.
 const INITIAL_METRICS = { frame: { x: 0, y: 0, width: 390, height: 844 }, insets: { top: 0, left: 0, right: 0, bottom: 0 } };
-const renderScreen = (ui) => render(
-  <SafeAreaProvider initialMetrics={INITIAL_METRICS}>{ui}</SafeAreaProvider>
-);
+// The screen loads its data in effects on mount; flushing them inside act()
+// lets those loads settle there instead of updating state after the test.
+const renderScreen = async (ui) => {
+  const result = render(<SafeAreaProvider initialMetrics={INITIAL_METRICS}>{ui}</SafeAreaProvider>);
+  await act(async () => {});
+  return result;
+};
 
 const CACHED_ENTRY = {
   id: 'entry-1',

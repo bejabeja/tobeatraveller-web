@@ -132,7 +132,8 @@
     "createSheetItineraryDesc": "Plan day by day: places, budget, and all the details.",
     "createSheetExperience": "Experience",
     "createSheetExperienceDesc": "Tell AI where you're going, it builds the journey.",
-    "createSheetCancel": "Cancel"
+    "createSheetCancel": "Cancel",
+    "settings": "Settings"
   },
   "globalSearch": {
     "trigger": "Search",
@@ -634,7 +635,9 @@
       "overnight_stay": "Overnight stay",
       "maintenance": "Maintenance",
       "other": "Other"
-    }
+    },
+    "viewBreakdown": "View breakdown",
+    "hideBreakdown": "Hide breakdown"
   },
   "supplies": {
     "title": "Shopping list",
@@ -1327,6 +1330,7 @@
       "purchase": "Bought",
       "useUp": "Used",
       "resetTrip": "New trip"
-    }
+    },
+    "actionUnconfirmed": "We couldn't confirm it was saved: the connection took too long. Check the list before trying again."
   }
 }

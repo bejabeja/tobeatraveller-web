@@ -96,8 +96,11 @@ export const deleteUserById = async (id) => {
     return response.json();
 };
 
+// Gathers every table the user has data in, so it gets longer than the default.
+export const EXPORT_TIMEOUT_MS = 60_000;
+
 export const exportMyData = async () => {
-    const response = await authFetch(`${baseUrl()}/me/export`);
+    const response = await authFetch(`${baseUrl()}/me/export`, { timeoutMs: EXPORT_TIMEOUT_MS });
     if (!response.ok) {
         await parseError(response, 'Failed to export data');
     }

@@ -35,3 +35,6 @@ const NETWORK_ERROR_MESSAGE_PATTERN = /network request failed|failed to fetch/i;
 
 export const isNetworkError = (error) =>
     error?.isNetworkError === true || NETWORK_ERROR_MESSAGE_PATTERN.test(error?.message ?? '');
+// Marked by authFetch when a request ran past its time limit. Unlike a plain
+// network failure, the server may have received and applied it.
+export const isTimeoutError = (error) => error?.isTimeout === true;

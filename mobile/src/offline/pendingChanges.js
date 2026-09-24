@@ -49,6 +49,7 @@ export const enqueueChange = (queue, change, { inFlightChangeId = null } = {}) =
         label: change.label ?? existing.label,
         status: CHANGE_STATUS.PENDING,
         error: null,
+        errorCode: null,
       }
       : existing);
   }

@@ -9,7 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
-  getInventory, getShoppingList, isNetworkError, isPremiumRequiredError, normalizeSearchText,
+  getInventory, getShoppingList, isNetworkError, isPremiumRequiredError, isTimeoutError, normalizeSearchText,
   selectMe, supplyUnits,
 } from '@tobeatraveller/shared';
 import FeatureLoadState from '../../components/FeatureLoadState';
@@ -150,7 +150,15 @@ const SuppliesScreen = ({ navigation }) => {
       setQuantityPrompt(null);
       if (!queued) fetchData();
     } catch (err) {
-      Alert.alert(t('errors.somethingWrong'), err?.message || s('saveError'));
+      if (isTimeoutError(err)) {
+        // It may have gone through: reload so the list shows what the server
+        // has before the user tries again.
+        setQuantityPrompt(null);
+        fetchData();
+        Alert.alert(t('errors.somethingWrong'), t('offline.actionUnconfirmed'));
+      } else {
+        Alert.alert(t('errors.somethingWrong'), err?.message || s('saveError'));
+      }
     } finally {
       setConfirmingQuantity(false);
     }

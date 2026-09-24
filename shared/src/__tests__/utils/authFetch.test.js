@@ -1,7 +1,8 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { setApiUrl } from '../../utils/apiConfig.js';
 import { setTokenStorage } from '../../utils/tokenStorage.js';
 import { authFetch } from '../../utils/authFetch.js';
+import { isNetworkError, isTimeoutError } from '../../utils/parseError.js';
 
 // Regression coverage for the "session dies after 1h" bug: the access token
 // expires in 1h and nothing ever refreshed it, so every authenticated request
@@ -98,5 +99,101 @@ describe('authFetch', () => {
 
         const refreshCalls = global.fetch.mock.calls.filter(([url]) => url === 'http://api.test/auth/refresh');
         expect(refreshCalls).toHaveLength(1);
+    });
+});
+
+// A request on a weak-but-connected link used to hang until the OS gave up
+// (minutes), leaving the mobile form spinning instead of falling back to the
+// offline queue.
+describe('authFetch timeouts', () => {
+    // A fetch that only settles when its signal aborts, like a stalled request.
+    const stalledFetch = () => vi.fn((url, { signal }) => new Promise((resolve, reject) => {
+        signal?.addEventListener('abort', () => reject(Object.assign(new Error('Aborted'), { name: 'AbortError' })));
+    }));
+
+    beforeEach(() => {
+        vi.useFakeTimers();
+        setApiUrl('http://api.test');
+        setTokenStorage({ getItem: async () => 'token', setItem: async () => {}, removeItem: async () => {} });
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
+    it('fails as a network timeout once a request passes 15 seconds', async () => {
+        global.fetch = stalledFetch();
+
+        const request = authFetch('http://api.test/van-logs');
+        const assertion = expect(request).rejects.toMatchObject({ isNetworkError: true, isTimeout: true });
+        await vi.advanceTimersByTimeAsync(15_000);
+
+        await assertion;
+    });
+
+    it('gives uploads longer than the default before timing out', async () => {
+        global.fetch = stalledFetch();
+        let settled = false;
+
+        authFetch('http://api.test/life-diary', { method: 'POST', body: new FormData() })
+            .catch(() => {})
+            .finally(() => { settled = true; });
+        await vi.advanceTimersByTimeAsync(15_000);
+
+        expect(settled).toBe(false);
+        await vi.advanceTimersByTimeAsync(105_000);
+        expect(settled).toBe(true);
+    });
+
+    it('uses the timeout the caller asks for', async () => {
+        global.fetch = stalledFetch();
+
+        const request = authFetch('http://api.test/users/me/export', { timeoutMs: 60_000 });
+        const assertion = expect(request).rejects.toMatchObject({ isTimeout: true });
+        await vi.advanceTimersByTimeAsync(60_000);
+
+        await assertion;
+    });
+
+    it('leaves cancellation to a caller that passes its own signal', async () => {
+        global.fetch = stalledFetch();
+        const controller = new AbortController();
+        let settled = false;
+
+        authFetch('http://api.test/itineraries/generate-smart', { signal: controller.signal })
+            .catch(() => {})
+            .finally(() => { settled = true; });
+        await vi.advanceTimersByTimeAsync(30_000);
+
+        expect(settled).toBe(false);
+        controller.abort();
+    });
+
+    it('also stops waiting on a token refresh that stalls', async () => {
+        global.fetch = vi.fn((url, options) => url.endsWith('/auth/refresh')
+            ? stalledFetch()(url, options)
+            : Promise.resolve({ ok: false, status: 401 }));
+
+        const request = authFetch('http://api.test/van-logs');
+        await vi.advanceTimersByTimeAsync(15_000);
+
+        await expect(request).resolves.toMatchObject({ status: 401 });
+    });
+
+    it('does not send the timeout option to fetch', async () => {
+        global.fetch = vi.fn().mockResolvedValue({ ok: true, status: 200 });
+
+        await authFetch('http://api.test/users/me/export', { timeoutMs: 60_000 });
+
+        expect(global.fetch.mock.calls[0][1]).not.toHaveProperty('timeoutMs');
+    });
+
+    it('still reports a plain connection failure as a network error, not a timeout', async () => {
+        global.fetch = vi.fn().mockRejectedValue(new TypeError('Network request failed'));
+
+        const error = await authFetch('http://api.test/van-logs').catch(caught => caught);
+
+        expect(isNetworkError(error)).toBe(true);
+        expect(isTimeoutError(error)).toBe(false);
     });
 });
