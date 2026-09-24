@@ -10,7 +10,7 @@ import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
   getInventory, getShoppingList, isNetworkError, isPremiumRequiredError, isTimeoutError, normalizeSearchText,
-  selectMe, supplyUnits,
+  selectAuthUser, supplyUnits,
 } from '@tobeatraveller/shared';
 import FeatureLoadState from '../../components/FeatureLoadState';
 import { PendingChangesNotice } from '../../components/PendingChangesNotice';
@@ -29,8 +29,10 @@ const SuppliesScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const s = (key, vars) => t(`supplies.${key}`, vars);
   const insets = useSafeAreaInsets();
-  const me = useSelector(selectMe);
-  const cacheKey = `supplies:${me?.id}`;
+  // The session user rather than the full profile: it is restored even when
+  // the app opens offline, so the cached data can still be found.
+  const authUser = useSelector(selectAuthUser);
+  const cacheKey = `supplies:${authUser?.id}`;
 
   const [tab, setTab] = useState('shopping');
   const [search, setSearch] = useState('');

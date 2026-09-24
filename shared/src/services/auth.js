@@ -1,6 +1,7 @@
 import { parseError } from "../utils/parseError";
 import { getApiUrl } from "../utils/apiConfig";
 import { tokenStorage } from "../utils/tokenStorage";
+import { setCachedAuthUser } from "../utils/cachedAuthUser";
 
 const baseUrl = () => getApiUrl();
 
@@ -75,4 +76,5 @@ export const logout = async () => {
     } catch {}
     await tokenStorage.removeItem('access_token');
     await tokenStorage.removeItem('refresh_token');
+    await setCachedAuthUser(null);
 };

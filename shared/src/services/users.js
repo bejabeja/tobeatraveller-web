@@ -11,16 +11,15 @@ export const checkUsernameAvailable = async (username) => {
     return data.available;
 };
 
+// Resolves to null when there is no valid session, but lets a network
+// failure through: "offline" and "logged out" need different handling
+// (see initAuthUser).
 export const getUserForAuth = async () => {
-    try {
-        const response = await authFetch(`${baseUrl()}/me`, {
-            headers: { 'Content-Type': 'application/json' },
-        });
-        if (!response.ok) return null;
-        return response.json();
-    } catch {
-        return null;
-    }
+    const response = await authFetch(`${baseUrl()}/me`, {
+        headers: { 'Content-Type': 'application/json' },
+    });
+    if (!response.ok) return null;
+    return response.json();
 }
 export const getFeaturedUsers = async () => {
     try {

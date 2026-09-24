@@ -6,21 +6,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
-  createCheckoutSession, createPortalSession, getMySubscription, resumeSubscription,
+  createCheckoutSession, createPortalSession, getMySubscription, PREMIUM_FEATURES, resumeSubscription,
   selectAuthUser, selectIsAuthenticated, selectMe, setUserInfo,
 } from '@tobeatraveller/shared';
 import { shadow } from '../../utils/styles';
-
-// The emoji itself is the icon (in the colored badge), so titles here are
-// plain text, mirroring the web subscription page.
-const PREMIUM_FEATURES = [
-  { key: 'subscription.featureVanLogTitle', descriptionKey: 'subscription.featureVanLogDesc', emoji: '🚐', color: '#E8743B' },
-  { key: 'subscription.featureSuppliesTitle', descriptionKey: 'subscription.featureSuppliesDesc', emoji: '🛒', color: '#2E86AB' },
-  { key: 'subscription.featurePackingChecklistTitle', descriptionKey: 'subscription.featurePackingChecklistDesc', emoji: '🎒', color: '#6B4C9A' },
-  { key: 'subscription.featureLifeDiaryTitle', descriptionKey: 'subscription.featureLifeDiaryDesc', emoji: '📖', color: '#C2447B' },
-  { key: 'subscription.featureAiItineraries', descriptionKey: 'subscription.featureAiItinerariesDesc', emoji: '✨', color: '#1A535C' },
-  { key: 'subscription.featureNoAdsTitle', descriptionKey: 'subscription.featureNoAdsDesc', emoji: '🚫', color: '#546E7A' },
-];
 
 const PLANS = [
   {
@@ -229,13 +218,13 @@ const SubscriptionScreen = ({ navigation }) => {
           <>
             <Text style={styles.featuresTitle}>{t('subscription.featuresTitle')}</Text>
             <View style={styles.features}>
-              {PREMIUM_FEATURES.map(({ key, descriptionKey, emoji, color }) => (
-                <View key={key} style={styles.feature}>
+              {PREMIUM_FEATURES.map(({ id, titleKey, descriptionKey, emoji, color }) => (
+                <View key={id} style={styles.feature}>
                   <View style={[styles.featureIconBadge, { backgroundColor: `${color}1A` }]}>
                     <Text style={styles.featureEmoji}>{emoji}</Text>
                   </View>
                   <View style={styles.featureText}>
-                    <Text style={styles.featureTitle}>{t(key)}</Text>
+                    <Text style={styles.featureTitle}>{t(titleKey)}</Text>
                     <Text style={styles.featureDesc}>{t(descriptionKey)}</Text>
                   </View>
                 </View>

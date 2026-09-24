@@ -22,7 +22,9 @@ jest.mock('@tobeatraveller/shared', () => {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { act, renderHook } from '@testing-library/react-native';
 import { executeChange } from '../../offline/changeExecutors';
-import { clearOutbox, getOutboxState, loadOutbox, runOrQueue, setOutboxOnline } from '../../offline/outbox';
+import {
+  clearOutbox, getOutboxState, loadOutbox, runOrQueue, setOfflineEditingEnabled, setOutboxOnline,
+} from '../../offline/outbox';
 import { CHANGE_KINDS, COLLECTIONS } from '../../offline/pendingChanges';
 import { useOutboxSync, useRefetchAfterSync } from '../../offline/useOutbox';
 
@@ -39,6 +41,7 @@ beforeEach(async () => {
   await AsyncStorage.clear();
   executeChange.mockReset();
   setOutboxOnline(true);
+  setOfflineEditingEnabled(true);
   await loadOutbox('user-1');
 });
 
@@ -80,7 +83,7 @@ describe('useOutboxSync', () => {
   // Campsite wifi often connects without reaching the internet; requests then
   // hang instead of failing, so the change should queue straight away.
   it('treats wifi without internet access as offline', async () => {
-    await renderHook(() => useOutboxSync('user-1'));
+    await renderHook(() => useOutboxSync('user-1', true));
 
     await act(async () => capturedNetInfoListener({ isConnected: true, isInternetReachable: false }));
     const outcome = await runOrQueue(vanLogCreate('entry-3'));
@@ -91,11 +94,20 @@ describe('useOutboxSync', () => {
 
   it('stays online while internet reachability is still unknown', async () => {
     executeChange.mockResolvedValue({ id: 'entry-4' });
-    await renderHook(() => useOutboxSync('user-1'));
+    await renderHook(() => useOutboxSync('user-1', true));
 
     await act(async () => capturedNetInfoListener({ isConnected: true, isInternetReachable: null }));
     const outcome = await runOrQueue(vanLogCreate('entry-4'));
 
     expect(outcome).toEqual({ queued: false, result: { id: 'entry-4' } });
+  });
+});
+
+describe('useOutboxSync and Premium', () => {
+  it('turns offline editing off for a user without Premium', async () => {
+    await renderHook(() => useOutboxSync('user-1', false));
+    setOutboxOnline(false);
+
+    await expect(runOrQueue(vanLogCreate('entry-5'))).rejects.toMatchObject({ offlineEditingLocked: true });
   });
 });

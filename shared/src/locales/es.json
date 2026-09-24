@@ -286,6 +286,8 @@
     "featurePackingChecklistDesc": "No olvides nada con listas de equipaje organizadas por categoría.",
     "featureLifeDiaryTitle": "Diario de vida",
     "featureLifeDiaryDesc": "Guarda recuerdos, fotos y momentos destacados de cada parada.",
+    "featureOfflineEditingTitle": "Guardar sin conexión",
+    "featureOfflineEditingDesc": "En la app móvil, añade y edita gastos, compras y tu diario sin cobertura. Se sincroniza solo al volver la señal.",
     "featureAiItineraries": "Itinerarios generados con IA",
     "featureAiItinerariesDesc": "Genera un plan completo día a día para tu destino en segundos.",
     "featureNoAdsTitle": "Sin anuncios",
@@ -1331,6 +1333,7 @@
       "useUp": "Usado",
       "resetTrip": "Viaje nuevo"
     },
-    "actionUnconfirmed": "No pudimos confirmar si se guardó: la conexión tardó demasiado. Revisa la lista antes de repetirlo."
+    "actionUnconfirmed": "No pudimos confirmar si se guardó: la conexión tardó demasiado. Revisa la lista antes de repetirlo.",
+    "editingIsPremium": "Estás sin conexión. Guardar cambios sin conexión es una función Premium; inténtalo cuando vuelva la cobertura."
   }
 }

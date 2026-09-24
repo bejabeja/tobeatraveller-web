@@ -10,7 +10,7 @@ import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
   defaultPackingItems, getPackingChecklist, isNetworkError, isPremiumRequiredError, normalizeSearchText,
-  packingCategories, seedPackingChecklistDefaults, selectMe,
+  packingCategories, seedPackingChecklistDefaults, selectAuthUser,
 } from '@tobeatraveller/shared';
 import FeatureLoadState from '../../components/FeatureLoadState';
 import { PendingChangesNotice } from '../../components/PendingChangesNotice';
@@ -36,8 +36,10 @@ const PackingChecklistScreen = ({ navigation }) => {
   const { t, i18n } = useTranslation();
   const p = (key, vars) => t(`packingChecklist.${key}`, vars);
   const insets = useSafeAreaInsets();
-  const me = useSelector(selectMe);
-  const cacheKey = `packingchecklist:items:${me?.id}`;
+  // The session user rather than the full profile: it is restored even when
+  // the app opens offline, so the cached data can still be found.
+  const authUser = useSelector(selectAuthUser);
+  const cacheKey = `packingchecklist:items:${authUser?.id}`;
 
   const [serverItems, setServerItems] = useState([]);
   const [loading, setLoading] = useState(true);

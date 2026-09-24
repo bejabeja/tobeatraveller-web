@@ -37,16 +37,16 @@ jest.mock('@tobeatraveller/shared', () => {
     getVanLogEntries: jest.fn(),
     getVanLogStats: jest.fn(),
     deleteVanLogEntry: jest.fn(),
-    selectMe: jest.fn(),
+    selectAuthUser: jest.fn(),
   };
 });
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getVanLogEntries, getVanLogStats, selectMe } from '@tobeatraveller/shared';
+import { getVanLogEntries, getVanLogStats, selectAuthUser } from '@tobeatraveller/shared';
 import { act, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { cacheSet } from '../../utils/offlineCache';
-import { clearOutbox, loadOutbox, runOrQueue, setOutboxOnline } from '../../offline/outbox';
+import { clearOutbox, loadOutbox, runOrQueue, setOfflineEditingEnabled, setOutboxOnline } from '../../offline/outbox';
 import { CHANGE_KINDS, COLLECTIONS } from '../../offline/pendingChanges';
 import VanLogScreen from '../../screens/vanLog/VanLogScreen';
 
@@ -80,12 +80,13 @@ const CACHED_ENTRY = {
 afterEach(async () => {
   await clearOutbox();
   setOutboxOnline(true);
+  setOfflineEditingEnabled(false);
 });
 
 beforeEach(async () => {
   jest.clearAllMocks();
   await AsyncStorage.clear(); // the AsyncStorage jest mock persists its storage across tests otherwise
-  selectMe.mockReturnValue({ id: 'user-1' });
+  selectAuthUser.mockReturnValue({ id: 'user-1' });
   getVanLogStats.mockResolvedValue({ totalsByCurrency: [], byCategory: [], byCountry: [], availableCurrencies: [] });
 });
 
@@ -125,6 +126,7 @@ it('shows an expense saved offline next to the cached ones, marked as waiting to
   await cacheSet('vanlog:entries:user-1', [CACHED_ENTRY]);
   getVanLogEntries.mockRejectedValue({ isNetworkError: true });
   setOutboxOnline(false);
+  setOfflineEditingEnabled(true);
   await loadOutbox('user-1');
   await runOrQueue({
     collection: COLLECTIONS.VAN_LOG,
@@ -144,6 +146,7 @@ it('hides an expense deleted offline even though the cache still has it', async 
   await cacheSet('vanlog:entries:user-1', [CACHED_ENTRY, { ...CACHED_ENTRY, id: 'entry-2', title: 'Deleted offline' }]);
   getVanLogEntries.mockRejectedValue({ isNetworkError: true });
   setOutboxOnline(false);
+  setOfflineEditingEnabled(true);
   await loadOutbox('user-1');
   await runOrQueue({ collection: COLLECTIONS.VAN_LOG, kind: CHANGE_KINDS.DELETE, entityId: 'entry-2' });
 

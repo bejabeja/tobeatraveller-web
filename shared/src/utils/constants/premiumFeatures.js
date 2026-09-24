@@ -7,6 +7,7 @@ export const PREMIUM_FEATURES = [
   { id: "supplies", titleKey: "subscription.featureSuppliesTitle", descriptionKey: "subscription.featureSuppliesDesc", emoji: "🛒", color: "#2E86AB" },
   { id: "packingChecklist", titleKey: "subscription.featurePackingChecklistTitle", descriptionKey: "subscription.featurePackingChecklistDesc", emoji: "🎒", color: "#6B4C9A" },
   { id: "lifeDiary", titleKey: "subscription.featureLifeDiaryTitle", descriptionKey: "subscription.featureLifeDiaryDesc", emoji: "📖", color: "#C2447B" },
+  { id: "offlineEditing", titleKey: "subscription.featureOfflineEditingTitle", descriptionKey: "subscription.featureOfflineEditingDesc", emoji: "📴", color: "#2A9D8F" },
   { id: "aiItineraries", titleKey: "subscription.featureAiItineraries", descriptionKey: "subscription.featureAiItinerariesDesc", emoji: "✨", color: "#1A535C" },
   { id: "noAds", titleKey: "subscription.featureNoAdsTitle", descriptionKey: "subscription.featureNoAdsDesc", emoji: "🚫", color: "#546E7A" },
 ];

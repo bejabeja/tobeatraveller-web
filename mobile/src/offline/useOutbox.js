@@ -3,7 +3,9 @@ import { AppState } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import { isOnlineNetState } from '../hooks/useNetworkStatus';
 import { CHANGE_STATUS } from './pendingChanges';
-import { getOutboxState, loadOutbox, setOutboxOnline, subscribeOutbox, syncOutbox } from './outbox';
+import {
+  getOutboxState, loadOutbox, setOfflineEditingEnabled, setOutboxOnline, subscribeOutbox, syncOutbox,
+} from './outbox';
 
 export const useOutbox = () => {
   const { changes, syncing, syncVersion } = useSyncExternalStore(subscribeOutbox, getOutboxState);
@@ -29,7 +31,11 @@ export const useRefetchAfterSync = (refetch) => {
 
 // Loads the logged-in user's queue and syncs it on launch, whenever the
 // connection comes back and whenever the app returns to the foreground.
-export const useOutboxSync = (userId) => {
+export const useOutboxSync = (userId, offlineEditingEnabled) => {
+  useEffect(() => {
+    setOfflineEditingEnabled(offlineEditingEnabled);
+  }, [offlineEditingEnabled]);
+
   useEffect(() => {
     if (!userId) return;
     loadOutbox(userId).then(syncOutbox);

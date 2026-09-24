@@ -286,6 +286,8 @@
     "featurePackingChecklistDesc": "Never forget anything with checklists organized by category.",
     "featureLifeDiaryTitle": "Life diary",
     "featureLifeDiaryDesc": "Save memories, photos, and highlights from every stop.",
+    "featureOfflineEditingTitle": "Save while offline",
+    "featureOfflineEditingDesc": "In the mobile app, add and edit expenses, supplies and your diary with no signal. It syncs on its own once you're back online.",
     "featureAiItineraries": "AI-generated itineraries",
     "featureAiItinerariesDesc": "Generate a full day-by-day plan for your destination in seconds.",
     "featureNoAdsTitle": "No ads",
@@ -1331,6 +1333,7 @@
       "useUp": "Used",
       "resetTrip": "New trip"
     },
-    "actionUnconfirmed": "We couldn't confirm it was saved: the connection took too long. Check the list before trying again."
+    "actionUnconfirmed": "We couldn't confirm it was saved: the connection took too long. Check the list before trying again.",
+    "editingIsPremium": "You're offline. Saving changes offline is a Premium feature; try again once you're back online."
   }
 }

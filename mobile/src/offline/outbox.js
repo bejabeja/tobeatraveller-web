@@ -1,6 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { randomUUID } from 'expo-crypto';
 import { isNetworkError, isTimeoutError } from '@tobeatraveller/shared';
+// The global instance src/i18n.js configures; importing that module instead
+// would re-run its setup wherever the queue is used.
+import i18next from 'i18next';
 import { executeChange } from './changeExecutors';
 import {
   CHANGE_KINDS, CHANGE_STATUS, discardChangeFromQueue, enqueueChange, nextChangeToSync, remapEntityId,
@@ -25,6 +28,9 @@ let state = {
   syncVersion: 0,
 };
 let isOnline = true;
+// Saving changes without a connection is a Premium feature; free users still
+// see their cached data offline, they just can't queue new changes.
+let offlineEditingEnabled = false;
 let inFlightChangeId = null;
 const listeners = new Set();
 
@@ -77,6 +83,18 @@ export const clearOutbox = async () => {
   } catch {
     // Nothing else to do: the next login starts from whatever is left.
   }
+};
+
+export const setOfflineEditingEnabled = (enabled) => {
+  offlineEditingEnabled = enabled;
+};
+
+const offlineEditingLockedError = () => {
+  // Not flagged as a network error on purpose: screens turn those into
+  // generic "no connection" messages, and this one already says why.
+  const error = new Error(i18next.t('offline.editingIsPremium'));
+  error.offlineEditingLocked = true;
+  return error;
 };
 
 export const setOutboxOnline = (online) => {
@@ -163,6 +181,18 @@ export const runOrQueue = async ({ collection, kind, entityId = null, payload = 
   // Until the user's queue has loaded there is nowhere safe to keep the
   // change, so it can only be sent directly.
   if (!state.userId) return { queued: false, result: await executeChange(change) };
+
+  // Changes already queued (say, from before a subscription ended) still
+  // sync; only queuing new ones requires Premium.
+  if (!offlineEditingEnabled) {
+    if (!isOnline) throw offlineEditingLockedError();
+    try {
+      return { queued: false, result: await executeChange(change) };
+    } catch (err) {
+      if (isNetworkError(err) && !mayHaveBeenApplied(change, err)) throw offlineEditingLockedError();
+      throw err;
+    }
+  }
 
   if (!isOnline || hasQueuedChangeFor(change)) {
     queueChange(change);

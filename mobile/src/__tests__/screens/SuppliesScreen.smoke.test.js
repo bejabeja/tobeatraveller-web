@@ -28,11 +28,11 @@ jest.mock('@tobeatraveller/shared', () => {
     deleteShoppingListItem: jest.fn(),
     markInventoryItemUsedUp: jest.fn(),
     markShoppingListItemPurchased: jest.fn(),
-    selectMe: jest.fn(),
+    selectAuthUser: jest.fn(),
   };
 });
 
-import { getInventory, getShoppingList, selectMe } from '@tobeatraveller/shared';
+import { getInventory, getShoppingList, selectAuthUser } from '@tobeatraveller/shared';
 import { act, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import SuppliesScreen from '../../screens/supplies/SuppliesScreen';
@@ -48,7 +48,7 @@ const renderScreen = async (ui) => {
 
 beforeEach(() => {
   jest.clearAllMocks();
-  selectMe.mockReturnValue({ id: 'user-1' });
+  selectAuthUser.mockReturnValue({ id: 'user-1' });
 });
 
 it('renders the shopping list without crashing when the fetch succeeds', async () => {

@@ -9,7 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
-  getLifeDiaryEntries, isNetworkError, isPremiumRequiredError, selectMe,
+  getLifeDiaryEntries, isNetworkError, isPremiumRequiredError, selectAuthUser,
 } from '@tobeatraveller/shared';
 import FeatureLoadState from '../../components/FeatureLoadState';
 import { PendingChangesNotice } from '../../components/PendingChangesNotice';
@@ -24,8 +24,10 @@ const LifeDiaryScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const d = (key, vars) => t(`lifeDiary.${key}`, vars);
   const insets = useSafeAreaInsets();
-  const me = useSelector(selectMe);
-  const cacheKey = `lifediary:entries:${me?.id}`;
+  // The session user rather than the full profile: it is restored even when
+  // the app opens offline, so the cached data can still be found.
+  const authUser = useSelector(selectAuthUser);
+  const cacheKey = `lifediary:entries:${authUser?.id}`;
 
   const [serverEntries, setServerEntries] = useState([]);
   const [loading, setLoading] = useState(true);

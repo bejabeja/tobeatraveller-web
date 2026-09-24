@@ -7,7 +7,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as SecureStore from 'expo-secure-store';
 import {
   store, setApiUrl, setTokenStorage, initAuthUser,
-  selectIsAuthenticated, selectAuthUser,
+  selectIsAuthenticated, selectAuthUser, selectMe, ADMIN_ROLES,
   setUserInfo, setUserInfoItineraries, refreshUnreadCount,
 } from '@tobeatraveller/shared';
 import { useSelector } from 'react-redux';
@@ -17,6 +17,7 @@ import { OfflineBanner } from './src/components/OfflineBanner';
 import { API_URL } from './src/utils/config';
 import { usePushNotificationReceived, usePushTokenRegistration } from './src/hooks/usePushNotifications';
 import { useOutboxSync } from './src/offline/useOutbox';
+import { useNetworkStatus } from './src/hooks/useNetworkStatus';
 
 setApiUrl(API_URL);
 
@@ -38,10 +39,15 @@ function AppContent() {
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const authUser = useSelector(selectAuthUser);
+  const me = useSelector(selectMe);
   const { i18n } = useTranslation();
 
   usePushTokenRegistration(isAuthenticated, i18n.language);
-  useOutboxSync(isAuthenticated ? authUser?.id : null);
+  const sessionUser = me ?? authUser;
+  useOutboxSync(
+    isAuthenticated ? authUser?.id : null,
+    Boolean(sessionUser?.isPremium || ADMIN_ROLES.includes(sessionUser?.role))
+  );
   usePushNotificationReceived(() => {
     if (isAuthenticated) dispatch(refreshUnreadCount());
   });
@@ -58,6 +64,16 @@ function AppContent() {
       dispatch(setUserInfoItineraries());
     }
   }, [isAuthenticated, authUser?.id, dispatch]);
+
+  // Opened offline, the session comes from cache but the full profile can't
+  // load; fetch it once the connection is back instead of waiting for a relaunch.
+  const { isConnected } = useNetworkStatus();
+  useEffect(() => {
+    if (isConnected && isAuthenticated && authUser?.id && !me) {
+      dispatch(setUserInfo(authUser.id));
+      dispatch(setUserInfoItineraries());
+    }
+  }, [isConnected]);
 
   // Poll unread notification count every 30s and on app foreground
   const appState = useRef(AppState.currentState);

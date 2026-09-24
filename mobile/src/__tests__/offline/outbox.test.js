@@ -11,6 +11,8 @@ jest.mock('@tobeatraveller/shared', () => {
 });
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import i18next from 'i18next';
+import '../../i18n';
 import * as outbox from '../../offline/outbox';
 import * as pendingChanges from '../../offline/pendingChanges';
 import { executeChange } from '../../offline/changeExecutors';
@@ -37,6 +39,7 @@ beforeEach(async () => {
   await AsyncStorage.clear();
   executeChange.mockReset();
   outbox.setOutboxOnline(true);
+  outbox.setOfflineEditingEnabled(true);
   await outbox.loadOutbox(USER_ID);
 });
 
@@ -125,6 +128,54 @@ describe('requests that time out', () => {
     expect(outbox.getOutboxState().changes).toEqual([
       expect.objectContaining({ status: pendingChanges.CHANGE_STATUS.FAILED, errorCode: outbox.UNCONFIRMED_ERROR_CODE }),
     ]);
+  });
+});
+
+describe('offline editing without Premium', () => {
+  beforeEach(() => {
+    outbox.setOfflineEditingEnabled(false);
+  });
+
+  it('refuses to queue a change while offline, with a message saying it is a Premium feature', async () => {
+    outbox.setOutboxOnline(false);
+
+    const error = await outbox.runOrQueue(vanLogCreate('entry-1')).catch(caught => caught);
+
+    expect(error).toMatchObject({ offlineEditingLocked: true, message: i18next.t('offline.editingIsPremium') });
+    // Regression: flagged as a network error, the diary form replaced this
+    // message with "photos need a connection".
+    expect(error.isNetworkError).toBeUndefined();
+    expect(outbox.getOutboxState().changes).toEqual([]);
+    expect(executeChange).not.toHaveBeenCalled();
+  });
+
+  it('does not queue a change whose request fails for lack of network', async () => {
+    executeChange.mockRejectedValue(networkError());
+
+    await expect(outbox.runOrQueue(vanLogCreate('entry-1'))).rejects.toMatchObject({ offlineEditingLocked: true });
+    expect(outbox.getOutboxState().changes).toEqual([]);
+  });
+
+  it('still saves online as usual', async () => {
+    executeChange.mockResolvedValue({ id: 'entry-1' });
+
+    const outcome = await outbox.runOrQueue(vanLogCreate('entry-1'));
+
+    expect(outcome).toEqual({ queued: false, result: { id: 'entry-1' } });
+  });
+
+  // Losing Premium must not strand what was saved offline while subscribed.
+  it('still syncs changes queued before Premium ended', async () => {
+    outbox.setOfflineEditingEnabled(true);
+    outbox.setOutboxOnline(false);
+    await outbox.runOrQueue(vanLogCreate('entry-1'));
+    outbox.setOfflineEditingEnabled(false);
+    executeChange.mockResolvedValue({ id: 'entry-1' });
+
+    outbox.setOutboxOnline(true);
+    while (outbox.getOutboxState().syncing) await new Promise(resolve => setImmediate(resolve));
+
+    expect(outbox.getOutboxState().changes).toEqual([]);
   });
 });
 

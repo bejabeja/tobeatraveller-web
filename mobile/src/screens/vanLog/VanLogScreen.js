@@ -10,7 +10,7 @@ import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
   getVanLogEntries, getVanLogFuelPriceTrend, getVanLogStats,
-  groupVanLogEntriesByMonth, isNetworkError, isPremiumRequiredError, selectMe,
+  groupVanLogEntriesByMonth, isNetworkError, isPremiumRequiredError, selectAuthUser,
   vanLogCategories, vanLogCategoryEmoji as CATEGORY_EMOJI,
 } from '@tobeatraveller/shared';
 import FeatureLoadState from '../../components/FeatureLoadState';
@@ -49,8 +49,10 @@ const shortDate = (dateStr) => {
 const VanLogScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const me = useSelector(selectMe);
-  const cacheKey = `vanlog:entries:${me?.id}`;
+  // The session user rather than the full profile: it is restored even when
+  // the app opens offline, so the cached data can still be found.
+  const authUser = useSelector(selectAuthUser);
+  const cacheKey = `vanlog:entries:${authUser?.id}`;
 
   const [serverEntries, setServerEntries] = useState([]);
   const [stats, setStats] = useState(null);

@@ -31,11 +31,11 @@ jest.mock('@tobeatraveller/shared', () => {
     deletePackingChecklistItem: jest.fn(),
     resetPackingChecklistTrip: jest.fn(),
     updatePackingChecklistItem: jest.fn(),
-    selectMe: jest.fn(),
+    selectAuthUser: jest.fn(),
   };
 });
 
-import { getPackingChecklist, selectMe } from '@tobeatraveller/shared';
+import { getPackingChecklist, selectAuthUser } from '@tobeatraveller/shared';
 import { act, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import PackingChecklistScreen from '../../screens/packingChecklist/PackingChecklistScreen';
@@ -51,7 +51,7 @@ const renderScreen = async (ui) => {
 
 beforeEach(() => {
   jest.clearAllMocks();
-  selectMe.mockReturnValue({ id: 'user-1' });
+  selectAuthUser.mockReturnValue({ id: 'user-1' });
 });
 
 it('renders the packing list without crashing when the fetch succeeds', async () => {
