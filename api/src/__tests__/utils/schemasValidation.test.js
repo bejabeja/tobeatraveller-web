@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
     signupSchema, resetPasswordSchema, vanLogEntrySchema,
     createItineraryDataSchema, updateItineraryDataSchema,
+    registerPushTokenSchema,
 } from '../../utils/schemasValidation.js';
 
 const validSignupData = {
@@ -181,5 +182,36 @@ describe('resetPasswordSchema rejects whitespace-only passwords', () => {
         });
 
         expect(result.success).toBe(true);
+    });
+});
+
+describe('registerPushTokenSchema', () => {
+    it('accepts an Expo push token and defaults the locale to English', () => {
+        const result = registerPushTokenSchema.safeParse({ token: 'ExponentPushToken[abc123]', platform: 'ios' });
+
+        expect(result.success).toBe(true);
+        expect(result.data.locale).toBe('en');
+    });
+
+    it('rejects a token that is not an Expo push token', () => {
+        const result = registerPushTokenSchema.safeParse({ token: 'fcm-raw-device-token', platform: 'android' });
+
+        expect(result.success).toBe(false);
+    });
+
+    // Regression: without a max length, a longer token passed validation and
+    // then failed on the VARCHAR(255) column as a 500 instead of a 400.
+    it('rejects a token longer than the column that stores it', () => {
+        const token = `ExponentPushToken[${'a'.repeat(250)}]`;
+
+        const result = registerPushTokenSchema.safeParse({ token, platform: 'android' });
+
+        expect(result.success).toBe(false);
+    });
+
+    it('rejects a platform other than ios or android', () => {
+        const result = registerPushTokenSchema.safeParse({ token: 'ExponentPushToken[abc123]', platform: 'web' });
+
+        expect(result.success).toBe(false);
     });
 });

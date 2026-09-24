@@ -25,6 +25,7 @@ module.exports = ({ config }) => ({
   web: { favicon: './assets/favicon.png' },
   plugins: [
     'expo-sharing',
+    'expo-notifications',
     ['expo-location', {
       locationWhenInUsePermission: 'Allow To Be a Traveller to use your location to fill in nearby places.',
     }],

@@ -216,7 +216,7 @@
     "couple": "👫 Pareja",
     "group": "👥 Grupo",
     "large": "🏕️ Grande (6+)",
-    "all":"Todos"
+    "all": "Todos"
   },
   "community": {
     "title": "Comunidad",
@@ -955,6 +955,7 @@
     "account": "Cuenta",
     "language": "Idioma",
     "notifications": "Notificaciones",
+    "pushNotifications": "Notificaciones push",
     "notifyOnComment": "Comentarios en tus itinerarios",
     "notifyOnLike": "Me gusta en tus itinerarios",
     "notifyOnFollow": "Nuevos seguidores",
@@ -1188,6 +1189,7 @@
       "<strong>Contenido que creas:</strong> itinerarios de viaje (título, destino, fechas, lugares, presupuesto, fotos), comentarios, me gusta y viajes guardados.",
       "<strong>Datos sociales:</strong> a quién sigues y quién te sigue.",
       "<strong>Datos técnicos:</strong> tokens de sesión usados para mantener tu sesión iniciada.",
+      "<strong>Datos del dispositivo (solo app móvil):</strong> si permites las notificaciones, guardamos un token push que identifica tu dispositivo ante el servicio de notificaciones, la plataforma (iOS/Android) y su idioma. Se borra al cerrar sesión, cuando el dispositivo deja de aceptar notificaciones o tras 90 días sin abrir la app.",
       "<strong>Datos de registro:</strong> cuando creás una cuenta, registramos el país desde el que llegó la solicitud (a partir de tu dirección IP, que no guardamos de otra forma) y el tipo de navegador/dispositivo. Esto nos ayuda a entender de dónde crece nuestra comunidad y no requiere consentimiento de cookies, porque se lee directamente de la solicitud de registro y no se guarda nada en tu dispositivo.",
       "<strong>Datos analíticos (solo si aceptas las cookies):</strong> si aceptas las cookies analíticas en el aviso de cookies, recopilamos ubicación aproximada (a partir de tu dirección IP), tipo de dispositivo y navegador, y qué páginas visitas, mediante PostHog. Nunca se recopila si lo rechazas, y la grabación de sesión está desactivada."
     ],
@@ -1207,7 +1209,8 @@
       "<strong>Cloudinary</strong>: usado para almacenar y servir fotos de perfil e imágenes de portada de itinerarios. Las imágenes que subes se almacenan en los servidores de Cloudinary. Consulta su <a href=\"https://cloudinary.com/privacy\">Política de Privacidad</a>.",
       "<strong>Geoapify</strong>: usado para buscar destinos y lugares de interés al crear un itinerario. Las búsquedas (nombres de lugares) se envían a su API. Consulta su <a href=\"https://www.geoapify.com/privacy-policy\">Política de Privacidad</a>.",
       "<strong>Generación de itinerarios con IA</strong>: cuando usas la función \"Generar con IA\", el destino, la duración del viaje y la categoría se envían a un servicio de IA para generar sugerencias de lugares. No se incluye información personal identificable en estas peticiones.",
-      "<strong>PostHog</strong>: usado para analítica de producto (qué páginas se usan, ubicación aproximada, tipo de dispositivo), solo si aceptas las cookies analíticas en el aviso de cookies. La grabación de sesión está desactivada. Consulta su <a href=\"https://posthog.com/privacy\">Política de Privacidad</a>."
+      "<strong>PostHog</strong>: usado para analítica de producto (qué páginas se usan, ubicación aproximada, tipo de dispositivo), solo si aceptas las cookies analíticas en el aviso de cookies. La grabación de sesión está desactivada. Consulta su <a href=\"https://posthog.com/privacy\">Política de Privacidad</a>.",
+      "<strong>Servicio push de Expo</strong> (Expo, junto con Apple Push Notification service y Firebase Cloud Messaging): usado para entregar notificaciones push en la app móvil. Recibe el token push de tu dispositivo y el texto de la notificación (quién interactuó y el título del viaje, nunca el contenido de los comentarios). Consulta su <a href=\"https://expo.dev/privacy\">Política de Privacidad</a>."
     ],
     "s5Title": "5. Conservación de datos",
     "s5Body": "Conservamos tus datos personales mientras tu cuenta esté activa. Si eliminas tu cuenta, todos tus datos personales (perfil, itinerarios, comentarios y conexiones sociales) se eliminan permanentemente de nuestros sistemas. Las copias en caché o de respaldo pueden persistir hasta 30 días antes de ser purgadas.",

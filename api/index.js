@@ -30,6 +30,7 @@ import { createLifeDiaryRouter } from './src/routes/lifeDiaryRouter.js';
 import { createSubscriptionRouter } from './src/routes/subscriptionRouter.js';
 import { createSubscriptionWebhookRouter } from './src/routes/subscriptionWebhookRouter.js';
 import { createReferralRouter } from './src/routes/referralRouter.js';
+import { createPushTokensRouter } from './src/routes/pushTokensRouter.js';
 
 const app = express();
 const premiumOnly = requirePremium(new UserRepository());
@@ -70,6 +71,9 @@ app.use('/referrals', authenticate, createReferralRouter());
 // is triggered by Vercel Cron with a shared secret instead of a user JWT, so
 // it can't sit behind a blanket authenticate() at the mount point.
 app.use('/audit-log', createAuditLogRouter());
+// Same as /audit-log: the scheduled token purge authenticates with the cron
+// secret, so authenticate() is applied per route inside the router.
+app.use('/push-tokens', createPushTokensRouter());
 
 app.use('/', createEmailRouter());
 if (config.nodeEnv !== 'production') {

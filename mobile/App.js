@@ -11,9 +11,11 @@ import {
   setUserInfo, setUserInfoItineraries, refreshUnreadCount,
 } from '@tobeatraveller/shared';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import Navigation from './src/navigation';
 import { OfflineBanner } from './src/components/OfflineBanner';
 import { API_URL } from './src/utils/config';
+import { usePushNotificationReceived, usePushTokenRegistration } from './src/hooks/usePushNotifications';
 
 setApiUrl(API_URL);
 
@@ -35,6 +37,12 @@ function AppContent() {
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const authUser = useSelector(selectAuthUser);
+  const { i18n } = useTranslation();
+
+  usePushTokenRegistration(isAuthenticated, i18n.language);
+  usePushNotificationReceived(() => {
+    if (isAuthenticated) dispatch(refreshUnreadCount());
+  });
 
   // Bootstrap auth state on launch
   useEffect(() => {

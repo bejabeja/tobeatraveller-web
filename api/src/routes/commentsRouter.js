@@ -7,6 +7,8 @@ import { CommentsService } from "../services/commentsService.js";
 import { ItineraryRepository } from "../repositories/itineraryRepository.js";
 import { NotificationsRepository } from "../repositories/notificationsRepository.js";
 import { NotificationsService } from "../services/notificationsService.js";
+import { PushTokensRepository } from "../repositories/pushTokensRepository.js";
+import { PushNotificationsService } from "../services/pushNotificationsService.js";
 
 export const createCommentsRouter = () => {
     const router = Router()
@@ -15,7 +17,8 @@ export const createCommentsRouter = () => {
     const userRepository = new UserRepository()
     const itineraryRepository = new ItineraryRepository()
     const notificationsRepository = new NotificationsRepository()
-    const notificationsService = new NotificationsService(notificationsRepository)
+    const pushNotificationsService = new PushNotificationsService(new PushTokensRepository(), userRepository, itineraryRepository)
+    const notificationsService = new NotificationsService(notificationsRepository, pushNotificationsService)
     const commentsService = new CommentsService(commentsRepository, userRepository, notificationsService, itineraryRepository)
     const commentsController = new CommentsController(commentsService)
 

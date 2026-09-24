@@ -9,7 +9,15 @@ const DEFAULT_NOTIFICATION_PREFERENCES = {
     notifyOnComment: true,
     notifyOnLike: true,
     notifyOnFollow: true,
+    pushEnabled: true,
 };
+
+const mapPreferencesRow = (row) => ({
+    notifyOnComment: row.notify_on_comment,
+    notifyOnLike: row.notify_on_like,
+    notifyOnFollow: row.notify_on_follow,
+    pushEnabled: row.push_enabled,
+});
 
 export class NotificationsRepository {
     async create({ id, userId, actorId, type, itineraryId, commentId }) {
@@ -38,7 +46,7 @@ export class NotificationsRepository {
                  RETURNING id`,
                 [actorId, commentId ?? null, userId, type, itineraryId ?? null]
             );
-            if (grouped.rowCount > 0) return;
+            if (grouped.rowCount > 0) return { grouped: true };
 
             const notificationId = id || uuidv4();
             const query = `
@@ -46,9 +54,11 @@ export class NotificationsRepository {
                 VALUES ($1, $2, $3, $4, $5, $6, ARRAY[$3]::UUID[])
             `;
             await client.query(query, [notificationId, userId, actorId, type, itineraryId ?? null, commentId ?? null]);
+            return { grouped: false };
         } catch (err) {
             // fire-and-forget: don't let a notification failure break the caller's main flow
             logger.error('[notifications] failed to create notification:', err);
+            return null;
         }
     }
 
@@ -119,38 +129,29 @@ export class NotificationsRepository {
 
     async getPreferences(userId) {
         const result = await client.query(
-            `SELECT notify_on_comment, notify_on_like, notify_on_follow
+            `SELECT notify_on_comment, notify_on_like, notify_on_follow, push_enabled
              FROM notification_preferences WHERE user_id = $1`,
             [userId]
         );
         if (result.rows.length === 0) return { ...DEFAULT_NOTIFICATION_PREFERENCES };
 
-        const row = result.rows[0];
-        return {
-            notifyOnComment: row.notify_on_comment,
-            notifyOnLike: row.notify_on_like,
-            notifyOnFollow: row.notify_on_follow,
-        };
+        return mapPreferencesRow(result.rows[0]);
     }
 
-    async upsertPreferences(userId, { notifyOnComment, notifyOnLike, notifyOnFollow }) {
+    async upsertPreferences(userId, { notifyOnComment, notifyOnLike, notifyOnFollow, pushEnabled }) {
         const result = await client.query(
-            `INSERT INTO notification_preferences (user_id, notify_on_comment, notify_on_like, notify_on_follow)
-             VALUES ($1, COALESCE($2, true), COALESCE($3, true), COALESCE($4, true))
+            `INSERT INTO notification_preferences (user_id, notify_on_comment, notify_on_like, notify_on_follow, push_enabled)
+             VALUES ($1, COALESCE($2, true), COALESCE($3, true), COALESCE($4, true), COALESCE($5, true))
              ON CONFLICT (user_id) DO UPDATE SET
                  notify_on_comment = COALESCE($2, notification_preferences.notify_on_comment),
                  notify_on_like = COALESCE($3, notification_preferences.notify_on_like),
                  notify_on_follow = COALESCE($4, notification_preferences.notify_on_follow),
+                 push_enabled = COALESCE($5, notification_preferences.push_enabled),
                  updated_at = NOW()
-             RETURNING notify_on_comment, notify_on_like, notify_on_follow`,
-            [userId, notifyOnComment ?? null, notifyOnLike ?? null, notifyOnFollow ?? null]
+             RETURNING notify_on_comment, notify_on_like, notify_on_follow, push_enabled`,
+            [userId, notifyOnComment ?? null, notifyOnLike ?? null, notifyOnFollow ?? null, pushEnabled ?? null]
         );
 
-        const row = result.rows[0];
-        return {
-            notifyOnComment: row.notify_on_comment,
-            notifyOnLike: row.notify_on_like,
-            notifyOnFollow: row.notify_on_follow,
-        };
+        return mapPreferencesRow(result.rows[0]);
     }
 }

@@ -25,6 +25,8 @@ const config = {
 
     cronSecret: process.env.CRON_SECRET,
 
+    expoAccessToken: process.env.EXPO_ACCESS_TOKEN,
+
     stripeSecretKey: process.env.STRIPE_SECRET_KEY,
     stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
     stripePriceIdMonthly: process.env.STRIPE_PRICE_ID_MONTHLY,

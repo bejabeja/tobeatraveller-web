@@ -21,7 +21,7 @@ export class UserService {
         userRepository, itinerariesRepository, followRepository, emailService = null,
         lifeDiaryRepository = null, auditLogService = null, vanLogRepository = null,
         inventoryRepository = null, shoppingListRepository = null, packingChecklistRepository = null,
-        subscriptionRepository = null, referralService = null
+        subscriptionRepository = null, referralService = null, pushTokensRepository = null
     ) {
         this.userRepository = userRepository;
         this.itinerariesRepository = itinerariesRepository;
@@ -35,6 +35,7 @@ export class UserService {
         this.packingChecklistRepository = packingChecklistRepository;
         this.subscriptionRepository = subscriptionRepository;
         this.referralService = referralService;
+        this.pushTokensRepository = pushTokensRepository;
     }
 
     async create(userData, { ip, userAgent } = {}) {
@@ -318,6 +319,7 @@ export class UserService {
         const [
             itineraries, followers, following, commentsResult, likesResult, favoritesResult,
             lifeDiaryEntries, vanLogEntries, inventoryItems, shoppingListItems, packingChecklistItems,
+            pushDevices,
         ] = await Promise.all([
             this.itinerariesRepository.findByUserId(id),
             this.followRepository.getFollowers(id),
@@ -345,6 +347,7 @@ export class UserService {
             this.inventoryRepository ? this.inventoryRepository.findByUserId(id) : [],
             this.shoppingListRepository ? this.shoppingListRepository.findByUserId(id) : [],
             this.packingChecklistRepository ? this.packingChecklistRepository.findByUserId(id) : [],
+            this.pushTokensRepository ? this.pushTokensRepository.findByUserId(id) : [],
         ]);
 
         // Same batched entry+images composition as LifeDiaryService.getEntriesByUser.
@@ -390,6 +393,7 @@ export class UserService {
                 shoppingList: shoppingListItems.map(item => item.toDTO()),
             },
             packingChecklist: packingChecklistItems.map(item => item.toDTO()),
+            pushDevices,
             followers: followers.map(f => ({ id: f.id, username: f.username })),
             following: following.map(f => ({ id: f.id, username: f.username })),
         };

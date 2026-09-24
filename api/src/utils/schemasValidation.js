@@ -3,6 +3,11 @@ import { VAN_LOG_CATEGORIES } from "../models/vanLogEntry.js";
 import { SUPPLY_CATEGORIES, SUPPLY_UNITS, SUPPLY_WHOLE_UNITS } from "./supplyConstants.js";
 import { PACKING_CATEGORIES } from "./packingConstants.js";
 import { ROLES } from "./roles.js";
+import { DEFAULT_PUSH_LOCALE, SUPPORTED_PUSH_LOCALES } from "./pushMessages.js";
+
+const PUSH_PLATFORMS = ["ios", "android"];
+// Matches push_tokens.token VARCHAR(255).
+const PUSH_TOKEN_MAX_LENGTH = 255;
 
 export const updateUserRoleSchema = z.object({
     role: z.enum([ROLES.USER, ROLES.ADMIN, ROLES.SUPERADMIN]),
@@ -246,8 +251,19 @@ export const updateNotificationPreferencesSchema = z.object({
     notifyOnComment: z.boolean().optional(),
     notifyOnLike: z.boolean().optional(),
     notifyOnFollow: z.boolean().optional(),
+    pushEnabled: z.boolean().optional(),
 }).refine((data) => Object.keys(data).length > 0, {
     message: "At least one preference must be provided",
+});
+
+export const registerPushTokenSchema = z.object({
+    token: z.string().max(PUSH_TOKEN_MAX_LENGTH).regex(/^Expo(nent)?PushToken\[.+\]$/, "Invalid push token"),
+    platform: z.enum(PUSH_PLATFORMS),
+    locale: z.enum(SUPPORTED_PUSH_LOCALES).default(DEFAULT_PUSH_LOCALE),
+});
+
+export const unregisterPushTokenSchema = z.object({
+    token: z.string().min(1, "Push token is required").max(PUSH_TOKEN_MAX_LENGTH),
 });
 
 export const packingSeedSchema = z.object({

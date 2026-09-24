@@ -16,8 +16,11 @@ import {
 } from '@tobeatraveller/shared';
 import { shadow } from '../../utils/styles';
 import { RichText } from '../../components/RichText';
+import { registerForPushNotifications } from '../../utils/pushNotifications';
 
 const NOTIFICATION_PREFERENCE_TOGGLES = [
+  // Push only exists in the native app, not in the web build of mobile.
+  ...(Platform.OS === 'web' ? [] : [{ key: 'pushEnabled', labelKey: 'settings.pushNotifications' }]),
   { key: 'notifyOnComment', labelKey: 'settings.notifyOnComment' },
   { key: 'notifyOnLike', labelKey: 'settings.notifyOnLike' },
   { key: 'notifyOnFollow', labelKey: 'settings.notifyOnFollow' },
@@ -79,6 +82,8 @@ const SettingsScreen = ({ navigation }) => {
     try {
       const updated = await updateNotificationPreferences({ [key]: !previousValue });
       setNotificationPreferences(updated);
+      // Asks for the OS permission again if it was never granted on this device.
+      if (key === 'pushEnabled' && updated.pushEnabled) registerForPushNotifications(i18n.language);
     } catch {
       setNotificationPreferences({ ...notificationPreferences, [key]: previousValue });
       Alert.alert(t('errors.somethingWrong'), t('errors.notificationPreferencesUpdateFailed'));

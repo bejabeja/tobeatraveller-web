@@ -5,13 +5,18 @@ import { UserRepository } from "../repositories/userRepository.js";
 import { FollowService } from "../services/followService.js";
 import { NotificationsRepository } from "../repositories/notificationsRepository.js";
 import { NotificationsService } from "../services/notificationsService.js";
+import { PushTokensRepository } from "../repositories/pushTokensRepository.js";
+import { PushNotificationsService } from "../services/pushNotificationsService.js";
+import { ItineraryRepository } from "../repositories/itineraryRepository.js";
 
 export const createFollowRouter = () => {
     const router = Router();
     const userRepository = new UserRepository();
     const followRepository = new FollowRepository();
     const notificationsRepository = new NotificationsRepository();
-    const notificationsService = new NotificationsService(notificationsRepository);
+    const itineraryRepository = new ItineraryRepository();
+    const pushNotificationsService = new PushNotificationsService(new PushTokensRepository(), userRepository, itineraryRepository);
+    const notificationsService = new NotificationsService(notificationsRepository, pushNotificationsService);
     const followService = new FollowService(userRepository, followRepository, notificationsService);
     const followController = new FollowController(followService);
 

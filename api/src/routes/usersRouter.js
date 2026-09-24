@@ -11,6 +11,7 @@ import { LifeDiaryRepository } from "../repositories/lifeDiaryRepository.js";
 import { PackingChecklistRepository } from "../repositories/packingChecklistRepository.js";
 import { ShoppingListRepository } from "../repositories/shoppingListRepository.js";
 import { SubscriptionRepository } from "../repositories/subscriptionRepository.js";
+import { PushTokensRepository } from "../repositories/pushTokensRepository.js";
 import { UserRepository } from "../repositories/userRepository.js";
 import { VanLogRepository } from "../repositories/vanLogRepository.js";
 import { auditLogService } from "../services/sharedAuditLogService.js";
@@ -34,7 +35,7 @@ export const createUsersRouter = () => {
         userRepository, itinerariesRepository, followRepository, emailService,
         lifeDiaryRepository, auditLogService, vanLogRepository,
         inventoryRepository, shoppingListRepository, packingChecklistRepository,
-        subscriptionRepository
+        subscriptionRepository, null, new PushTokensRepository()
     );
     const cloudinaryService = new CloudinaryService();
     const userController = new UserController(userService, cloudinaryService);

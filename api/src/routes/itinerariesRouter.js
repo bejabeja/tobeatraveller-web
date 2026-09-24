@@ -17,6 +17,8 @@ import { EmailService } from "../services/emailService.js";
 import { ItineraryService } from "../services/itineraryService.js";
 import { ItinerariesService } from "../services/itinerariesService.js";
 import { NotificationsService } from "../services/notificationsService.js";
+import { PushTokensRepository } from "../repositories/pushTokensRepository.js";
+import { PushNotificationsService } from "../services/pushNotificationsService.js";
 import { ReferralService } from "../services/referralService.js";
 
 export const createItinerariesRouter = () => {
@@ -30,7 +32,8 @@ export const createItinerariesRouter = () => {
     const cloudinaryService = new CloudinaryService();
     const aiService = new AIService();
     const emailService = new EmailService();
-    const notificationsService = new NotificationsService(notificationsRepository);
+    const pushNotificationsService = new PushNotificationsService(new PushTokensRepository(), userRepository, itinerariesRepository);
+    const notificationsService = new NotificationsService(notificationsRepository, pushNotificationsService);
     const referralService = new ReferralService(referralRepository, userRepository, auditLogService, notificationsService, emailService);
 
     const itineraryService = new ItineraryService(itinerariesRepository, placesRepository, userRepository, cloudinaryService, aiService, auditLogService, referralService);

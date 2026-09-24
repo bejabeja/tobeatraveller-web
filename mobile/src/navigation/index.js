@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Modal, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -8,6 +8,7 @@ import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { selectIsAuthenticated } from '@tobeatraveller/shared';
 import { COLORS } from '../utils/styles';
+import { usePushNotificationNavigation } from '../hooks/usePushNotifications';
 
 import HomeScreen from '../screens/home/HomeScreen';
 import ExploreScreen from '../screens/explore/ExploreScreen';
@@ -205,9 +206,12 @@ const tb = StyleSheet.create({
 
 const Navigation = () => {
   const isAuthenticated = useSelector(selectIsAuthenticated);
+  const navigationRef = useNavigationContainerRef();
+  const [isNavigationReady, setIsNavigationReady] = useState(false);
+  usePushNotificationNavigation(navigationRef, isNavigationReady);
 
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef} onReady={() => setIsNavigationReady(true)}>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Tabs" component={TabNavigator} />
         <Stack.Screen name="Explore" component={ExploreScreen} />

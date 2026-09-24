@@ -16,6 +16,7 @@ import {
 import ItineraryCard from '../../components/ItineraryCard';
 import { ItineraryCardSkeleton, ProfileSkeleton } from '../../components/Skeleton';
 import { shadow } from '../../utils/styles';
+import { unregisterCurrentPushToken } from '../../utils/pushNotifications';
 
 const TRIP_BADGES = [
   { id: 'globetrotter', label: 'Globetrotter', emoji: '🌍', min: 10 },
@@ -39,6 +40,11 @@ const ProfileScreen = ({ route, navigation }) => {
   const authUser = useSelector(selectAuthUser);
   const me = meDetail ?? authUser;
   const myItineraries = useSelector(selectMyItineraries);
+
+  const handleLogout = async () => {
+    await unregisterCurrentPushToken();
+    dispatch(logoutUser());
+  };
 
   const profileId = route.params?.id;
   const isOwnProfile = !profileId || (me && String(profileId) === String(me.id));
@@ -398,7 +404,7 @@ const ProfileScreen = ({ route, navigation }) => {
                 t('auth.confirmLogoutDesc'),
                 [
                   { text: t('common.cancel'), style: 'cancel' },
-                  { text: t('auth.logout'), style: 'destructive', onPress: () => dispatch(logoutUser()) },
+                  { text: t('auth.logout'), style: 'destructive', onPress: handleLogout },
                 ]
               )}
             >

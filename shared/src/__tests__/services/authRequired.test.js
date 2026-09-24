@@ -8,6 +8,7 @@ import { addFavorite, removeFavorite, getUserFavorites, checkIsFavorite } from '
 import { toggleLike, checkIsLiked } from '../../services/likes.js';
 import { followUser, unfollowUser, getAllFollowers, getAllFollowing } from '../../services/followers.js';
 import { fetchNotifications, fetchUnreadCount, markNotificationsRead } from '../../services/notifications.js';
+import { registerPushToken, unregisterPushToken } from '../../services/pushTokens.js';
 import { getUserForAuth, getUserById, updateUser, deleteMyAccount, exportMyData, getSuggestedUsers } from '../../services/users.js';
 
 const FAKE_TOKEN = 'test-access-token';
@@ -46,6 +47,8 @@ const AUTHENTICATED_CALLS = [
     ['deleteMyAccount', () => deleteMyAccount()],
     ['exportMyData', () => exportMyData()],
     ['getSuggestedUsers', () => getSuggestedUsers()],
+    ['registerPushToken', () => registerPushToken({ token: 'ExponentPushToken[a]', platform: 'android', locale: 'es' })],
+    ['unregisterPushToken', () => unregisterPushToken('ExponentPushToken[a]')],
 ];
 
 describe('services gated by the logged-in user must send the access token', () => {

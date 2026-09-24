@@ -216,7 +216,7 @@
     "couple": "👫 Couple",
     "group": "👥 Group",
     "large": "🏕️ Large (6+)",
-    "all":"All"
+    "all": "All"
   },
   "community": {
     "title": "Community",
@@ -955,6 +955,7 @@
     "account": "Account",
     "language": "Language",
     "notifications": "Notifications",
+    "pushNotifications": "Push notifications",
     "notifyOnComment": "Comments on your itineraries",
     "notifyOnLike": "Likes on your itineraries",
     "notifyOnFollow": "New followers",
@@ -1188,6 +1189,7 @@
       "<strong>Content you create:</strong> travel itineraries (title, destination, dates, places, budget, photos), comments, likes, and saved trips.",
       "<strong>Social data:</strong> who you follow and who follows you.",
       "<strong>Technical data:</strong> session tokens used to keep you logged in.",
+      "<strong>Device data (mobile app only):</strong> if you allow notifications, we store a push token that identifies your device to the notification service, the device platform (iOS/Android) and its language. It is removed when you log out, when the device stops accepting notifications, or after 90 days without opening the app.",
       "<strong>Sign-up data:</strong> when you create an account, we record the country your request came from (derived from your IP address, which we do not otherwise store) and your browser/device type. This helps us understand where our community is growing from and does not require cookie consent, as it is read directly from the sign-up request rather than stored on your device.",
       "<strong>Analytics data (only if you accept cookies):</strong> if you accept analytics cookies in the cookie banner, we collect approximate location (derived from your IP address), device and browser type, and which pages you visit, via PostHog. This is never collected if you decline, and session recording is disabled."
     ],
@@ -1207,7 +1209,8 @@
       "<strong>Cloudinary</strong>: used to store and serve profile photos and itinerary cover images. Images you upload are stored on Cloudinary's servers. See their <a href=\"https://cloudinary.com/privacy\">Privacy Policy</a>.",
       "<strong>Geoapify</strong>: used to search for destinations and places of interest when creating an itinerary. Search queries (place names) are sent to their API. See their <a href=\"https://www.geoapify.com/privacy-policy\">Privacy Policy</a>.",
       "<strong>AI itinerary generation</strong>: when you use the \"Generate with AI\" feature, the destination, trip duration, and category are sent to an AI service to generate place suggestions. No personally identifiable information is included in these requests.",
-      "<strong>PostHog</strong>: used for product analytics (which pages are used, approximate location, device type), only if you accept analytics cookies in the cookie banner. Session recording is disabled. See their <a href=\"https://posthog.com/privacy\">Privacy Policy</a>."
+      "<strong>PostHog</strong>: used for product analytics (which pages are used, approximate location, device type), only if you accept analytics cookies in the cookie banner. Session recording is disabled. See their <a href=\"https://posthog.com/privacy\">Privacy Policy</a>.",
+      "<strong>Expo push service</strong> (Expo, with Apple Push Notification service and Firebase Cloud Messaging): used to deliver push notifications to the mobile app. It receives your device's push token and the notification text (who interacted and the trip title, never the content of comments). See their <a href=\"https://expo.dev/privacy\">Privacy Policy</a>."
     ],
     "s5Title": "5. Data retention",
     "s5Body": "We retain your personal data for as long as your account is active. If you delete your account, all your personal data (profile, itineraries, comments, and social connections) is permanently deleted from our systems. Cached or backed-up copies may persist for up to 30 days before being purged.",

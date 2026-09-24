@@ -1,24 +1,43 @@
+import { logger } from '../utils/logger.js';
+
 const NOTIFICATION_TYPE_PREFERENCE_KEY = {
     comment: 'notifyOnComment',
     like: 'notifyOnLike',
     follow: 'notifyOnFollow',
 };
 
+// Types whose notifications fold into one row per 24h window still push on
+// every event when each event matters on its own (every comment is new
+// content); for the rest only the first event of the window pushes, so a
+// popular trip doesn't buzz its owner's phone once per like.
+const PUSH_ON_EVERY_EVENT_TYPES = new Set(['comment']);
+
 export class NotificationsService {
-    constructor(notificationsRepository) {
+    constructor(notificationsRepository, pushNotificationsService = null) {
         this.notificationsRepository = notificationsRepository;
+        this.pushNotificationsService = pushNotificationsService;
     }
 
     async createNotification({ userId, actorId, type, itineraryId, commentId }) {
         if (userId === actorId) return;
 
+        const preferences = await this.notificationsRepository.getPreferences(userId);
         const preferenceKey = NOTIFICATION_TYPE_PREFERENCE_KEY[type];
-        if (preferenceKey) {
-            const preferences = await this.notificationsRepository.getPreferences(userId);
-            if (!preferences[preferenceKey]) return;
-        }
+        if (preferenceKey && !preferences[preferenceKey]) return;
 
-        await this.notificationsRepository.create({ userId, actorId, type, itineraryId, commentId });
+        const created = await this.notificationsRepository.create({ userId, actorId, type, itineraryId, commentId });
+        if (!created || !this._shouldPush(preferences, type, created)) return;
+
+        // Callers fire this with .catch(() => {}), so a push failure would
+        // otherwise vanish without a trace.
+        await this.pushNotificationsService
+            .sendNotificationPush({ userId, actorId, type, itineraryId, commentId })
+            .catch(err => logger.error('[push] failed to send notification push:', err));
+    }
+
+    _shouldPush(preferences, type, { grouped }) {
+        if (!this.pushNotificationsService || !preferences.pushEnabled) return false;
+        return !grouped || PUSH_ON_EVERY_EVENT_TYPES.has(type);
     }
 
     async getPreferences(userId) {

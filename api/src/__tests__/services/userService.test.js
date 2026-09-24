@@ -510,6 +510,22 @@ describe('UserService.exportUserData()', () => {
         expect(result.packingChecklist).toEqual([]);
         expect(result.lifeDiaryEntries).toEqual([]);
     });
+
+    it('includes the devices registered for push notifications', async () => {
+        const userRepository = { getUserById: async () => makeUser() };
+        const itinerariesRepository = { findByUserId: async () => [] };
+        const followRepository = { getFollowers: async () => [], getFollowing: async () => [] };
+        const pushDevice = { token: 'ExponentPushToken[a]', platform: 'android', locale: 'es' };
+        const pushTokensRepository = { findByUserId: async () => [pushDevice] };
+        const service = new UserService(
+            userRepository, itinerariesRepository, followRepository,
+            null, null, null, null, null, null, null, null, null, pushTokensRepository
+        );
+
+        const result = await service.exportUserData('user-1', { id: 'user-1', username: 'jane' });
+
+        expect(result.pushDevices).toEqual([pushDevice]);
+    });
 });
 
 describe('UserService.changePassword()', () => {

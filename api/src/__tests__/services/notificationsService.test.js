@@ -78,6 +78,101 @@ describe('NotificationsService.createNotification()', () => {
     });
 });
 
+describe('NotificationsService.createNotification() push delivery', () => {
+    let service;
+    let notificationsRepository;
+    let pushNotificationsService;
+
+    const preferences = (overrides = {}) => ({
+        notifyOnComment: true, notifyOnLike: true, notifyOnFollow: true, pushEnabled: true, ...overrides,
+    });
+
+    beforeEach(() => {
+        notificationsRepository = {
+            create: vi.fn().mockResolvedValue({ grouped: false }),
+            getPreferences: vi.fn().mockResolvedValue(preferences()),
+        };
+        pushNotificationsService = { sendNotificationPush: vi.fn().mockResolvedValue() };
+        service = new NotificationsService(notificationsRepository, pushNotificationsService);
+    });
+
+    it('sends a push for the first like of a grouping window', async () => {
+        await service.createNotification({ userId: 'u1', actorId: 'u2', type: 'like', itineraryId: 'i1' });
+
+        expect(pushNotificationsService.sendNotificationPush).toHaveBeenCalledWith(
+            { userId: 'u1', actorId: 'u2', type: 'like', itineraryId: 'i1', commentId: undefined }
+        );
+    });
+
+    it('does not push a like that folds into an existing notification', async () => {
+        notificationsRepository.create.mockResolvedValue({ grouped: true });
+
+        await service.createNotification({ userId: 'u1', actorId: 'u2', type: 'like', itineraryId: 'i1' });
+
+        expect(pushNotificationsService.sendNotificationPush).not.toHaveBeenCalled();
+    });
+
+    it('does not push a follow that folds into an existing notification', async () => {
+        notificationsRepository.create.mockResolvedValue({ grouped: true });
+
+        await service.createNotification({ userId: 'u1', actorId: 'u2', type: 'follow' });
+
+        expect(pushNotificationsService.sendNotificationPush).not.toHaveBeenCalled();
+    });
+
+    it('pushes every comment, even when it folds into an existing notification', async () => {
+        notificationsRepository.create.mockResolvedValue({ grouped: true });
+
+        await service.createNotification({ userId: 'u1', actorId: 'u2', type: 'comment', itineraryId: 'i1', commentId: 'c1' });
+
+        expect(pushNotificationsService.sendNotificationPush).toHaveBeenCalledWith(
+            { userId: 'u1', actorId: 'u2', type: 'comment', itineraryId: 'i1', commentId: 'c1' }
+        );
+    });
+
+    it('keeps the in-app notification but skips the push when the recipient turned push off', async () => {
+        notificationsRepository.getPreferences.mockResolvedValue(preferences({ pushEnabled: false }));
+
+        await service.createNotification({ userId: 'u1', actorId: 'u2', type: 'comment', itineraryId: 'i1' });
+
+        expect(notificationsRepository.create).toHaveBeenCalled();
+        expect(pushNotificationsService.sendNotificationPush).not.toHaveBeenCalled();
+    });
+
+    it('sends no push when the recipient disabled that notification type', async () => {
+        notificationsRepository.getPreferences.mockResolvedValue(preferences({ notifyOnLike: false }));
+
+        await service.createNotification({ userId: 'u1', actorId: 'u2', type: 'like', itineraryId: 'i1' });
+
+        expect(pushNotificationsService.sendNotificationPush).not.toHaveBeenCalled();
+    });
+
+    it('sends no push when storing the in-app notification failed', async () => {
+        notificationsRepository.create.mockResolvedValue(null);
+
+        await service.createNotification({ userId: 'u1', actorId: 'u2', type: 'follow' });
+
+        expect(pushNotificationsService.sendNotificationPush).not.toHaveBeenCalled();
+    });
+
+    // Regression: callers fire createNotification with .catch(() => {}), so a
+    // push failure escaping here was swallowed with no log at all.
+    it('still resolves when sending the push fails, after storing the in-app notification', async () => {
+        pushNotificationsService.sendNotificationPush.mockRejectedValue(new Error('Expo down'));
+
+        await expect(
+            service.createNotification({ userId: 'u1', actorId: 'u2', type: 'follow' })
+        ).resolves.toBeUndefined();
+        expect(notificationsRepository.create).toHaveBeenCalled();
+    });
+
+    it('pushes referral rewards, which have no per-type preference', async () => {
+        await service.createNotification({ userId: 'u1', actorId: 'u2', type: 'referral_reward', itineraryId: 'i1' });
+
+        expect(pushNotificationsService.sendNotificationPush).toHaveBeenCalled();
+    });
+});
+
 describe('NotificationsService.getPreferences() / updatePreferences()', () => {
     let service;
     let notificationsRepository;

@@ -55,6 +55,32 @@ describe('NotificationsRepository.create()', () => {
         expect(foldQuery).toMatch(/created_at > NOW\(\)/);
         expect(foldQuery).not.toMatch(/created_at\s*=\s*NOW\(\)/);
     });
+
+    it('reports that the event folded into an existing notification', async () => {
+        client.query.mockResolvedValueOnce({ rowCount: 1, rows: [{ id: 'existing-1' }] });
+
+        const result = await repo.create({ userId: 'u1', actorId: 'actor-2', type: 'like', itineraryId: 'itin-1' });
+
+        expect(result).toEqual({ grouped: true });
+    });
+
+    it('reports that the event opened a new notification', async () => {
+        client.query
+            .mockResolvedValueOnce({ rowCount: 0, rows: [] })
+            .mockResolvedValueOnce({ rowCount: 1 });
+
+        const result = await repo.create({ userId: 'u1', actorId: 'actor-2', type: 'like', itineraryId: 'itin-1' });
+
+        expect(result).toEqual({ grouped: false });
+    });
+
+    it('returns null instead of throwing when the query fails', async () => {
+        client.query.mockRejectedValueOnce(new Error('connection lost'));
+
+        const result = await repo.create({ userId: 'u1', actorId: 'actor-2', type: 'like', itineraryId: 'itin-1' });
+
+        expect(result).toBeNull();
+    });
 });
 
 describe('NotificationsRepository.getByUserId()', () => {
@@ -122,17 +148,17 @@ describe('NotificationsRepository.getPreferences()', () => {
 
         const preferences = await repo.getPreferences('u1');
 
-        expect(preferences).toEqual({ notifyOnComment: true, notifyOnLike: true, notifyOnFollow: true });
+        expect(preferences).toEqual({ notifyOnComment: true, notifyOnLike: true, notifyOnFollow: true, pushEnabled: true });
     });
 
     it('maps the stored row to camelCase', async () => {
         client.query.mockResolvedValueOnce({
-            rows: [{ notify_on_comment: false, notify_on_like: true, notify_on_follow: false }],
+            rows: [{ notify_on_comment: false, notify_on_like: true, notify_on_follow: false, push_enabled: false }],
         });
 
         const preferences = await repo.getPreferences('u1');
 
-        expect(preferences).toEqual({ notifyOnComment: false, notifyOnLike: true, notifyOnFollow: false });
+        expect(preferences).toEqual({ notifyOnComment: false, notifyOnLike: true, notifyOnFollow: false, pushEnabled: false });
     });
 });
 
@@ -145,23 +171,23 @@ describe('NotificationsRepository.upsertPreferences()', () => {
 
     it('upserts only the provided preferences, leaving the others untouched via COALESCE', async () => {
         client.query.mockResolvedValueOnce({
-            rows: [{ notify_on_comment: false, notify_on_like: true, notify_on_follow: true }],
+            rows: [{ notify_on_comment: false, notify_on_like: true, notify_on_follow: true, push_enabled: true }],
         });
 
         await repo.upsertPreferences('u1', { notifyOnComment: false });
 
         const [query, params] = client.query.mock.calls[0];
         expect(query).toMatch(/ON CONFLICT \(user_id\) DO UPDATE/);
-        expect(params).toEqual(['u1', false, null, null]);
+        expect(params).toEqual(['u1', false, null, null, null]);
     });
 
     it('returns the resulting preferences mapped to camelCase', async () => {
         client.query.mockResolvedValueOnce({
-            rows: [{ notify_on_comment: true, notify_on_like: false, notify_on_follow: true }],
+            rows: [{ notify_on_comment: true, notify_on_like: false, notify_on_follow: true, push_enabled: false }],
         });
 
         const preferences = await repo.upsertPreferences('u1', { notifyOnLike: false });
 
-        expect(preferences).toEqual({ notifyOnComment: true, notifyOnLike: false, notifyOnFollow: true });
+        expect(preferences).toEqual({ notifyOnComment: true, notifyOnLike: false, notifyOnFollow: true, pushEnabled: false });
     });
 });
