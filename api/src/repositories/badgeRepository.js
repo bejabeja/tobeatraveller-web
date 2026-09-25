@@ -87,6 +87,44 @@ export class BadgeRepository {
         );
     }
 
+    // The user and everyone they follow, ranked by countries from public
+    // trips only: van log and diary are private and declared countries
+    // aren't earned, so neither may rank anyone. Returns the top `limit`
+    // plus the user themselves when they fall outside it. Test accounts are
+    // hidden, as in the feeds.
+    async getFollowingLeaderboard(userId, limit) {
+        const result = await client.query(
+            `WITH people AS (
+                SELECT followed_id AS id FROM user_followers WHERE follower_id = $1
+                UNION
+                SELECT $1::UUID
+             ),
+             counts AS (
+                SELECT u.id, u.username, u.avatar_url, COUNT(DISTINCT i.location_country_code) AS countries
+                FROM people p
+                JOIN users u ON u.id = p.id
+                LEFT JOIN itineraries i
+                    ON i.user_id = u.id AND i.is_public = true AND i.location_country_code IS NOT NULL
+                WHERE u.role IS DISTINCT FROM 'test' OR u.id = $1
+                GROUP BY u.id, u.username, u.avatar_url
+             ),
+             ranked AS (
+                SELECT *,
+                    RANK() OVER (ORDER BY countries DESC) AS rank,
+                    ROW_NUMBER() OVER (ORDER BY countries DESC, username) AS position
+                FROM counts
+             )
+             SELECT * FROM ranked WHERE position <= $2 OR id = $1 ORDER BY position`,
+            [userId, limit]
+        );
+        return result.rows.map(row => ({
+            user: { id: row.id, username: row.username, avatarUrl: row.avatar_url },
+            countries: Number(row.countries),
+            rank: Number(row.rank),
+            position: Number(row.position),
+        }));
+    }
+
     async getMetrics(userId) {
         const result = await client.query(
             `WITH visits AS (${COUNTRY_VISITS_SQL})

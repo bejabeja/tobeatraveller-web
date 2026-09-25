@@ -24,6 +24,7 @@ describe('BadgeService', () => {
             insertCountryStamps: vi.fn(async (userId, countryCodes) => countryCodes),
             findDeclaredCountries: vi.fn().mockResolvedValue([]),
             replaceDeclaredCountries: vi.fn().mockResolvedValue(),
+            getFollowingLeaderboard: vi.fn().mockResolvedValue([]),
         };
         notificationsService = { createNotification: vi.fn().mockResolvedValue() };
         userRepository = { getUserById: vi.fn().mockResolvedValue({ id: 'user-1', username: 'jane', avatarUrl: null, email: 'jane@example.com' }) };
@@ -205,6 +206,78 @@ describe('BadgeService', () => {
         });
     });
 
+    describe('countries in common', () => {
+        const visit = (code, firstPublicVisitedOn = null) => ({ code, firstVisitedOn: '2026-03-01', firstPublicVisitedOn });
+        const declared = (...codes) => codes.map(countryCode => ({ countryCode, declaredAt: new Date('2026-09-01') }));
+
+        // The profile's public countries (earned and declared) against all of
+        // the viewer's own, private and declared included: only the viewer
+        // sees the result, so it reveals nothing about them to anyone.
+        it("compares someone's public countries with all of the viewer's own", async () => {
+            badgeRepository.getCountryVisits.mockImplementation(async (userId) => (userId === 'user-1'
+                ? [visit('ES', '2026-03-01'), visit('FR', '2026-04-01'), visit('PT')]
+                : [visit('ES'), visit('IT')]));
+            badgeRepository.findDeclaredCountries.mockImplementation(async (userId) => (userId === 'user-1'
+                ? declared('JP')
+                : declared('FR', 'JP')));
+
+            const { comparison } = await service.getPassport('user-1', 'viewer-1');
+
+            expect(comparison.inCommon.sort()).toEqual(['ES', 'FR', 'JP']);
+            expect(comparison.onlyTheirs).toEqual([]);
+        });
+
+        it("lists the profile's countries the viewer hasn't been to", async () => {
+            badgeRepository.getCountryVisits.mockImplementation(async (userId) => (userId === 'user-1'
+                ? [visit('ES', '2026-03-01'), visit('IT', '2026-04-01')]
+                : [visit('ES')]));
+
+            const { comparison } = await service.getPassport('user-1', 'viewer-1');
+
+            expect(comparison).toEqual({ inCommon: ['ES'], onlyTheirs: ['IT'] });
+        });
+
+        // A private country of the profile must not show up as "in common".
+        it("never compares against the profile's private countries", async () => {
+            badgeRepository.getCountryVisits.mockImplementation(async (userId) => (userId === 'user-1'
+                ? [visit('FR')]
+                : [visit('FR')]));
+
+            const { comparison } = await service.getPassport('user-1', 'viewer-1');
+
+            expect(comparison).toEqual({ inCommon: [], onlyTheirs: [] });
+        });
+
+        it('has no comparison for the owner, signed-out visitors or the public view', async () => {
+            expect((await service.getPassport('user-1', 'user-1')).comparison).toBeUndefined();
+            expect((await service.getPassport('user-1', null)).comparison).toBeUndefined();
+            expect((await service.getPassport('user-1', 'user-1', { publicView: true })).comparison).toBeUndefined();
+        });
+    });
+
+    describe('getFollowingLeaderboard()', () => {
+        const entry = (id, countries, rank, position) => ({ user: { id, username: id, avatarUrl: null }, countries, rank, position });
+
+        it('ranks the user among the people they follow, marking their own entry', async () => {
+            badgeRepository.getFollowingLeaderboard.mockResolvedValue([entry('ana', 9, 1, 1), entry('user-1', 4, 2, 2)]);
+
+            const leaderboard = await service.getFollowingLeaderboard('user-1');
+
+            expect(badgeRepository.getFollowingLeaderboard).toHaveBeenCalledWith('user-1', 10);
+            expect(leaderboard.entries).toEqual([
+                { user: { id: 'ana', username: 'ana', avatarUrl: null }, countries: 9, rank: 1, isMe: false },
+                { user: { id: 'user-1', username: 'user-1', avatarUrl: null }, countries: 4, rank: 2, isMe: true },
+            ]);
+            expect(leaderboard.followsAnyone).toBe(true);
+        });
+
+        it('says so when the user follows no one yet', async () => {
+            badgeRepository.getFollowingLeaderboard.mockResolvedValue([entry('user-1', 4, 1, 1)]);
+
+            expect((await service.getFollowingLeaderboard('user-1')).followsAnyone).toBe(false);
+        });
+    });
+
     describe('getPassport()', () => {
         const earned = (...badgeIds) => badgeIds.map(badgeId => ({ badgeId, earnedAt: new Date('2026-09-01') }));
         const visit = (code, firstVisitedOn, firstPublicVisitedOn = null) => ({ code, firstVisitedOn, firstPublicVisitedOn });
@@ -243,9 +316,10 @@ describe('BadgeService', () => {
             badgeRepository.getCountryVisits.mockResolvedValue([visit('ES', '2026-03-01', '2026-05-01'), visit('FR', '2026-06-10')]);
 
             const publicView = await service.getPassport('user-1', 'user-1', { publicView: true });
-            const othersView = await service.getPassport('user-1', 'someone-else');
+            const visitorView = await service.getPassport('user-1', null);
 
-            expect(publicView).toEqual(othersView);
+            // A signed-out visitor's view: a member would also get their own comparison.
+            expect(publicView).toEqual(visitorView);
             expect(stamp(publicView.achievements, 'countries_5').earnedAt).toBeNull();
             expect(publicView.countries.map(country => country.code)).toEqual(['ES']);
         });

@@ -39,4 +39,13 @@ export class BadgeController {
             next(error);
         }
     }
+
+    async getMyLeaderboard(req, res, next) {
+        try {
+            const leaderboard = await this.badgeService.getFollowingLeaderboard(req.user.id);
+            res.status(200).json(leaderboard);
+        } catch (error) {
+            next(error);
+        }
+    }
 }

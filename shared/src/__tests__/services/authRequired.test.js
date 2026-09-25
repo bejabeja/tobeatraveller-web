@@ -9,7 +9,7 @@ import { toggleLike, checkIsLiked } from '../../services/likes.js';
 import { followUser, unfollowUser, getAllFollowers, getAllFollowing } from '../../services/followers.js';
 import { fetchNotifications, fetchUnreadCount, markNotificationsRead } from '../../services/notifications.js';
 import { registerPushToken, unregisterPushToken } from '../../services/pushTokens.js';
-import { getUserPassport, updateMyDeclaredCountries } from '../../services/passport.js';
+import { getMyPassportLeaderboard, getUserPassport, updateMyDeclaredCountries } from '../../services/passport.js';
 import { getUserForAuth, getUserById, updateUser, deleteMyAccount, exportMyData, getSuggestedUsers } from '../../services/users.js';
 
 const FAKE_TOKEN = 'test-access-token';
@@ -52,6 +52,7 @@ const AUTHENTICATED_CALLS = [
     ['unregisterPushToken', () => unregisterPushToken('ExponentPushToken[a]')],
     ['getUserPassport', () => getUserPassport('user-1')],
     ['updateMyDeclaredCountries', () => updateMyDeclaredCountries(['JP'])],
+    ['getMyPassportLeaderboard', () => getMyPassportLeaderboard()],
 ];
 
 describe('services gated by the logged-in user must send the access token', () => {

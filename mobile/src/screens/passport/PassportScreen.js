@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
@@ -10,6 +10,7 @@ import {
 } from '@tobeatraveller/shared';
 import CountryPickerModal from '../../components/CountryPickerModal';
 import PassportShareModal from '../../components/PassportShareModal';
+import { usePassportLeaderboard } from '../../hooks/usePassportLeaderboard';
 import { useUserPassport } from '../../hooks/useUserPassport';
 
 const PASSPORT_NAVY = '#1b2a41';
@@ -90,6 +91,78 @@ const DeclaredCountryStamp = ({ code, language, t }) => (
   </View>
 );
 
+const MAX_COMMON_FLAGS = 12;
+
+// For a member looking at someone else's passport: what they share, and how
+// many of theirs are still to visit, as a friendly challenge.
+const CountriesInCommon = ({ comparison, t }) => {
+  const { inCommon, onlyTheirs } = comparison;
+  // Nothing to compare against: "you've been to all of theirs" would be nonsense.
+  if (inCommon.length === 0 && onlyTheirs.length === 0) return null;
+  return (
+    <View style={styles.compare}>
+      <Text style={styles.compareTitle}>
+        🤝 {inCommon.length > 0 ? t('passport.compareInCommon', { count: inCommon.length }) : t('passport.compareNone')}
+      </Text>
+      {inCommon.length > 0 && (
+        <Text style={styles.compareFlags}>
+          {inCommon.slice(0, MAX_COMMON_FLAGS).map(countryFlag).join(' ')}
+          {inCommon.length > MAX_COMMON_FLAGS ? ` ${t('passport.moreCountries', { count: inCommon.length - MAX_COMMON_FLAGS })}` : ''}
+        </Text>
+      )}
+      <Text style={styles.compareMissing}>
+        {onlyTheirs.length > 0 ? t('passport.compareMissing', { count: onlyTheirs.length }) : t('passport.compareAllVisited')}
+      </Text>
+    </View>
+  );
+};
+
+// The owner among the people they follow, by countries from public trips.
+const PassportLeaderboard = ({ navigation, t }) => {
+  const { leaderboard, loading, error } = usePassportLeaderboard(true);
+  if (loading) return null;
+
+  return (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>{t('passport.leaderboardTitle')}</Text>
+      <Text style={styles.sectionHint}>{t('passport.leaderboardHint')}</Text>
+      {error && <Text style={styles.sectionHint}>{t('passport.leaderboardError')}</Text>}
+      {leaderboard && !leaderboard.followsAnyone && (
+        <TouchableOpacity onPress={() => navigation.navigate('Community')} accessibilityRole="link">
+          <Text style={styles.sectionHint}>
+            {t('passport.leaderboardEmpty')} <Text style={styles.leaderboardExplore}>{t('passport.leaderboardExplore')}</Text>
+          </Text>
+        </TouchableOpacity>
+      )}
+      {leaderboard?.followsAnyone && leaderboard.entries.map(({ user, countries, rank, isMe }) => (
+        <TouchableOpacity
+          key={user.id}
+          style={[styles.leaderboardRow, isMe && styles.leaderboardRowMe]}
+          // push, not navigate: from one passport to another of the same screen.
+          // Their own row does nothing: it would stack their passport again.
+          onPress={() => navigation.push('Passport', { userId: user.id })}
+          disabled={isMe}
+          accessibilityRole={isMe ? undefined : 'button'}
+          accessibilityLabel={`${rank}. ${isMe ? t('passport.leaderboardYou') : `@${user.username}`}, ${t('passport.countriesCount', { count: countries })}`}
+        >
+          <Text style={styles.leaderboardRank}>{rank}</Text>
+          {user.avatarUrl ? (
+            <Image source={{ uri: user.avatarUrl }} style={styles.leaderboardAvatar} />
+          ) : (
+            <View style={[styles.leaderboardAvatar, styles.leaderboardAvatarFallback]}>
+              <Text style={styles.leaderboardAvatarInitial}>{user.username?.charAt(0).toUpperCase() || '?'}</Text>
+            </View>
+          )}
+          <Text style={[styles.leaderboardName, isMe && styles.leaderboardNameMe]} numberOfLines={1}>
+            {isMe ? t('passport.leaderboardYou') : `@${user.username}`}
+          </Text>
+          <Text style={styles.leaderboardCount}>{t('passport.countriesCount', { count: countries })}</Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+  );
+};
+
 const PassportScreen = ({ navigation, route }) => {
   const { t, i18n } = useTranslation();
   const insets = useSafeAreaInsets();
@@ -169,6 +242,8 @@ const PassportScreen = ({ navigation, route }) => {
             </Text>
           </View>
 
+          {passport.comparison && <CountriesInCommon comparison={passport.comparison} t={t} />}
+
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{t('passport.countries')}</Text>
             {isOwner && <Text style={styles.sectionHint}>{t('passport.countriesHowTo')}</Text>}
@@ -211,6 +286,8 @@ const PassportScreen = ({ navigation, route }) => {
               )}
             </View>
           )}
+
+          {isOwner && <PassportLeaderboard navigation={navigation} t={t} />}
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{t('passport.achievements')}</Text>
@@ -283,6 +360,23 @@ const styles = StyleSheet.create({
   },
   sectionTitle: { fontSize: 17, fontWeight: '800', color: PASSPORT_NAVY },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
+  compare: {
+    alignItems: 'center', gap: 4, padding: 14, borderRadius: 18,
+    backgroundColor: PASSPORT_PAPER, borderWidth: 1, borderColor: '#efe4cf',
+  },
+  compareTitle: { fontSize: 16, fontWeight: '800', color: PASSPORT_NAVY, textAlign: 'center' },
+  compareFlags: { fontSize: 20, lineHeight: 28, textAlign: 'center' },
+  compareMissing: { fontSize: 13, color: PASSPORT_INK_MUTED, textAlign: 'center' },
+  leaderboardExplore: { color: '#E8743B', fontWeight: '700' },
+  leaderboardRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 8, paddingVertical: 8, paddingHorizontal: 10, borderRadius: 12 },
+  leaderboardRowMe: { backgroundColor: 'rgba(217, 164, 65, 0.18)' },
+  leaderboardRank: { width: 22, textAlign: 'center', fontSize: 15, fontWeight: '800', color: PASSPORT_GOLD },
+  leaderboardAvatar: { width: 34, height: 34, borderRadius: 17 },
+  leaderboardAvatarFallback: { alignItems: 'center', justifyContent: 'center', backgroundColor: '#E8743B' },
+  leaderboardAvatarInitial: { color: '#fff', fontWeight: '700', fontSize: 14 },
+  leaderboardName: { flex: 1, fontSize: 14, color: PASSPORT_NAVY },
+  leaderboardNameMe: { fontWeight: '800' },
+  leaderboardCount: { fontSize: 12, color: PASSPORT_INK_MUTED },
   sectionHeaderTitle: { flex: 1 },
   declaredEdit: { paddingVertical: 6, paddingHorizontal: 10, borderRadius: 999, borderWidth: 1, borderColor: '#d9a441' },
   declaredEditText: { fontSize: 12, fontWeight: '700', color: '#b08a45' },

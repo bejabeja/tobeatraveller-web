@@ -21,6 +21,7 @@ jest.mock('@tobeatraveller/shared', () => {
     ...badges,
     ...countries,
     getUserPassport: jest.fn(),
+    getMyPassportLeaderboard: jest.fn(),
     selectAuthUser: jest.fn(),
   };
 });
@@ -32,14 +33,14 @@ jest.mock('../../components/PassportShareModal', () => {
   );
 });
 
-import { getUserPassport, selectAuthUser } from '@tobeatraveller/shared';
-import { act, render, screen } from '@testing-library/react-native';
+import { getMyPassportLeaderboard, getUserPassport, selectAuthUser } from '@tobeatraveller/shared';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import PassportScreen from '../../screens/passport/PassportScreen';
 
 const INITIAL_METRICS = { frame: { x: 0, y: 0, width: 390, height: 844 }, insets: { top: 0, left: 0, right: 0, bottom: 0 } };
 
-const renderScreen = async (params = {}, navigation = { goBack: jest.fn(), setParams: jest.fn() }) => {
+const renderScreen = async (params = {}, navigation = { goBack: jest.fn(), setParams: jest.fn(), push: jest.fn(), navigate: jest.fn() }) => {
   const result = render(
     <SafeAreaProvider initialMetrics={INITIAL_METRICS}>
       <PassportScreen navigation={navigation} route={{ params: { userId: 'user-1', ...params } }} />
@@ -52,6 +53,7 @@ const renderScreen = async (params = {}, navigation = { goBack: jest.fn(), setPa
 beforeEach(() => {
   jest.clearAllMocks();
   selectAuthUser.mockReturnValue({ id: 'user-1' });
+  getMyPassportLeaderboard.mockResolvedValue({ entries: [], followsAnyone: false });
 });
 
 it('shows earned and locked stamps with progress, and a stamp per visited country', async () => {
@@ -136,4 +138,64 @@ it('invites the owner to mark the countries they have been to', async () => {
 
   expect(screen.getByText('passport.declaredAdd')).toBeTruthy();
   expect(screen.getByText('passport.declaredEmptyOwn')).toBeTruthy();
+});
+
+it("shows a member the countries they share with someone and how many of theirs they're missing", async () => {
+  selectAuthUser.mockReturnValue({ id: 'someone-else' });
+  getUserPassport.mockResolvedValue({
+    owner: { id: 'user-1', username: 'jane' }, achievements: [], countries: [],
+    comparison: { inCommon: ['ES', 'FR'], onlyTheirs: ['IT'] },
+  });
+
+  await renderScreen();
+
+  expect(screen.getByText(/passport.compareInCommon/)).toBeTruthy();
+  expect(screen.getByText('🇪🇸 🇫🇷')).toBeTruthy();
+  expect(screen.getByText('passport.compareMissing')).toBeTruthy();
+  expect(getMyPassportLeaderboard).not.toHaveBeenCalled();
+});
+
+it('ranks the owner among the people they follow, opening their passports', async () => {
+  getUserPassport.mockResolvedValue({ owner: { id: 'user-1', username: 'jane' }, achievements: [], countries: [] });
+  getMyPassportLeaderboard.mockResolvedValue({
+    followsAnyone: true,
+    entries: [
+      { user: { id: 'ana', username: 'ana', avatarUrl: null }, countries: 9, rank: 1, isMe: false },
+      { user: { id: 'user-1', username: 'jane', avatarUrl: null }, countries: 3, rank: 2, isMe: true },
+    ],
+  });
+  const navigation = { goBack: jest.fn(), setParams: jest.fn(), push: jest.fn(), navigate: jest.fn() };
+
+  await renderScreen({}, navigation);
+  fireEvent.press(screen.getByText('@ana'));
+
+  expect(screen.getByText('passport.leaderboardYou')).toBeTruthy();
+  expect(navigation.push).toHaveBeenCalledWith('Passport', { userId: 'ana' });
+
+  // Would stack their own passport again on top of it.
+  navigation.push.mockClear();
+  fireEvent.press(screen.getByText('passport.leaderboardYou'));
+  expect(navigation.push).not.toHaveBeenCalled();
+});
+
+it('invites the owner to find travellers when they follow no one', async () => {
+  getUserPassport.mockResolvedValue({ owner: { id: 'user-1', username: 'jane' }, achievements: [], countries: [] });
+  const navigation = { goBack: jest.fn(), setParams: jest.fn(), push: jest.fn(), navigate: jest.fn() };
+
+  await renderScreen({}, navigation);
+  fireEvent.press(screen.getByText('passport.leaderboardExplore'));
+
+  expect(navigation.navigate).toHaveBeenCalledWith('Community');
+});
+
+it('does not compare when the other person has no countries to compare', async () => {
+  selectAuthUser.mockReturnValue({ id: 'someone-else' });
+  getUserPassport.mockResolvedValue({
+    owner: { id: 'user-1', username: 'jane' }, achievements: [], countries: [],
+    comparison: { inCommon: [], onlyTheirs: [] },
+  });
+
+  await renderScreen();
+
+  expect(screen.queryByText(/passport.compare/)).toBeNull();
 });

@@ -26,3 +26,12 @@ export const updateMyDeclaredCountries = async (countryCodes) => {
         await parseError(response, 'Failed to save countries');
     }
 };
+
+// The signed-in user among the people they follow, by countries from public trips.
+export const getMyPassportLeaderboard = async () => {
+    const response = await authFetch(`${getApiUrl()}/users/me/passport/leaderboard`);
+    if (!response.ok) {
+        await parseError(response, 'Failed to load the leaderboard');
+    }
+    return response.json();
+};

@@ -1422,6 +1422,18 @@
     "title": "Logros"
   },
   "passport": {
+    "compareInCommon_one": "Tenéis {{count}} país en común",
+    "compareInCommon_other": "Tenéis {{count}} países en común",
+    "compareNone": "Todavía no tenéis ningún país en común",
+    "compareMissing_one": "Te falta {{count}} de sus países",
+    "compareMissing_other": "Te faltan {{count}} de sus países",
+    "compareAllVisited": "Has estado en todos sus países",
+    "leaderboardTitle": "Ranking entre quienes sigues",
+    "leaderboardHint": "Por países de viajes publicados.",
+    "leaderboardEmpty": "Sigue a otros viajeros para ver quién ha estado en más países.",
+    "leaderboardExplore": "Descubrir viajeros",
+    "leaderboardYou": "Tú",
+    "leaderboardError": "No se pudo cargar el ranking.",
     "declaredTitleOwn": "También he estado en",
     "declaredTitleOther": "También ha estado en",
     "declaredHint": "Países que has marcado tú. No cuentan para los sellos: para ganarlos, publica un viaje o registra un gasto o una entrada del diario allí.",

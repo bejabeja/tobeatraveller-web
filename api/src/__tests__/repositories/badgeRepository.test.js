@@ -73,6 +73,41 @@ describe('BadgeRepository', () => {
         expect(params).toEqual(['user-1', ['JP', 'TH']]);
     });
 
+    describe('getFollowingLeaderboard()', () => {
+        const row = (overrides) => ({ id: 'u2', username: 'ana', avatar_url: null, countries: '7', rank: '1', position: '1', ...overrides });
+
+        // Only public trips count: van log and diary are private, and declared
+        // countries aren't earned, so neither may rank anyone.
+        it('ranks the user and the people they follow by countries from public trips', async () => {
+            client.query.mockResolvedValueOnce({ rows: [] });
+
+            await repo.getFollowingLeaderboard('user-1', 10);
+
+            const [query, params] = client.query.mock.calls[0];
+            expect(query).toMatch(/FROM user_followers WHERE follower_id = \$1/);
+            expect(query).toMatch(/i\.is_public = true/);
+            expect(query).not.toMatch(/van_log_entries|life_diary_entries|user_declared_countries/);
+            expect(query).toMatch(/RANK\(\) OVER/);
+            expect(params).toEqual(['user-1', 10]);
+        });
+
+        it('keeps the user in the result even outside the top', async () => {
+            client.query.mockResolvedValueOnce({ rows: [] });
+
+            await repo.getFollowingLeaderboard('user-1', 10);
+
+            expect(client.query.mock.calls[0][0]).toMatch(/position <= \$2 OR id = \$1/);
+        });
+
+        it('maps the rows, with numbers as numbers', async () => {
+            client.query.mockResolvedValueOnce({ rows: [row({ avatar_url: 'a.jpg' })] });
+
+            expect(await repo.getFollowingLeaderboard('user-1', 10)).toEqual([
+                { user: { id: 'u2', username: 'ana', avatarUrl: 'a.jpg' }, countries: 7, rank: 1, position: 1 },
+            ]);
+        });
+    });
+
     // Private trips are usually plans or clones, not places the user has been.
     it('counts countries by ISO code, from public trips, van log and diary only', async () => {
         client.query.mockResolvedValueOnce({ rows: [{

@@ -131,6 +131,91 @@ $passport-ink-muted: #8a8172;
     text-decoration: none;
   }
 
+  &__compare {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: 1.25rem;
+    padding: 1rem 1.25rem;
+    border-radius: 18px;
+    background: $passport-paper;
+    border: 1px solid #efe4cf;
+    text-align: center;
+  }
+
+  &__compare-title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: $passport-navy;
+  }
+
+  &__compare-flags {
+    font-size: 1.3rem;
+    line-height: 1.4;
+  }
+
+  &__compare-missing {
+    font-size: 0.85rem;
+    color: $passport-ink-muted;
+  }
+
+  &__leaderboard {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin: 0.75rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__leaderboard-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 12px;
+    color: $passport-navy;
+    text-decoration: none;
+
+    &:hover {
+      background: rgba(217, 164, 65, 0.12);
+    }
+  }
+
+  &__leaderboard-row--me &__leaderboard-link {
+    background: rgba(217, 164, 65, 0.18);
+    font-weight: 700;
+  }
+
+  &__leaderboard-rank {
+    width: 1.5rem;
+    font-weight: 800;
+    text-align: center;
+    color: $passport-gold;
+  }
+
+  &__leaderboard-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  &__leaderboard-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__leaderboard-count {
+    width: auto;
+    font-size: 0.85rem;
+    color: $passport-ink-muted;
+  }
+
   &__section-header {
     display: flex;
     flex-wrap: wrap;

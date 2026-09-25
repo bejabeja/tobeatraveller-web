@@ -4,6 +4,7 @@ import { logger } from '../utils/logger.js';
 
 export const BADGE_EARNED_NOTIFICATION_TYPE = 'badge_earned';
 export const COUNTRY_STAMP_NOTIFICATION_TYPE = 'country_stamp';
+const LEADERBOARD_SIZE = 10;
 
 export class BadgeService {
     constructor(badgeRepository, notificationsService = null, userRepository = null) {
@@ -79,11 +80,41 @@ export class BadgeService {
             .filter(country => !shownCodes.has(country.countryCode))
             .map(country => ({ code: country.countryCode, declaredAt: country.declaredAt }));
 
-        return {
+        const passport = {
             owner: { id: owner.id, username: owner.username, avatarUrl: owner.avatarUrl },
             achievements,
             countries,
             declaredCountries,
+        };
+        // Only for a signed-in member looking at someone else's passport.
+        if (!viewerId || viewerId === profileUserId) return passport;
+        const visibleCodes = [...countries.map(country => country.code), ...declaredCountries.map(country => country.code)];
+        return { ...passport, comparison: await this._compareWithViewer(visibleCodes, viewerId) };
+    }
+
+    // The profile's visible countries against all of the viewer's own, private
+    // and declared included: only the viewer sees the result.
+    async _compareWithViewer(profileCodes, viewerId) {
+        const [viewerVisits, viewerDeclared] = await Promise.all([
+            this.badgeRepository.getCountryVisits(viewerId),
+            this.badgeRepository.findDeclaredCountries(viewerId),
+        ]);
+        const viewerCodes = new Set([
+            ...viewerVisits.map(visit => visit.code),
+            ...viewerDeclared.map(country => country.countryCode),
+        ]);
+        return {
+            inCommon: profileCodes.filter(code => viewerCodes.has(code)),
+            onlyTheirs: profileCodes.filter(code => !viewerCodes.has(code)),
+        };
+    }
+
+    // The user among the people they follow, by countries from public trips.
+    async getFollowingLeaderboard(userId) {
+        const rows = await this.badgeRepository.getFollowingLeaderboard(userId, LEADERBOARD_SIZE);
+        return {
+            entries: rows.map(({ user, countries, rank }) => ({ user, countries, rank, isMe: user.id === userId })),
+            followsAnyone: rows.some(row => row.user.id !== userId),
         };
     }
 

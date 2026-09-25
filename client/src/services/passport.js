@@ -1,1 +1,1 @@
-export { getUserPassport, updateMyDeclaredCountries } from "@tobeatraveller/shared";
+export { getMyPassportLeaderboard, getUserPassport, updateMyDeclaredCountries } from "@tobeatraveller/shared";

@@ -15,6 +15,7 @@ jest.mock("react-i18next", () => ({
 jest.mock("../../services/passport", () => ({
   getUserPassport: jest.fn(),
   updateMyDeclaredCountries: jest.fn(),
+  getMyPassportLeaderboard: jest.fn(),
 }));
 
 jest.mock("react-hot-toast", () => ({ __esModule: true, default: { error: jest.fn() } }));
@@ -29,7 +30,7 @@ jest.mock("../../components/passport/PassportShareDialog", () => ({
 }));
 
 import { fireEvent } from "@testing-library/react";
-import { getUserPassport, updateMyDeclaredCountries } from "../../services/passport";
+import { getMyPassportLeaderboard, getUserPassport, updateMyDeclaredCountries } from "../../services/passport";
 import { getPendingDeclaredCountries } from "../../utils/pendingDeclaredCountries";
 import { trackEvent } from "../../utils/analytics";
 
@@ -57,6 +58,7 @@ describe("Passport page", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
+    getMyPassportLeaderboard.mockResolvedValue({ entries: [], followsAnyone: false });
     mockAuthUser = { id: "user-1" };
   });
 
@@ -222,6 +224,102 @@ describe("Passport page", () => {
     expect(save).toHaveAttribute("href", "/register?source=passport&ref=jane");
     fireEvent.click(save);
     expect(trackEvent).toHaveBeenCalledWith("passport_countries_declared", { stage: "anonymous", count: 2 });
+  });
+
+  it("shows a member the countries they share with someone and how many of theirs they're missing", async () => {
+    mockAuthUser = { id: "someone-else" };
+    getUserPassport.mockResolvedValue({ ...PASSPORT, comparison: { inCommon: ["ES", "FR"], onlyTheirs: ["IT"] } });
+
+    renderPassport();
+
+    expect(await screen.findByText(/passport.compareInCommon/)).toBeInTheDocument();
+    expect(screen.getByText("🇪🇸 🇫🇷")).toBeInTheDocument();
+    expect(screen.getByText("passport.compareMissing")).toBeInTheDocument();
+  });
+
+  // "You've been to all of their countries" would be nonsense with none.
+  it("does not compare when the other person has no countries to compare", async () => {
+    mockAuthUser = { id: "someone-else" };
+    getUserPassport.mockResolvedValue({ ...PASSPORT, comparison: { inCommon: [], onlyTheirs: [] } });
+
+    renderPassport();
+
+    await screen.findByText("passport.ofUser:jane");
+    expect(screen.queryByText(/passport.compare/)).not.toBeInTheDocument();
+  });
+
+  it("does not compare on the owner's own passport", async () => {
+    getUserPassport.mockResolvedValue(PASSPORT);
+
+    renderPassport();
+
+    await screen.findByText("badges.explorer.name");
+    expect(screen.queryByText(/passport.compare/)).not.toBeInTheDocument();
+  });
+
+  it("ranks the owner among the people they follow, each linking to their passport", async () => {
+    getUserPassport.mockResolvedValue(PASSPORT);
+    getMyPassportLeaderboard.mockResolvedValue({
+      followsAnyone: true,
+      entries: [
+        { user: { id: "ana", username: "ana", avatarUrl: null }, countries: 9, rank: 1, isMe: false },
+        { user: { id: "user-1", username: "jane", avatarUrl: null }, countries: 3, rank: 2, isMe: true },
+      ],
+    });
+
+    renderPassport();
+
+    expect(await screen.findByText("@ana")).toBeInTheDocument();
+    expect(screen.getByText("passport.leaderboardYou")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /@ana/ })).toHaveAttribute("href", "/profile/ana/passport");
+  });
+
+  // It's the page they're already on.
+  it("does not link the owner's own row", async () => {
+    getUserPassport.mockResolvedValue(PASSPORT);
+    getMyPassportLeaderboard.mockResolvedValue({
+      followsAnyone: true,
+      entries: [
+        { user: { id: "ana", username: "ana", avatarUrl: null }, countries: 9, rank: 1, isMe: false },
+        { user: { id: "user-1", username: "jane", avatarUrl: null }, countries: 3, rank: 2, isMe: true },
+      ],
+    });
+
+    renderPassport();
+
+    expect(await screen.findByText("passport.leaderboardYou")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /passport.leaderboardYou/ })).not.toBeInTheDocument();
+  });
+
+  it("records a visit to someone's passport from the ranking", async () => {
+    getUserPassport.mockResolvedValue(PASSPORT);
+    getMyPassportLeaderboard.mockResolvedValue({
+      followsAnyone: true,
+      entries: [{ user: { id: "ana", username: "ana", avatarUrl: null }, countries: 9, rank: 1, isMe: false }],
+    });
+    renderPassport();
+
+    fireEvent.click(await screen.findByRole("link", { name: /@ana/ }));
+
+    expect(trackEvent).toHaveBeenCalledWith("passport_leaderboard_clicked", { rank: 1 });
+  });
+
+  it("invites the owner to follow travellers when they follow no one", async () => {
+    getUserPassport.mockResolvedValue(PASSPORT);
+
+    renderPassport();
+
+    expect(await screen.findByRole("link", { name: "passport.leaderboardExplore" })).toHaveAttribute("href", "/community");
+  });
+
+  it("does not load the ranking on someone else's passport", async () => {
+    mockAuthUser = { id: "someone-else" };
+    getUserPassport.mockResolvedValue(PASSPORT);
+
+    renderPassport();
+
+    await screen.findByText("passport.ofUser:jane");
+    expect(getMyPassportLeaderboard).not.toHaveBeenCalled();
   });
 
   it("shows an error message when the passport cannot be loaded", async () => {

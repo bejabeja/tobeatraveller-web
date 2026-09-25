@@ -12,10 +12,13 @@ import CountryPickerDialog from "../../components/passport/CountryPickerDialog";
 import PassportShareDialog from "../../components/passport/PassportShareDialog";
 import { updateMyDeclaredCountries } from "../../services/passport";
 import { getPendingDeclaredCountries, setPendingDeclaredCountries } from "../../utils/pendingDeclaredCountries";
+import { usePassportLeaderboard } from "../../hooks/usePassportLeaderboard";
 import { useUserPassport } from "../../hooks/useUserPassport";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { selectAuthUser } from "../../store/auth/authSelectors";
 import { trackEvent } from "../../utils/analytics";
+import { optimizedCloudinaryUrl } from "../../utils/cloudinaryUrl";
+import { generateAvatar } from "../../utils/constants/constants";
 import { ANALYTICS_EVENTS, PASSPORT_SHARE_SOURCES, PASSPORT_VIEWERS } from "../../utils/analyticsEvents";
 import "./Passport.scss";
 
@@ -111,6 +114,88 @@ const DeclaredCountriesSection = ({ codes, isOwner, onEdit, language, t }) => {
         <ul className="passport__countries">
           {codes.map(code => <DeclaredCountryStamp key={code} code={code} language={language} t={t} />)}
         </ul>
+      )}
+    </section>
+  );
+};
+
+const MAX_COMMON_FLAGS = 12;
+const LEADERBOARD_AVATAR_WIDTH = 80;
+
+// For a member looking at someone else's passport: what they share, and how
+// many of theirs are still to visit, as a friendly challenge.
+const CountriesInCommon = ({ comparison, t }) => {
+  const { inCommon, onlyTheirs } = comparison;
+  // Nothing to compare against: "you've been to all of theirs" would be nonsense.
+  if (inCommon.length === 0 && onlyTheirs.length === 0) return null;
+  return (
+    <aside className="passport__compare">
+      <strong className="passport__compare-title">
+        🤝 {inCommon.length > 0 ? t("passport.compareInCommon", { count: inCommon.length }) : t("passport.compareNone")}
+      </strong>
+      {inCommon.length > 0 && (
+        <span className="passport__compare-flags" aria-hidden="true">
+          {inCommon.slice(0, MAX_COMMON_FLAGS).map(countryFlag).join(" ")}
+          {inCommon.length > MAX_COMMON_FLAGS && ` ${t("passport.moreCountries", { count: inCommon.length - MAX_COMMON_FLAGS })}`}
+        </span>
+      )}
+      <span className="passport__compare-missing">
+        {onlyTheirs.length > 0 ? t("passport.compareMissing", { count: onlyTheirs.length }) : t("passport.compareAllVisited")}
+      </span>
+    </aside>
+  );
+};
+
+// The owner among the people they follow, by countries from public trips.
+const PassportLeaderboard = ({ t }) => {
+  const { leaderboard, loading, error } = usePassportLeaderboard(true);
+  if (loading) return null;
+
+  return (
+    <section className="passport__section" aria-labelledby="passport-leaderboard">
+      <h2 id="passport-leaderboard" className="passport__section-title">{t("passport.leaderboardTitle")}</h2>
+      <p className="passport__section-hint">{t("passport.leaderboardHint")}</p>
+      {error && <p className="passport__empty">{t("passport.leaderboardError")}</p>}
+      {leaderboard && !leaderboard.followsAnyone && (
+        <p className="passport__empty">
+          {t("passport.leaderboardEmpty")}{" "}
+          <Link to="/community">{t("passport.leaderboardExplore")}</Link>
+        </p>
+      )}
+      {leaderboard?.followsAnyone && (
+        <ol className="passport__leaderboard">
+          {leaderboard.entries.map(({ user, countries, rank, isMe }) => {
+            const content = (
+              <>
+                <span className="passport__leaderboard-rank">{rank}</span>
+                <img
+                  className="passport__leaderboard-avatar"
+                  src={optimizedCloudinaryUrl(user.avatarUrl, { width: LEADERBOARD_AVATAR_WIDTH }) || generateAvatar(user.username)}
+                  alt=""
+                  loading="lazy"
+                />
+                <span className="passport__leaderboard-name">{isMe ? t("passport.leaderboardYou") : `@${user.username}`}</span>
+                <span className="passport__leaderboard-count">{t("passport.countriesCount", { count: countries })}</span>
+              </>
+            );
+            return (
+              <li key={user.id} className={`passport__leaderboard-row${isMe ? " passport__leaderboard-row--me" : ""}`}>
+                {/* Their own row isn't a link: it's the page they're on. */}
+                {isMe ? (
+                  <div className="passport__leaderboard-link">{content}</div>
+                ) : (
+                  <Link
+                    to={`/profile/${user.id}/passport`}
+                    className="passport__leaderboard-link"
+                    onClick={() => trackEvent(ANALYTICS_EVENTS.PASSPORT_LEADERBOARD_CLICKED, { rank })}
+                  >
+                    {content}
+                  </Link>
+                )}
+              </li>
+            );
+          })}
+        </ol>
       )}
     </section>
   );
@@ -280,6 +365,7 @@ const Passport = () => {
         </p>
       </header>
 
+      {passport.comparison && <CountriesInCommon comparison={passport.comparison} t={t} />}
       {!isOwner && <PassportInvite authUserId={authUser?.id} referralCode={referralCode} t={t} />}
 
       <section className="passport__section" aria-labelledby="passport-countries">
@@ -303,6 +389,8 @@ const Passport = () => {
         language={language}
         t={t}
       />
+
+      {isOwner && <PassportLeaderboard t={t} />}
 
       <section className="passport__section" aria-labelledby="passport-achievements">
         <h2 id="passport-achievements" className="passport__section-title">{t("passport.achievements")}</h2>
