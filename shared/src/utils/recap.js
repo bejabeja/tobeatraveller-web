@@ -5,41 +5,41 @@ const DECEMBER = 11;
 const JANUARY = 0;
 
 export const recapYear = (now = new Date()) => {
-  const month = now.getUTCMonth();
-  if (month === DECEMBER) return now.getUTCFullYear();
-  if (month === JANUARY) return now.getUTCFullYear() - 1;
-  return null;
+    const month = now.getUTCMonth();
+    if (month === DECEMBER) return now.getUTCFullYear();
+    if (month === JANUARY) return now.getUTCFullYear() - 1;
+    return null;
 };
 
 // How long each slide stays before moving on by itself, like other stories.
 export const RECAP_SLIDE_DURATION_MS = 5000;
 
 export const RECAP_SLIDES = Object.freeze({
-  COVER: 'cover',
-  COUNTRIES: 'countries',
-  DAYS: 'days',
-  TRIPS: 'trips',
-  VAN: 'van',
-  DIARY: 'diary',
-  BADGES: 'badges',
-  SHARE: 'share',
-  EMPTY: 'empty',
+    COVER: 'cover',
+    COUNTRIES: 'countries',
+    DAYS: 'days',
+    TRIPS: 'trips',
+    VAN: 'van',
+    DIARY: 'diary',
+    BADGES: 'badges',
+    SHARE: 'share',
+    EMPTY: 'empty',
 });
 
 // The slides a recap has: one per part of the year with something in it,
 // between the cover and the share slide.
 export const recapSlides = (recap) => {
-  if (!recap?.hasActivity) return [RECAP_SLIDES.EMPTY];
-  return [
-    RECAP_SLIDES.COVER,
-    recap.countries.codes.length > 0 && RECAP_SLIDES.COUNTRIES,
-    recap.daysOnRoad > 0 && RECAP_SLIDES.DAYS,
-    recap.trips.count > 0 && RECAP_SLIDES.TRIPS,
-    (recap.vanLog.nights > 0 || recap.vanLog.refuels > 0) && RECAP_SLIDES.VAN,
-    recap.diary.entries > 0 && RECAP_SLIDES.DIARY,
-    recap.badges.length > 0 && RECAP_SLIDES.BADGES,
-    RECAP_SLIDES.SHARE,
-  ].filter(Boolean);
+    if (!recap?.hasActivity) return [RECAP_SLIDES.EMPTY];
+    return [
+        RECAP_SLIDES.COVER,
+        recap.countries.codes.length > 0 && RECAP_SLIDES.COUNTRIES,
+        recap.daysOnRoad > 0 && RECAP_SLIDES.DAYS,
+        recap.trips.count > 0 && RECAP_SLIDES.TRIPS,
+        (recap.vanLog.nights > 0 || recap.vanLog.refuels > 0) && RECAP_SLIDES.VAN,
+        recap.diary.entries > 0 && RECAP_SLIDES.DIARY,
+        recap.badges.length > 0 && RECAP_SLIDES.BADGES,
+        RECAP_SLIDES.SHARE,
+    ].filter(Boolean);
 };
 
 export const MAX_RECAP_SHARE_FLAGS = 12;
@@ -47,13 +47,13 @@ export const MAX_RECAP_SHARE_FLAGS = 12;
 // What the recap's share image shows: figures only, never diary text or
 // place names (the recap itself stays private).
 export const summarizeRecapForSharing = (recap, username) => ({
-  username,
-  year: recap.year,
-  countryCount: recap.countries.codes.length,
-  newCountryCount: recap.countries.newCodes.length,
-  flagCodes: recap.countries.codes.slice(0, MAX_RECAP_SHARE_FLAGS),
-  hiddenCountries: Math.max(recap.countries.codes.length - MAX_RECAP_SHARE_FLAGS, 0),
-  daysOnRoad: recap.daysOnRoad,
-  nights: recap.vanLog.nights,
-  stamps: recap.badges.length,
+    username,
+    year: recap.year,
+    countryCount: recap.countries.codes.length,
+    newCountryCount: recap.countries.newCodes.length,
+    flagCodes: recap.countries.codes.slice(0, MAX_RECAP_SHARE_FLAGS),
+    hiddenCountries: Math.max(recap.countries.codes.length - MAX_RECAP_SHARE_FLAGS, 0),
+    daysOnRoad: recap.daysOnRoad,
+    nights: recap.vanLog.nights,
+    stamps: recap.badges.length,
 });
