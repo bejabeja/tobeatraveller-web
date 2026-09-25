@@ -22,25 +22,31 @@ const NotificationItem = ({ notification: n, onClick }) => {
     badge_earned: () => <>{BADGE_EMOJI[n.badgeId]} {t("notifications.badgeEarned")}<strong>{t(`badges.${n.badgeId}.name`)}</strong></>,
     recap_ready: () => <>{t("notifications.recapReady")}<strong>{t("notifications.recapReadyCta")}</strong></>,
     country_stamp: () => <>{t("notifications.countryStamp")}<strong>{countryFlag(n.countryCode)} {countryName(n.countryCode, i18n.language)}</strong></>,
+    friend_stamp: () => (n.countryCode
+      ? <><strong>@{n.actor?.username}</strong>{others}{verb("friendAddedCountry")}<strong>{countryFlag(n.countryCode)} {countryName(n.countryCode, i18n.language)}</strong></>
+      : <><strong>@{n.actor?.username}</strong>{others}{verb("friendEarnedBadge")}<strong>{BADGE_EMOJI[n.badgeId]} {t(`badges.${n.badgeId}.name`)}</strong></>),
   };
   const label = TYPE_LABELS[n.type]?.();
 
   // A badge or country notification's actor is the user who earned it, and
   // it opens their passport ready to share: that's when they most want to.
+  // A friend's one opens that friend's passport instead.
   const href = n.type === "follow"
     ? `/profile/${n.actor?.id}`
-    : n.type === "badge_earned" || n.type === "country_stamp"
-      ? passportSharePath(n.actor?.id, {
-        withAchievements: n.type === "badge_earned",
-        moment: n.type === "badge_earned" ? { badgeId: n.badgeId } : { countryCode: n.countryCode },
-      })
-      : n.type === "recap_ready"
-        ? recapPath(RECAP_SOURCES.NOTIFICATION)
-        : n.type === "referral_reward"
-          ? "/invite"
-          : n.itinerary?.id
-            ? `/itinerary/${n.itinerary.id}${n.type === "comment" && n.commentId ? `#comment-${n.commentId}` : ""}`
-            : "#";
+    : n.type === "friend_stamp"
+      ? `/profile/${n.actor?.id}/passport`
+      : n.type === "badge_earned" || n.type === "country_stamp"
+        ? passportSharePath(n.actor?.id, {
+          withAchievements: n.type === "badge_earned",
+          moment: n.type === "badge_earned" ? { badgeId: n.badgeId } : { countryCode: n.countryCode },
+        })
+        : n.type === "recap_ready"
+          ? recapPath(RECAP_SOURCES.NOTIFICATION)
+          : n.type === "referral_reward"
+            ? "/invite"
+            : n.itinerary?.id
+              ? `/itinerary/${n.itinerary.id}${n.type === "comment" && n.commentId ? `#comment-${n.commentId}` : ""}`
+              : "#";
 
   return (
     <Link to={href} className={`notif-item${n.isRead ? "" : " notif-item--unread"}`} onClick={onClick}>

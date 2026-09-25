@@ -38,6 +38,10 @@ const PUSH_MESSAGES = {
             title: 'New country in your passport',
             body: `${countryFlag(countryCode)} ${countryNameIn('en', countryCode)} is in your passport now. Tap to share it.`,
         }),
+        // Badge names only exist in the apps' translations, so a badge isn't named.
+        friend_stamp: ({ actorUsername, countryCode }) => (countryCode
+            ? { title: 'New country', body: `${actorUsername} added ${countryFlag(countryCode)} ${countryNameIn('en', countryCode)} to their passport` }
+            : { title: 'New stamp', body: `${actorUsername} earned a new stamp in their passport` }),
     },
     es: {
         comment: ({ actorUsername, itineraryTitle }) => ({
@@ -68,6 +72,9 @@ const PUSH_MESSAGES = {
             title: 'Nuevo país en tu pasaporte',
             body: `${countryFlag(countryCode)} ${countryNameIn('es', countryCode)} ya está en tu pasaporte. Tócalo para compartirlo.`,
         }),
+        friend_stamp: ({ actorUsername, countryCode }) => (countryCode
+            ? { title: 'Nuevo país', body: `${actorUsername} ha añadido ${countryFlag(countryCode)} ${countryNameIn('es', countryCode)} a su pasaporte` }
+            : { title: 'Nuevo sello', body: `${actorUsername} ha conseguido un sello nuevo en su pasaporte` }),
     },
 };
 

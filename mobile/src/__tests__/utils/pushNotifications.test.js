@@ -168,6 +168,12 @@ describe('routeForPushData', () => {
       .toEqual({ name: 'Passport', params: { userId: 'u1', share: 'countries' } });
   });
 
+  // Their passport, where the countries in common and the ranking are.
+  it("opens the passport of the friend who earned a new stamp", () => {
+    expect(routeForPushData({ type: 'friend_stamp', actorId: 'ana', countryCode: 'PT' }))
+      .toEqual({ name: 'Passport', params: { userId: 'ana' } });
+  });
+
   it('ignores a push without a known destination', () => {
     expect(routeForPushData({})).toBeNull();
     expect(routeForPushData(undefined)).toBeNull();

@@ -756,7 +756,11 @@
     "referralRewardPrefix": "Tú y",
     "referralRewardMiddle": "y tú",
     "referralRewardSuffix": "habéis ganado 1 mes de Premium",
-    "badgeEarned": "Has conseguido el badge "
+    "badgeEarned": "Has conseguido el badge ",
+    "friendAddedCountry": " ha añadido a su pasaporte ",
+    "friendAddedCountryPlural": " han añadido a su pasaporte ",
+    "friendEarnedBadge": " ha conseguido el sello ",
+    "friendEarnedBadgePlural": " han conseguido el sello "
   },
   "comments": {
     "title": "Comentarios",
@@ -967,6 +971,7 @@
     "notifyOnComment": "Comentarios en tus itinerarios",
     "notifyOnLike": "Me gusta en tus itinerarios",
     "notifyOnFollow": "Nuevos seguidores",
+    "notifyOnFriendStamps": "Sellos y países de gente que sigo",
     "yourData": "Tus datos",
     "legal": "Legal",
     "dangerZone": "⚠️ Zona de peligro"
@@ -1196,7 +1201,7 @@
       "<strong>Datos de perfil:</strong> nombre visible, biografía, ubicación, foto de perfil y el texto \"sobre mí\" que proporciones opcionalmente.",
       "<strong>Contenido que creas:</strong> itinerarios de viaje (título, destino, fechas, lugares, presupuesto, fotos), comentarios, me gusta, viajes guardados, gastos del registro de la furgoneta y entradas del diario.",
       "<strong>Datos sociales:</strong> a quién sigues y quién te sigue.",
-      "<strong>Datos del pasaporte:</strong> los sellos que consigues y los países en los que has estado, calculados a partir de tus viajes (ya empezados, sin contar los que has clonado de otra persona sin cambiar sus fechas), gastos y entradas del diario, además de los países que marques tú a mano. Los países de tus viajes publicados y los que marques a mano son públicos en tu pasaporte; los que salen de tus viajes privados, tus gastos o tu diario solo los ves tú. Puedes editar los países marcados en cualquier momento.",
+      "<strong>Datos del pasaporte:</strong> los sellos que consigues y los países en los que has estado, calculados a partir de tus viajes (ya empezados, sin contar los que has clonado de otra persona sin cambiar sus fechas), gastos y entradas del diario, además de los países que marques tú a mano. Los países de tus viajes publicados y los que marques a mano son públicos en tu pasaporte; los que salen de tus viajes privados, tus gastos o tu diario solo los ves tú. Quienes te siguen pueden recibir un aviso cuando consigues un país o sello de los que ven en tu pasaporte, nunca de los privados. Puedes editar los países marcados en cualquier momento.",
       "<strong>Datos técnicos:</strong> tokens de sesión usados para mantener tu sesión iniciada.",
       "<strong>Datos del dispositivo (solo app móvil):</strong> si permites las notificaciones, guardamos un token push que identifica tu dispositivo ante el servicio de notificaciones, la plataforma (iOS/Android) y su idioma. Se borra al cerrar sesión, cuando el dispositivo deja de aceptar notificaciones o tras 90 días sin abrir la app.",
       "<strong>Datos de registro:</strong> cuando creás una cuenta, registramos el país desde el que llegó la solicitud (a partir de tu dirección IP, que no guardamos de otra forma) y el tipo de navegador/dispositivo. Esto nos ayuda a entender de dónde crece nuestra comunidad y no requiere consentimiento de cookies, porque se lee directamente de la solicitud de registro y no se guarda nada en tu dispositivo.",

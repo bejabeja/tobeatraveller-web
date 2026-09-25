@@ -231,3 +231,65 @@ describe('NotificationsService.getPreferences() / updatePreferences()', () => {
         expect(preferences.notifyOnComment).toBe(false);
     });
 });
+
+describe('NotificationsService.notifyFollowers()', () => {
+    const PREFERENCES = { notifyOnComment: true, notifyOnLike: true, notifyOnFollow: true, notifyOnFriendStamps: true, pushEnabled: false };
+    let service;
+    let notificationsRepository;
+
+    beforeEach(() => {
+        notificationsRepository = {
+            findFollowerIds: vi.fn().mockResolvedValue(['f1', 'f2']),
+            getPreferences: vi.fn().mockResolvedValue(PREFERENCES),
+            create: vi.fn().mockResolvedValue({ grouped: false }),
+        };
+        service = new NotificationsService(notificationsRepository);
+    });
+
+    it("tells each of the user's followers, as that user", async () => {
+        await service.notifyFollowers({ actorId: 'ana', type: 'friend_stamp', countryCode: 'PT' });
+
+        expect(notificationsRepository.findFollowerIds).toHaveBeenCalledWith('ana');
+        expect(notificationsRepository.create).toHaveBeenCalledWith(expect.objectContaining({ userId: 'f1', actorId: 'ana', type: 'friend_stamp', countryCode: 'PT' }));
+        expect(notificationsRepository.create).toHaveBeenCalledWith(expect.objectContaining({ userId: 'f2', actorId: 'ana', type: 'friend_stamp', countryCode: 'PT' }));
+    });
+
+    it("respects a follower who turned these notices off", async () => {
+        notificationsRepository.getPreferences.mockImplementation(async (userId) => (
+            userId === 'f1' ? { ...PREFERENCES, notifyOnFriendStamps: false } : PREFERENCES
+        ));
+
+        await service.notifyFollowers({ actorId: 'ana', type: 'friend_stamp', countryCode: 'PT' });
+
+        expect(notificationsRepository.create).toHaveBeenCalledTimes(1);
+        expect(notificationsRepository.create).toHaveBeenCalledWith(expect.objectContaining({ userId: 'f2' }));
+    });
+
+    it("still tells the rest when one of them fails", async () => {
+        notificationsRepository.create.mockRejectedValueOnce(new Error('db down')).mockResolvedValue({ grouped: false });
+
+        await service.notifyFollowers({ actorId: 'ana', type: 'friend_stamp', countryCode: 'PT' });
+
+        expect(notificationsRepository.create).toHaveBeenCalledTimes(2);
+    });
+
+    // A popular user can have thousands of followers.
+    it('tells them a batch at a time, not all at once', async () => {
+        const followers = Array.from({ length: 45 }, (_, index) => `f${index}`);
+        notificationsRepository.findFollowerIds.mockResolvedValue(followers);
+        let inFlight = 0;
+        let maxInFlight = 0;
+        notificationsRepository.create.mockImplementation(async () => {
+            inFlight += 1;
+            maxInFlight = Math.max(maxInFlight, inFlight);
+            await new Promise(resolve => setTimeout(resolve, 1));
+            inFlight -= 1;
+            return { grouped: false };
+        });
+
+        await service.notifyFollowers({ actorId: 'ana', type: 'friend_stamp', badgeId: 'adventurer' });
+
+        expect(notificationsRepository.create).toHaveBeenCalledTimes(45);
+        expect(maxInFlight).toBeLessThan(45);
+    });
+});

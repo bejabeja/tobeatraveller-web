@@ -15,7 +15,7 @@ import {
 import { UserRowSkeleton } from '../../components/Skeleton';
 import { shadow } from '../../utils/styles';
 
-const TYPE_ICON = { follow: '👤', like: '❤️', comment: '💬', referral_reward: '🎁', badge_earned: '🏅', country_stamp: '🛂', recap_ready: '🎉' };
+const TYPE_ICON = { follow: '👤', like: '❤️', comment: '💬', referral_reward: '🎁', badge_earned: '🏅', country_stamp: '🛂', recap_ready: '🎉', friend_stamp: '🛂' };
 
 const NotificationsScreen = ({ navigation }) => {
   const { t, i18n } = useTranslation();
@@ -47,6 +47,7 @@ const NotificationsScreen = ({ navigation }) => {
     // Opens the card of that badge or country ready to share: the moment they most want to show it off.
     else if (n.type === 'badge_earned') navigation.navigate('Passport', { userId: n.actor?.id, share: PASSPORT_SHARE_MOMENT, badge: n.badgeId });
     else if (n.type === 'country_stamp') navigation.navigate('Passport', { userId: n.actor?.id, share: PASSPORT_SHARE_MOMENT, country: n.countryCode });
+    else if (n.type === 'friend_stamp') navigation.navigate('Passport', { userId: n.actor?.id });
     else if (n.type === 'recap_ready') navigation.navigate('Recap', { from: RECAP_SOURCES.NOTIFICATION });
     else if (n.type === 'referral_reward') navigation.navigate('Referral');
     else if (n.itinerary?.id) {
@@ -135,6 +136,9 @@ const NotificationsScreen = ({ navigation }) => {
                       {n.type === 'like' && <Text>{t(`notifications.liked${n.count > 1 ? 'Plural' : ''}`)}<Text style={styles.italic}>{n.itinerary?.title}</Text></Text>}
                       {n.type === 'comment' && <Text>{t(`notifications.commented${n.count > 1 ? 'Plural' : ''}`)}<Text style={styles.italic}>{n.itinerary?.title}</Text></Text>}
                       {n.type === 'referral_reward' && <Text> {t('notifications.referralRewardMiddle')} {t('notifications.referralRewardSuffix')}</Text>}
+                      {n.type === 'friend_stamp' && (n.countryCode
+                        ? <Text>{t(`notifications.friendAddedCountry${n.count > 1 ? 'Plural' : ''}`)}<Text style={styles.bold}>{countryFlag(n.countryCode)} {countryName(n.countryCode, i18n.language)}</Text></Text>
+                        : <Text>{t(`notifications.friendEarnedBadge${n.count > 1 ? 'Plural' : ''}`)}<Text style={styles.bold}>{BADGE_EMOJI[n.badgeId]} {t(`badges.${n.badgeId}.name`)}</Text></Text>)}
                     </>
                   )}
                 </Text>

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-    BADGE_EARNED_NOTIFICATION_TYPE, BadgeService, COUNTRY_STAMP_NOTIFICATION_TYPE,
+    BADGE_EARNED_NOTIFICATION_TYPE, BadgeService, COUNTRY_STAMP_NOTIFICATION_TYPE, FRIEND_STAMP_NOTIFICATION_TYPE,
 } from '../../services/badgeService.js';
 
 const metrics = (overrides = {}) => ({
@@ -26,9 +26,123 @@ describe('BadgeService', () => {
             replaceDeclaredCountries: vi.fn().mockResolvedValue(),
             getFollowingLeaderboard: vi.fn().mockResolvedValue([]),
         };
-        notificationsService = { createNotification: vi.fn().mockResolvedValue() };
+        notificationsService = { createNotification: vi.fn().mockResolvedValue(), notifyFollowers: vi.fn().mockResolvedValue() };
         userRepository = { getUserById: vi.fn().mockResolvedValue({ id: 'user-1', username: 'jane', avatarUrl: null, email: 'jane@example.com' }) };
         service = new BadgeService(badgeRepository, notificationsService, userRepository);
+    });
+
+    // Their followers hear about it too: the moment with the most pull in a
+    // social app. Only what others can see on the passport, and one notice
+    // per evaluation however many arrive at once.
+    describe('telling followers', () => {
+        const publicVisit = (code) => ({ code, firstVisitedOn: '2026-03-01', firstPublicVisitedOn: '2026-03-01' });
+        const privateVisit = (code) => ({ code, firstVisitedOn: '2026-03-01', firstPublicVisitedOn: null });
+
+        it('announces a new country others see on the passport', async () => {
+            badgeRepository.getCountryVisits.mockResolvedValue([publicVisit('PT')]);
+            badgeRepository.getMetrics.mockResolvedValue(metrics({ countries: 1, publicCountries: 1 }));
+            badgeRepository.findEarnedByUserId.mockResolvedValue([{ badgeId: 'countries_1', earnedAt: new Date() }]);
+
+            await service.evaluateUser('user-1');
+
+            expect(notificationsService.notifyFollowers).toHaveBeenCalledWith({
+                actorId: 'user-1', type: FRIEND_STAMP_NOTIFICATION_TYPE, countryCode: 'PT',
+            });
+        });
+
+        it('keeps quiet about a country only the user sees (from expenses, diary or a private trip)', async () => {
+            badgeRepository.getCountryVisits.mockResolvedValue([privateVisit('PT')]);
+            badgeRepository.getMetrics.mockResolvedValue(metrics({ countries: 1 }));
+
+            await service.evaluateUser('user-1');
+
+            expect(notificationsService.notifyFollowers).not.toHaveBeenCalled();
+        });
+
+        // A new place says more to friends than a badge reached along the way.
+        it('announces the new country rather than the badge it brought', async () => {
+            badgeRepository.getCountryVisits.mockResolvedValue([publicVisit('PT')]);
+            badgeRepository.getMetrics.mockResolvedValue(metrics({ countries: 1, publicCountries: 1 }));
+
+            await service.evaluateUser('user-1');
+
+            expect(notificationsService.notifyFollowers).toHaveBeenCalledTimes(1);
+            expect(notificationsService.notifyFollowers).toHaveBeenCalledWith(expect.objectContaining({ countryCode: 'PT' }));
+        });
+
+        it('announces only one country when several arrive at once', async () => {
+            badgeRepository.getCountryVisits.mockResolvedValue([publicVisit('PT'), publicVisit('ES'), publicVisit('FR')]);
+            badgeRepository.getMetrics.mockResolvedValue(metrics({ countries: 3, publicCountries: 3 }));
+            badgeRepository.findEarnedByUserId.mockResolvedValue([{ badgeId: 'countries_1', earnedAt: new Date() }]);
+
+            await service.evaluateUser('user-1');
+
+            expect(notificationsService.notifyFollowers).toHaveBeenCalledTimes(1);
+        });
+
+        it('announces the biggest new badge others see, when there is no new country', async () => {
+            badgeRepository.getMetrics.mockResolvedValue(metrics({ publicItineraries: 5 }));
+
+            await service.evaluateUser('user-1');
+
+            expect(notificationsService.notifyFollowers).toHaveBeenCalledWith({
+                actorId: 'user-1', type: FRIEND_STAMP_NOTIFICATION_TYPE, badgeId: 'adventurer',
+            });
+        });
+
+        // A countries badge reached through van log countries shows locked to others.
+        it('keeps quiet about a badge others see locked', async () => {
+            badgeRepository.getMetrics.mockResolvedValue(metrics({ vanLogEntries: 1, countries: 1, publicCountries: 0 }));
+            badgeRepository.getCountryVisits.mockResolvedValue([privateVisit('PT')]);
+
+            await service.evaluateUser('user-1');
+
+            expect(notificationsService.notifyFollowers).not.toHaveBeenCalled();
+        });
+
+        // The daily job runs on Vercel: once it returns, unfinished work may be cut.
+        it('waits until followers are told when evaluating on its own (the daily job)', async () => {
+            badgeRepository.getCountryVisits.mockResolvedValue([publicVisit('PT')]);
+            badgeRepository.getMetrics.mockResolvedValue(metrics({ countries: 1, publicCountries: 1 }));
+            let finishTelling;
+            notificationsService.notifyFollowers.mockReturnValue(new Promise(resolve => { finishTelling = resolve; }));
+            let evaluated = false;
+
+            const evaluation = service.evaluateUser('user-1').then(() => { evaluated = true; });
+            await new Promise(resolve => setTimeout(resolve, 0));
+            expect(evaluated).toBe(false);
+
+            finishTelling();
+            await evaluation;
+            expect(evaluated).toBe(true);
+        });
+
+        // Opening one's own passport mustn't wait for every follower.
+        it('does not hold up the owner opening their passport', async () => {
+            badgeRepository.getCountryVisits.mockResolvedValue([publicVisit('PT')]);
+            badgeRepository.getMetrics.mockResolvedValue(metrics({ countries: 1, publicCountries: 1 }));
+            notificationsService.notifyFollowers.mockReturnValue(new Promise(() => {}));
+
+            await expect(service.getPassport('user-1', 'user-1')).resolves.toBeDefined();
+            expect(notificationsService.notifyFollowers).toHaveBeenCalled();
+        });
+
+        it('does not fail the evaluation when telling followers fails', async () => {
+            badgeRepository.getCountryVisits.mockResolvedValue([publicVisit('PT')]);
+            badgeRepository.getMetrics.mockResolvedValue(metrics({ countries: 1, publicCountries: 1 }));
+            notificationsService.notifyFollowers.mockRejectedValue(new Error('db down'));
+
+            await expect(service.evaluateUser('user-1')).resolves.toBeDefined();
+        });
+
+        it('tells nobody when granting silently', async () => {
+            badgeRepository.getCountryVisits.mockResolvedValue([publicVisit('PT')]);
+            badgeRepository.getMetrics.mockResolvedValue(metrics({ countries: 1, publicCountries: 1 }));
+
+            await service.evaluateUser('user-1', { notify: false });
+
+            expect(notificationsService.notifyFollowers).not.toHaveBeenCalled();
+        });
     });
 
     describe('evaluateUser()', () => {

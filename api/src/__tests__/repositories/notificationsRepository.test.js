@@ -172,17 +172,17 @@ describe('NotificationsRepository.getPreferences()', () => {
 
         const preferences = await repo.getPreferences('u1');
 
-        expect(preferences).toEqual({ notifyOnComment: true, notifyOnLike: true, notifyOnFollow: true, pushEnabled: true });
+        expect(preferences).toEqual({ notifyOnComment: true, notifyOnLike: true, notifyOnFollow: true, notifyOnFriendStamps: true, pushEnabled: true });
     });
 
     it('maps the stored row to camelCase', async () => {
         client.query.mockResolvedValueOnce({
-            rows: [{ notify_on_comment: false, notify_on_like: true, notify_on_follow: false, push_enabled: false }],
+            rows: [{ notify_on_comment: false, notify_on_like: true, notify_on_follow: false, notify_on_friend_stamps: false, push_enabled: false }],
         });
 
         const preferences = await repo.getPreferences('u1');
 
-        expect(preferences).toEqual({ notifyOnComment: false, notifyOnLike: true, notifyOnFollow: false, pushEnabled: false });
+        expect(preferences).toEqual({ notifyOnComment: false, notifyOnLike: true, notifyOnFollow: false, notifyOnFriendStamps: false, pushEnabled: false });
     });
 });
 
@@ -202,16 +202,33 @@ describe('NotificationsRepository.upsertPreferences()', () => {
 
         const [query, params] = client.query.mock.calls[0];
         expect(query).toMatch(/ON CONFLICT \(user_id\) DO UPDATE/);
-        expect(params).toEqual(['u1', false, null, null, null]);
+        expect(params).toEqual(['u1', false, null, null, null, null]);
     });
 
     it('returns the resulting preferences mapped to camelCase', async () => {
         client.query.mockResolvedValueOnce({
-            rows: [{ notify_on_comment: true, notify_on_like: false, notify_on_follow: true, push_enabled: false }],
+            rows: [{ notify_on_comment: true, notify_on_like: false, notify_on_follow: true, notify_on_friend_stamps: true, push_enabled: false }],
         });
 
         const preferences = await repo.upsertPreferences('u1', { notifyOnLike: false });
 
-        expect(preferences).toEqual({ notifyOnComment: true, notifyOnLike: false, notifyOnFollow: true, pushEnabled: false });
+        expect(preferences).toEqual({ notifyOnComment: true, notifyOnLike: false, notifyOnFollow: true, notifyOnFriendStamps: true, pushEnabled: false });
+    });
+});
+
+describe('NotificationsRepository.findFollowerIds()', () => {
+    const repo = new NotificationsRepository();
+
+    beforeEach(() => {
+        client.query.mockReset();
+    });
+
+    it("lists who follows the user, to tell them about the user's new stamps", async () => {
+        client.query.mockResolvedValueOnce({ rows: [{ follower_id: 'f1' }, { follower_id: 'f2' }] });
+
+        expect(await repo.findFollowerIds('ana')).toEqual(['f1', 'f2']);
+        const [query, params] = client.query.mock.calls[0];
+        expect(query).toMatch(/FROM user_followers\s+WHERE followed_id = \$1/);
+        expect(params).toEqual(['ana']);
     });
 });

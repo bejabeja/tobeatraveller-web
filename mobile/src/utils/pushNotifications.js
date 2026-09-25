@@ -87,6 +87,7 @@ export const routeForPushData = (data) => {
       ? { name: 'Passport', params: { userId: data.actorId, share: PASSPORT_SHARE_MOMENT, country: data.countryCode } }
       : { name: 'Passport', params: { userId: data.actorId, share: PASSPORT_SHARE_COUNTRIES } };
   }
+  if (data.type === 'friend_stamp' && data.actorId) return { name: 'Passport', params: { userId: data.actorId } };
   if (data.itineraryId) {
     return {
       name: 'Itinerary',

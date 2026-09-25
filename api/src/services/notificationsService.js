@@ -4,7 +4,12 @@ const NOTIFICATION_TYPE_PREFERENCE_KEY = {
     comment: 'notifyOnComment',
     like: 'notifyOnLike',
     follow: 'notifyOnFollow',
+    friend_stamp: 'notifyOnFriendStamps',
 };
+
+// Followers are told a few at a time, not to exhaust the database connection
+// pool for a user with many of them.
+const FOLLOWER_NOTIFICATION_BATCH_SIZE = 20;
 
 // Types whose notifications fold into one row per 24h window still push on
 // every event when each event matters on its own (every comment is new
@@ -37,6 +42,18 @@ export class NotificationsService {
         await this.pushNotificationsService
             .sendNotificationPush({ userId, actorId, type, itineraryId, commentId, badgeId, countryCode })
             .catch(err => logger.error('[push] failed to send notification push:', err));
+    }
+
+    // Each follower goes through createNotification like any other notice,
+    // so their preferences, grouping and push settings all apply.
+    async notifyFollowers({ actorId, type, badgeId, countryCode }) {
+        const followerIds = await this.notificationsRepository.findFollowerIds(actorId);
+        for (let start = 0; start < followerIds.length; start += FOLLOWER_NOTIFICATION_BATCH_SIZE) {
+            const batch = followerIds.slice(start, start + FOLLOWER_NOTIFICATION_BATCH_SIZE);
+            await Promise.all(batch.map(userId => this
+                .createNotification({ userId, actorId, type, badgeId, countryCode })
+                .catch(err => logger.error(`[notifications] failed to notify follower ${userId}:`, err))));
+        }
     }
 
     _shouldPush(preferences, type, { grouped }) {

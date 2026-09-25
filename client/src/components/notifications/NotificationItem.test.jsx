@@ -29,6 +29,30 @@ describe("NotificationItem", () => {
     expect(screen.getByRole("link")).toHaveAttribute("href", "/profile/user-1/passport?share=moment&badge=explorer");
   });
 
+  // A friend's new country or stamp: their passport, where the countries in
+  // common and the ranking are, not the sharing card (that's for the owner).
+  it("tells about a friend's new country and opens their passport", () => {
+    renderItem(notification({ type: "friend_stamp", countryCode: "PT", actor: { id: "ana-1", username: "ana" } }));
+
+    expect(screen.getByText("@ana")).toBeInTheDocument();
+    expect(screen.getByText("notifications.friendAddedCountry", { exact: false })).toBeInTheDocument();
+    expect(screen.getByText("🇵🇹 Portugal")).toBeInTheDocument();
+    expect(screen.getByRole("link")).toHaveAttribute("href", "/profile/ana-1/passport");
+  });
+
+  it("tells about a friend's new badge by its emoji and name", () => {
+    renderItem(notification({ type: "friend_stamp", badgeId: "explorer", actor: { id: "ana-1", username: "ana" } }));
+
+    expect(screen.getByText("🧭 badges.explorer.name")).toBeInTheDocument();
+    expect(screen.getByRole("link")).toHaveAttribute("href", "/profile/ana-1/passport");
+  });
+
+  it("groups several friends who added the same country", () => {
+    renderItem(notification({ type: "friend_stamp", countryCode: "PT", count: 3 }));
+
+    expect(screen.getByText("notifications.friendAddedCountryPlural", { exact: false })).toBeInTheDocument();
+  });
+
   it("opens the yearly recap", () => {
     renderItem(notification({ type: "recap_ready" }));
 

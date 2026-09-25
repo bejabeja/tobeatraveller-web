@@ -779,7 +779,11 @@
     "referralRewardPrefix": "You and",
     "referralRewardMiddle": "and you",
     "referralRewardSuffix": "both got 1 month of Premium",
-    "badgeEarned": "You earned the badge "
+    "badgeEarned": "You earned the badge ",
+    "friendAddedCountry": " added to their passport ",
+    "friendAddedCountryPlural": " added to their passports ",
+    "friendEarnedBadge": " earned the stamp ",
+    "friendEarnedBadgePlural": " earned the stamp "
   },
   "comments": {
     "title": "Comments",
@@ -967,6 +971,7 @@
     "notifyOnComment": "Comments on your itineraries",
     "notifyOnLike": "Likes on your itineraries",
     "notifyOnFollow": "New followers",
+    "notifyOnFriendStamps": "Stamps and countries from people I follow",
     "yourData": "Your data",
     "legal": "Legal",
     "dangerZone": "⚠️ Danger zone"
@@ -1196,7 +1201,7 @@
       "<strong>Profile data:</strong> display name, biography, location, profile photo, and \"about\" text that you optionally provide.",
       "<strong>Content you create:</strong> travel itineraries (title, destination, dates, places, budget, photos), comments, likes, saved trips, van log expenses and diary entries.",
       "<strong>Social data:</strong> who you follow and who follows you.",
-      "<strong>Passport data:</strong> the stamps you earn and the countries you have been to, worked out from your trips (once started, leaving out ones cloned from someone else with their dates unchanged), expenses and diary entries, plus any countries you mark yourself. Countries from your published trips and the ones you mark yourself are public on your passport; those from your private trips, expenses or diary are visible to you alone. You can edit the countries you marked at any time.",
+      "<strong>Passport data:</strong> the stamps you earn and the countries you have been to, worked out from your trips (once started, leaving out ones cloned from someone else with their dates unchanged), expenses and diary entries, plus any countries you mark yourself. Countries from your published trips and the ones you mark yourself are public on your passport; those from your private trips, expenses or diary are visible to you alone. People who follow you may get a notice when you earn a country or stamp they can see on your passport, never a private one. You can edit the countries you marked at any time.",
       "<strong>Technical data:</strong> session tokens used to keep you logged in.",
       "<strong>Device data (mobile app only):</strong> if you allow notifications, we store a push token that identifies your device to the notification service, the device platform (iOS/Android) and its language. It is removed when you log out, when the device stops accepting notifications, or after 90 days without opening the app.",
       "<strong>Sign-up data:</strong> when you create an account, we record the country your request came from (derived from your IP address, which we do not otherwise store) and your browser/device type. This helps us understand where our community is growing from and does not require cookie consent, as it is read directly from the sign-up request rather than stored on your device.",

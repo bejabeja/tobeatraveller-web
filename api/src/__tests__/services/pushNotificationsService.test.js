@@ -71,6 +71,30 @@ describe('PushNotificationsService.sendNotificationPush()', () => {
         expect(sentMessages()[0].data).toMatchObject({ type: 'country_stamp', actorId: 'u1', countryCode: 'IT' });
     });
 
+    it("tells a follower about a friend's new country, naming both", async () => {
+        pushTokensRepository.findByUserId.mockResolvedValue([
+            device('ExponentPushToken[en]', 'en'), device('ExponentPushToken[es]', 'es'),
+        ]);
+
+        await service.sendNotificationPush({ userId: 'f1', actorId: 'u2', type: 'friend_stamp', countryCode: 'PT' });
+
+        expect(sentMessages()).toEqual([
+            expect.objectContaining({ body: expect.stringMatching(/jane.*Portugal/) }),
+            expect.objectContaining({ body: expect.stringMatching(/jane.*Portugal/) }),
+        ]);
+        expect(sentMessages()[0].data).toMatchObject({ type: 'friend_stamp', actorId: 'u2', countryCode: 'PT' });
+    });
+
+    // Badge names only exist in the apps' translations.
+    it("tells a follower about a friend's new badge without naming it", async () => {
+        pushTokensRepository.findByUserId.mockResolvedValue([device('ExponentPushToken[es]', 'es')]);
+
+        await service.sendNotificationPush({ userId: 'f1', actorId: 'u2', type: 'friend_stamp', badgeId: 'adventurer' });
+
+        expect(sentMessages()[0].body).toMatch(/jane/);
+        expect(sentMessages()[0].body).not.toMatch(/adventurer/);
+    });
+
     it('announces the yearly recap in each device language', async () => {
         pushTokensRepository.findByUserId.mockResolvedValue([
             device('ExponentPushToken[en]', 'en'), device('ExponentPushToken[es]', 'es'),

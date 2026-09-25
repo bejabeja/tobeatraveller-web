@@ -4,10 +4,15 @@ import { logger } from '../utils/logger.js';
 
 export const BADGE_EARNED_NOTIFICATION_TYPE = 'badge_earned';
 export const COUNTRY_STAMP_NOTIFICATION_TYPE = 'country_stamp';
+export const FRIEND_STAMP_NOTIFICATION_TYPE = 'friend_stamp';
 const LEADERBOARD_SIZE = 10;
 // The daily job evaluates a few users at a time, not to exhaust the
 // database connection pool when many trips start on the same day.
 const DAILY_EVALUATION_BATCH_SIZE = 20;
+
+// Others see an earned badge only while its public metric (from what they
+// can see, like public trips) still reaches the threshold.
+const isShownToOthers = (badge, metrics) => badge.publicMetric != null && metrics[badge.publicMetric] >= badge.threshold;
 
 export class BadgeService {
     constructor(badgeRepository, notificationsService = null, userRepository = null) {
@@ -21,8 +26,11 @@ export class BadgeService {
     // that can move a metric (new trip, follow, van log or diary entry).
     // `notify: false` is for the one-off backfill of existing users, so their
     // old achievements and countries don't arrive as a burst of news.
+    // Waits for followers to be told too: run on its own (the daily job, or
+    // in the background after an action), nothing else would wait for it.
     async evaluateUser(userId, { notify = true } = {}) {
-        const { inserted } = await this._evaluate(userId, { notify });
+        const { inserted, followersTold } = await this._evaluate(userId, { notify });
+        await followersTold;
         return inserted;
     }
 
@@ -69,7 +77,7 @@ export class BadgeService {
             .filter(badge => isOwner || badge.publicMetric != null)
             .map((badge) => {
                 const isEarned = earnedAtById.has(badge.id);
-                const isVisibleToOthers = isEarned && badge.publicMetric != null && metrics[badge.publicMetric] >= badge.threshold;
+                const isVisibleToOthers = isEarned && isShownToOthers(badge, metrics);
                 const isEarnedForViewer = isOwner ? isEarned : isVisibleToOthers;
                 return {
                     id: badge.id,
@@ -179,8 +187,10 @@ export class BadgeService {
             this.badgeRepository.insertEarned(userId, qualified),
             this.badgeRepository.insertCountryStamps(userId, newCountryCodes),
         ]);
+        let followersTold = Promise.resolve();
         if (notify && this.notificationsService) {
             await this._notify(userId, inserted, stampedNow);
+            followersTold = this._tellFollowers(userId, { metrics, visits, badgeIds: inserted, countryCodes: stampedNow });
         }
 
         const earnedNow = new Date();
@@ -189,6 +199,8 @@ export class BadgeService {
             visits,
             earned: [...earned, ...inserted.map(badgeId => ({ badgeId, earnedAt: earnedNow }))],
             inserted,
+            // Not awaited here: opening one's own passport mustn't wait for every follower.
+            followersTold,
         };
     }
 
@@ -203,5 +215,23 @@ export class BadgeService {
         await Promise.all(notifications.map(notification => this.notificationsService.createNotification({
             userId, actorId: userId, ...notification,
         })));
+    }
+
+    // One notice per evaluation, and only about what followers can see on the
+    // passport: a new public country (a new place says more to friends than a
+    // badge reached along the way), otherwise the biggest new badge they see.
+    // Never rejects: a failure here mustn't undo the evaluation.
+    async _tellFollowers(userId, { metrics, visits, badgeIds, countryCodes }) {
+        const publicCodes = new Set(visits.filter(visit => visit.firstPublicVisitedOn).map(visit => visit.code));
+        const countryCode = countryCodes.find(code => publicCodes.has(code));
+        const badge = BADGES
+            .filter(candidate => badgeIds.includes(candidate.id) && isShownToOthers(candidate, metrics))
+            .sort((first, second) => second.threshold - first.threshold)[0];
+        const subject = countryCode ? { countryCode } : badge ? { badgeId: badge.id } : null;
+        if (!subject) return;
+
+        await this.notificationsService
+            .notifyFollowers({ actorId: userId, type: FRIEND_STAMP_NOTIFICATION_TYPE, ...subject })
+            .catch(error => logger.error(`[badges] failed to tell ${userId}'s followers:`, error));
     }
 }

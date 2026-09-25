@@ -24,6 +24,7 @@ const NOTIFICATION_PREFERENCE_TOGGLES = [
   { key: "notifyOnComment", labelKey: "settings.notifyOnComment" },
   { key: "notifyOnLike", labelKey: "settings.notifyOnLike" },
   { key: "notifyOnFollow", labelKey: "settings.notifyOnFollow" },
+  { key: "notifyOnFriendStamps", labelKey: "settings.notifyOnFriendStamps" },
 ];
 
 const Settings = () => {

@@ -285,6 +285,7 @@ export const updateNotificationPreferencesSchema = z.object({
     notifyOnComment: z.boolean().optional(),
     notifyOnLike: z.boolean().optional(),
     notifyOnFollow: z.boolean().optional(),
+    notifyOnFriendStamps: z.boolean().optional(),
     pushEnabled: z.boolean().optional(),
 }).refine((data) => Object.keys(data).length > 0, {
     message: "At least one preference must be provided",
