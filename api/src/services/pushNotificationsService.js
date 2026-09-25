@@ -40,7 +40,7 @@ export class PushNotificationsService {
         return deletedCount;
     }
 
-    async sendNotificationPush({ userId, actorId, type, itineraryId, commentId }) {
+    async sendNotificationPush({ userId, actorId, type, itineraryId, commentId, countryCode }) {
         const devices = await this.pushTokensRepository.findByUserId(userId);
         if (devices.length === 0) return;
 
@@ -50,7 +50,7 @@ export class PushNotificationsService {
         ]);
         if (!actor || (itineraryId && !itinerary)) return;
 
-        const context = { actorUsername: actor.username, itineraryTitle: itinerary?.title };
+        const context = { actorUsername: actor.username, itineraryTitle: itinerary?.title, countryCode };
         const data = { type, actorId, itineraryId: itineraryId ?? null, commentId: commentId ?? null };
         const messages = devices
             .map(device => ({ device, message: buildPushMessage(type, device.locale, context) }))

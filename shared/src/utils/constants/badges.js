@@ -45,3 +45,77 @@ export const summarizePassport = (passport, maxFlags) => {
             : null,
     };
 };
+
+// How much fits on the shareable image (1080x1920). The countries panel
+// takes the whole card when the achievements are left out.
+export const PASSPORT_SHARE_LIMITS = Object.freeze({ flagsOnly: 25, flagsWithAchievements: 15, stamps: 8 });
+
+// What the shareable passport image shows. Works on either version of the
+// passport: the public one by default, or the owner's full one when they
+// choose to include private stamps and countries. Only earned stamps count.
+export const summarizePassportForSharing = (passport, { includeAchievements }) => {
+    const earned = passport.achievements
+        .filter(achievement => achievement.earnedAt)
+        .sort((a, b) => BADGE_FAMILY_ORDER.indexOf(a.family) - BADGE_FAMILY_ORDER.indexOf(b.family));
+    const countryCount = passport.countries.length;
+    // Countries alone would leave an empty card, so the stamps show anyway.
+    const achievementsForced = countryCount === 0 && earned.length > 0;
+    const showAchievements = includeAchievements || achievementsForced;
+    const maxFlags = showAchievements ? PASSPORT_SHARE_LIMITS.flagsWithAchievements : PASSPORT_SHARE_LIMITS.flagsOnly;
+
+    return {
+        username: passport.owner.username,
+        flagCodes: passport.countries.slice(0, maxFlags).map(country => country.code),
+        hiddenCountries: Math.max(countryCount - maxFlags, 0),
+        countryCount,
+        showAchievements,
+        achievementsForced,
+        stampIds: earned.slice(0, PASSPORT_SHARE_LIMITS.stamps).map(achievement => achievement.id),
+        hiddenStamps: Math.max(earned.length - PASSPORT_SHARE_LIMITS.stamps, 0),
+        earnedCount: earned.length,
+    };
+};
+
+// Flags per row and their size on the shareable image, in image pixels.
+// With the whole card to themselves, a few countries get fewer, bigger flags
+// instead of a small row lost in an empty panel.
+const SHARE_CONTENT_WIDTH = 900;
+const SHARE_FLAGS_PER_ROW_BY_COUNT = [[4, 2], [9, 3], [16, 4]];
+const SHARE_MAX_FLAGS_PER_ROW = 5;
+const SHARE_MAX_FLAG_FONT_SIZE = 220;
+const SHARE_FLAG_FONT_TO_CELL_WIDTH = 0.78;
+const SHARE_FLAG_CELL_HEIGHT_TO_FONT = 1.43;
+const SHARE_FLAGS_WITH_ACHIEVEMENTS_LAYOUT = Object.freeze({ perRow: SHARE_MAX_FLAGS_PER_ROW, fontSize: 110, cellHeight: 160 });
+
+export const passportShareFlagLayout = (flagCount, showAchievements) => {
+    if (showAchievements) return SHARE_FLAGS_WITH_ACHIEVEMENTS_LAYOUT;
+    const perRow = SHARE_FLAGS_PER_ROW_BY_COUNT.find(([maxCount]) => flagCount <= maxCount)?.[1] ?? SHARE_MAX_FLAGS_PER_ROW;
+    const fontSize = Math.round(Math.min((SHARE_CONTENT_WIDTH / perRow) * SHARE_FLAG_FONT_TO_CELL_WIDTH, SHARE_MAX_FLAG_FONT_SIZE));
+    return { perRow, fontSize, cellHeight: Math.round(fontSize * SHARE_FLAG_CELL_HEIGHT_TO_FONT) };
+};
+
+// With the owner's referral code, whoever signs up from a shared passport
+// counts as invited by them (and both get the referral reward).
+export const passportUrl = (webUrl, userId, referralCode = null) => {
+    const url = `${webUrl}/profile/${userId}/passport`;
+    return referralCode ? `${url}?ref=${encodeURIComponent(referralCode)}` : url;
+};
+
+// Opens the owner's passport on the web with the share dialog already open,
+// from a new country or badge notification: the moment they most want to
+// show it off.
+export const PASSPORT_SHARE_PARAM = 'share';
+export const PASSPORT_SHARE_WITH_ACHIEVEMENTS = 'achievements';
+export const PASSPORT_SHARE_COUNTRIES = 'countries';
+export const passportSharePath = (userId, { withAchievements = false } = {}) => (
+    `/profile/${userId}/passport?${PASSPORT_SHARE_PARAM}=${withAchievements ? PASSPORT_SHARE_WITH_ACHIEVEMENTS : PASSPORT_SHARE_COUNTRIES}`
+);
+
+// The sign-up link a passport visitor is offered, keeping the referral code
+// the shared link came with, and saying where the sign-up came from.
+export const SIGNUP_SOURCE_PARAM = 'source';
+export const PASSPORT_SIGNUP_SOURCE = 'passport';
+export const signupUrlFromPassport = (referralCode = null) => {
+    const source = `${SIGNUP_SOURCE_PARAM}=${PASSPORT_SIGNUP_SOURCE}`;
+    return referralCode ? `/register?${source}&ref=${encodeURIComponent(referralCode)}` : `/register?${source}`;
+};

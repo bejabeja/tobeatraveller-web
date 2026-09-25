@@ -3,8 +3,8 @@ import { BadgeRepository } from '../repositories/badgeRepository.js';
 import { BadgeService } from '../services/badgeService.js';
 import { countryCodeFromLabel, countryCodeFromName } from '../utils/countryCodes.js';
 
-// Run once after migrations 037 and 038. Safe to run again: it only fills
-// what is still missing.
+// Run once after migrations 037, 038 and 039. Safe to run again: it only
+// fills what is still missing.
 
 // Rows saved before migration 038 have a country name (or a trip label) but
 // no ISO code yet. Resolved per distinct value, so each name is looked up once.
@@ -44,9 +44,10 @@ async function backfillCountryCodes() {
     }
 }
 
-// Grants existing users the badges their past activity already earned,
-// without notifying them: otherwise their first action after the deploy
-// would announce every old achievement at once.
+// Grants existing users the badges their past activity already earned, and
+// stamps the countries they have already been to, without notifying them:
+// otherwise their first action after the deploy would announce every old
+// achievement and country at once.
 async function backfillBadges() {
     const badgeService = new BadgeService(new BadgeRepository());
     const { rows: users } = await client.query('SELECT id FROM users');

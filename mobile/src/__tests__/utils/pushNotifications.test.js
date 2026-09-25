@@ -10,10 +10,15 @@ jest.mock('expo-constants', () => ({
   expoConfig: { extra: { eas: { projectId: 'project-1' } } },
 }));
 
-jest.mock('@tobeatraveller/shared', () => ({
-  registerPushToken: jest.fn(),
-  unregisterPushToken: jest.fn(),
-}));
+jest.mock('@tobeatraveller/shared', () => {
+  const { PASSPORT_SHARE_COUNTRIES, PASSPORT_SHARE_WITH_ACHIEVEMENTS } = jest.requireActual('../../../../shared/src/utils/constants/badges.js');
+  return {
+    PASSPORT_SHARE_COUNTRIES,
+    PASSPORT_SHARE_WITH_ACHIEVEMENTS,
+    registerPushToken: jest.fn(),
+    unregisterPushToken: jest.fn(),
+  };
+});
 
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
@@ -136,8 +141,14 @@ describe('routeForPushData', () => {
     expect(routeForPushData({ type: 'referral_reward', itineraryId: 'i1' })).toEqual({ name: 'Referral' });
   });
 
-  it("opens the user's own passport for a badge they earned", () => {
-    expect(routeForPushData({ type: 'badge_earned', actorId: 'u1' })).toEqual({ name: 'Passport', params: { userId: 'u1' } });
+  it("opens the user's own passport, ready to share, for a badge they earned", () => {
+    expect(routeForPushData({ type: 'badge_earned', actorId: 'u1' }))
+      .toEqual({ name: 'Passport', params: { userId: 'u1', share: 'achievements' } });
+  });
+
+  it("opens the user's own passport, ready to share, for a new country", () => {
+    expect(routeForPushData({ type: 'country_stamp', actorId: 'u1' }))
+      .toEqual({ name: 'Passport', params: { userId: 'u1', share: 'countries' } });
   });
 
   it('ignores a push without a known destination', () => {

@@ -1,3 +1,5 @@
+import { redactReferralCodes } from "./analyticsEvents";
+
 const POSTHOG_KEY = import.meta.env.VITE_POSTHOG_KEY;
 const POSTHOG_HOST = import.meta.env.VITE_POSTHOG_HOST;
 
@@ -23,6 +25,7 @@ const initAnalytics = () => {
       person_profiles: "identified_only",
       capture_pageview: true,
       disable_session_recording: true,
+      before_send: redactReferralCodes,
     });
   });
 };
@@ -54,4 +57,11 @@ export const identifyUser = (user) => {
 export const resetAnalytics = () => {
   if (getCookieConsent() !== "granted") return;
   loadPosthog()?.then((posthog) => posthog.reset());
+};
+
+// Only with consent, like everything else here. Event names and properties
+// live in analyticsEvents.js; never put personal data in the properties.
+export const trackEvent = (event, properties = {}) => {
+  if (getCookieConsent() !== "granted") return;
+  loadPosthog()?.then((posthog) => posthog.capture(event, properties));
 };

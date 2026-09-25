@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { IoChevronForward, IoLinkOutline, IoLocationOutline, IoSettingsOutline } from "react-icons/io5";
+import { IoChevronForward, IoLinkOutline, IoLocationOutline, IoSettingsOutline, IoShareSocialOutline } from "react-icons/io5";
 import { MdOutlineCalendarMonth, MdOutlineEdit } from "react-icons/md";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
@@ -18,6 +18,8 @@ import { generateAvatar } from "../../utils/constants/constants";
 import { buildProfileJsonLd } from "../../utils/jsonLd";
 import { BADGE_EMOJI, countryFlag, filterItineraries, summarizePassport } from "@tobeatraveller/shared";
 import FollowsModal from "../../components/follows/FollowsModal";
+import PassportShareDialog from "../../components/passport/PassportShareDialog";
+import { PASSPORT_SHARE_SOURCES } from "../../utils/analyticsEvents";
 import OfficialBadge from "../../components/users/OfficialBadge";
 import Error from "../error/Error";
 import "./Profile.scss";
@@ -394,41 +396,60 @@ const MAX_PASSPORT_CARD_FLAGS = 5;
 // viewers when there is nothing public to show yet.
 const ProfilePassportCard = ({ userId, isOwnProfile, t }) => {
   const { passport } = useUserPassport(userId);
+  const [isShareOpen, setIsShareOpen] = useState(false);
+  const closeShare = useCallback(() => setIsShareOpen(false), []);
   const summary = summarizePassport(passport, MAX_PASSPORT_CARD_FLAGS);
   if (!summary) return null;
   if (!isOwnProfile && summary.earnedCount === 0 && summary.countryCount === 0) return null;
 
   return (
-    <Link to={`/profile/${userId}/passport`} className="profile__passport-card" aria-label={t("passport.view")}>
-      <span className="profile__passport-card-icon" aria-hidden="true">🛂</span>
-      <span className="profile__passport-card-body">
-        <strong className="profile__passport-card-title">{t("passport.title")}</strong>
-        <span className="profile__passport-card-meta">
-          {summary.countryCount > 0 ? (
-            <span className="profile__passport-card-flags" aria-label={t("passport.countriesCount", { count: summary.countryCount })}>
-              {summary.flagCodes.map(code => <span key={code} aria-hidden="true">{countryFlag(code)}</span>)}
-              {summary.hiddenCountries > 0 && (
-                <span className="profile__passport-card-more">{t("passport.moreCountries", { count: summary.hiddenCountries })}</span>
-              )}
-            </span>
-          ) : (
-            <span>{t("passport.noCountriesYet")}</span>
-          )}
-          <span aria-hidden="true">·</span>
-          <span>{t("passport.collected", { earned: summary.earnedCount, total: summary.totalCount })}</span>
-        </span>
-        {summary.nextGoal && (
-          <span className="profile__passport-card-goal">
-            {BADGE_EMOJI[summary.nextGoal.badgeId]}{" "}
-            {t(`badges.nextTip.${summary.nextGoal.family}`, {
-              count: summary.nextGoal.remaining,
-              next: t(`badges.${summary.nextGoal.badgeId}.name`),
-            })}
+    <div className="profile__passport">
+      <Link to={`/profile/${userId}/passport`} className="profile__passport-card" aria-label={t("passport.view")}>
+        <span className="profile__passport-card-icon" aria-hidden="true">🛂</span>
+        <span className="profile__passport-card-body">
+          <strong className="profile__passport-card-title">{t("passport.title")}</strong>
+          <span className="profile__passport-card-meta">
+            {summary.countryCount > 0 ? (
+              <span className="profile__passport-card-flags" aria-label={t("passport.countriesCount", { count: summary.countryCount })}>
+                {summary.flagCodes.map(code => <span key={code} aria-hidden="true">{countryFlag(code)}</span>)}
+                {summary.hiddenCountries > 0 && (
+                  <span className="profile__passport-card-more">{t("passport.moreCountries", { count: summary.hiddenCountries })}</span>
+                )}
+              </span>
+            ) : (
+              <span>{t("passport.noCountriesYet")}</span>
+            )}
+            <span aria-hidden="true">·</span>
+            <span>{t("passport.collected", { earned: summary.earnedCount, total: summary.totalCount })}</span>
           </span>
-        )}
-      </span>
-      <IoChevronForward className="profile__passport-card-chevron" aria-hidden="true" />
-    </Link>
+          {summary.nextGoal && (
+            <span className="profile__passport-card-goal">
+              {BADGE_EMOJI[summary.nextGoal.badgeId]}{" "}
+              {t(`badges.nextTip.${summary.nextGoal.family}`, {
+                count: summary.nextGoal.remaining,
+                next: t(`badges.${summary.nextGoal.badgeId}.name`),
+              })}
+            </span>
+          )}
+        </span>
+        <IoChevronForward className="profile__passport-card-chevron" aria-hidden="true" />
+      </Link>
+      {/* Next to the card rather than inside it: a button can't live inside a link. */}
+      {isOwnProfile && (
+        <>
+          <button
+            type="button"
+            className="btn profile__passport-share"
+            onClick={() => setIsShareOpen(true)}
+            aria-label={t("passport.share")}
+            title={t("passport.share")}
+          >
+            <IoShareSocialOutline aria-hidden="true" />
+          </button>
+          <PassportShareDialog userId={userId} isOpen={isShareOpen} onClose={closeShare} source={PASSPORT_SHARE_SOURCES.PROFILE} />
+        </>
+      )}
+    </div>
   );
 };
 

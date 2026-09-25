@@ -1,7 +1,9 @@
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import * as Notifications from 'expo-notifications';
-import { registerPushToken, unregisterPushToken } from '@tobeatraveller/shared';
+import {
+  PASSPORT_SHARE_COUNTRIES, PASSPORT_SHARE_WITH_ACHIEVEMENTS, registerPushToken, unregisterPushToken,
+} from '@tobeatraveller/shared';
 
 // Must match ANDROID_NOTIFICATION_CHANNEL_ID in api/src/services/pushNotificationsService.js.
 const ANDROID_NOTIFICATION_CHANNEL_ID = 'default';
@@ -70,8 +72,14 @@ export const routeForPushData = (data) => {
   if (!data?.type) return null;
   if (data.type === 'follow' && data.actorId) return { name: 'UserProfile', params: { id: data.actorId } };
   if (data.type === 'referral_reward') return { name: 'Referral' };
-  // The badge's "actor" is the user who earned it.
-  if (data.type === 'badge_earned' && data.actorId) return { name: 'Passport', params: { userId: data.actorId } };
+  // A badge or country's "actor" is the user who earned it; their passport
+  // opens ready to share it, the moment they most want to show it off.
+  if (data.type === 'badge_earned' && data.actorId) {
+    return { name: 'Passport', params: { userId: data.actorId, share: PASSPORT_SHARE_WITH_ACHIEVEMENTS } };
+  }
+  if (data.type === 'country_stamp' && data.actorId) {
+    return { name: 'Passport', params: { userId: data.actorId, share: PASSPORT_SHARE_COUNTRIES } };
+  }
   if (data.itineraryId) {
     return {
       name: 'Itinerary',

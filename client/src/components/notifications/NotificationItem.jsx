@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { BADGE_EMOJI } from "@tobeatraveller/shared";
+import { BADGE_EMOJI, countryFlag, countryName, passportSharePath } from "@tobeatraveller/shared";
 import { optimizedCloudinaryUrl } from "../../utils/cloudinaryUrl";
 import "./NotificationItem.scss";
 
@@ -8,7 +8,7 @@ import "./NotificationItem.scss";
 // panel, so the row markup and the type-to-sentence logic stay in one
 // place instead of drifting apart between the two surfaces.
 const NotificationItem = ({ notification: n, onClick }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const others = n.count > 1 && t("notifications.andOthers", { count: n.count - 1 });
   const verb = (key) => t(`notifications.${n.count > 1 ? `${key}Plural` : key}`);
@@ -19,14 +19,16 @@ const NotificationItem = ({ notification: n, onClick }) => {
     comment: () => <><strong>@{n.actor?.username}</strong>{others}{verb("commented")}<em>{n.itinerary?.title}</em></>,
     referral_reward: () => <>🎁 {t("notifications.referralRewardPrefix")}<strong>@{n.actor?.username}</strong> {t("notifications.referralRewardSuffix")}</>,
     badge_earned: () => <>{BADGE_EMOJI[n.badgeId]} {t("notifications.badgeEarned")}<strong>{t(`badges.${n.badgeId}.name`)}</strong></>,
+    country_stamp: () => <>{t("notifications.countryStamp")}<strong>{countryFlag(n.countryCode)} {countryName(n.countryCode, i18n.language)}</strong></>,
   };
   const label = TYPE_LABELS[n.type]?.();
 
-  // A badge notification's actor is the user who earned it.
+  // A badge or country notification's actor is the user who earned it, and
+  // it opens their passport ready to share: that's when they most want to.
   const href = n.type === "follow"
     ? `/profile/${n.actor?.id}`
-    : n.type === "badge_earned"
-      ? `/profile/${n.actor?.id}/passport`
+    : n.type === "badge_earned" || n.type === "country_stamp"
+      ? passportSharePath(n.actor?.id, { withAchievements: n.type === "badge_earned" })
       : n.type === "referral_reward"
         ? "/invite"
         : n.itinerary?.id

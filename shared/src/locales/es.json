@@ -735,6 +735,7 @@
     "photosAfterSync": "Esta entrada aún no se ha sincronizado. Añade las fotos cuando se sincronice."
   },
   "notifications": {
+    "countryStamp": "Nuevo país en tu pasaporte: ",
     "title": "Notificaciones",
     "noNotifications": "Todavía no tienes notificaciones",
     "noNotificationsDesc": "Cuando alguien te siga, le guste o comente tus viajes, lo verás aquí.",
@@ -1418,6 +1419,16 @@
     "title": "Logros"
   },
   "passport": {
+    "visitorCtaTitle": "¿Y tú, cuántos países llevas?",
+    "visitorCtaText": "Crea tu pasaporte gratis y colecciona un sello por cada país que visites con tu camper.",
+    "visitorCtaButton": "Crear mi pasaporte",
+    "memberCtaButton": "Ver mi pasaporte",
+    "linkCopied": "Enlace copiado. En Instagram, pégalo con el sticker de enlace.",
+    "linkHintDownload": "Descarga la imagen y súbela a tu historia. Para que puedan abrir tu pasaporte, añade este enlace con el sticker de enlace de Instagram:",
+    "linkLabel": "Enlace a tu pasaporte",
+    "copyLink": "Copiar enlace",
+    "linkCopiedPlain": "Enlace copiado",
+    "linkHint": "Al compartir copiamos el enlace a tu pasaporte: en una historia de Instagram, pégalo con el sticker de enlace para que puedan abrirlo.",
     "title": "Pasaporte",
     "ownTitle": "Mi pasaporte",
     "ofUser": "Pasaporte de @{{username}}",
@@ -1441,6 +1452,20 @@
       "lifeDiary": "Diario"
     },
     "moreCountries": "+{{count}}",
-    "noCountriesYet": "Todavía sin países"
+    "noCountriesYet": "Todavía sin países",
+    "noStampsYet": "Todavía sin sellos",
+    "moreStamps": "+{{count}}",
+    "share": "Compartir",
+    "shareTitle": "Comparte tu pasaporte",
+    "sharePublicOnly": "Solo aparecen tus sellos y países públicos.",
+    "shareIncludeAchievements": "Incluir logros",
+    "shareIncludePrivate": "Incluir también lo privado",
+    "shareIncludesPrivate": "La imagen incluye países y sellos que ahora solo ves tú, de tus gastos y tu diario. Una vez compartida, no se puede retirar.",
+    "shareImage": "Compartir imagen",
+    "downloadImage": "Descargar imagen",
+    "shareError": "No se pudo compartir el pasaporte.",
+    "shareText": "Mira mi pasaporte de viaje en ToBeATraveller",
+    "stampsCount_one": "{{count}} sello",
+    "stampsCount_other": "{{count}} sellos"
   }
 }

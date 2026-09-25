@@ -527,12 +527,13 @@ describe('UserService.exportUserData()', () => {
         expect(result.pushDevices).toEqual([pushDevice]);
     });
 
-    it('includes the badges the user has earned', async () => {
+    it('includes the badges the user has earned and the countries stamped in their passport', async () => {
         const userRepository = { getUserById: async () => makeUser() };
         const itinerariesRepository = { findByUserId: async () => [] };
         const followRepository = { getFollowers: async () => [], getFollowing: async () => [] };
         const earned = [{ badgeId: 'explorer', earnedAt: new Date('2026-09-01') }];
-        const badgeRepository = { findEarnedByUserId: async () => earned };
+        const countryStamps = [{ countryCode: 'ES', stampedAt: new Date('2026-09-02') }];
+        const badgeRepository = { findEarnedByUserId: async () => earned, findStampedCountries: async () => countryStamps };
         const service = new UserService(
             userRepository, itinerariesRepository, followRepository,
             null, null, null, null, null, null, null, null, null, null, badgeRepository
@@ -541,6 +542,7 @@ describe('UserService.exportUserData()', () => {
         const result = await service.exportUserData('user-1', { id: 'user-1', username: 'jane' });
 
         expect(result.badges).toEqual(earned);
+        expect(result.countryStamps).toEqual(countryStamps);
     });
 });
 

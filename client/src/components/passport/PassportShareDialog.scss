@@ -1,0 +1,100 @@
+.passport-share {
+  max-width: 380px;
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.25rem 1.5rem 0.5rem;
+  }
+
+  // Same 9:16 shape as the image, so the dialog doesn't jump when it loads.
+  &__preview,
+  &__skeleton {
+    width: 100%;
+    max-width: 240px;
+    aspect-ratio: 9 / 16;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(27, 42, 65, 0.25);
+  }
+
+  &__skeleton {
+    background: linear-gradient(90deg, #eee 25%, #f5f5f5 50%, #eee 75%);
+    background-size: 200% 100%;
+    animation: passport-share-shimmer 1.4s infinite;
+  }
+
+  &__toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: auto;
+    font-size: 0.9rem;
+    color: var(--text-color);
+    cursor: pointer;
+
+    input {
+      width: auto;
+      margin: 0;
+    }
+
+    &:has(input:disabled) {
+      opacity: 0.6;
+      cursor: default;
+    }
+  }
+
+  &__link-hint {
+    margin: 0;
+    padding: 0 1.5rem 1.25rem;
+    font-size: 0.75rem;
+    text-align: center;
+    color: var(--text-secondary-color);
+  }
+
+  &__link {
+    padding: 0 1.5rem 1.25rem;
+
+    .passport-share__link-hint {
+      padding: 0 0 0.5rem;
+    }
+  }
+
+  &__link-row {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  &__link-input {
+    flex: 1;
+    min-width: 0;
+    padding: 0.45rem 0.6rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 0.8rem;
+    color: var(--text-color);
+    background: var(--surface-color);
+  }
+
+  &__copy {
+    flex-shrink: 0;
+    width: auto;
+    white-space: nowrap;
+  }
+
+  &__hint {
+    margin: 0;
+    font-size: 0.8rem;
+    text-align: center;
+    color: var(--text-secondary-color);
+
+    &--warning {
+      color: var(--error-color);
+    }
+  }
+}
+
+@keyframes passport-share-shimmer {
+  to { background-position: -200% 0; }
+}

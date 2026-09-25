@@ -758,6 +758,7 @@
     "photosAfterSync": "This entry hasn't synced yet. Add the photos once it has."
   },
   "notifications": {
+    "countryStamp": "New country in your passport: ",
     "title": "Notifications",
     "noNotifications": "No notifications yet",
     "noNotificationsDesc": "When someone follows you, likes or comments on your trips, you'll see it here.",
@@ -1418,6 +1419,16 @@
     "title": "Achievements"
   },
   "passport": {
+    "visitorCtaTitle": "How many countries have you been to?",
+    "visitorCtaText": "Create your free passport and collect a stamp for every country you visit in your van.",
+    "visitorCtaButton": "Create my passport",
+    "memberCtaButton": "See my passport",
+    "linkCopied": "Link copied. On Instagram, paste it with the link sticker.",
+    "linkHintDownload": "Download the image and post it to your story. So people can open your passport, add this link with the Instagram link sticker:",
+    "linkLabel": "Link to your passport",
+    "copyLink": "Copy link",
+    "linkCopiedPlain": "Link copied",
+    "linkHint": "When you share, we copy the link to your passport: in an Instagram story, paste it with the link sticker so people can open it.",
     "title": "Passport",
     "ownTitle": "My passport",
     "ofUser": "@{{username}}'s passport",
@@ -1441,6 +1452,20 @@
       "lifeDiary": "Diary"
     },
     "moreCountries": "+{{count}}",
-    "noCountriesYet": "No countries yet"
+    "noCountriesYet": "No countries yet",
+    "noStampsYet": "No stamps yet",
+    "moreStamps": "+{{count}}",
+    "share": "Share",
+    "shareTitle": "Share your passport",
+    "sharePublicOnly": "Only your public stamps and countries appear.",
+    "shareIncludeAchievements": "Include achievements",
+    "shareIncludePrivate": "Include private ones too",
+    "shareIncludesPrivate": "The image includes countries and stamps only you can see now, from your expenses and diary. Once shared, it can't be taken back.",
+    "shareImage": "Share image",
+    "downloadImage": "Download image",
+    "shareError": "Couldn't share the passport.",
+    "shareText": "Check out my travel passport on ToBeATraveller",
+    "stampsCount_one": "{{count}} stamp",
+    "stampsCount_other": "{{count}} stamps"
   }
 }

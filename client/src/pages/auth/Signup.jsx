@@ -13,6 +13,9 @@ import {
   selectAuthError,
   selectimageAuthLoaded,
 } from "../../store/auth/authSelectors";
+import { SIGNUP_SOURCE_PARAM } from "@tobeatraveller/shared";
+import { trackEvent } from "../../utils/analytics";
+import { ANALYTICS_EVENTS } from "../../utils/analyticsEvents";
 import { authImage } from "../../utils/constants/constants";
 import { preloadImg } from "../../utils/preloadImg";
 import { signupSchema } from "../../utils/schemasValidation";
@@ -26,6 +29,7 @@ const Signup = () => {
   const redirectTo = location.state?.redirectTo;
   const [searchParams] = useSearchParams();
   const referralCode = searchParams.get("ref") || undefined;
+  const signupSource = searchParams.get(SIGNUP_SOURCE_PARAM);
   const imageAuthLoaded = useSelector(selectimageAuthLoaded);
   const errorInAuth = useSelector(selectAuthError);
   const [usernameStatus, setUsernameStatus] = useState(null); // null | "checking" | "available" | "taken"
@@ -106,7 +110,10 @@ const Signup = () => {
         (cErrors.ageConfirmed ? ageCheckboxRef : termsCheckboxRef).current?.focus();
         return;
       }
-      return dispatch(createUser({ ...data, termsAccepted, ageConfirmed, referralCode }, () => navigate("/welcome", { state: redirectTo ? { redirectTo } : undefined })));
+      return dispatch(createUser({ ...data, termsAccepted, ageConfirmed, referralCode }, () => {
+        trackEvent(ANALYTICS_EVENTS.USER_SIGNED_UP, { source: signupSource ?? null, referred: Boolean(referralCode) });
+        navigate("/welcome", { state: redirectTo ? { redirectTo } : undefined });
+      }));
     })();
   };
 

@@ -57,6 +57,20 @@ describe('PushNotificationsService.sendNotificationPush()', () => {
         });
     });
 
+    it('names the new country in each device language', async () => {
+        pushTokensRepository.findByUserId.mockResolvedValue([
+            device('ExponentPushToken[en]', 'en'), device('ExponentPushToken[es]', 'es'),
+        ]);
+
+        await service.sendNotificationPush({ userId: 'u1', actorId: 'u1', type: 'country_stamp', countryCode: 'IT' });
+
+        expect(sentMessages()).toEqual([
+            expect.objectContaining({ body: expect.stringContaining('Italy') }),
+            expect.objectContaining({ body: expect.stringContaining('Italia') }),
+        ]);
+        expect(sentMessages()[0].data).toMatchObject({ type: 'country_stamp', actorId: 'u1' });
+    });
+
     it('falls back to English for a locale without translations', async () => {
         pushTokensRepository.findByUserId.mockResolvedValue([device('ExponentPushToken[a]', 'fr')]);
 

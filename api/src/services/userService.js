@@ -321,7 +321,7 @@ export class UserService {
         const [
             itineraries, followers, following, commentsResult, likesResult, favoritesResult,
             lifeDiaryEntries, vanLogEntries, inventoryItems, shoppingListItems, packingChecklistItems,
-            pushDevices, badges,
+            pushDevices, badges, countryStamps,
         ] = await Promise.all([
             this.itinerariesRepository.findByUserId(id),
             this.followRepository.getFollowers(id),
@@ -351,6 +351,7 @@ export class UserService {
             this.packingChecklistRepository ? this.packingChecklistRepository.findByUserId(id) : [],
             this.pushTokensRepository ? this.pushTokensRepository.findByUserId(id) : [],
             this.badgeRepository ? this.badgeRepository.findEarnedByUserId(id) : [],
+            this.badgeRepository ? this.badgeRepository.findStampedCountries(id) : [],
         ]);
 
         // Same batched entry+images composition as LifeDiaryService.getEntriesByUser.
@@ -398,6 +399,7 @@ export class UserService {
             packingChecklist: packingChecklistItems.map(item => item.toDTO()),
             pushDevices,
             badges,
+            countryStamps,
             followers: followers.map(f => ({ id: f.id, username: f.username })),
             following: following.map(f => ({ id: f.id, username: f.username })),
         };

@@ -1,8 +1,9 @@
 import { NotFoundError } from '../errors/NotFoundError.js';
-import { BADGES } from '../utils/badges.js';
+import { BADGE_FAMILIES, BADGES } from '../utils/badges.js';
 import { logger } from '../utils/logger.js';
 
 export const BADGE_EARNED_NOTIFICATION_TYPE = 'badge_earned';
+export const COUNTRY_STAMP_NOTIFICATION_TYPE = 'country_stamp';
 
 export class BadgeService {
     constructor(badgeRepository, notificationsService = null, userRepository = null) {
@@ -11,11 +12,11 @@ export class BadgeService {
         this.userRepository = userRepository;
     }
 
-    // Saves every badge the user now qualifies for and hasn't earned yet.
-    // Called after the actions that can move a metric (new trip, follow, van
-    // log or diary entry). `notify: false` is for catching up silently: the
-    // one-off backfill of existing users, and the check when the owner opens
-    // their own badges, so old achievements don't arrive as a burst of news.
+    // Saves every badge the user now qualifies for and hasn't earned yet, and
+    // stamps every country they have newly been to. Called after the actions
+    // that can move a metric (new trip, follow, van log or diary entry).
+    // `notify: false` is for the one-off backfill of existing users, so their
+    // old achievements and countries don't arrive as a burst of news.
     async evaluateUser(userId, { notify = true } = {}) {
         const { inserted } = await this._evaluate(userId, { notify });
         return inserted;
@@ -31,15 +32,18 @@ export class BadgeService {
     // and one stamp per visited country. The owner sees everything, with
     // their progress; everyone else only sees what public data backs, so the
     // private families (van log, diary) and private countries stay hidden.
-    async getPassport(profileUserId, viewerId = null) {
+    // `publicView` gives the owner that same public version, to share it.
+    async getPassport(profileUserId, viewerId = null, { publicView = false } = {}) {
         const owner = await this.userRepository.getUserById(profileUserId);
         if (!owner) throw new NotFoundError("User not found");
 
-        const isOwner = viewerId === profileUserId;
-        const [{ metrics, earned }, visits] = await Promise.all([
-            isOwner ? this._evaluate(profileUserId, { notify: false }) : this._loadState(profileUserId),
-            this.badgeRepository.getCountryVisits(profileUserId),
-        ]);
+        const isOwner = viewerId === profileUserId && !publicView;
+        // The owner's own view also saves (and announces) anything not saved
+        // yet: it can get there before the evaluation an action started, and
+        // only whichever saves it first announces it.
+        const { metrics, earned, visits } = isOwner
+            ? await this._evaluate(profileUserId, { notify: true })
+            : await this._loadState(profileUserId);
         const earnedAtById = new Map(earned.map(badge => [badge.badgeId, badge.earnedAt]));
 
         const achievements = BADGES
@@ -75,32 +79,53 @@ export class BadgeService {
     }
 
     async _loadState(userId) {
-        const [metrics, earned] = await Promise.all([
+        const [metrics, earned, visits] = await Promise.all([
             this.badgeRepository.getMetrics(userId),
             this.badgeRepository.findEarnedByUserId(userId),
+            this.badgeRepository.getCountryVisits(userId),
         ]);
-        return { metrics, earned };
+        return { metrics, earned, visits };
     }
 
     async _evaluate(userId, { notify }) {
-        const { metrics, earned } = await this._loadState(userId);
+        const [{ metrics, earned, visits }, stampedCountries] = await Promise.all([
+            this._loadState(userId),
+            this.badgeRepository.findStampedCountries(userId),
+        ]);
         const earnedIds = new Set(earned.map(badge => badge.badgeId));
         const qualified = BADGES
             .filter(badge => !earnedIds.has(badge.id) && metrics[badge.metric] >= badge.threshold)
             .map(badge => badge.id);
+        const stampedCodes = new Set(stampedCountries.map(stamp => stamp.countryCode));
+        const newCountryCodes = visits.map(visit => visit.code).filter(code => !stampedCodes.has(code));
 
-        const inserted = await this.badgeRepository.insertEarned(userId, qualified);
+        const [inserted, stampedNow] = await Promise.all([
+            this.badgeRepository.insertEarned(userId, qualified),
+            this.badgeRepository.insertCountryStamps(userId, newCountryCodes),
+        ]);
         if (notify && this.notificationsService) {
-            await Promise.all(inserted.map(badgeId => this.notificationsService.createNotification({
-                userId, actorId: userId, type: BADGE_EARNED_NOTIFICATION_TYPE, badgeId,
-            })));
+            await this._notify(userId, inserted, stampedNow);
         }
 
         const earnedNow = new Date();
         return {
             metrics,
+            visits,
             earned: [...earned, ...inserted.map(badgeId => ({ badgeId, earnedAt: earnedNow }))],
             inserted,
         };
+    }
+
+    // A countries badge already celebrates the country that reached it, so
+    // that run's new countries aren't announced on top of it.
+    async _notify(userId, badgeIds, countryCodes) {
+        const earnedCountriesBadge = badgeIds.some(badgeId => BADGES.find(badge => badge.id === badgeId)?.family === BADGE_FAMILIES.COUNTRIES);
+        const notifications = [
+            ...badgeIds.map(badgeId => ({ type: BADGE_EARNED_NOTIFICATION_TYPE, badgeId })),
+            ...(earnedCountriesBadge ? [] : countryCodes.map(countryCode => ({ type: COUNTRY_STAMP_NOTIFICATION_TYPE, countryCode }))),
+        ];
+        await Promise.all(notifications.map(notification => this.notificationsService.createNotification({
+            userId, actorId: userId, ...notification,
+        })));
     }
 }

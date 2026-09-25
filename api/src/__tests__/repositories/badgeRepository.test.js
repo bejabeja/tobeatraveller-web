@@ -30,6 +30,28 @@ describe('BadgeRepository', () => {
         expect(inserted).toEqual([]);
     });
 
+    it('returns only the countries it stamped, skipping ones already saved', async () => {
+        client.query.mockResolvedValueOnce({ rows: [{ country_code: 'FR' }] });
+
+        const stamped = await repo.insertCountryStamps('user-1', ['ES', 'FR']);
+
+        expect(client.query.mock.calls[0][0]).toMatch(/ON CONFLICT \(user_id, country_code\) DO NOTHING/);
+        expect(client.query.mock.calls[0][1]).toEqual(['user-1', ['ES', 'FR']]);
+        expect(stamped).toEqual(['FR']);
+    });
+
+    it('skips the query when there is no country to stamp', async () => {
+        expect(await repo.insertCountryStamps('user-1', [])).toEqual([]);
+        expect(client.query).not.toHaveBeenCalled();
+    });
+
+    it('maps the stamped countries to camelCase', async () => {
+        const stampedAt = new Date('2026-09-01');
+        client.query.mockResolvedValueOnce({ rows: [{ country_code: 'ES', stamped_at: stampedAt }] });
+
+        expect(await repo.findStampedCountries('user-1')).toEqual([{ countryCode: 'ES', stampedAt }]);
+    });
+
     // Private trips are usually plans or clones, not places the user has been.
     it('counts countries by ISO code, from public trips, van log and diary only', async () => {
         client.query.mockResolvedValueOnce({ rows: [{

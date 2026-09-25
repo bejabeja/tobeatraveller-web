@@ -7,17 +7,18 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
-  BADGE_EMOJI, initNotifications, loadMoreNotifications, markAllNotificationsRead,
+  BADGE_EMOJI, PASSPORT_SHARE_COUNTRIES, PASSPORT_SHARE_WITH_ACHIEVEMENTS, countryFlag, countryName,
+  initNotifications, loadMoreNotifications, markAllNotificationsRead,
   selectNotifications, selectNotificationsError, selectNotificationsLoading,
   selectNotificationsLoadingMore, selectNotificationsPage, selectNotificationsTotalPages, selectUnreadCount,
 } from '@tobeatraveller/shared';
 import { UserRowSkeleton } from '../../components/Skeleton';
 import { shadow } from '../../utils/styles';
 
-const TYPE_ICON = { follow: '👤', like: '❤️', comment: '💬', referral_reward: '🎁', badge_earned: '🏅' };
+const TYPE_ICON = { follow: '👤', like: '❤️', comment: '💬', referral_reward: '🎁', badge_earned: '🏅', country_stamp: '🛂' };
 
 const NotificationsScreen = ({ navigation }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const insets = useSafeAreaInsets();
   const dispatch = useDispatch();
   const notifications = useSelector(selectNotifications);
@@ -43,7 +44,9 @@ const NotificationsScreen = ({ navigation }) => {
 
   const handlePress = (n) => {
     if (n.type === 'follow') navigation.navigate('UserProfile', { id: n.actor?.id });
-    else if (n.type === 'badge_earned') navigation.navigate('Passport', { userId: n.actor?.id });
+    // Opens the passport ready to share: the moment they most want to show it off.
+    else if (n.type === 'badge_earned') navigation.navigate('Passport', { userId: n.actor?.id, share: PASSPORT_SHARE_WITH_ACHIEVEMENTS });
+    else if (n.type === 'country_stamp') navigation.navigate('Passport', { userId: n.actor?.id, share: PASSPORT_SHARE_COUNTRIES });
     else if (n.type === 'referral_reward') navigation.navigate('Referral');
     else if (n.itinerary?.id) {
       navigation.navigate('Itinerary', {
@@ -119,6 +122,8 @@ const NotificationsScreen = ({ navigation }) => {
                 <Text style={styles.text} numberOfLines={2}>
                   {n.type === 'badge_earned' ? (
                     <Text>{BADGE_EMOJI[n.badgeId]} {t('notifications.badgeEarned')}<Text style={styles.bold}>{t(`badges.${n.badgeId}.name`)}</Text></Text>
+                  ) : n.type === 'country_stamp' ? (
+                    <Text>{t('notifications.countryStamp')}<Text style={styles.bold}>{countryFlag(n.countryCode)} {countryName(n.countryCode, i18n.language)}</Text></Text>
                   ) : (
                     <>
                       <Text style={styles.bold}>@{n.actor?.username}</Text>

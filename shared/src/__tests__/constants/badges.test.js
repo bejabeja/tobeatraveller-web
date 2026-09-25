@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { BADGES as API_BADGES } from '../../../../api/src/utils/badges.js';
-import { BADGE_EMOJI, BADGE_FAMILY_ORDER, summarizePassport } from '../../utils/constants/badges.js';
+import { ISO_COUNTRY_CODES } from '../../../../api/src/utils/countryCodes.js';
+import {
+    BADGE_EMOJI, BADGE_FAMILY_ORDER, PASSPORT_SHARE_LIMITS, passportShareFlagLayout, passportUrl, summarizePassport,
+    passportSharePath, signupUrlFromPassport, summarizePassportForSharing,
+} from '../../utils/constants/badges.js';
 import en from '../../locales/en.json';
 import es from '../../locales/es.json';
 
@@ -91,5 +95,110 @@ describe('summarizePassport', () => {
 
     it('returns null while the passport is not loaded', () => {
         expect(summarizePassport(null, 3)).toBeNull();
+    });
+});
+
+describe('summarizePassportForSharing', () => {
+    const stamp = (id, family, earnedAt = '2026-09-01') => ({ id, family, threshold: 1, earnedAt, isPrivate: false });
+    const country = (code) => ({ code, firstVisitedOn: '2026-03-01', isPrivate: false });
+    const codes = (count) => ISO_COUNTRY_CODES.slice(0, count);
+    const passport = ({ countries = [], achievements = [] } = {}) => ({
+        owner: { username: 'jane' }, countries: countries.map(country), achievements,
+    });
+
+    it('shows only the countries by default, with room for more flags', () => {
+        const summary = summarizePassportForSharing(
+            passport({ countries: codes(30), achievements: [stamp('explorer', 'trips')] }),
+            { includeAchievements: false },
+        );
+
+        expect(summary.showAchievements).toBe(false);
+        expect(summary.flagCodes).toHaveLength(PASSPORT_SHARE_LIMITS.flagsOnly);
+        expect(summary.hiddenCountries).toBe(30 - PASSPORT_SHARE_LIMITS.flagsOnly);
+        expect(summary).toMatchObject({ username: 'jane', countryCount: 30 });
+    });
+
+    it('makes room for the achievements when they are included', () => {
+        const summary = summarizePassportForSharing(
+            passport({ countries: codes(30), achievements: [stamp('explorer', 'trips')] }),
+            { includeAchievements: true },
+        );
+
+        expect(summary.showAchievements).toBe(true);
+        expect(summary.flagCodes).toHaveLength(PASSPORT_SHARE_LIMITS.flagsWithAchievements);
+    });
+
+    // Countries alone would leave nothing on the card.
+    it('shows the achievements anyway when there are no countries but there are stamps', () => {
+        const summary = summarizePassportForSharing(
+            passport({ achievements: [stamp('explorer', 'trips')] }),
+            { includeAchievements: false },
+        );
+
+        expect(summary.showAchievements).toBe(true);
+        expect(summary.achievementsForced).toBe(true);
+    });
+
+    it('shows only the earned stamps, in passport family order, and counts the rest', () => {
+        const achievements = [
+            stamp('popular', 'followers'),
+            stamp('adventurer', 'trips', null),
+            ...['countries_1', 'countries_5', 'countries_10', 'countries_25'].map(id => stamp(id, 'countries')),
+            stamp('van_log_1', 'vanLog'),
+            stamp('life_diary_1', 'lifeDiary'),
+            stamp('explorer', 'trips'),
+            stamp('globetrotter', 'trips'),
+        ];
+
+        const summary = summarizePassportForSharing(passport({ countries: ['ES'], achievements }), { includeAchievements: true });
+
+        expect(summary.stampIds).toEqual(['explorer', 'globetrotter', 'countries_1', 'countries_5', 'countries_10', 'countries_25', 'popular', 'van_log_1']);
+        expect(summary.earnedCount).toBe(9);
+        expect(summary.hiddenStamps).toBe(1);
+    });
+
+    it('builds the link to the passport on the web', () => {
+        expect(passportUrl('https://tobeatraveller.com', 'user-1')).toBe('https://tobeatraveller.com/profile/user-1/passport');
+    });
+
+    it("carries the owner's referral code in the shared link", () => {
+        expect(passportUrl('https://tobeatraveller.com', 'user-1', 'jane.doe'))
+            .toBe('https://tobeatraveller.com/profile/user-1/passport?ref=jane.doe');
+    });
+
+    it('links to the passport with the share dialog open, with or without the achievements', () => {
+        expect(passportSharePath('user-1')).toBe('/profile/user-1/passport?share=countries');
+        expect(passportSharePath('user-1', { withAchievements: true })).toBe('/profile/user-1/passport?share=achievements');
+    });
+
+    it('keeps the referral code in the sign-up link offered to a visitor, and marks where it came from', () => {
+        expect(signupUrlFromPassport('jane doe')).toBe('/register?source=passport&ref=jane%20doe');
+        expect(signupUrlFromPassport(null)).toBe('/register?source=passport');
+    });
+});
+
+describe('passportShareFlagLayout', () => {
+    // The countries panel alone is 1250px tall, 1140px under its title, and a
+    // "+N" line takes 80px more.
+    const COUNTRIES_ALONE_CONTENT_HEIGHT = 1140;
+    const MORE_LABEL_HEIGHT = 80;
+
+    it('gives a few countries fewer, bigger flags per row', () => {
+        const few = passportShareFlagLayout(3, false);
+        const many = passportShareFlagLayout(25, false);
+
+        expect(few.perRow).toBeLessThan(many.perRow);
+        expect(few.fontSize).toBeGreaterThan(many.fontSize);
+    });
+
+    it.each([1, 4, 5, 9, 10, 16, 17, 25])('fits %i flags, plus the "+N" line, in the countries panel alone', (count) => {
+        const { perRow, cellHeight } = passportShareFlagLayout(count, false);
+        const rows = Math.ceil(count / perRow);
+
+        expect(rows * cellHeight + MORE_LABEL_HEIGHT).toBeLessThanOrEqual(COUNTRIES_ALONE_CONTENT_HEIGHT);
+    });
+
+    it('keeps the smaller layout when the achievements share the card', () => {
+        expect(passportShareFlagLayout(3, true)).toEqual({ perRow: 5, fontSize: 110, cellHeight: 160 });
     });
 });

@@ -9,6 +9,7 @@ import { BadgeRepository } from "../repositories/badgeRepository.js";
 import { FollowRepository } from "../repositories/followRepository.js";
 import { InventoryRepository } from "../repositories/inventoryRepository.js";
 import { ItineraryRepository } from "../repositories/itineraryRepository.js";
+import { NotificationsRepository } from "../repositories/notificationsRepository.js";
 import { LifeDiaryRepository } from "../repositories/lifeDiaryRepository.js";
 import { PackingChecklistRepository } from "../repositories/packingChecklistRepository.js";
 import { ShoppingListRepository } from "../repositories/shoppingListRepository.js";
@@ -20,6 +21,8 @@ import { auditLogService } from "../services/sharedAuditLogService.js";
 import { BadgeService } from "../services/badgeService.js";
 import { CloudinaryService } from "../services/cloudinaryService.js";
 import { EmailService } from "../services/emailService.js";
+import { NotificationsService } from "../services/notificationsService.js";
+import { PushNotificationsService } from "../services/pushNotificationsService.js";
 import { UserService } from "../services/userService.js";
 
 export const createUsersRouter = () => {
@@ -35,14 +38,17 @@ export const createUsersRouter = () => {
     const subscriptionRepository = new SubscriptionRepository();
     const emailService = new EmailService();
     const badgeRepository = new BadgeRepository();
-    // No notifications here: this router only catches up silently when an
-    // owner opens their own passport (see BadgeService.getPassport).
-    const badgeController = new BadgeController(new BadgeService(badgeRepository, null, userRepository));
+    const pushTokensRepository = new PushTokensRepository();
+    // Opening one's own passport can save a badge or country before the
+    // evaluation an action started, and then it's this router that announces it.
+    const pushNotificationsService = new PushNotificationsService(pushTokensRepository, userRepository, itinerariesRepository);
+    const notificationsService = new NotificationsService(new NotificationsRepository(), pushNotificationsService);
+    const badgeController = new BadgeController(new BadgeService(badgeRepository, notificationsService, userRepository));
     const userService = new UserService(
         userRepository, itinerariesRepository, followRepository, emailService,
         lifeDiaryRepository, auditLogService, vanLogRepository,
         inventoryRepository, shoppingListRepository, packingChecklistRepository,
-        subscriptionRepository, null, new PushTokensRepository(), badgeRepository
+        subscriptionRepository, null, pushTokensRepository, badgeRepository
     );
     const cloudinaryService = new CloudinaryService();
     const userController = new UserController(userService, cloudinaryService);

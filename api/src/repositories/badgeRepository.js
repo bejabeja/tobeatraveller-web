@@ -40,6 +40,28 @@ export class BadgeRepository {
         return result.rows.map(row => row.badge_id);
     }
 
+    async findStampedCountries(userId) {
+        const result = await client.query(
+            `SELECT country_code, stamped_at FROM user_country_stamps WHERE user_id = $1 ORDER BY stamped_at`,
+            [userId]
+        );
+        return result.rows.map(row => ({ countryCode: row.country_code, stampedAt: row.stamped_at }));
+    }
+
+    // Returns only the countries actually inserted, for the same reason as
+    // insertEarned: a concurrent evaluation must not announce them twice.
+    async insertCountryStamps(userId, countryCodes) {
+        if (countryCodes.length === 0) return [];
+        const result = await client.query(
+            `INSERT INTO user_country_stamps (user_id, country_code)
+             SELECT $1, UNNEST($2::CHAR(2)[])
+             ON CONFLICT (user_id, country_code) DO NOTHING
+             RETURNING country_code`,
+            [userId, countryCodes]
+        );
+        return result.rows.map(row => row.country_code);
+    }
+
     async getMetrics(userId) {
         const result = await client.query(
             `WITH visits AS (${COUNTRY_VISITS_SQL})

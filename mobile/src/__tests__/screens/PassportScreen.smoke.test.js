@@ -25,6 +25,13 @@ jest.mock('@tobeatraveller/shared', () => {
   };
 });
 
+jest.mock('../../components/PassportShareModal', () => {
+  const { Text } = jest.requireActual('react-native');
+  return ({ visible, initialIncludeAchievements }) => (
+    visible ? <Text>share-modal achievements:{String(initialIncludeAchievements)}</Text> : null
+  );
+});
+
 import { getUserPassport, selectAuthUser } from '@tobeatraveller/shared';
 import { act, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -32,10 +39,10 @@ import PassportScreen from '../../screens/passport/PassportScreen';
 
 const INITIAL_METRICS = { frame: { x: 0, y: 0, width: 390, height: 844 }, insets: { top: 0, left: 0, right: 0, bottom: 0 } };
 
-const renderScreen = async () => {
+const renderScreen = async (params = {}, navigation = { goBack: jest.fn(), setParams: jest.fn() }) => {
   const result = render(
     <SafeAreaProvider initialMetrics={INITIAL_METRICS}>
-      <PassportScreen navigation={{ goBack: jest.fn() }} route={{ params: { userId: 'user-1' } }} />
+      <PassportScreen navigation={navigation} route={{ params: { userId: 'user-1', ...params } }} />
     </SafeAreaProvider>
   );
   await act(async () => {});
@@ -85,4 +92,23 @@ it('shows an error instead of crashing when the passport fails to load', async (
   await renderScreen();
 
   expect(screen.getByText('passport.loadError')).toBeTruthy();
+});
+
+it('opens the share sheet right away, with the achievements, when coming from a badge notification', async () => {
+  getUserPassport.mockResolvedValue({ owner: { id: 'user-1', username: 'jane' }, achievements: [], countries: [] });
+  const navigation = { goBack: jest.fn(), setParams: jest.fn() };
+
+  await renderScreen({ share: 'achievements' }, navigation);
+
+  expect(screen.getByText('share-modal achievements:true')).toBeTruthy();
+  expect(navigation.setParams).toHaveBeenCalledWith({ share: undefined });
+});
+
+it("does not open the share sheet for someone else's passport", async () => {
+  selectAuthUser.mockReturnValue({ id: 'someone-else' });
+  getUserPassport.mockResolvedValue({ owner: { id: 'user-1', username: 'jane' }, achievements: [], countries: [] });
+
+  await renderScreen({ share: 'countries' });
+
+  expect(screen.queryByText(/share-modal/)).toBeNull();
 });

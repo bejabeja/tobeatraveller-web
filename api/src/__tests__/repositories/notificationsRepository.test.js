@@ -68,6 +68,18 @@ describe('NotificationsRepository.create()', () => {
         expect(client.query.mock.calls[1][1]).toContain('explorer');
     });
 
+    // Two new countries the same day are two stamps, not "Italy and 1 other".
+    it('only folds a country notification into one for the same country', async () => {
+        client.query.mockResolvedValueOnce({ rowCount: 0, rows: [] }).mockResolvedValueOnce({ rowCount: 1 });
+
+        await repo.create({ userId: 'u1', actorId: 'u1', type: 'country_stamp', countryCode: 'IT' });
+
+        const [foldQuery, foldParams] = client.query.mock.calls[0];
+        expect(foldQuery).toMatch(/country_code IS NOT DISTINCT FROM \$7/);
+        expect(foldParams[6]).toBe('IT');
+        expect(client.query.mock.calls[1][1]).toContain('IT');
+    });
+
     it('reports that the event folded into an existing notification', async () => {
         client.query.mockResolvedValueOnce({ rowCount: 1, rows: [{ id: 'existing-1' }] });
 

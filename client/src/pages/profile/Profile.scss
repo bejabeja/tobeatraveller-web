@@ -349,11 +349,42 @@ $avatar-size-tablet: 112px;
   // ── Achievement badges ───────────────────────────────────────
   // index.scss gives every element `width: 100%`; the pieces of this card
   // size to their content instead.
-  &__passport-card {
+  &__passport {
+    display: flex;
+    align-items: stretch;
+    gap: 0.5rem;
+    max-width: 460px;
+  }
+
+  &__passport-share {
     display: flex;
     align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 48px;
+    border-radius: 14px;
+    border: 1px dashed #d9a441;
+    background: #fdf6e9;
+    color: #b08a45;
+    font-size: 1.2rem;
+    cursor: pointer;
+
+    &:hover {
+      background: #fbecd0;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--primary-color);
+      outline-offset: 2px;
+    }
+  }
+
+  &__passport-card {
+    display: flex;
+    flex: 1;
+    align-items: center;
     gap: 0.75rem;
-    max-width: 460px;
+    min-width: 0;
     padding: 0.75rem 1rem;
     border-radius: 14px;
     border: 1px dashed #d9a441;

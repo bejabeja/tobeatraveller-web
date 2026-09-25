@@ -1,11 +1,14 @@
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
-  BADGE_EMOJI, BADGE_FAMILY_ORDER, countryFlag, countryName, passportStampStyle, selectAuthUser,
+  BADGE_EMOJI, BADGE_FAMILY_ORDER, PASSPORT_SHARE_WITH_ACHIEVEMENTS,
+  countryFlag, countryName, passportStampStyle, selectAuthUser,
 } from '@tobeatraveller/shared';
+import PassportShareModal from '../../components/PassportShareModal';
 import { useUserPassport } from '../../hooks/useUserPassport';
 
 const PASSPORT_NAVY = '#1b2a41';
@@ -83,6 +86,23 @@ const PassportScreen = ({ navigation, route }) => {
   const { passport, loading, error } = useUserPassport(userId);
   const isOwner = authUser?.id === userId;
   const language = i18n.language;
+  const [isShareOpen, setIsShareOpen] = useState(false);
+  const [shareWithAchievements, setShareWithAchievements] = useState(false);
+  const shareRequest = route.params?.share;
+
+  // Coming from a new country or badge notification: open the share sheet
+  // right away, then clear the param so coming back doesn't open it again.
+  useEffect(() => {
+    if (!shareRequest || !isOwner) return;
+    setShareWithAchievements(shareRequest === PASSPORT_SHARE_WITH_ACHIEVEMENTS);
+    setIsShareOpen(true);
+    navigation.setParams({ share: undefined });
+  }, [shareRequest, isOwner, navigation]);
+
+  const openShare = () => {
+    setShareWithAchievements(false);
+    setIsShareOpen(true);
+  };
 
   const title = isOwner
     ? t('passport.ownTitle')
@@ -105,6 +125,17 @@ const PassportScreen = ({ navigation, route }) => {
           <Text style={styles.backText}>←</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle} numberOfLines={1}>{t('passport.title')}</Text>
+        {isOwner && passport && (
+          <TouchableOpacity
+            onPress={openShare}
+            style={styles.shareBtn}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            accessibilityRole="button"
+            accessibilityLabel={t('passport.share')}
+          >
+            <Ionicons name="share-outline" size={22} color="#374151" />
+          </TouchableOpacity>
+        )}
       </View>
 
       {loading ? (
@@ -155,6 +186,15 @@ const PassportScreen = ({ navigation, route }) => {
           </View>
         </ScrollView>
       )}
+
+      {isOwner && (
+        <PassportShareModal
+          userId={userId}
+          visible={isShareOpen}
+          onClose={() => setIsShareOpen(false)}
+          initialIncludeAchievements={shareWithAchievements}
+        />
+      )}
     </View>
   );
 };
@@ -169,6 +209,7 @@ const styles = StyleSheet.create({
   backBtn: { marginRight: 10, padding: 4 },
   backText: { fontSize: 20, color: '#374151' },
   headerTitle: { flex: 1, fontSize: 18, fontWeight: '800', color: '#111827' },
+  shareBtn: { marginLeft: 10, padding: 4 },
   loading: { marginTop: 48 },
   errorText: { margin: 24, textAlign: 'center', color: '#b91c1c' },
   content: { padding: 16, gap: 16 },

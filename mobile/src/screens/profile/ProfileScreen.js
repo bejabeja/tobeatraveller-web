@@ -20,6 +20,7 @@ import { shadow } from '../../utils/styles';
 import { clearDeviceSessionData } from '../../utils/session';
 import { useOutbox } from '../../offline/useOutbox';
 import { useUserPassport } from '../../hooks/useUserPassport';
+import PassportShareModal from '../../components/PassportShareModal';
 
 const MAX_PASSPORT_CARD_FLAGS = 5;
 const COMPLETENESS_FIELDS = [
@@ -72,6 +73,7 @@ const ProfileScreen = ({ route, navigation }) => {
   const user = isOwnProfile ? me : otherUser;
   const passportUserId = isOwnProfile ? me?.id : profileId;
   const { passport } = useUserPassport(passportUserId);
+  const [isPassportShareOpen, setIsPassportShareOpen] = useState(false);
   const passportSummary = summarizePassport(passport, MAX_PASSPORT_CARD_FLAGS);
   // Other viewers only see the card once there is something public in it.
   const showPassportCard = passportSummary
@@ -342,8 +344,26 @@ const ProfileScreen = ({ route, navigation }) => {
                   </Text>
                 )}
               </View>
+              {isOwnProfile && (
+                <TouchableOpacity
+                  onPress={() => setIsPassportShareOpen(true)}
+                  style={styles.passportCardShare}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('passport.share')}
+                >
+                  <Ionicons name="share-outline" size={20} color="#b08a45" />
+                </TouchableOpacity>
+              )}
               <Ionicons name="chevron-forward" size={16} color="#b08a45" />
             </TouchableOpacity>
+          )}
+          {isOwnProfile && (
+            <PassportShareModal
+              userId={passportUserId}
+              visible={isPassportShareOpen}
+              onClose={() => setIsPassportShareOpen(false)}
+            />
           )}
         </View>
 
@@ -673,6 +693,7 @@ const styles = StyleSheet.create({
   passportCardTitle: { fontSize: 14, fontWeight: '800', color: '#1b2a41' },
   passportCardMeta: { fontSize: 12, color: '#6b5d45' },
   passportCardGoal: { fontSize: 12, fontWeight: '600', color: '#E8743B' },
+  passportCardShare: { padding: 4 },
 
   meta: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginTop: 10 },
   metaItem: { fontSize: 13, color: '#6b7280' },

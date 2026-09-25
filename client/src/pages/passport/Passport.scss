@@ -15,12 +15,26 @@ $passport-ink-muted: #8a8172;
     flex-shrink: 0;
   }
 
+  &__toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  &__share {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    width: auto;
+  }
+
   &__back {
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
     width: fit-content;
-    margin-bottom: 1rem;
     color: var(--text-secondary-color);
     font-size: 0.9rem;
     text-decoration: none;
@@ -78,6 +92,36 @@ $passport-ink-muted: #8a8172;
     margin: 0;
     font-size: 0.95rem;
     color: rgba(255, 255, 255, 0.85);
+  }
+
+  &__invite {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 1.25rem;
+    padding: 1.25rem 1.5rem;
+    border-radius: 18px;
+    border: 1px dashed $passport-gold;
+    background: #fdf6e9;
+    text-align: center;
+  }
+
+  &__invite-title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: $passport-navy;
+  }
+
+  &__invite-text {
+    margin: 0;
+    font-size: 0.9rem;
+    color: $passport-ink-muted;
+  }
+
+  &__invite-button {
+    width: auto;
+    text-decoration: none;
   }
 
   &__section {

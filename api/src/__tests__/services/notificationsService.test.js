@@ -60,6 +60,14 @@ describe('NotificationsService.createNotification()', () => {
         }));
     });
 
+    it('creates a country stamp notification even though the user is their own actor', async () => {
+        await service.createNotification({ userId: 'u1', actorId: 'u1', type: 'country_stamp', countryCode: 'IT' });
+
+        expect(notificationsRepository.create).toHaveBeenCalledWith(expect.objectContaining({
+            userId: 'u1', type: 'country_stamp', countryCode: 'IT',
+        }));
+    });
+
     it('does not create a notification when the actor is the recipient', async () => {
         await service.createNotification({ userId: 'u1', actorId: 'u1', type: 'like' });
 

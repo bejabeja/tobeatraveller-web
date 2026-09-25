@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { BADGE_EARNED_NOTIFICATION_TYPE, BadgeService } from '../../services/badgeService.js';
+import {
+    BADGE_EARNED_NOTIFICATION_TYPE, BadgeService, COUNTRY_STAMP_NOTIFICATION_TYPE,
+} from '../../services/badgeService.js';
 
 const metrics = (overrides = {}) => ({
     publicItineraries: 0, followers: 0, countries: 0, publicCountries: 0, vanLogEntries: 0, lifeDiaryEntries: 0,
@@ -17,6 +19,9 @@ describe('BadgeService', () => {
             getMetrics: vi.fn().mockResolvedValue(metrics()),
             findEarnedByUserId: vi.fn().mockResolvedValue([]),
             insertEarned: vi.fn(async (userId, badgeIds) => badgeIds),
+            getCountryVisits: vi.fn().mockResolvedValue([]),
+            findStampedCountries: vi.fn().mockResolvedValue([]),
+            insertCountryStamps: vi.fn(async (userId, countryCodes) => countryCodes),
         };
         notificationsService = { createNotification: vi.fn().mockResolvedValue() };
         userRepository = { getUserById: vi.fn().mockResolvedValue({ id: 'user-1', username: 'jane', avatarUrl: null, email: 'jane@example.com' }) };
@@ -72,14 +77,71 @@ describe('BadgeService', () => {
         });
     });
 
+    describe('country stamps', () => {
+        const visit = (code) => ({ code, firstVisitedOn: '2026-03-01', firstPublicVisitedOn: null });
+        const stamped = (...codes) => codes.map(countryCode => ({ countryCode, stampedAt: new Date('2026-09-01') }));
+        const countryNotifications = () => notificationsService.createNotification.mock.calls
+            .map(([notification]) => notification)
+            .filter(notification => notification.type === COUNTRY_STAMP_NOTIFICATION_TYPE);
+
+        it('stamps each newly visited country and tells the user about it', async () => {
+            badgeRepository.findEarnedByUserId.mockResolvedValue([{ badgeId: 'countries_1', earnedAt: new Date() }]);
+            badgeRepository.getMetrics.mockResolvedValue(metrics({ countries: 2 }));
+            badgeRepository.getCountryVisits.mockResolvedValue([visit('ES'), visit('FR')]);
+            badgeRepository.findStampedCountries.mockResolvedValue(stamped('ES'));
+
+            await service.evaluateUser('user-1');
+
+            expect(badgeRepository.insertCountryStamps).toHaveBeenCalledWith('user-1', ['FR']);
+            expect(countryNotifications()).toEqual([
+                { userId: 'user-1', actorId: 'user-1', type: COUNTRY_STAMP_NOTIFICATION_TYPE, countryCode: 'FR' },
+            ]);
+        });
+
+        it('only tells about the countries it actually stamped', async () => {
+            badgeRepository.findEarnedByUserId.mockResolvedValue([{ badgeId: 'countries_1', earnedAt: new Date() }]);
+            badgeRepository.getMetrics.mockResolvedValue(metrics({ countries: 2 }));
+            badgeRepository.getCountryVisits.mockResolvedValue([visit('ES'), visit('FR')]);
+            badgeRepository.insertCountryStamps.mockResolvedValue(['FR']);
+
+            await service.evaluateUser('user-1');
+
+            expect(countryNotifications().map(notification => notification.countryCode)).toEqual(['FR']);
+        });
+
+        // The badge already celebrates the milestone; a second notification
+        // for the country that reached it would just be noise.
+        it('leaves the news to the countries badge when the new country earns one', async () => {
+            badgeRepository.getMetrics.mockResolvedValue(metrics({ countries: 1 }));
+            badgeRepository.getCountryVisits.mockResolvedValue([visit('ES')]);
+
+            await service.evaluateUser('user-1');
+
+            expect(badgeRepository.insertCountryStamps).toHaveBeenCalledWith('user-1', ['ES']);
+            expect(countryNotifications()).toEqual([]);
+            expect(notificationsService.createNotification).toHaveBeenCalledWith(expect.objectContaining({ badgeId: 'countries_1' }));
+        });
+
+        it('stamps silently when asked not to notify', async () => {
+            badgeRepository.getCountryVisits.mockResolvedValue([visit('ES')]);
+
+            await service.evaluateUser('user-1', { notify: false });
+
+            expect(badgeRepository.insertCountryStamps).toHaveBeenCalledWith('user-1', ['ES']);
+            expect(notificationsService.createNotification).not.toHaveBeenCalled();
+        });
+
+        it('fetches the country visits once when the owner opens their passport', async () => {
+            await service.getPassport('user-1', 'user-1');
+
+            expect(badgeRepository.getCountryVisits).toHaveBeenCalledTimes(1);
+        });
+    });
+
     describe('getPassport()', () => {
         const earned = (...badgeIds) => badgeIds.map(badgeId => ({ badgeId, earnedAt: new Date('2026-09-01') }));
         const visit = (code, firstVisitedOn, firstPublicVisitedOn = null) => ({ code, firstVisitedOn, firstPublicVisitedOn });
         const stamp = (achievements, id) => achievements.find(achievement => achievement.id === id);
-
-        beforeEach(() => {
-            badgeRepository.getCountryVisits = vi.fn().mockResolvedValue([]);
-        });
 
         it('gives the owner every stamp in the catalog, earned and still locked, with their progress', async () => {
             badgeRepository.findEarnedByUserId.mockResolvedValue(earned('explorer'));
@@ -104,6 +166,27 @@ describe('BadgeService', () => {
             expect(achievements.map(achievement => achievement.family)).not.toContain('lifeDiary');
             expect(achievements.every(achievement => achievement.current === undefined)).toBe(true);
             expect(stamp(achievements, 'explorer').earnedAt).toEqual(new Date('2026-09-01'));
+        });
+
+        // What the owner shares must not reveal what only they can see, e.g. a
+        // countries badge reached through van log countries.
+        it('gives the owner exactly what others see when they ask for the public view', async () => {
+            badgeRepository.findEarnedByUserId.mockResolvedValue(earned('countries_1', 'countries_5', 'van_log_1'));
+            badgeRepository.getMetrics.mockResolvedValue(metrics({ countries: 5, publicCountries: 2, vanLogEntries: 3 }));
+            badgeRepository.getCountryVisits.mockResolvedValue([visit('ES', '2026-03-01', '2026-05-01'), visit('FR', '2026-06-10')]);
+
+            const publicView = await service.getPassport('user-1', 'user-1', { publicView: true });
+            const othersView = await service.getPassport('user-1', 'someone-else');
+
+            expect(publicView).toEqual(othersView);
+            expect(stamp(publicView.achievements, 'countries_5').earnedAt).toBeNull();
+            expect(publicView.countries.map(country => country.code)).toEqual(['ES']);
+        });
+
+        it('does not evaluate anything for the owner asking for the public view', async () => {
+            await service.getPassport('user-1', 'user-1', { publicView: true });
+
+            expect(badgeRepository.insertEarned).not.toHaveBeenCalled();
         });
 
         it('shows a country stamp as locked to others when public trips alone do not reach it', async () => {
@@ -146,13 +229,29 @@ describe('BadgeService', () => {
             ]);
         });
 
-        it('silently grants the owner anything missed, and includes it right away', async () => {
+        it('grants the owner anything not saved yet, and includes it right away', async () => {
             badgeRepository.getMetrics.mockResolvedValue(metrics({ vanLogEntries: 1 }));
 
             const { achievements } = await service.getPassport('user-1', 'user-1');
 
             expect(stamp(achievements, 'van_log_1').earnedAt).toBeInstanceOf(Date);
-            expect(notificationsService.createNotification).not.toHaveBeenCalled();
+        });
+
+        // The profile keeps reloading the owner's passport, and can get there
+        // before the evaluation the action started: whichever saves a badge or
+        // country first must announce it, or the news (and the share prompt it
+        // opens) is lost.
+        it("announces what it grants when the owner's passport gets there first", async () => {
+            badgeRepository.findEarnedByUserId.mockResolvedValue([{ badgeId: 'countries_1', earnedAt: new Date() }]);
+            badgeRepository.getMetrics.mockResolvedValue(metrics({ countries: 2 }));
+            badgeRepository.getCountryVisits.mockResolvedValue([visit('ES', '2026-03-01'), visit('FR', '2026-06-10')]);
+            badgeRepository.findStampedCountries.mockResolvedValue([{ countryCode: 'ES', stampedAt: new Date() }]);
+
+            await service.getPassport('user-1', 'user-1');
+
+            expect(notificationsService.createNotification).toHaveBeenCalledWith(expect.objectContaining({
+                type: COUNTRY_STAMP_NOTIFICATION_TYPE, countryCode: 'FR',
+            }));
         });
 
         it('identifies whose passport it is, without private profile fields', async () => {

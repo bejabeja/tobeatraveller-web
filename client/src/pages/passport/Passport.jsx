@@ -1,13 +1,18 @@
-import { IoArrowBack } from "react-icons/io5";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { IoArrowBack, IoShareSocialOutline } from "react-icons/io5";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import {
-  BADGE_EMOJI, BADGE_FAMILY_ORDER, countryFlag, countryName, passportStampStyle,
+  BADGE_EMOJI, BADGE_FAMILY_ORDER, PASSPORT_SHARE_PARAM, PASSPORT_SHARE_WITH_ACHIEVEMENTS,
+  countryFlag, countryName, passportStampStyle, signupUrlFromPassport,
 } from "@tobeatraveller/shared";
+import PassportShareDialog from "../../components/passport/PassportShareDialog";
 import { useUserPassport } from "../../hooks/useUserPassport";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { selectAuthUser } from "../../store/auth/authSelectors";
+import { trackEvent } from "../../utils/analytics";
+import { ANALYTICS_EVENTS, PASSPORT_SHARE_SOURCES, PASSPORT_VIEWERS } from "../../utils/analyticsEvents";
 import "./Passport.scss";
 
 // "2026-03-01" is a calendar date, not an instant: parsed as local so it
@@ -71,6 +76,34 @@ const CountryStamp = ({ country, language, t }) => {
   );
 };
 
+// Where a shared passport turns visitors into users: someone without an
+// account is invited to create their own (keeping the referral code the
+// link came with); a member is pointed to their own passport.
+const PassportInvite = ({ authUserId, referralCode, t }) => {
+  const trackClick = () => trackEvent(ANALYTICS_EVENTS.PASSPORT_INVITE_CLICKED, {
+    viewer: authUserId ? PASSPORT_VIEWERS.MEMBER : PASSPORT_VIEWERS.ANONYMOUS,
+    from_shared_link: Boolean(referralCode),
+  });
+
+  return (
+    <aside className="passport__invite">
+      <strong className="passport__invite-title">{t("passport.visitorCtaTitle")}</strong>
+      {authUserId ? (
+        <Link to={`/profile/${authUserId}/passport`} className="btn btn--primary passport__invite-button" onClick={trackClick}>
+          {t("passport.memberCtaButton")}
+        </Link>
+      ) : (
+        <>
+          <p className="passport__invite-text">{t("passport.visitorCtaText")}</p>
+          <Link to={signupUrlFromPassport(referralCode)} className="btn btn--primary passport__invite-button" onClick={trackClick}>
+            {t("passport.visitorCtaButton")}
+          </Link>
+        </>
+      )}
+    </aside>
+  );
+};
+
 const Passport = () => {
   const { t, i18n } = useTranslation();
   const { id } = useParams();
@@ -78,6 +111,41 @@ const Passport = () => {
   const { passport, loading, error } = useUserPassport(id);
   const isOwner = authUser?.id === id;
   const language = i18n.language;
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [isShareOpen, setIsShareOpen] = useState(false);
+  const [shareWithAchievements, setShareWithAchievements] = useState(false);
+  const [shareSource, setShareSource] = useState(PASSPORT_SHARE_SOURCES.PASSPORT_PAGE);
+  const closeShare = useCallback(() => setIsShareOpen(false), []);
+  const trackedViewRef = useRef(null);
+  const referralCode = searchParams.get("ref");
+  const shareRequest = searchParams.get(PASSPORT_SHARE_PARAM);
+
+  // Coming from a new country or badge notification: open the share dialog
+  // right away, then drop the parameter so a reload doesn't open it again.
+  useEffect(() => {
+    if (!shareRequest || !isOwner) return;
+    setShareWithAchievements(shareRequest === PASSPORT_SHARE_WITH_ACHIEVEMENTS);
+    setShareSource(PASSPORT_SHARE_SOURCES.NOTIFICATION);
+    setIsShareOpen(true);
+    setSearchParams((params) => { params.delete(PASSPORT_SHARE_PARAM); return params; }, { replace: true });
+  }, [shareRequest, isOwner, setSearchParams]);
+
+  // Once per passport opened. `from_shared_link` is what tells a visit that
+  // came from a shared image apart from browsing inside the app.
+  useEffect(() => {
+    if (!passport || trackedViewRef.current === id) return;
+    trackedViewRef.current = id;
+    trackEvent(ANALYTICS_EVENTS.PASSPORT_VIEWED, {
+      viewer: isOwner ? PASSPORT_VIEWERS.OWNER : authUser ? PASSPORT_VIEWERS.MEMBER : PASSPORT_VIEWERS.ANONYMOUS,
+      from_shared_link: Boolean(referralCode),
+    });
+  }, [passport, id, isOwner, authUser, referralCode]);
+
+  const openShare = () => {
+    setShareWithAchievements(false);
+    setShareSource(PASSPORT_SHARE_SOURCES.PASSPORT_PAGE);
+    setIsShareOpen(true);
+  };
 
   const title = isOwner
     ? t("passport.ownTitle")
@@ -99,9 +167,16 @@ const Passport = () => {
 
   return (
     <div className="passport section__container">
-      <Link to={`/profile/${id}`} className="passport__back">
-        <IoArrowBack aria-hidden="true" /> {t("common.back")}
-      </Link>
+      <div className="passport__toolbar">
+        <Link to={`/profile/${id}`} className="passport__back">
+          <IoArrowBack aria-hidden="true" /> {t("common.back")}
+        </Link>
+        {isOwner && (
+          <button type="button" className="btn btn--secondary passport__share" onClick={openShare}>
+            <IoShareSocialOutline aria-hidden="true" /> {t("passport.share")}
+          </button>
+        )}
+      </div>
 
       <header className="passport__cover">
         <span className="passport__cover-kicker">{t("passport.title")} · ToBeATraveller</span>
@@ -112,6 +187,8 @@ const Passport = () => {
           {t("passport.countriesCount", { count: passport.countries.length })}
         </p>
       </header>
+
+      {!isOwner && <PassportInvite authUserId={authUser?.id} referralCode={referralCode} t={t} />}
 
       <section className="passport__section" aria-labelledby="passport-countries">
         <h2 id="passport-countries" className="passport__section-title">{t("passport.countries")}</h2>
@@ -140,6 +217,16 @@ const Passport = () => {
           </div>
         ))}
       </section>
+
+      {isOwner && (
+        <PassportShareDialog
+          userId={id}
+          isOpen={isShareOpen}
+          onClose={closeShare}
+          initialIncludeAchievements={shareWithAchievements}
+          source={shareSource}
+        />
+      )}
     </div>
   );
 };

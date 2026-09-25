@@ -181,6 +181,11 @@ export const commentSchema = z.object({
 
 export const userIdParamSchema = z.string().uuid("Invalid user id");
 
+export const PASSPORT_PUBLIC_VIEW = 'public';
+export const passportQuerySchema = z.object({
+    view: z.literal(PASSPORT_PUBLIC_VIEW, { errorMap: () => ({ message: "Invalid passport view" }) }).optional(),
+});
+
 // Offline mobile clients generate the id of what they create, so replaying a
 // create whose response was lost returns the existing row instead of a duplicate.
 const clientGeneratedIdField = { id: z.string().uuid("Invalid id").optional() };

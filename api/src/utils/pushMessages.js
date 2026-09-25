@@ -1,6 +1,10 @@
 export const SUPPORTED_PUSH_LOCALES = ['en', 'es'];
 export const DEFAULT_PUSH_LOCALE = 'en';
 
+const REGIONAL_INDICATOR_OFFSET = 0x1F1E6 - 'A'.charCodeAt(0);
+const countryFlag = (code) => String.fromCodePoint(...[...code].map(letter => letter.charCodeAt(0) + REGIONAL_INDICATOR_OFFSET));
+const countryNameIn = (locale, code) => new Intl.DisplayNames([locale], { type: 'region', fallback: 'code' }).of(code);
+
 // Only the actor and the itinerary title go into the message, never the
 // comment text: pushes show up on the lock screen, where anyone holding the
 // phone can read them.
@@ -24,7 +28,11 @@ const PUSH_MESSAGES = {
         }),
         badge_earned: () => ({
             title: 'New badge',
-            body: 'You earned a new badge. Check it out on your profile.',
+            body: 'You earned a new badge. Tap to see it and share it.',
+        }),
+        country_stamp: ({ countryCode }) => ({
+            title: 'New country in your passport',
+            body: `${countryFlag(countryCode)} ${countryNameIn('en', countryCode)} is in your passport now. Tap to share it.`,
         }),
     },
     es: {
@@ -46,7 +54,11 @@ const PUSH_MESSAGES = {
         }),
         badge_earned: () => ({
             title: 'Nuevo badge',
-            body: 'Has conseguido un badge nuevo. Míralo en tu perfil.',
+            body: 'Has conseguido un badge nuevo. Tócalo para verlo y compartirlo.',
+        }),
+        country_stamp: ({ countryCode }) => ({
+            title: 'Nuevo país en tu pasaporte',
+            body: `${countryFlag(countryCode)} ${countryNameIn('es', countryCode)} ya está en tu pasaporte. Tócalo para compartirlo.`,
         }),
     },
 };

@@ -14,7 +14,7 @@ const PUSH_ON_EVERY_EVENT_TYPES = new Set(['comment']);
 
 // Notifications about the user's own progress, where the recipient is also
 // the "actor", instead of someone else acting on their content.
-const SELF_NOTIFICATION_TYPES = new Set(['badge_earned']);
+const SELF_NOTIFICATION_TYPES = new Set(['badge_earned', 'country_stamp']);
 
 export class NotificationsService {
     constructor(notificationsRepository, pushNotificationsService = null) {
@@ -22,20 +22,20 @@ export class NotificationsService {
         this.pushNotificationsService = pushNotificationsService;
     }
 
-    async createNotification({ userId, actorId, type, itineraryId, commentId, badgeId }) {
+    async createNotification({ userId, actorId, type, itineraryId, commentId, badgeId, countryCode }) {
         if (userId === actorId && !SELF_NOTIFICATION_TYPES.has(type)) return;
 
         const preferences = await this.notificationsRepository.getPreferences(userId);
         const preferenceKey = NOTIFICATION_TYPE_PREFERENCE_KEY[type];
         if (preferenceKey && !preferences[preferenceKey]) return;
 
-        const created = await this.notificationsRepository.create({ userId, actorId, type, itineraryId, commentId, badgeId });
+        const created = await this.notificationsRepository.create({ userId, actorId, type, itineraryId, commentId, badgeId, countryCode });
         if (!created || !this._shouldPush(preferences, type, created)) return;
 
         // Callers fire this with .catch(() => {}), so a push failure would
         // otherwise vanish without a trace.
         await this.pushNotificationsService
-            .sendNotificationPush({ userId, actorId, type, itineraryId, commentId })
+            .sendNotificationPush({ userId, actorId, type, itineraryId, commentId, countryCode })
             .catch(err => logger.error('[push] failed to send notification push:', err));
     }
 
