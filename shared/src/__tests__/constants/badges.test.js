@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { BADGES as API_BADGES } from '../../../../api/src/utils/badges.js';
 import { ISO_COUNTRY_CODES } from '../../../../api/src/utils/countryCodes.js';
 import {
-    BADGE_EMOJI, BADGE_FAMILY_ORDER, PASSPORT_SHARE_LIMITS, passportShareFlagLayout, passportUrl, summarizePassport,
+    BADGE_EMOJI, BADGE_FAMILY_ORDER, PASSPORT_SHARE_LIMITS, PASSPORT_SHARE_STAMP_LAYOUT, passportShareFlagLayout, passportUrl, summarizePassport,
     describePassportMoment, findPassportMoment, passportSharePath, signupUrlFromPassport, summarizePassportForSharing,
 } from '../../utils/constants/badges.js';
 import en from '../../locales/en.json';
@@ -227,6 +227,24 @@ describe('passportShareFlagLayout', () => {
 
         expect(fontSize).toBeLessThan(sealDiameter);
         expect(fontSize).toBeGreaterThan(nameFontSize);
+    });
+});
+
+describe('PASSPORT_SHARE_STAMP_LAYOUT', () => {
+    // The achievements panel is 480px tall, 370px under its title; a "+N"
+    // line takes 80px more. The grid is 900px wide.
+    it('fits the most badges shown, plus the "+N" line, in the achievements panel', () => {
+        const { perRow, cellHeight } = PASSPORT_SHARE_STAMP_LAYOUT;
+
+        expect(Math.ceil(PASSPORT_SHARE_LIMITS.stamps / perRow) * cellHeight + 80).toBeLessThanOrEqual(370);
+    });
+
+    it('fits each emoji inside its seal, and each seal in its cell', () => {
+        const { perRow, sealDiameter, fontSize, cellHeight } = PASSPORT_SHARE_STAMP_LAYOUT;
+
+        expect(fontSize).toBeLessThan(sealDiameter);
+        expect(sealDiameter).toBeLessThan(900 / perRow);
+        expect(sealDiameter).toBeLessThan(cellHeight);
     });
 });
 

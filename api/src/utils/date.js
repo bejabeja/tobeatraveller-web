@@ -7,9 +7,10 @@ const CALENDAR_DAY_LENGTH = "YYYY-MM-DD".length;
 export function toCalendarDay(value) {
     if (!value) return null;
     if (typeof value === "string") return value.slice(0, CALENDAR_DAY_LENGTH);
-    const month = String(value.getMonth() + 1).padStart(2, "0");
-    const day = String(value.getDate()).padStart(2, "0");
-    return `${value.getFullYear()}-${month}-${day}`;
+    const date = value instanceof Date ? value : new Date(value);
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${date.getFullYear()}-${month}-${day}`;
 }
 
 export function formatDate(date) {

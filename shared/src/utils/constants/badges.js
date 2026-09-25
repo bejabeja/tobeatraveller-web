@@ -114,6 +114,10 @@ export const passportShareFlagLayout = (flagCount, showAchievements) => {
     return shareSealLayout(perRow, sealDiameter);
 };
 
+// The earned badges on the shareable image: each emoji in a round ink seal,
+// in image pixels.
+export const PASSPORT_SHARE_STAMP_LAYOUT = Object.freeze({ perRow: 4, sealDiameter: 120, fontSize: 60, cellHeight: 140 });
+
 // With the owner's referral code, whoever signs up from a shared passport
 // counts as invited by them (and both get the referral reward).
 export const passportUrl = (webUrl, userId, referralCode = null) => {

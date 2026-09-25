@@ -1,4 +1,4 @@
-import { BADGE_EMOJI, countryFlag, countryName, passportShareFlagLayout } from "@tobeatraveller/shared";
+import { BADGE_EMOJI, countryFlag, countryName, PASSPORT_SHARE_STAMP_LAYOUT, passportShareFlagLayout } from "@tobeatraveller/shared";
 import { canvasToPngBlob, drawInkSeal, roundedRect, spacedText } from "./canvasDrawing";
 
 // Instagram/WhatsApp story size, so the image fills the screen as a story.
@@ -13,7 +13,6 @@ const PANEL_TITLE_HEIGHT = 110;
 const MORE_LABEL_HEIGHT = 80;
 const STAMPS_PANEL_HEIGHT = 480;
 
-const STAMPS_LAYOUT = { perRow: 4, cellHeight: 140, fontSize: 100 };
 
 const NAVY = "#1b2a41";
 const GOLD = "#d9a441";
@@ -25,7 +24,9 @@ const NAME_PADDING = 10;
 const TEXT_FONT = "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
 const EMOJI_FONT = "'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif";
 
-const drawEmoji = (context, emoji, x, y, layout) => {
+// A badge as on the card of a single new badge: its emoji in a round ink seal.
+const drawBadgeSeal = (context, emoji, x, y, layout) => {
+  drawInkSeal(context, x, y, layout.sealDiameter / 2);
   context.font = `${layout.fontSize}px ${EMOJI_FONT}`;
   context.fillText(emoji, x, y);
 };
@@ -144,8 +145,8 @@ export const createPassportShareImage = ({ summary, labels, language, displayUrl
       height: STAMPS_PANEL_HEIGHT,
       title: labels.achievements,
       items: summary.stampIds.map(id => BADGE_EMOJI[id]),
-      drawItem: drawEmoji,
-      layout: STAMPS_LAYOUT,
+      drawItem: drawBadgeSeal,
+      layout: PASSPORT_SHARE_STAMP_LAYOUT,
       more: summary.hiddenStamps > 0 ? labels.moreStamps : null,
       empty: labels.noStamps,
     });

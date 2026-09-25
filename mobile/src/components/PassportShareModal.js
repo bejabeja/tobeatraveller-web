@@ -4,7 +4,7 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
-  BADGE_EMOJI, countryFlag, countryName, passportShareFlagLayout, passportUrl, summarizePassportForSharing,
+  BADGE_EMOJI, countryFlag, countryName, PASSPORT_SHARE_STAMP_LAYOUT, passportShareFlagLayout, passportUrl, summarizePassportForSharing,
 } from '@tobeatraveller/shared';
 import { useShareablePassport } from '../hooks/useShareablePassport';
 import {
@@ -83,7 +83,13 @@ const PassportShareCard = ({ summary, t, language }) => {
         <CardPanel title={t('passport.achievements')} height={STAMPS_PANEL_HEIGHT}>
           {summary.stampIds.length > 0 ? (
             <View style={styles.cardGrid}>
-              {summary.stampIds.map(id => <Text key={id} style={styles.cardStamp}>{BADGE_EMOJI[id]}</Text>)}
+              {summary.stampIds.map(id => (
+                <View key={id} style={styles.cardStampCell}>
+                  <InkSeal diameter={PASSPORT_SHARE_STAMP_LAYOUT.sealDiameter}>
+                    <Text style={styles.cardStamp}>{BADGE_EMOJI[id]}</Text>
+                  </InkSeal>
+                </View>
+              ))}
             </View>
           ) : (
             <Text style={styles.cardEmpty}>{t('passport.noStampsYet')}</Text>
@@ -249,7 +255,14 @@ const styles = StyleSheet.create({
   cardCountryName: {
     alignSelf: 'stretch', paddingHorizontal: scale(COUNTRY_NAME_PADDING), fontWeight: '800', textAlign: 'center', color: STORY_COLORS.NAVY,
   },
-  cardStamp: { width: '25%', textAlign: 'center', fontSize: scale(100), lineHeight: scale(140) },
+  // Sizes from PASSPORT_SHARE_STAMP_LAYOUT, shared with the web image.
+  cardStampCell: {
+    width: `${100 / PASSPORT_SHARE_STAMP_LAYOUT.perRow}%`, height: scale(PASSPORT_SHARE_STAMP_LAYOUT.cellHeight),
+    alignItems: 'center', justifyContent: 'center',
+  },
+  cardStamp: {
+    fontSize: scale(PASSPORT_SHARE_STAMP_LAYOUT.fontSize), lineHeight: scale(PASSPORT_SHARE_STAMP_LAYOUT.fontSize * FLAG_LINE_HEIGHT),
+  },
   cardMore: { marginTop: scale(10), fontSize: scale(40), fontWeight: '700', color: PASSPORT_INK_MUTED },
   cardEmpty: { fontSize: scale(42), color: PASSPORT_INK_MUTED },
   cardUrl: {

@@ -1,20 +1,13 @@
+import { toCalendarDay } from '../utils/date.js';
+
 export const VAN_LOG_CATEGORIES = [
     'gas_bottle', 'water_fresh', 'water_grey', 'water_black', 'trash',
     'fuel', 'groceries', 'laundry', 'parking', 'tolls', 'overnight_stay', 'maintenance', 'other',
 ];
 
-// pg parses a DATE column into a Date at local midnight; JSON.stringify then calls
-// toISOString() (always UTC), which shifts the date back a day in any positive UTC
-// offset (e.g. midnight CEST -> 22:00 UTC the previous day). Formatting with local
-// getters instead of toISOString keeps the calendar date the caller actually stored.
-export const toDateOnlyString = (date) => {
-    if (!date) return null;
-    const d = new Date(date);
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-};
+// pg parses a DATE column into a Date at local midnight; JSON.stringify would
+// call toISOString() (always UTC) and shift it a day. See toCalendarDay.
+export const toDateOnlyString = (date) => toCalendarDay(date);
 
 export class VanLogEntry {
     constructor({ id, userId, category, title, amount, currency, pricePerLiter, location, notes, entryDate, createdAt, updatedAt }) {
