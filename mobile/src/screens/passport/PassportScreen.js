@@ -14,6 +14,7 @@ import CountryPickerModal from '../../components/CountryPickerModal';
 import MomentShareModal from '../../components/MomentShareModal';
 import RecapBanner from '../../components/RecapBanner';
 import PassportShareModal from '../../components/PassportShareModal';
+import PassportMap from '../../components/PassportMap';
 import { usePassportLeaderboard } from '../../hooks/usePassportLeaderboard';
 import { useUserPassport } from '../../hooks/useUserPassport';
 import { trackEvent } from '../../utils/analytics';
@@ -338,6 +339,7 @@ const PassportScreen = ({ navigation, route }) => {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{t('passport.countries')}</Text>
             {isOwner && <Text style={styles.sectionHint}>{t('passport.countriesHowTo')}</Text>}
+            <PassportMap passport={passport} />
             {passport.countries.length > 0 ? (
               <View style={styles.grid}>
                 {passport.countries.map(country => (

@@ -11,6 +11,7 @@ import {
 } from "@tobeatraveller/shared";
 import CountryPickerDialog from "../../components/passport/CountryPickerDialog";
 import MomentShareDialog from "../../components/passport/MomentShareDialog";
+import PassportMap from "../../components/passport/PassportMap";
 import RecapBanner, { RECAP_SOURCES } from "../../components/recap/RecapBanner";
 import PassportShareDialog from "../../components/passport/PassportShareDialog";
 import { updateMyDeclaredCountries } from "../../services/passport";
@@ -444,6 +445,7 @@ const Passport = () => {
       <section className="passport__section" aria-labelledby="passport-countries">
         <h2 id="passport-countries" className="passport__section-title">{t("passport.countries")}</h2>
         {isOwner && <p className="passport__section-hint">{t("passport.countriesHowTo")}</p>}
+        <PassportMap passport={passport} />
         {passport.countries.length > 0 ? (
           <ul className="passport__countries">
             {passport.countries.map(country => (

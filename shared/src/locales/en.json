@@ -1434,6 +1434,11 @@
     "title": "Achievements"
   },
   "passport": {
+    "mapLabel_one": "World map with {{count}} country painted",
+    "mapLabel_other": "World map with {{count}} countries painted",
+    "mapVisited": "Visited",
+    "mapPrivate": "Only you see it",
+    "mapDeclared": "Marked by you",
     "startTitle": "Start your passport",
     "startIntro": "Every country you visit and what you do in the app earn you stamps. Get your first one:",
     "startTrip": "Publish a trip",

@@ -20,6 +20,7 @@ jest.mock('@tobeatraveller/shared', () => {
   const recap = jest.requireActual('../../../../shared/src/utils/recap.js');
   return {
     ...jest.requireActual('../../../../shared/src/utils/analyticsEvents.js'),
+    ...jest.requireActual('../../../../shared/src/utils/passportMap.js'),
     ...badges,
     ...countries,
     ...recap,

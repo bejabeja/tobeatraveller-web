@@ -1434,6 +1434,11 @@
     "title": "Logros"
   },
   "passport": {
+    "mapLabel_one": "Mapa del mundo con {{count}} país pintado",
+    "mapLabel_other": "Mapa del mundo con {{count}} países pintados",
+    "mapVisited": "Visitado",
+    "mapPrivate": "Solo lo ves tú",
+    "mapDeclared": "Marcado por ti",
     "startTitle": "Empieza tu pasaporte",
     "startIntro": "Cada país en el que estés y lo que hagas en la app te dan sellos. Consigue el primero:",
     "startTrip": "Publica un viaje",
