@@ -24,6 +24,10 @@
         {
             "path": "/recap/scheduled-announce",
             "schedule": "0 9 1 12 *"
+        },
+        {
+            "path": "/badges/scheduled-evaluate",
+            "schedule": "0 7 * * *"
         }
     ]
 }

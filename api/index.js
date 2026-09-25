@@ -23,6 +23,7 @@ import { createItinerariesRouter } from "./src/routes/itinerariesRouter.js";
 import { createUsersRouter } from './src/routes/usersRouter.js';
 import { createOgRouter } from './src/routes/ogRouter.js';
 import { createRecapRouter } from './src/routes/recapRouter.js';
+import { createBadgesRouter } from './src/routes/badgesRouter.js';
 import { createSitemapRouter } from './src/routes/sitemapRouter.js';
 import { createVanLogsRouter } from './src/routes/vanLogsRouter.js';
 import { createSuppliesRouter } from './src/routes/suppliesRouter.js';
@@ -77,6 +78,8 @@ app.use('/audit-log', createAuditLogRouter());
 app.use('/push-tokens', createPushTokensRouter());
 // Same again: the yearly recap announcement runs on the cron secret.
 app.use('/recap', createRecapRouter());
+// And the daily stamping of the countries of trips starting today.
+app.use('/badges', createBadgesRouter());
 
 app.use('/', createEmailRouter());
 if (config.nodeEnv !== 'production') {

@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
-  BADGE_EMOJI, PASSPORT_SHARE_COUNTRIES, PASSPORT_SHARE_WITH_ACHIEVEMENTS, countryFlag, countryName,
+  BADGE_EMOJI, PASSPORT_SHARE_MOMENT, countryFlag, countryName,
   initNotifications, loadMoreNotifications, markAllNotificationsRead,
   selectNotifications, selectNotificationsError, selectNotificationsLoading,
   selectNotificationsLoadingMore, selectNotificationsPage, selectNotificationsTotalPages, selectUnreadCount,
@@ -44,9 +44,9 @@ const NotificationsScreen = ({ navigation }) => {
 
   const handlePress = (n) => {
     if (n.type === 'follow') navigation.navigate('UserProfile', { id: n.actor?.id });
-    // Opens the passport ready to share: the moment they most want to show it off.
-    else if (n.type === 'badge_earned') navigation.navigate('Passport', { userId: n.actor?.id, share: PASSPORT_SHARE_WITH_ACHIEVEMENTS });
-    else if (n.type === 'country_stamp') navigation.navigate('Passport', { userId: n.actor?.id, share: PASSPORT_SHARE_COUNTRIES });
+    // Opens the card of that badge or country ready to share: the moment they most want to show it off.
+    else if (n.type === 'badge_earned') navigation.navigate('Passport', { userId: n.actor?.id, share: PASSPORT_SHARE_MOMENT, badge: n.badgeId });
+    else if (n.type === 'country_stamp') navigation.navigate('Passport', { userId: n.actor?.id, share: PASSPORT_SHARE_MOMENT, country: n.countryCode });
     else if (n.type === 'recap_ready') navigation.navigate('Recap');
     else if (n.type === 'referral_reward') navigation.navigate('Referral');
     else if (n.itinerary?.id) {

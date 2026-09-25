@@ -11,9 +11,10 @@ jest.mock('expo-constants', () => ({
 }));
 
 jest.mock('@tobeatraveller/shared', () => {
-  const { PASSPORT_SHARE_COUNTRIES, PASSPORT_SHARE_WITH_ACHIEVEMENTS } = jest.requireActual('../../../../shared/src/utils/constants/badges.js');
+  const { PASSPORT_SHARE_COUNTRIES, PASSPORT_SHARE_MOMENT, PASSPORT_SHARE_WITH_ACHIEVEMENTS } = jest.requireActual('../../../../shared/src/utils/constants/badges.js');
   return {
     PASSPORT_SHARE_COUNTRIES,
+    PASSPORT_SHARE_MOMENT,
     PASSPORT_SHARE_WITH_ACHIEVEMENTS,
     registerPushToken: jest.fn(),
     unregisterPushToken: jest.fn(),
@@ -141,7 +142,13 @@ describe('routeForPushData', () => {
     expect(routeForPushData({ type: 'referral_reward', itineraryId: 'i1' })).toEqual({ name: 'Referral' });
   });
 
-  it("opens the user's own passport, ready to share, for a badge they earned", () => {
+  it('opens the card of the badge they earned, ready to share', () => {
+    expect(routeForPushData({ type: 'badge_earned', actorId: 'u1', badgeId: 'countries_5' }))
+      .toEqual({ name: 'Passport', params: { userId: 'u1', share: 'moment', badge: 'countries_5' } });
+  });
+
+  // Sent before pushes carried which badge or country it was.
+  it("opens the user's own passport, ready to share, for an older badge push", () => {
     expect(routeForPushData({ type: 'badge_earned', actorId: 'u1' }))
       .toEqual({ name: 'Passport', params: { userId: 'u1', share: 'achievements' } });
   });
@@ -150,7 +157,12 @@ describe('routeForPushData', () => {
     expect(routeForPushData({ type: 'recap_ready', actorId: 'u1' })).toEqual({ name: 'Recap' });
   });
 
-  it("opens the user's own passport, ready to share, for a new country", () => {
+  it('opens the card of the new country, ready to share', () => {
+    expect(routeForPushData({ type: 'country_stamp', actorId: 'u1', countryCode: 'IT' }))
+      .toEqual({ name: 'Passport', params: { userId: 'u1', share: 'moment', country: 'IT' } });
+  });
+
+  it("opens the user's own passport, ready to share, for an older country push", () => {
     expect(routeForPushData({ type: 'country_stamp', actorId: 'u1' }))
       .toEqual({ name: 'Passport', params: { userId: 'u1', share: 'countries' } });
   });

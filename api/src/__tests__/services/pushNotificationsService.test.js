@@ -68,7 +68,7 @@ describe('PushNotificationsService.sendNotificationPush()', () => {
             expect.objectContaining({ body: expect.stringContaining('Italy') }),
             expect.objectContaining({ body: expect.stringContaining('Italia') }),
         ]);
-        expect(sentMessages()[0].data).toMatchObject({ type: 'country_stamp', actorId: 'u1' });
+        expect(sentMessages()[0].data).toMatchObject({ type: 'country_stamp', actorId: 'u1', countryCode: 'IT' });
     });
 
     it('announces the yearly recap in each device language', async () => {
@@ -82,6 +82,13 @@ describe('PushNotificationsService.sendNotificationPush()', () => {
             expect.objectContaining({ title: expect.stringContaining('year') }),
             expect.objectContaining({ title: expect.stringContaining('año') }),
         ]);
+    });
+
+    // So tapping it opens the card of that very badge, ready to share.
+    it('tells the app which badge was earned', async () => {
+        await service.sendNotificationPush({ userId: 'u1', actorId: 'u1', type: 'badge_earned', badgeId: 'countries_5' });
+
+        expect(sentMessages()[0].data).toMatchObject({ type: 'badge_earned', badgeId: 'countries_5' });
     });
 
     it('falls back to English for a locale without translations', async () => {

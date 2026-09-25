@@ -48,4 +48,13 @@ export class BadgeController {
             next(error);
         }
     }
+
+    async evaluateTripsStartingTodayScheduled(req, res, next) {
+        try {
+            const evaluated = await this.badgeService.evaluateTripsStartingToday();
+            res.status(200).json({ evaluated });
+        } catch (error) {
+            next(error);
+        }
+    }
 }

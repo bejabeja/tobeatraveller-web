@@ -5,6 +5,9 @@ import { logger } from '../utils/logger.js';
 export const BADGE_EARNED_NOTIFICATION_TYPE = 'badge_earned';
 export const COUNTRY_STAMP_NOTIFICATION_TYPE = 'country_stamp';
 const LEADERBOARD_SIZE = 10;
+// The daily job evaluates a few users at a time, not to exhaust the
+// database connection pool when many trips start on the same day.
+const DAILY_EVALUATION_BATCH_SIZE = 20;
 
 export class BadgeService {
     constructor(badgeRepository, notificationsService = null, userRepository = null) {
@@ -21,6 +24,20 @@ export class BadgeService {
     async evaluateUser(userId, { notify = true } = {}) {
         const { inserted } = await this._evaluate(userId, { notify });
         return inserted;
+    }
+
+    // Run daily by cron. A trip's country only counts from its first day, and
+    // the user may do nothing in the app that day: this stamps it (and tells
+    // them) on the day. Returns how many users were evaluated.
+    async evaluateTripsStartingToday() {
+        const userIds = await this.badgeRepository.findUsersWithTripStartingToday();
+        for (let start = 0; start < userIds.length; start += DAILY_EVALUATION_BATCH_SIZE) {
+            const batch = userIds.slice(start, start + DAILY_EVALUATION_BATCH_SIZE);
+            await Promise.all(batch.map(userId => this.evaluateUser(userId)
+                .catch(err => logger.error(`[badges] failed to evaluate ${userId} on their trip's first day:`, err))));
+        }
+        logger.info(`[badges] evaluated ${userIds.length} users whose trip starts today`);
+        return userIds.length;
     }
 
     // For the actions that can earn a badge: they must neither wait for the
@@ -51,16 +68,20 @@ export class BadgeService {
         const achievements = BADGES
             .filter(badge => isOwner || badge.publicMetric != null)
             .map((badge) => {
-                const isEarnedForViewer = earnedAtById.has(badge.id)
-                    && (isOwner || metrics[badge.publicMetric] >= badge.threshold);
+                const isEarned = earnedAtById.has(badge.id);
+                const isVisibleToOthers = isEarned && badge.publicMetric != null && metrics[badge.publicMetric] >= badge.threshold;
+                const isEarnedForViewer = isOwner ? isEarned : isVisibleToOthers;
                 return {
                     id: badge.id,
                     family: badge.family,
                     threshold: badge.threshold,
                     isPrivate: badge.publicMetric == null,
                     earnedAt: isEarnedForViewer ? earnedAtById.get(badge.id) : null,
-                    // Progress reveals private counts, so only the owner gets it.
-                    ...(isOwner ? { current: metrics[badge.metric] } : {}),
+                    // Progress reveals private counts, so only the owner gets it,
+                    // along with whether others see the badge as earned (e.g. a
+                    // countries badge reached through van log countries they
+                    // don't): sharing it would reveal it.
+                    ...(isOwner ? { current: metrics[badge.metric], visibleToOthers: isVisibleToOthers } : {}),
                 };
             });
 

@@ -12,10 +12,19 @@ import InternalGuard from "./pages/InternalGuard";
 import PrivateLayout from "./pages/PrivateLayout";
 import Home from "./pages/home/Home";
 import { clearError, initAuthUser } from "./store/auth/authActions";
-import { refreshUnreadCount } from "@tobeatraveller/shared";
+import {
+  momentFromShareRequest,
+  PASSPORT_MOMENT_BADGE_PARAM,
+  PASSPORT_MOMENT_COUNTRY_PARAM,
+  PASSPORT_SHARE_PARAM,
+  refreshUnreadCount,
+  selectUnreadCount,
+} from "@tobeatraveller/shared";
 import { useCanonicalUrl } from "./hooks/useCanonicalUrl";
 import { identifyUser, initAnalyticsIfConsented } from "./utils/analytics";
 import { useSyncPendingDeclaredCountries } from "./hooks/useSyncPendingDeclaredCountries";
+import { useAchievementCelebrations } from "./hooks/useAchievementCelebrations";
+import AchievementCelebration from "./components/celebration/AchievementCelebration";
 
 import CustomToaster from "./components/toast/CustomToaster";
 import {
@@ -65,12 +74,19 @@ const InternalUsers = lazy(() => import("./pages/internal/InternalUsers"));
 const InternalAuditLog = lazy(() => import("./pages/internal/InternalAuditLog"));
 const InternalReferrals = lazy(() => import("./pages/internal/InternalReferrals"));
 
+// Badges and countries are granted in the background right after saving:
+// checking shortly after moving to another page (usually right after saving)
+// celebrates them without waiting for the next poll.
+const CELEBRATION_CHECK_DELAY_MS = 2000;
+
 const App = () => {
   const dispatch = useDispatch();
   const location = useLocation();
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const userAuthenticated = useSelector(selectAuthUser);
+  const unreadCount = useSelector(selectUnreadCount);
   const [searchOpen, setSearchOpen] = useState(false);
+  const celebrations = useAchievementCelebrations(isAuthenticated ? userAuthenticated?.id : null, unreadCount);
 
   useCanonicalUrl(location.pathname);
   // Countries marked as a visitor on a shared passport, saved once signed in.
@@ -112,6 +128,23 @@ const App = () => {
       document.removeEventListener("visibilitychange", onVisible);
     };
   }, [dispatch, isAuthenticated]);
+
+  const { skip: skipCelebration } = celebrations;
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const moment = momentFromShareRequest({
+      share: params.get(PASSPORT_SHARE_PARAM),
+      country: params.get(PASSPORT_MOMENT_COUNTRY_PARAM),
+      badge: params.get(PASSPORT_MOMENT_BADGE_PARAM),
+    });
+    if (moment) skipCelebration(moment);
+  }, [location.search, skipCelebration]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return undefined;
+    const timeout = setTimeout(() => dispatch(refreshUnreadCount()), CELEBRATION_CHECK_DELAY_MS);
+    return () => clearTimeout(timeout);
+  }, [dispatch, isAuthenticated, location.pathname]);
 
   const publicRoutes = ["/", "/explore", "/community", "/subscription", "/privacy-policy", "/terms", "/contact"];
 
@@ -198,6 +231,16 @@ const App = () => {
       </div>
 
       <GlobalSearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+      {celebrations.celebration && !isAuthRoute && (
+        <AchievementCelebration
+          celebration={celebrations.celebration}
+          userId={userAuthenticated.id}
+          position={celebrations.position}
+          total={celebrations.total}
+          onDismiss={celebrations.dismiss}
+          onShare={celebrations.dismissAll}
+        />
+      )}
     </div>
   );
 };

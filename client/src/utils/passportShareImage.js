@@ -1,5 +1,5 @@
-import { BADGE_EMOJI, countryFlag, passportShareFlagLayout } from "@tobeatraveller/shared";
-import { canvasToPngBlob, roundedRect, spacedText } from "./canvasDrawing";
+import { BADGE_EMOJI, countryFlag, countryName, passportShareFlagLayout } from "@tobeatraveller/shared";
+import { canvasToPngBlob, drawInkSeal, roundedRect, spacedText } from "./canvasDrawing";
 
 // Instagram/WhatsApp story size, so the image fills the screen as a story.
 export const SHARE_IMAGE_WIDTH = 1080;
@@ -20,12 +20,42 @@ const GOLD = "#d9a441";
 const PAPER = "#fbf6ec";
 const INK_MUTED = "#8a8172";
 
+const NAME_PADDING = 10;
+
 const TEXT_FONT = "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
 const EMOJI_FONT = "'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif";
 
+const drawEmoji = (context, emoji, x, y, layout) => {
+  context.font = `${layout.fontSize}px ${EMOJI_FONT}`;
+  context.fillText(emoji, x, y);
+};
+
+// A country as on the card of a single new country: its flag in a round ink
+// seal, with its name under it.
+const drawCountrySeal = (language) => (context, code, x, y, layout) => {
+  const { sealDiameter, fontSize, nameFontSize, nameLineHeight, perRow } = layout;
+  const sealRadius = sealDiameter / 2;
+  // The seal and the name under it, centred together in the cell.
+  const sealCenterY = y - (sealDiameter + nameLineHeight) / 2 + sealRadius;
+  drawInkSeal(context, x, sealCenterY, sealRadius);
+
+  context.save();
+  context.font = `${fontSize}px ${EMOJI_FONT}`;
+  context.fillText(countryFlag(code), x, sealCenterY);
+  context.fillStyle = NAVY;
+  context.font = `800 ${nameFontSize}px ${TEXT_FONT}`;
+  context.fillText(
+    countryName(code, language).toUpperCase(),
+    x,
+    sealCenterY + sealRadius + nameLineHeight / 2,
+    (SHARE_IMAGE_WIDTH - PADDING * 2) / perRow - NAME_PADDING * 2,
+  );
+  context.restore();
+};
+
 // A paper panel with its title, and its items in a grid centred in the rest
 // of the panel (a last, incomplete row centred too, as on the mobile card).
-const drawPanel = (context, { top, height, title, items, layout, more, empty }) => {
+const drawPanel = (context, { top, height, title, items, drawItem, layout, more, empty }) => {
   roundedRect(context, PADDING, top, SHARE_IMAGE_WIDTH - PADDING * 2, height, 36);
   context.fillStyle = PAPER;
   context.fill();
@@ -43,24 +73,24 @@ const drawPanel = (context, { top, height, title, items, layout, more, empty }) 
     return;
   }
 
-  const { perRow, cellHeight, fontSize } = layout;
+  const { perRow, cellHeight } = layout;
   const rows = Math.ceil(items.length / perRow);
   const gridHeight = rows * cellHeight + (more ? MORE_LABEL_HEIGHT : 0);
   const gridTop = contentTop + (contentHeight - gridHeight) / 2;
   const cellWidth = (SHARE_IMAGE_WIDTH - PADDING * 2) / perRow;
 
-  context.font = `${fontSize}px ${EMOJI_FONT}`;
   context.textBaseline = "middle";
   items.forEach((item, index) => {
     const column = index % perRow;
     const row = Math.floor(index / perRow);
     const itemsInRow = Math.min(perRow, items.length - row * perRow);
     const rowOffset = ((perRow - itemsInRow) * cellWidth) / 2;
-    context.fillText(item, PADDING + rowOffset + cellWidth * (column + 0.5), gridTop + cellHeight * (row + 0.5));
+    drawItem(context, item, PADDING + rowOffset + cellWidth * (column + 0.5), gridTop + cellHeight * (row + 0.5), layout);
   });
   context.textBaseline = "alphabetic";
 
   if (more) {
+    context.fillStyle = INK_MUTED;
     context.font = `700 40px ${TEXT_FONT}`;
     context.fillText(more, SHARE_IMAGE_WIDTH / 2, gridTop + rows * cellHeight + 50);
   }
@@ -70,7 +100,7 @@ const drawPanel = (context, { top, height, title, items, layout, more, empty }) 
 // come already translated, so this only knows about layout. Only the site's
 // address goes on the image: a link in a picture can't be tapped, so the
 // full one travels with the share instead.
-export const createPassportShareImage = ({ summary, labels, displayUrl }) => {
+export const createPassportShareImage = ({ summary, labels, language, displayUrl }) => {
   const canvas = document.createElement("canvas");
   canvas.width = SHARE_IMAGE_WIDTH;
   canvas.height = SHARE_IMAGE_HEIGHT;
@@ -101,7 +131,8 @@ export const createPassportShareImage = ({ summary, labels, displayUrl }) => {
     top: PANELS_TOP,
     height: countriesBottom - PANELS_TOP,
     title: labels.countries,
-    items: summary.flagCodes.map(countryFlag),
+    items: summary.flagCodes,
+    drawItem: drawCountrySeal(language),
     layout: passportShareFlagLayout(summary.flagCodes.length, summary.showAchievements),
     more: summary.hiddenCountries > 0 ? labels.moreCountries : null,
     empty: labels.noCountries,
@@ -113,6 +144,7 @@ export const createPassportShareImage = ({ summary, labels, displayUrl }) => {
       height: STAMPS_PANEL_HEIGHT,
       title: labels.achievements,
       items: summary.stampIds.map(id => BADGE_EMOJI[id]),
+      drawItem: drawEmoji,
       layout: STAMPS_LAYOUT,
       more: summary.hiddenStamps > 0 ? labels.moreStamps : null,
       empty: labels.noStamps,

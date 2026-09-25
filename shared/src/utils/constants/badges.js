@@ -1,3 +1,5 @@
+import { countryFlag, countryName } from './countries.js';
+
 // Display side of the badge catalog; which badges exist and what earns them
 // is decided by the API (api/src/utils/badges.js).
 export const BADGE_EMOJI = Object.freeze({
@@ -76,22 +78,40 @@ export const summarizePassportForSharing = (passport, { includeAchievements }) =
     };
 };
 
-// Flags per row and their size on the shareable image, in image pixels.
-// With the whole card to themselves, a few countries get fewer, bigger flags
-// instead of a small row lost in an empty panel.
+// Countries per row and their size on the shareable image, in image pixels:
+// each flag in a round ink seal, as on the card of a single new country, with
+// the country's name under it. With the whole card to themselves, a few
+// countries get fewer, bigger seals instead of a small row lost in an empty panel.
 const SHARE_CONTENT_WIDTH = 900;
 const SHARE_FLAGS_PER_ROW_BY_COUNT = [[4, 2], [9, 3], [16, 4]];
 const SHARE_MAX_FLAGS_PER_ROW = 5;
-const SHARE_MAX_FLAG_FONT_SIZE = 220;
-const SHARE_FLAG_FONT_TO_CELL_WIDTH = 0.78;
-const SHARE_FLAG_CELL_HEIGHT_TO_FONT = 1.43;
-const SHARE_FLAGS_WITH_ACHIEVEMENTS_LAYOUT = Object.freeze({ perRow: SHARE_MAX_FLAGS_PER_ROW, fontSize: 110, cellHeight: 160 });
+const SHARE_SEAL_TO_CELL_WIDTH = 0.84;
+const SHARE_MAX_SEAL_DIAMETER = 300;
+const SHARE_SEAL_DIAMETER_WITH_ACHIEVEMENTS = 120;
+const SHARE_FLAG_FONT_TO_SEAL = 0.5;
+const SHARE_NAME_FONT_TO_SEAL = 0.16;
+const SHARE_MIN_NAME_FONT_SIZE = 18;
+const SHARE_NAME_LINE_HEIGHT = 1.6;
+const SHARE_SEAL_ROW_GAP = 20;
+
+const shareSealLayout = (perRow, sealDiameter) => {
+    const nameFontSize = Math.max(Math.round(sealDiameter * SHARE_NAME_FONT_TO_SEAL), SHARE_MIN_NAME_FONT_SIZE);
+    const nameLineHeight = Math.round(nameFontSize * SHARE_NAME_LINE_HEIGHT);
+    return {
+        perRow,
+        sealDiameter,
+        fontSize: Math.round(sealDiameter * SHARE_FLAG_FONT_TO_SEAL),
+        nameFontSize,
+        nameLineHeight,
+        cellHeight: sealDiameter + nameLineHeight + SHARE_SEAL_ROW_GAP,
+    };
+};
 
 export const passportShareFlagLayout = (flagCount, showAchievements) => {
-    if (showAchievements) return SHARE_FLAGS_WITH_ACHIEVEMENTS_LAYOUT;
+    if (showAchievements) return shareSealLayout(SHARE_MAX_FLAGS_PER_ROW, SHARE_SEAL_DIAMETER_WITH_ACHIEVEMENTS);
     const perRow = SHARE_FLAGS_PER_ROW_BY_COUNT.find(([maxCount]) => flagCount <= maxCount)?.[1] ?? SHARE_MAX_FLAGS_PER_ROW;
-    const fontSize = Math.round(Math.min((SHARE_CONTENT_WIDTH / perRow) * SHARE_FLAG_FONT_TO_CELL_WIDTH, SHARE_MAX_FLAG_FONT_SIZE));
-    return { perRow, fontSize, cellHeight: Math.round(fontSize * SHARE_FLAG_CELL_HEIGHT_TO_FONT) };
+    const sealDiameter = Math.round(Math.min((SHARE_CONTENT_WIDTH / perRow) * SHARE_SEAL_TO_CELL_WIDTH, SHARE_MAX_SEAL_DIAMETER));
+    return shareSealLayout(perRow, sealDiameter);
 };
 
 // With the owner's referral code, whoever signs up from a shared passport
@@ -107,9 +127,44 @@ export const passportUrl = (webUrl, userId, referralCode = null) => {
 export const PASSPORT_SHARE_PARAM = 'share';
 export const PASSPORT_SHARE_WITH_ACHIEVEMENTS = 'achievements';
 export const PASSPORT_SHARE_COUNTRIES = 'countries';
-export const passportSharePath = (userId, { withAchievements = false } = {}) => (
-    `/profile/${userId}/passport?${PASSPORT_SHARE_PARAM}=${withAchievements ? PASSPORT_SHARE_WITH_ACHIEVEMENTS : PASSPORT_SHARE_COUNTRIES}`
-);
+// A `moment` ({ countryCode } or { badgeId }) opens the card of that single
+// new country or badge instead of the whole passport.
+export const PASSPORT_SHARE_MOMENT = 'moment';
+export const PASSPORT_MOMENT_COUNTRY_PARAM = 'country';
+export const PASSPORT_MOMENT_BADGE_PARAM = 'badge';
+export const passportSharePath = (userId, { withAchievements = false, moment = null } = {}) => {
+    const base = `/profile/${userId}/passport?${PASSPORT_SHARE_PARAM}=`;
+    if (moment?.countryCode) {
+        return `${base}${PASSPORT_SHARE_MOMENT}&${PASSPORT_MOMENT_COUNTRY_PARAM}=${encodeURIComponent(moment.countryCode)}`;
+    }
+    if (moment?.badgeId) {
+        return `${base}${PASSPORT_SHARE_MOMENT}&${PASSPORT_MOMENT_BADGE_PARAM}=${encodeURIComponent(moment.badgeId)}`;
+    }
+    return `${base}${withAchievements ? PASSPORT_SHARE_WITH_ACHIEVEMENTS : PASSPORT_SHARE_COUNTRIES}`;
+};
+
+export const MOMENT_KINDS = Object.freeze({ COUNTRY: 'country', BADGE: 'badge' });
+
+// The single new country or badge a notification pointed at, as the owner
+// sees it in their passport, with whether only they see it (sharing it
+// reveals it); null when it isn't in their passport (any more).
+export const findPassportMoment = (passport, { countryCode, badgeId }) => {
+    if (countryCode) {
+        const country = passport.countries.find(visited => visited.code === countryCode);
+        return country ? { kind: MOMENT_KINDS.COUNTRY, code: country.code, isPrivate: country.isPrivate } : null;
+    }
+    if (!badgeId) return null;
+    const badge = passport.achievements.find(achievement => achievement.id === badgeId && achievement.earnedAt);
+    // Private when its family is (van log, diary) or when others don't see it
+    // earned, like a countries badge reached through van log countries.
+    return badge ? { kind: MOMENT_KINDS.BADGE, code: badge.id, isPrivate: badge.isPrivate || badge.visibleToOthers === false } : null;
+};
+
+// What a moment card shows: the flag and name of a new country, or the emoji
+// and name of a new badge. `t` is the i18next translate function.
+export const describePassportMoment = (moment, t, language) => (moment.kind === MOMENT_KINDS.COUNTRY
+    ? { symbol: countryFlag(moment.code), name: countryName(moment.code, language), title: t('passport.momentCountryTitle') }
+    : { symbol: BADGE_EMOJI[moment.code], name: t(`badges.${moment.code}.name`), title: t('passport.momentBadgeTitle') });
 
 // The sign-up link a passport visitor is offered, keeping the referral code
 // the shared link came with, and saying where the sign-up came from.

@@ -5,10 +5,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
-  BADGE_EMOJI, BADGE_FAMILY_ORDER, PASSPORT_SHARE_WITH_ACHIEVEMENTS,
+  BADGE_EMOJI, BADGE_FAMILY_ORDER, MOMENT_KINDS, PASSPORT_SHARE_MOMENT, PASSPORT_SHARE_WITH_ACHIEVEMENTS,
+  findPassportMoment,
   countryFlag, countryName, passportStampStyle, selectAuthUser,
 } from '@tobeatraveller/shared';
 import CountryPickerModal from '../../components/CountryPickerModal';
+import MomentShareModal from '../../components/MomentShareModal';
 import RecapBanner from '../../components/RecapBanner';
 import PassportShareModal from '../../components/PassportShareModal';
 import { usePassportLeaderboard } from '../../hooks/usePassportLeaderboard';
@@ -30,7 +32,7 @@ const parseDate = (value) => {
 };
 
 const AchievementStamp = ({ achievement, language, t }) => {
-  const { id, earnedAt, current, threshold, isPrivate } = achievement;
+  const { id, earnedAt, current, threshold, isPrivate, visibleToOthers } = achievement;
   const earned = Boolean(earnedAt);
   const progress = current != null ? Math.min(current, threshold) : null;
 
@@ -56,7 +58,8 @@ const AchievementStamp = ({ achievement, language, t }) => {
           <Text style={styles.progressLabel}>{progress} / {threshold}</Text>
         </View>
       )}
-      {earned && isPrivate && (
+      {/* Only the owner sees it as earned: a private family, or one others see locked. */}
+      {earned && (isPrivate || visibleToOthers === false) && (
         <Ionicons name="lock-closed-outline" size={12} color={PASSPORT_INK_MUTED} style={styles.privateIcon} accessibilityLabel={t('badges.onlyYou')} />
       )}
     </View>
@@ -175,16 +178,35 @@ const PassportScreen = ({ navigation, route }) => {
   const language = i18n.language;
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [shareWithAchievements, setShareWithAchievements] = useState(false);
+  const [moment, setMoment] = useState(null);
   const shareRequest = route.params?.share;
 
-  // Coming from a new country or badge notification: open the share sheet
-  // right away, then clear the param so coming back doesn't open it again.
+  // Coming from a new country or badge notification: open the card of that
+  // country or badge (or the whole passport's sheet if it can't be found)
+  // right away, then clear the params so coming back doesn't open it again.
+  // A moment waits for the passport, which says whether it's private.
+  const momentCountry = route.params?.country;
+  const momentBadge = route.params?.badge;
   useEffect(() => {
     if (!shareRequest || !isOwner) return;
-    setShareWithAchievements(shareRequest === PASSPORT_SHARE_WITH_ACHIEVEMENTS);
+    if (shareRequest === PASSPORT_SHARE_MOMENT && !passport) return;
+    const momentFound = shareRequest === PASSPORT_SHARE_MOMENT
+      ? findPassportMoment(passport, { countryCode: momentCountry, badgeId: momentBadge })
+      : null;
+    if (momentFound) {
+      setMoment(momentFound);
+    } else {
+      setShareWithAchievements(shareRequest === PASSPORT_SHARE_WITH_ACHIEVEMENTS || Boolean(momentBadge));
+      setIsShareOpen(true);
+    }
+    navigation.setParams({ share: undefined, country: undefined, badge: undefined });
+  }, [shareRequest, isOwner, passport, momentCountry, momentBadge, navigation]);
+
+  const shareWholePassport = () => {
+    setShareWithAchievements(moment?.kind === MOMENT_KINDS.BADGE);
+    setMoment(null);
     setIsShareOpen(true);
-    navigation.setParams({ share: undefined });
-  }, [shareRequest, isOwner, navigation]);
+  };
 
   const openShare = () => {
     setShareWithAchievements(false);
@@ -318,6 +340,15 @@ const PassportScreen = ({ navigation, route }) => {
         />
       )}
 
+      {isOwner && (
+        <MomentShareModal
+          moment={moment}
+          owner={authUser}
+          visible={Boolean(moment)}
+          onClose={() => setMoment(null)}
+          onShareWholePassport={shareWholePassport}
+        />
+      )}
       {isOwner && (
         <PassportShareModal
           userId={userId}

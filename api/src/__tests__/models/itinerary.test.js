@@ -101,6 +101,15 @@ describe('Itinerary model', () => {
   });
 
   describe('toDTO()', () => {
+    // Postgres gives a DATE as local midnight: serialized as a timestamp, a
+    // server east of Greenwich sent the day before ("2026-04-30T22:00:00Z"),
+    // and every save from the edit form moved the trip back a day.
+    it('sends the trip dates as the calendar days they are, whatever the server timezone', () => {
+      const itinerary = Itinerary.fromDb({ ...baseRow, start_date: new Date(2026, 4, 1), end_date: new Date(2026, 4, 10) });
+
+      expect(JSON.parse(JSON.stringify(itinerary.toDTO()))).toMatchObject({ startDate: '2026-05-01', endDate: '2026-05-10' });
+    });
+
     it('returns the expected shape', () => {
       const itinerary = Itinerary.fromDb(baseRow);
       const dto = itinerary.toDTO();

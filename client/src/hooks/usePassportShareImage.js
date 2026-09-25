@@ -13,7 +13,7 @@ const EMPTY_IMAGE = { blob: null, previewUrl: null, summary: null };
 // the image; the passport is fetched again only when privacy changes. The
 // link carries the owner's referral code, so sign-ups from it count as theirs.
 export const usePassportShareImage = (userId, enabled, { includePrivate = false, includeAchievements = false } = {}) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [passportState, setPassportState] = useState({ passport: null, loading: false, error: false });
   const referral = useReferralCode(enabled);
   const [image, setImage] = useState(EMPTY_IMAGE);
@@ -41,6 +41,7 @@ export const usePassportShareImage = (userId, enabled, { includePrivate = false,
     const summary = summarizePassportForSharing(passport, { includeAchievements });
     createPassportShareImage({
       summary,
+      language: i18n.language,
       displayUrl: window.location.host,
       labels: {
         kicker: `${t("passport.title")} · ToBeATraveller`,
@@ -66,7 +67,7 @@ export const usePassportShareImage = (userId, enabled, { includePrivate = false,
       cancelled = true;
       if (previewUrl) URL.revokeObjectURL(previewUrl);
     };
-  }, [enabled, passport, includeAchievements, t]);
+  }, [enabled, passport, includeAchievements, t, i18n.language]);
 
   return {
     ...image,

@@ -5,7 +5,7 @@ vi.mock('../../db/clientPostgres.js', () => ({
 }));
 
 import client from '../../db/clientPostgres.js';
-import { BadgeRepository } from '../../repositories/badgeRepository.js';
+import { BadgeRepository, livedTripCondition } from '../../repositories/badgeRepository.js';
 
 describe('BadgeRepository', () => {
     const repo = new BadgeRepository();
@@ -108,8 +108,38 @@ describe('BadgeRepository', () => {
         });
     });
 
-    // Private trips are usually plans or clones, not places the user has been.
-    it('counts countries by ISO code, from public trips, van log and diary only', async () => {
+    // A trip counts from the day it starts, an entry from its date: a trip
+    // published for next summer is a plan, not a country visited yet.
+    it('counts a country only from the day the trip starts or the entry is dated', async () => {
+        client.query.mockResolvedValueOnce({ rows: [] });
+
+        await repo.getCountryVisits('user-1');
+
+        const query = client.query.mock.calls[0][0];
+        expect(query).toMatch(/start_date <= CURRENT_DATE/);
+        expect(query.match(/entry_date <= CURRENT_DATE/g)).toHaveLength(2);
+    });
+
+    it('ranks by trips that have already started', async () => {
+        client.query.mockResolvedValueOnce({ rows: [] });
+
+        await repo.getFollowingLeaderboard('user-1', 10);
+
+        expect(client.query.mock.calls[0][0]).toMatch(/i\.start_date <= CURRENT_DATE/);
+    });
+
+    it('finds who has a trip they really make with a country starting today, to stamp it on the day', async () => {
+        client.query.mockResolvedValueOnce({ rows: [{ user_id: 'u1' }] });
+
+        expect(await repo.findUsersWithTripStartingToday()).toEqual(['u1']);
+        const query = client.query.mock.calls[0][0];
+        expect(query).toMatch(/start_date = CURRENT_DATE/);
+        expect(query).toContain(livedTripCondition('itineraries'));
+    });
+
+    // Private trips count too, as private countries (only the owner sees
+    // them), except an untouched clone of someone else's trip.
+    it('counts every trip the user really made, publicly or not, flagging which ones are public', async () => {
         client.query.mockResolvedValueOnce({ rows: [{
             public_itineraries: '2', followers: '0', van_log_entries: '0', life_diary_entries: '0', countries: '1', public_countries: '1',
         }] });
@@ -117,7 +147,20 @@ describe('BadgeRepository', () => {
         await repo.getMetrics('user-1');
 
         const query = client.query.mock.calls[0][0];
-        expect(query).toMatch(/FROM itineraries WHERE user_id = \$1 AND is_public = true AND location_country_code IS NOT NULL/);
+        expect(query).toMatch(/SELECT location_country_code AS code, start_date AS visited_on, is_public\s+FROM itineraries/);
+        expect(query).toContain(livedTripCondition('itineraries'));
+        expect(query).not.toMatch(/true AS is_public/);
+    });
+
+    it('counts countries by ISO code, from trips, van log and diary', async () => {
+        client.query.mockResolvedValueOnce({ rows: [{
+            public_itineraries: '2', followers: '0', van_log_entries: '0', life_diary_entries: '0', countries: '1', public_countries: '1',
+        }] });
+
+        await repo.getMetrics('user-1');
+
+        const query = client.query.mock.calls[0][0];
+        expect(query).toMatch(/FROM itineraries\s+WHERE user_id = \$1 AND .* AND location_country_code IS NOT NULL/);
         expect(query).toMatch(/FROM van_log_entries WHERE user_id = \$1 AND location_country_code IS NOT NULL/);
         expect(query).toMatch(/FROM life_diary_entries WHERE user_id = \$1 AND location_country_code IS NOT NULL/);
         expect(query).toMatch(/COUNT\(DISTINCT code\) FROM visits WHERE is_public/);

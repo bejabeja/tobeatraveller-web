@@ -6,6 +6,7 @@ vi.mock('../../db/clientPostgres.js', () => ({
 
 import client from '../../db/clientPostgres.js';
 import { RecapRepository } from '../../repositories/recapRepository.js';
+import { livedTripCondition } from '../../repositories/badgeRepository.js';
 
 const FROM = '2026-01-01';
 const TO = '2026-12-31';
@@ -18,8 +19,8 @@ describe('RecapRepository', () => {
     });
 
     describe('getCountries()', () => {
-        // Same sources as the passport: public trips (every day they cover in
-        // the year), van log and diary entries; private trips are plans.
+        // Same sources as the passport: the trips the user really made (every
+        // day they cover in the year), van log and diary entries.
         it('counts the days spent in each country during the year, from the passport sources', async () => {
             client.query.mockResolvedValueOnce({ rows: [] });
 
@@ -28,7 +29,7 @@ describe('RecapRepository', () => {
             const [query, params] = client.query.mock.calls[0];
             expect(query).toMatch(/van_log_entries/);
             expect(query).toMatch(/life_diary_entries/);
-            expect(query).toMatch(/is_public = true/);
+            expect(query).toContain(livedTripCondition('i'));
             expect(query).toMatch(/generate_series/);
             expect(query).not.toMatch(/user_declared_countries/);
             expect(params).toEqual(['user-1', FROM, TO]);
@@ -39,6 +40,17 @@ describe('RecapRepository', () => {
 
             expect(await repo.getCountries('user-1', FROM, TO)).toEqual([{ code: 'PT', days: 12, firstEverVisitedOn: '2026-05-03' }]);
         });
+    });
+
+    // December's recap is seen before the year ends: days still to come,
+    // and trips not started yet, aren't part of it.
+    it('only counts the days of the year lived so far', async () => {
+        client.query.mockResolvedValue({ rows: [{ days: '0' }] });
+
+        await repo.getDaysOnRoad('user-1', FROM, TO);
+
+        const query = client.query.mock.calls[0][0];
+        expect(query.match(/LEAST\(\$3::date, CURRENT_DATE\)/g).length).toBeGreaterThanOrEqual(3);
     });
 
     it('counts distinct days with any trip day, van log or diary entry in the year', async () => {
@@ -54,6 +66,15 @@ describe('RecapRepository', () => {
             .mockResolvedValueOnce({ rows: [{ title: 'Portugal coast', days: 21 }] });
 
         expect(await repo.getTrips('user-1', FROM, TO)).toEqual({ count: 4, longest: { title: 'Portugal coast', days: 21 } });
+    });
+
+    // A private trip is theirs too, but not an untouched clone of someone else's.
+    it('counts the trips the user really made, public or private', async () => {
+        client.query.mockResolvedValueOnce({ rows: [{ count: '1' }] }).mockResolvedValueOnce({ rows: [] });
+
+        await repo.getTrips('user-1', FROM, TO);
+
+        client.query.mock.calls.forEach(([query]) => expect(query).toContain(livedTripCondition('itineraries')));
     });
 
     it('has no longest trip without trips', async () => {
@@ -86,5 +107,6 @@ describe('RecapRepository', () => {
         client.query.mockResolvedValueOnce({ rows: [{ user_id: 'u1' }, { user_id: 'u2' }] });
 
         expect(await repo.findUsersWithActivity(FROM, TO)).toEqual(['u1', 'u2']);
+        expect(client.query.mock.calls[0][0]).toContain(livedTripCondition('itineraries'));
     });
 });

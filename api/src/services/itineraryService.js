@@ -3,6 +3,7 @@ import { NotFoundError } from "../errors/NotFoundError.js";
 import { TooManyRequestsError } from "../errors/TooManyRequestsError.js";
 import { assertItineraryOwner, assertItineraryVisible } from "../utils/itineraryAccess.js";
 import { AUDIT_EVENTS } from "../utils/auditEvents.js";
+import { toCalendarDay } from "../utils/date.js";
 
 // Each generation call costs real money (Groq). Not a real bill risk at
 // current usage (well under a cent each), but with no other cap on this
@@ -101,6 +102,14 @@ export class ItineraryService {
         }
     }
 
+    // A clone keeps the original trip's dates, and so doesn't stamp its
+    // country in the passport; new dates make it the user's own trip.
+    _keepsClonedDates(itinerary, itineraryData) {
+        return Boolean(itinerary.clonedFromItineraryId)
+            && toCalendarDay(itinerary.startDate) === toCalendarDay(itineraryData.startDate)
+            && toCalendarDay(itinerary.endDate) === toCalendarDay(itineraryData.endDate);
+    }
+
     async cloneItinerary(sourceId, userId) {
         const source = await this.itinerariesRepository.findById(sourceId);
         if (!source) {
@@ -125,6 +134,7 @@ export class ItineraryService {
             photoPublicId: null,
             isPublic: false,
             source: source.source,
+            clonedFromItineraryId: source.id,
         });
         if (!itinerary) {
             throw new ConflictError("It was not possible to clone the itinerary");
@@ -178,6 +188,7 @@ export class ItineraryService {
             throw new NotFoundError("Itinerary not found");
         }
         assertItineraryOwner(itinerary, userId);
+        itineraryData.clonedFromItineraryId = this._keepsClonedDates(itinerary, itineraryData) ? itinerary.clonedFromItineraryId : null;
 
         if (file) {
             if (itinerary.photoPublicId) {

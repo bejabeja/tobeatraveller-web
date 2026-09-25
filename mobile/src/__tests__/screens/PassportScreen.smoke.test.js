@@ -28,6 +28,13 @@ jest.mock('@tobeatraveller/shared', () => {
   };
 });
 
+jest.mock('../../components/MomentShareModal', () => {
+  const { Text } = jest.requireActual('react-native');
+  return ({ visible, moment }) => (
+    visible ? <Text>moment-modal {moment.kind}:{moment.code} private:{String(moment.isPrivate)}</Text> : null
+  );
+});
+
 jest.mock('../../components/PassportShareModal', () => {
   const { Text } = jest.requireActual('react-native');
   return ({ visible, initialIncludeAchievements }) => (
@@ -200,4 +207,38 @@ it('does not compare when the other person has no countries to compare', async (
   await renderScreen();
 
   expect(screen.queryByText(/passport.compare/)).toBeNull();
+});
+
+it('opens the card of the new country from its notification, knowing it is private', async () => {
+  getUserPassport.mockResolvedValue({
+    owner: { id: 'user-1', username: 'jane' }, achievements: [],
+    countries: [{ code: 'FR', firstVisitedOn: '2026-06-10', isPrivate: true }],
+  });
+  const navigation = { goBack: jest.fn(), setParams: jest.fn(), push: jest.fn(), navigate: jest.fn() };
+
+  await renderScreen({ share: 'moment', country: 'FR' }, navigation);
+
+  expect(screen.getByText('moment-modal country:FR private:true')).toBeTruthy();
+  expect(navigation.setParams).toHaveBeenCalledWith({ share: undefined, country: undefined, badge: undefined });
+});
+
+it("falls back to sharing the whole passport when the moment can't be found", async () => {
+  getUserPassport.mockResolvedValue({ owner: { id: 'user-1', username: 'jane' }, achievements: [], countries: [] });
+
+  await renderScreen({ share: 'moment', badge: 'explorer' });
+
+  expect(screen.getByText('share-modal achievements:true')).toBeTruthy();
+  expect(screen.queryByText(/moment-modal/)).toBeNull();
+});
+
+// E.g. a countries badge reached through van log countries: others see it locked.
+it("marks as only-yours an earned badge others don't see as earned", async () => {
+  getUserPassport.mockResolvedValue({
+    owner: { id: 'user-1', username: 'jane' }, countries: [],
+    achievements: [{ id: 'countries_5', family: 'countries', threshold: 5, isPrivate: false, earnedAt: '2026-09-01', current: 5, visibleToOthers: false }],
+  });
+
+  await renderScreen();
+
+  expect(screen.getByLabelText('badges.onlyYou')).toBeTruthy();
 });

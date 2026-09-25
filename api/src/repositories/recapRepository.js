@@ -1,22 +1,26 @@
 import client from '../db/clientPostgres.js';
 import { toDateOnlyString } from '../models/vanLogEntry.js';
-import { COUNTRY_VISITS_SQL } from './badgeRepository.js';
+import { COUNTRY_VISITS_SQL, livedTripCondition } from './badgeRepository.js';
 
-// Every day of the year ($2 to $3) the user was on the road, with the
-// country when known: each day covered by a public trip (private trips are
-// usually plans or clones), and each van log and diary entry. The same
-// sources as the passport, so the recap and the passport agree.
+// The recap is seen in December, before the year ends: it only covers the
+// part of the year lived so far, from $2 to today (or to $3 in January).
+const LIVED_UNTIL = 'LEAST($3::date, CURRENT_DATE)';
+
+// Every day of the year lived so far the user was on the road, with the
+// country when known: each day covered by a trip they really made, and each
+// van log and diary entry. The same sources as the passport, so the recap
+// and the passport agree.
 const YEAR_DAYS_SQL = `
     SELECT location_country_code AS code, entry_date AS day
-    FROM van_log_entries WHERE user_id = $1 AND entry_date BETWEEN $2::date AND $3::date
+    FROM van_log_entries WHERE user_id = $1 AND entry_date BETWEEN $2::date AND ${LIVED_UNTIL}
     UNION ALL
     SELECT location_country_code, entry_date
-    FROM life_diary_entries WHERE user_id = $1 AND entry_date BETWEEN $2::date AND $3::date
+    FROM life_diary_entries WHERE user_id = $1 AND entry_date BETWEEN $2::date AND ${LIVED_UNTIL}
     UNION ALL
     SELECT i.location_country_code, d::date
     FROM itineraries i
-    CROSS JOIN LATERAL generate_series(GREATEST(i.start_date, $2::date), LEAST(i.end_date, $3::date), INTERVAL '1 day') AS d
-    WHERE i.user_id = $1 AND i.is_public = true AND i.start_date <= $3::date AND i.end_date >= $2::date
+    CROSS JOIN LATERAL generate_series(GREATEST(i.start_date, $2::date), LEAST(i.end_date, ${LIVED_UNTIL}), INTERVAL '1 day') AS d
+    WHERE i.user_id = $1 AND ${livedTripCondition('i')} AND i.start_date <= ${LIVED_UNTIL} AND i.end_date >= $2::date
 `;
 
 // The yearly recap's figures, computed on demand from the user's own data.
@@ -52,17 +56,17 @@ export class RecapRepository {
         return Number(result.rows[0].days);
     }
 
-    // Public trips that started during the year, and the longest of them.
+    // Trips they really made that started during the year, and the longest of them.
     async getTrips(userId, from, to) {
         const [count, longest] = await Promise.all([
             client.query(
                 `SELECT COUNT(*) AS count FROM itineraries
-                 WHERE user_id = $1 AND is_public = true AND start_date BETWEEN $2::date AND $3::date`,
+                 WHERE user_id = $1 AND ${livedTripCondition('itineraries')} AND start_date BETWEEN $2::date AND ${LIVED_UNTIL}`,
                 [userId, from, to]
             ),
             client.query(
                 `SELECT title, (end_date - start_date + 1) AS days FROM itineraries
-                 WHERE user_id = $1 AND is_public = true AND start_date BETWEEN $2::date AND $3::date
+                 WHERE user_id = $1 AND ${livedTripCondition('itineraries')} AND start_date BETWEEN $2::date AND ${LIVED_UNTIL}
                  ORDER BY days DESC, start_date LIMIT 1`,
                 [userId, from, to]
             ),
@@ -83,7 +87,7 @@ export class RecapRepository {
                     COUNT(*) FILTER (WHERE category = 'fuel') AS refuels,
                     COALESCE(SUM(amount / price_per_liter)
                         FILTER (WHERE category = 'fuel' AND amount IS NOT NULL AND price_per_liter > 0), 0) AS liters
-             FROM van_log_entries WHERE user_id = $1 AND entry_date BETWEEN $2::date AND $3::date`,
+             FROM van_log_entries WHERE user_id = $1 AND entry_date BETWEEN $2::date AND ${LIVED_UNTIL}`,
             [userId, from, to]
         );
         const row = result.rows[0];
@@ -98,7 +102,7 @@ export class RecapRepository {
     async getDiary(userId, from, to) {
         const result = await client.query(
             `SELECT COUNT(*) AS entries, COUNT(*) FILTER (WHERE would_return) AS would_return
-             FROM life_diary_entries WHERE user_id = $1 AND entry_date BETWEEN $2::date AND $3::date`,
+             FROM life_diary_entries WHERE user_id = $1 AND entry_date BETWEEN $2::date AND ${LIVED_UNTIL}`,
             [userId, from, to]
         );
         const row = result.rows[0];
@@ -115,14 +119,16 @@ export class RecapRepository {
         return result.rows.map(row => row.badge_id);
     }
 
-    // Who has something to see in the year's recap, for the announcement.
+    // Who has something to see in the year's recap, for the announcement:
+    // activity in the part of the year lived so far, like the recap itself.
     async findUsersWithActivity(from, to) {
         const result = await client.query(
-            `SELECT user_id FROM van_log_entries WHERE entry_date BETWEEN $1::date AND $2::date
+            `SELECT user_id FROM van_log_entries WHERE entry_date BETWEEN $1::date AND LEAST($2::date, CURRENT_DATE)
              UNION
-             SELECT user_id FROM life_diary_entries WHERE entry_date BETWEEN $1::date AND $2::date
+             SELECT user_id FROM life_diary_entries WHERE entry_date BETWEEN $1::date AND LEAST($2::date, CURRENT_DATE)
              UNION
-             SELECT user_id FROM itineraries WHERE is_public = true AND start_date <= $2::date AND end_date >= $1::date`,
+             SELECT user_id FROM itineraries
+             WHERE ${livedTripCondition('itineraries')} AND start_date <= LEAST($2::date, CURRENT_DATE) AND end_date >= $1::date`,
             [from, to]
         );
         return result.rows.map(row => row.user_id);

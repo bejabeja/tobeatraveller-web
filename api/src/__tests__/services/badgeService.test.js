@@ -330,6 +330,29 @@ describe('BadgeService', () => {
             expect(badgeRepository.insertEarned).not.toHaveBeenCalled();
         });
 
+        // A countries badge reached through van log countries is earned for the
+        // owner but locked for everyone else: sharing it would reveal it.
+        it("tells the owner which earned badges others can see", async () => {
+            badgeRepository.findEarnedByUserId.mockResolvedValue(earned('countries_1', 'countries_5', 'van_log_1'));
+            badgeRepository.getMetrics.mockResolvedValue(metrics({ countries: 5, publicCountries: 2, vanLogEntries: 3 }));
+
+            const { achievements } = await service.getPassport('user-1', 'user-1');
+
+            expect(stamp(achievements, 'countries_1').visibleToOthers).toBe(true);
+            expect(stamp(achievements, 'countries_5').visibleToOthers).toBe(false);
+            expect(stamp(achievements, 'van_log_1').visibleToOthers).toBe(false);
+            expect(stamp(achievements, 'adventurer').visibleToOthers).toBe(false);
+        });
+
+        it("doesn't tell other viewers, for whom every earned badge is visible by definition", async () => {
+            badgeRepository.findEarnedByUserId.mockResolvedValue(earned('countries_1'));
+            badgeRepository.getMetrics.mockResolvedValue(metrics({ countries: 1, publicCountries: 1 }));
+
+            const { achievements } = await service.getPassport('user-1', 'someone-else');
+
+            expect(stamp(achievements, 'countries_1').visibleToOthers).toBeUndefined();
+        });
+
         it('shows a country stamp as locked to others when public trips alone do not reach it', async () => {
             badgeRepository.findEarnedByUserId.mockResolvedValue(earned('countries_1', 'countries_5'));
             badgeRepository.getMetrics.mockResolvedValue(metrics({ countries: 5, publicCountries: 2 }));
@@ -413,6 +436,34 @@ describe('BadgeService', () => {
             await service.getPassport('user-1', 'someone-else');
 
             expect(badgeRepository.insertEarned).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('evaluateTripsStartingToday()', () => {
+        // A trip's country counts from its first day: the user may do nothing
+        // in the app that day, so the daily job stamps it (and tells them).
+        it('evaluates, with notifications, everyone whose public trip starts today', async () => {
+            badgeRepository.findUsersWithTripStartingToday = vi.fn().mockResolvedValue(['u1', 'u2']);
+            badgeRepository.getCountryVisits.mockResolvedValue([{ code: 'IT', firstVisitedOn: '2026-09-25', firstPublicVisitedOn: '2026-09-25' }]);
+            badgeRepository.findEarnedByUserId.mockResolvedValue([{ badgeId: 'countries_1', earnedAt: new Date() }]);
+            badgeRepository.getMetrics.mockResolvedValue(metrics({ countries: 2, publicCountries: 2 }));
+
+            const evaluated = await service.evaluateTripsStartingToday();
+
+            expect(evaluated).toBe(2);
+            expect(badgeRepository.insertCountryStamps).toHaveBeenCalledWith('u1', ['IT']);
+            expect(badgeRepository.insertCountryStamps).toHaveBeenCalledWith('u2', ['IT']);
+            expect(notificationsService.createNotification).toHaveBeenCalledWith(expect.objectContaining({ userId: 'u1', countryCode: 'IT' }));
+        });
+
+        // One user's failure must not leave everyone else without their stamp.
+        it('keeps going when one evaluation fails', async () => {
+            badgeRepository.findUsersWithTripStartingToday = vi.fn().mockResolvedValue(['u1', 'u2']);
+            badgeRepository.getMetrics.mockRejectedValueOnce(new Error('boom'));
+
+            await service.evaluateTripsStartingToday();
+
+            expect(badgeRepository.getMetrics).toHaveBeenCalledTimes(2);
         });
     });
 

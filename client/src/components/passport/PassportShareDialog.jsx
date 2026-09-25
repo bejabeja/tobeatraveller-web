@@ -84,11 +84,16 @@ const PassportShareDialog = ({
             />
             {t("passport.shareIncludePrivate")}
           </label>
+          {includePrivate ? (
+            <p className="passport-share__private" role="status">
+              <span aria-hidden="true">🔒</span>
+              {t("passport.shareIncludesPrivate")}
+            </p>
+          ) : (
+            <p className="passport-share__hint">{t("passport.sharePublicOnly")}</p>
+          )}
           {/* Only when the link really carries their code: otherwise the promise would be false. */}
           {referralCode && <p className="passport-share__reward">{t("passport.shareReward")}</p>}
-          <p className={`passport-share__hint${includePrivate ? " passport-share__hint--warning" : ""}`} role={includePrivate ? "alert" : undefined}>
-            {includePrivate ? t("passport.shareIncludesPrivate") : t("passport.sharePublicOnly")}
-          </p>
         </div>
 
         <ShareImageActions

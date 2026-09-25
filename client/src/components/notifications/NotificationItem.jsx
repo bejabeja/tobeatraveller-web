@@ -30,7 +30,10 @@ const NotificationItem = ({ notification: n, onClick }) => {
   const href = n.type === "follow"
     ? `/profile/${n.actor?.id}`
     : n.type === "badge_earned" || n.type === "country_stamp"
-      ? passportSharePath(n.actor?.id, { withAchievements: n.type === "badge_earned" })
+      ? passportSharePath(n.actor?.id, {
+        withAchievements: n.type === "badge_earned",
+        moment: n.type === "badge_earned" ? { badgeId: n.badgeId } : { countryCode: n.countryCode },
+      })
       : n.type === "recap_ready"
         ? recapPath(RECAP_SOURCES.NOTIFICATION)
         : n.type === "referral_reward"

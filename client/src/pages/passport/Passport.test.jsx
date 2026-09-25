@@ -22,6 +22,11 @@ jest.mock("react-hot-toast", () => ({ __esModule: true, default: { error: jest.f
 
 jest.mock("../../utils/analytics", () => ({ trackEvent: jest.fn() }));
 
+jest.mock("../../components/passport/MomentShareDialog", () => ({
+  __esModule: true,
+  default: ({ isOpen, moment }) => (isOpen ? <div>moment-dialog {moment.kind}:{moment.code} private:{String(moment.isPrivate)}</div> : null),
+}));
+
 jest.mock("../../components/passport/PassportShareDialog", () => ({
   __esModule: true,
   default: ({ isOpen, initialIncludeAchievements, source }) => (
@@ -130,6 +135,32 @@ describe("Passport page", () => {
     renderPassport("/profile/user-1/passport?share=countries");
 
     expect(await screen.findByText("share-dialog achievements:false source:notification")).toBeInTheDocument();
+  });
+
+  it("opens the card of the new country from its notification, knowing it is private", async () => {
+    getUserPassport.mockResolvedValue(PASSPORT);
+
+    renderPassport("/profile/user-1/passport?share=moment&country=FR");
+
+    expect(await screen.findByText("moment-dialog country:FR private:true")).toBeInTheDocument();
+  });
+
+  it("opens the card of the new badge from its notification", async () => {
+    getUserPassport.mockResolvedValue(PASSPORT);
+
+    renderPassport("/profile/user-1/passport?share=moment&badge=explorer");
+
+    expect(await screen.findByText("moment-dialog badge:explorer private:false")).toBeInTheDocument();
+  });
+
+  // No longer in the passport (e.g. the entry was deleted since).
+  it("falls back to sharing the whole passport when the moment can't be found", async () => {
+    getUserPassport.mockResolvedValue(PASSPORT);
+
+    renderPassport("/profile/user-1/passport?share=moment&country=JP");
+
+    expect(await screen.findByText(/share-dialog achievements:false/)).toBeInTheDocument();
+    expect(screen.queryByText(/moment-dialog/)).not.toBeInTheDocument();
   });
 
   it("does not open the share dialog for someone else's passport", async () => {
@@ -320,6 +351,20 @@ describe("Passport page", () => {
 
     await screen.findByText("passport.ofUser:jane");
     expect(getMyPassportLeaderboard).not.toHaveBeenCalled();
+  });
+
+  // E.g. a countries badge reached through van log countries: others see it locked.
+  it("marks as only-yours an earned badge others don't see as earned", async () => {
+    getUserPassport.mockResolvedValue({
+      ...PASSPORT,
+      countries: [],
+      achievements: [{ id: "countries_5", family: "countries", threshold: 5, isPrivate: false, earnedAt: "2026-09-01", current: 5, visibleToOthers: false }],
+    });
+
+    renderPassport();
+
+    expect(await screen.findByText("badges.countries_5.name")).toBeInTheDocument();
+    expect(screen.getByLabelText("badges.onlyYou")).toBeInTheDocument();
   });
 
   it("shows an error message when the passport cannot be loaded", async () => {

@@ -3,7 +3,7 @@ import { BADGES as API_BADGES } from '../../../../api/src/utils/badges.js';
 import { ISO_COUNTRY_CODES } from '../../../../api/src/utils/countryCodes.js';
 import {
     BADGE_EMOJI, BADGE_FAMILY_ORDER, PASSPORT_SHARE_LIMITS, passportShareFlagLayout, passportUrl, summarizePassport,
-    passportSharePath, signupUrlFromPassport, summarizePassportForSharing,
+    describePassportMoment, findPassportMoment, passportSharePath, signupUrlFromPassport, summarizePassportForSharing,
 } from '../../utils/constants/badges.js';
 import en from '../../locales/en.json';
 import es from '../../locales/es.json';
@@ -166,6 +166,11 @@ describe('summarizePassportForSharing', () => {
             .toBe('https://tobeatraveller.com/profile/user-1/passport?ref=jane.doe');
     });
 
+    it('links to the card of a single new country or badge, ready to share', () => {
+        expect(passportSharePath('user-1', { moment: { countryCode: 'IT' } })).toBe('/profile/user-1/passport?share=moment&country=IT');
+        expect(passportSharePath('user-1', { moment: { badgeId: 'countries_5' } })).toBe('/profile/user-1/passport?share=moment&badge=countries_5');
+    });
+
     it('links to the passport with the share dialog open, with or without the achievements', () => {
         expect(passportSharePath('user-1')).toBe('/profile/user-1/passport?share=countries');
         expect(passportSharePath('user-1', { withAchievements: true })).toBe('/profile/user-1/passport?share=achievements');
@@ -178,27 +183,97 @@ describe('summarizePassportForSharing', () => {
 });
 
 describe('passportShareFlagLayout', () => {
-    // The countries panel alone is 1250px tall, 1140px under its title, and a
-    // "+N" line takes 80px more.
+    // The countries panel alone is 1250px tall, 1140px under its title; next
+    // to the achievements it is 720px, 610px under its title. A "+N" line
+    // takes 80px more. The grid is 900px wide.
     const COUNTRIES_ALONE_CONTENT_HEIGHT = 1140;
+    const COUNTRIES_WITH_ACHIEVEMENTS_CONTENT_HEIGHT = 610;
     const MORE_LABEL_HEIGHT = 80;
+    const CONTENT_WIDTH = 900;
 
-    it('gives a few countries fewer, bigger flags per row', () => {
+    it('gives a few countries fewer, bigger seals per row', () => {
         const few = passportShareFlagLayout(3, false);
         const many = passportShareFlagLayout(25, false);
 
         expect(few.perRow).toBeLessThan(many.perRow);
         expect(few.fontSize).toBeGreaterThan(many.fontSize);
+        expect(few.sealDiameter).toBeGreaterThan(many.sealDiameter);
     });
 
-    it.each([1, 4, 5, 9, 10, 16, 17, 25])('fits %i flags, plus the "+N" line, in the countries panel alone', (count) => {
+    it.each([1, 4, 5, 9, 10, 16, 17, 25])('fits %i stamps, plus the "+N" line, in the countries panel alone', (count) => {
         const { perRow, cellHeight } = passportShareFlagLayout(count, false);
         const rows = Math.ceil(count / perRow);
 
         expect(rows * cellHeight + MORE_LABEL_HEIGHT).toBeLessThanOrEqual(COUNTRIES_ALONE_CONTENT_HEIGHT);
     });
 
-    it('keeps the smaller layout when the achievements share the card', () => {
-        expect(passportShareFlagLayout(3, true)).toEqual({ perRow: 5, fontSize: 110, cellHeight: 160 });
+    it('fits the most countries shown next to the achievements, plus the "+N" line', () => {
+        const count = PASSPORT_SHARE_LIMITS.flagsWithAchievements;
+        const { perRow, cellHeight } = passportShareFlagLayout(count, true);
+
+        expect(Math.ceil(count / perRow) * cellHeight + MORE_LABEL_HEIGHT).toBeLessThanOrEqual(COUNTRIES_WITH_ACHIEVEMENTS_CONTENT_HEIGHT);
+    });
+
+    it.each([[3, false], [9, false], [25, false], [15, true]])('leaves room around each seal and its name (%i countries, achievements: %s)', (count, withAchievements) => {
+        const { perRow, sealDiameter, nameFontSize, nameLineHeight, cellHeight } = passportShareFlagLayout(count, withAchievements);
+
+        expect(sealDiameter).toBeLessThan(CONTENT_WIDTH / perRow);
+        expect(nameLineHeight).toBeGreaterThan(nameFontSize);
+        expect(sealDiameter + nameLineHeight).toBeLessThan(cellHeight);
+    });
+
+    it('fits the flag inside the seal, and keeps it bigger than the name under it', () => {
+        const { fontSize, nameFontSize, sealDiameter } = passportShareFlagLayout(25, false);
+
+        expect(fontSize).toBeLessThan(sealDiameter);
+        expect(fontSize).toBeGreaterThan(nameFontSize);
+    });
+});
+
+describe('findPassportMoment', () => {
+    const passport = {
+        countries: [{ code: 'ES', isPrivate: false }, { code: 'FR', isPrivate: true }],
+        achievements: [
+            { id: 'explorer', isPrivate: false, earnedAt: '2026-09-01' },
+            { id: 'van_log_1', isPrivate: true, earnedAt: '2026-09-02' },
+            { id: 'adventurer', isPrivate: false, earnedAt: null },
+        ],
+    };
+
+    it('finds a new country, with whether only the owner sees it', () => {
+        expect(findPassportMoment(passport, { countryCode: 'FR' })).toEqual({ kind: 'country', code: 'FR', isPrivate: true });
+    });
+
+    it('finds an earned badge, with whether only the owner sees it', () => {
+        expect(findPassportMoment(passport, { badgeId: 'van_log_1' })).toEqual({ kind: 'badge', code: 'van_log_1', isPrivate: true });
+    });
+
+    // A countries badge reached through van log countries: public family,
+    // but locked for everyone else, so sharing it would reveal it.
+    it("treats as private a badge others don't see as earned", () => {
+        const withHidden = { ...passport, achievements: [{ id: 'countries_5', isPrivate: false, earnedAt: '2026-09-01', visibleToOthers: false }] };
+
+        expect(findPassportMoment(withHidden, { badgeId: 'countries_5' })).toEqual({ kind: 'badge', code: 'countries_5', isPrivate: true });
+    });
+
+    // E.g. the entry behind it was deleted since the notification.
+    it('finds nothing for a country or badge no longer in the passport', () => {
+        expect(findPassportMoment(passport, { countryCode: 'JP' })).toBeNull();
+        expect(findPassportMoment(passport, { badgeId: 'adventurer' })).toBeNull();
+        expect(findPassportMoment(passport, {})).toBeNull();
+    });
+});
+
+describe('describePassportMoment', () => {
+    const t = (key) => key;
+
+    it("shows a new country's flag and its name in the viewer language", () => {
+        expect(describePassportMoment({ kind: 'country', code: 'IT' }, t, 'es'))
+            .toEqual({ symbol: '🇮🇹', name: 'Italia', title: 'passport.momentCountryTitle' });
+    });
+
+    it("shows a new badge's emoji and name", () => {
+        expect(describePassportMoment({ kind: 'badge', code: 'explorer' }, t, 'es'))
+            .toEqual({ symbol: '🧭', name: 'badges.explorer.name', title: 'passport.momentBadgeTitle' });
     });
 });

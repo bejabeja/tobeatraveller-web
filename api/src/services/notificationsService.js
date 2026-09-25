@@ -35,7 +35,7 @@ export class NotificationsService {
         // Callers fire this with .catch(() => {}), so a push failure would
         // otherwise vanish without a trace.
         await this.pushNotificationsService
-            .sendNotificationPush({ userId, actorId, type, itineraryId, commentId, countryCode })
+            .sendNotificationPush({ userId, actorId, type, itineraryId, commentId, badgeId, countryCode })
             .catch(err => logger.error('[push] failed to send notification push:', err));
     }
 

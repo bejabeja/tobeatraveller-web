@@ -3,12 +3,16 @@ import { NavigationContainer, useNavigationContainerRef } from '@react-navigatio
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Modal, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useEffect, useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { selectIsAuthenticated } from '@tobeatraveller/shared';
+import {
+  MOMENT_KINDS, momentFromShareRequest, PASSPORT_SHARE_MOMENT, refreshUnreadCount, selectAuthUser, selectIsAuthenticated, selectUnreadCount,
+} from '@tobeatraveller/shared';
 import { COLORS } from '../utils/styles';
 import { usePushNotificationNavigation } from '../hooks/usePushNotifications';
+import { useAchievementCelebrations } from '../hooks/useAchievementCelebrations';
+import AchievementCelebration from '../components/AchievementCelebration';
 
 import HomeScreen from '../screens/home/HomeScreen';
 import ExploreScreen from '../screens/explore/ExploreScreen';
@@ -46,6 +50,11 @@ import PassportScreen from '../screens/passport/PassportScreen';
 import RecapScreen from '../screens/recap/RecapScreen';
 
 const Stack = createNativeStackNavigator();
+
+// Badges and countries are granted in the background right after saving:
+// checking shortly after moving to another screen (usually right after
+// saving) celebrates them without waiting for the next poll.
+const CELEBRATION_CHECK_DELAY_MS = 2000;
 const Tab = createBottomTabNavigator();
 
 const TAB_ICONS = {
@@ -208,13 +217,40 @@ const tb = StyleSheet.create({
 });
 
 const Navigation = () => {
+  const dispatch = useDispatch();
   const isAuthenticated = useSelector(selectIsAuthenticated);
+  const authUser = useSelector(selectAuthUser);
+  const unreadCount = useSelector(selectUnreadCount);
   const navigationRef = useNavigationContainerRef();
   const [isNavigationReady, setIsNavigationReady] = useState(false);
   usePushNotificationNavigation(navigationRef, isNavigationReady);
+  const userId = isAuthenticated ? authUser?.id : null;
+  const celebrations = useAchievementCelebrations(userId, unreadCount);
+  const celebrationCheck = useRef(null);
+
+  useEffect(() => () => clearTimeout(celebrationCheck.current), []);
+
+  const onNavigationChange = () => {
+    // Opened from its notification or push, the card of that badge or
+    // country is already on screen: no celebration of it on top.
+    const moment = momentFromShareRequest(navigationRef.getCurrentRoute()?.params ?? {});
+    if (moment) celebrations.skip(moment);
+    if (!isAuthenticated) return;
+    clearTimeout(celebrationCheck.current);
+    celebrationCheck.current = setTimeout(() => dispatch(refreshUnreadCount()), CELEBRATION_CHECK_DELAY_MS);
+  };
+
+  const shareCelebration = ({ moment }) => {
+    celebrations.dismissAll();
+    navigationRef.navigate('Passport', {
+      userId,
+      share: PASSPORT_SHARE_MOMENT,
+      ...(moment.kind === MOMENT_KINDS.COUNTRY ? { country: moment.code } : { badge: moment.code }),
+    });
+  };
 
   return (
-    <NavigationContainer ref={navigationRef} onReady={() => setIsNavigationReady(true)}>
+    <NavigationContainer ref={navigationRef} onReady={() => setIsNavigationReady(true)} onStateChange={onNavigationChange}>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Tabs" component={TabNavigator} />
         <Stack.Screen name="Explore" component={ExploreScreen} />
@@ -256,6 +292,15 @@ const Navigation = () => {
           </>
         )}
       </Stack.Navigator>
+      {celebrations.celebration && (
+        <AchievementCelebration
+          celebration={celebrations.celebration}
+          position={celebrations.position}
+          total={celebrations.total}
+          onDismiss={celebrations.dismiss}
+          onShare={shareCelebration}
+        />
+      )}
     </NavigationContainer>
   );
 };

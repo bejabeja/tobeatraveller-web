@@ -1,4 +1,4 @@
-import { formatDateRange } from '../utils/date.js';
+import { formatDateRange, toCalendarDay } from '../utils/date.js';
 
 // On-brand placeholder shown for itineraries without a cover photo, embedded as a
 // data URI so it never depends on an external host (the old fallback linked directly
@@ -25,7 +25,7 @@ const PLACEHOLDER_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80
 const PLACEHOLDER_IMAGE = `data:image/svg+xml;base64,${Buffer.from(PLACEHOLDER_SVG).toString('base64')}`;
 
 export class Itinerary {
-    constructor({ id, userId, title, description, location, startDate, endDate, createdAt, updatedAt, photoUrl, photoPublicId, budget, numberOfPeople, likesCount, commentsCount, category, currency, isPublic, source }) {
+    constructor({ id, userId, title, description, location, startDate, endDate, createdAt, updatedAt, photoUrl, photoPublicId, budget, numberOfPeople, likesCount, commentsCount, category, currency, isPublic, source, clonedFromItineraryId }) {
         this.id = id;
         this.userId = userId;
         this.title = title;
@@ -45,6 +45,7 @@ export class Itinerary {
         this.currency = currency;
         this.isPublic = isPublic ?? true;
         this.source = source ?? 'itinerary';
+        this.clonedFromItineraryId = clonedFromItineraryId ?? null;
         this.places = [];
         this.images = [];
         this.user = null;
@@ -76,6 +77,7 @@ export class Itinerary {
             currency: row.currency,
             isPublic: row.is_public,
             source: row.source ?? 'itinerary',
+            clonedFromItineraryId: row.cloned_from_itinerary_id,
         });
     }
 
@@ -112,8 +114,8 @@ export class Itinerary {
             isPublic: this.isPublic,
             source: this.source,
             tripDates: formatDateRange(this.startDate, this.endDate),
-            startDate: this.startDate,
-            endDate: this.endDate,
+            startDate: toCalendarDay(this.startDate),
+            endDate: toCalendarDay(this.endDate),
         };
     }
 

@@ -15,18 +15,18 @@ const notification = (overrides) => ({
 const renderItem = (n) => render(<MemoryRouter><NotificationItem notification={n} onClick={jest.fn()} /></MemoryRouter>);
 
 describe("NotificationItem", () => {
-  it("announces a new country by its flag and name, and opens the passport ready to share it", () => {
+  it("announces a new country by its flag and name, and opens its card ready to share", () => {
     renderItem(notification({ type: "country_stamp", countryCode: "IT" }));
 
     expect(screen.getByText("🇮🇹 Italia")).toBeInTheDocument();
-    expect(screen.getByRole("link")).toHaveAttribute("href", "/profile/user-1/passport?share=countries");
+    expect(screen.getByRole("link")).toHaveAttribute("href", "/profile/user-1/passport?share=moment&country=IT");
   });
 
-  it("opens the passport ready to share the new badge", () => {
+  it("opens the card of the new badge ready to share", () => {
     renderItem(notification({ type: "badge_earned", badgeId: "explorer" }));
 
     expect(screen.getByText("badges.explorer.name")).toBeInTheDocument();
-    expect(screen.getByRole("link")).toHaveAttribute("href", "/profile/user-1/passport?share=achievements");
+    expect(screen.getByRole("link")).toHaveAttribute("href", "/profile/user-1/passport?share=moment&badge=explorer");
   });
 
   it("opens the yearly recap", () => {

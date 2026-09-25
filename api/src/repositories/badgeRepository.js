@@ -1,20 +1,26 @@
 import client from '../db/clientPostgres.js';
 import { toDateOnlyString } from '../models/vanLogEntry.js';
 
-// One row per (country, source) the user has been to: public trips
-// (dated by their start), van log and life diary entries. Private trips
-// don't count: they are usually plans or clones of someone else's trip,
-// not places the user has been. Countries whose name couldn't be matched
-// to an ISO code (country_code NULL) are left out.
+// A trip the user has really made: a public one, or a private one that
+// isn't an untouched clone of someone else's trip (a clone keeps the
+// original's dates and country until the user changes its dates).
+export const livedTripCondition = (table) => `(${table}.is_public = true OR ${table}.cloned_from_itinerary_id IS NULL)`;
+
+// One row per (country, source) the user has been to: the trips they really
+// made (dated by their start; private ones make a private country, like van
+// log and life diary entries). Not trips that haven't started yet (a trip
+// for next summer is a plan) nor entries dated in the future. Countries whose
+// name couldn't be matched to an ISO code (country_code NULL) are left out.
 export const COUNTRY_VISITS_SQL = `
-    SELECT location_country_code AS code, start_date AS visited_on, true AS is_public
-    FROM itineraries WHERE user_id = $1 AND is_public = true AND location_country_code IS NOT NULL
+    SELECT location_country_code AS code, start_date AS visited_on, is_public
+    FROM itineraries
+    WHERE user_id = $1 AND ${livedTripCondition('itineraries')} AND location_country_code IS NOT NULL AND start_date <= CURRENT_DATE
     UNION ALL
     SELECT location_country_code, entry_date, false
-    FROM van_log_entries WHERE user_id = $1 AND location_country_code IS NOT NULL
+    FROM van_log_entries WHERE user_id = $1 AND location_country_code IS NOT NULL AND entry_date <= CURRENT_DATE
     UNION ALL
     SELECT location_country_code, entry_date, false
-    FROM life_diary_entries WHERE user_id = $1 AND location_country_code IS NOT NULL
+    FROM life_diary_entries WHERE user_id = $1 AND location_country_code IS NOT NULL AND entry_date <= CURRENT_DATE
 `;
 
 export class BadgeRepository {
@@ -105,6 +111,7 @@ export class BadgeRepository {
                 JOIN users u ON u.id = p.id
                 LEFT JOIN itineraries i
                     ON i.user_id = u.id AND i.is_public = true AND i.location_country_code IS NOT NULL
+                    AND i.start_date <= CURRENT_DATE
                 WHERE u.role IS DISTINCT FROM 'test' OR u.id = $1
                 GROUP BY u.id, u.username, u.avatar_url
              ),
@@ -123,6 +130,16 @@ export class BadgeRepository {
             rank: Number(row.rank),
             position: Number(row.position),
         }));
+    }
+
+    // Whose public trip with a known country starts today: the daily job
+    // stamps that country on the day, even if they do nothing in the app.
+    async findUsersWithTripStartingToday() {
+        const result = await client.query(
+            `SELECT DISTINCT user_id FROM itineraries
+             WHERE ${livedTripCondition('itineraries')} AND location_country_code IS NOT NULL AND start_date = CURRENT_DATE`
+        );
+        return result.rows.map(row => row.user_id);
     }
 
     async getMetrics(userId) {

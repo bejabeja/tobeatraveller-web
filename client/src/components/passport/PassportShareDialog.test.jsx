@@ -3,8 +3,9 @@ import PassportShareDialog from "./PassportShareDialog.jsx";
 
 // Stable like the real one: the hook rebuilds the image whenever `t` changes.
 const mockT = (key) => key;
+const mockI18n = { language: "es" };
 jest.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: mockT }),
+  useTranslation: () => ({ t: mockT, i18n: mockI18n }),
 }));
 
 jest.mock("react-hot-toast", () => ({ __esModule: true, default: { error: jest.fn(), success: jest.fn() } }));
@@ -95,7 +96,7 @@ describe("PassportShareDialog", () => {
     fireEvent.click(screen.getByLabelText("passport.shareIncludePrivate"));
 
     await waitFor(() => expect(getUserPassport).toHaveBeenLastCalledWith("user-1", { publicView: false }));
-    expect(screen.getByRole("alert")).toHaveTextContent("passport.shareIncludesPrivate");
+    expect(screen.getByRole("status")).toHaveTextContent("passport.shareIncludesPrivate");
   });
 
   it("goes back to public countries only the next time it opens", async () => {
@@ -181,6 +182,14 @@ describe("PassportShareDialog", () => {
     await screen.findByRole("img");
 
     expect(createPassportShareImage.mock.calls[0][0].displayUrl).toBe(window.location.host);
+  });
+
+  // Each flag goes in a stamp with its country's name, as in the passport.
+  it("writes the country names on the stamps in the viewer's language", async () => {
+    renderDialog();
+    await screen.findByRole("img");
+
+    expect(createPassportShareImage.mock.calls[0][0].language).toBe("es");
   });
 
   it("opens with the achievements on when asked, as from a badge notification", async () => {

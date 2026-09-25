@@ -155,6 +155,17 @@ describe('ItineraryService', () => {
       expect(result).toEqual({ id: 'itin-1', title: 'My trip', places: [] });
     });
 
+    // Its dates and country are someone else's trip, not a place the cloner
+    // has been: the passport must be able to tell it apart.
+    it('remembers which itinerary the clone was made from', async () => {
+      itinerariesRepository.findById.mockResolvedValue(makeItinerary({ id: 'itin-1', userId: 'owner-1' }));
+      itinerariesRepository.create.mockResolvedValue(makeItinerary({ id: 'itin-2', userId: 'cloner-1' }));
+
+      await service.cloneItinerary('itin-1', 'cloner-1');
+
+      expect(itinerariesRepository.create).toHaveBeenCalledWith(expect.objectContaining({ clonedFromItineraryId: 'itin-1' }));
+    });
+
     it('throws NotFoundError when the source itinerary does not exist', async () => {
       itinerariesRepository.findById.mockResolvedValue(null);
 
@@ -449,6 +460,38 @@ describe('ItineraryService', () => {
       await service.updateItinerary('itin-1', { ...baseUpdateData }, null, [], 'user-1');
 
       expect(badgeService.evaluateUserInBackground).toHaveBeenCalledWith('user-1');
+    });
+
+    describe('a cloned itinerary', () => {
+      const clone = () => makeItinerary({
+        clonedFromItineraryId: 'original-1', startDate: new Date(2026, 4, 1), endDate: new Date(2026, 4, 10),
+      });
+
+      it('stays a clone while its dates are the original trip\'s', async () => {
+        itinerariesRepository.findById.mockResolvedValue(clone());
+
+        await service.updateItinerary('itin-1', { ...baseUpdateData, startDate: '2026-05-01', endDate: '2026-05-10' }, null, [], 'user-1');
+
+        expect(itinerariesRepository.update).toHaveBeenCalledWith('itin-1', expect.objectContaining({ clonedFromItineraryId: 'original-1' }));
+      });
+
+      // New dates mean the user is doing that trip themselves: from then on
+      // it can stamp its country in their passport.
+      it('becomes the user\'s own trip once they change its dates', async () => {
+        itinerariesRepository.findById.mockResolvedValue(clone());
+
+        await service.updateItinerary('itin-1', { ...baseUpdateData, startDate: '2026-08-01', endDate: '2026-08-10' }, null, [], 'user-1');
+
+        expect(itinerariesRepository.update).toHaveBeenCalledWith('itin-1', expect.objectContaining({ clonedFromItineraryId: null }));
+      });
+
+      it('never marks as a clone a trip that was not cloned', async () => {
+        itinerariesRepository.findById.mockResolvedValue(makeItinerary({ clonedFromItineraryId: null }));
+
+        await service.updateItinerary('itin-1', { ...baseUpdateData }, null, [], 'user-1');
+
+        expect(itinerariesRepository.update).toHaveBeenCalledWith('itin-1', expect.objectContaining({ clonedFromItineraryId: null }));
+      });
     });
 
     it('throws NotFoundError when itinerary does not exist', async () => {

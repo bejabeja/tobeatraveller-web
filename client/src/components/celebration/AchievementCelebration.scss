@@ -1,0 +1,168 @@
+$celebration-navy: #1b2a41;
+$celebration-gold: #d9a441;
+$celebration-paper: #fbf6ec;
+$celebration-accent: #e8743b;
+$celebration-navy-light: #2a3d5c;
+$seal-size: 11rem;
+
+.celebration {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: radial-gradient(circle at 50% 35%, $celebration-navy-light, $celebration-navy 70%);
+  animation: celebration-fade-in 0.25s ease-out both;
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 22rem;
+    text-align: center;
+  }
+
+  &__stage {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: $seal-size;
+    height: $seal-size;
+    margin-bottom: 1.75rem;
+  }
+
+  // The same ink seal as the passport's stamps, slammed down like a rubber stamp.
+  &__seal {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: $seal-size;
+    height: $seal-size;
+    border: 0.45rem solid $celebration-gold;
+    border-radius: 50%;
+    background: $celebration-paper;
+    box-shadow: inset 0 0 0 0.45rem $celebration-paper, inset 0 0 0 0.65rem rgba($celebration-gold, 0.7);
+    transform: rotate(-6deg);
+    animation: celebration-stamp 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.2) 0.1s both;
+  }
+
+  &__symbol {
+    width: auto;
+    font-size: 5rem;
+    line-height: 1;
+  }
+
+  &__confetti {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0.5rem;
+    height: 0.9rem;
+    margin: -0.45rem 0 0 -0.25rem;
+    border-radius: 2px;
+    background: $celebration-gold;
+    opacity: 0;
+    animation: celebration-burst 0.9s ease-out 0.45s both;
+
+    &:nth-child(3n + 1) { background: $celebration-accent; }
+    &:nth-child(3n + 2) { background: $celebration-paper; }
+  }
+
+  &__title {
+    width: auto;
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: $celebration-gold;
+    animation: celebration-rise 0.4s ease-out 0.55s both;
+  }
+
+  &__name {
+    width: auto;
+    margin: 0.4rem 0 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #fff;
+    animation: celebration-rise 0.4s ease-out 0.65s both;
+  }
+
+  &__progress {
+    width: auto;
+    margin: 0.75rem 0 0;
+    font-size: 0.85rem;
+    color: rgba(#fff, 0.7);
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.75rem;
+    width: 100%;
+    margin-top: 2rem;
+    animation: celebration-rise 0.4s ease-out 0.75s both;
+  }
+
+  &__share,
+  &__continue {
+    flex: 1;
+    padding: 0.8rem 1rem;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  &__share {
+    background: $celebration-accent;
+    color: #fff;
+  }
+
+  &__continue {
+    background: $celebration-navy-light;
+    box-shadow: inset 0 0 0 1px rgba(#fff, 0.25);
+    color: #fff;
+  }
+
+  &__share:focus-visible,
+  &__continue:focus-visible {
+    outline: 3px solid $celebration-gold;
+    outline-offset: 2px;
+  }
+}
+
+@keyframes celebration-fade-in {
+  from { opacity: 0; }
+}
+
+@keyframes celebration-stamp {
+  0% { opacity: 0; transform: scale(2.4) rotate(-25deg); }
+  60% { opacity: 1; transform: scale(0.92) rotate(-4deg); }
+  100% { opacity: 1; transform: scale(1) rotate(-6deg); }
+}
+
+@keyframes celebration-burst {
+  0% { opacity: 1; transform: rotate(var(--confetti-angle)) translateY(0); }
+  100% { opacity: 0; transform: rotate(var(--confetti-angle)) translateY(-9rem) rotate(180deg); }
+}
+
+@keyframes celebration-rise {
+  from { opacity: 0; transform: translateY(0.75rem); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .celebration,
+  .celebration__seal,
+  .celebration__title,
+  .celebration__name,
+  .celebration__actions {
+    animation: none;
+  }
+
+  .celebration__confetti {
+    display: none;
+  }
+}

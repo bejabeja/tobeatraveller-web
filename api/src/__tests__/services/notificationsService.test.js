@@ -126,6 +126,12 @@ describe('NotificationsService.createNotification() push delivery', () => {
         );
     });
 
+    it('tells the push which badge or country it is about', async () => {
+        await service.createNotification({ userId: 'u1', actorId: 'u1', type: 'badge_earned', badgeId: 'countries_5' });
+
+        expect(pushNotificationsService.sendNotificationPush).toHaveBeenCalledWith(expect.objectContaining({ badgeId: 'countries_5' }));
+    });
+
     it('does not push a like that folds into an existing notification', async () => {
         notificationsRepository.create.mockResolvedValue({ grouped: true });
 

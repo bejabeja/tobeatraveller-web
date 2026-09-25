@@ -55,7 +55,7 @@ export class ItineraryRepository {
     const {
       userId, title, description, location, startDate, endDate,
       numberOfPeople, category, budget, currency, photoUrl, photoPublicId, isPublic,
-      source
+      source, clonedFromItineraryId
     } = itineraryData;
     const id = uuidv4();
 
@@ -65,9 +65,9 @@ export class ItineraryRepository {
                 location_name, location_label, latitude, longitude,
                 start_date, end_date, number_of_people,
                 category, budget, currency, photo_url, photo_public_id, is_public, source,
-                location_country_code
+                cloned_from_itinerary_id, location_country_code
             )
-            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)
             RETURNING *;
         `;
 
@@ -75,7 +75,7 @@ export class ItineraryRepository {
       id, userId, title, description,
       location.name, location.label, location.lat, location.lon,
       startDate, endDate, numberOfPeople, category, budget, currency, photoUrl, photoPublicId,
-      isPublic ?? true, source ?? 'itinerary', countryCodeFromLabel(location.label)
+      isPublic ?? true, source ?? 'itinerary', clonedFromItineraryId ?? null, countryCodeFromLabel(location.label)
     ]);
 
     return Itinerary.fromDb(result.rows[0]);
@@ -84,7 +84,7 @@ export class ItineraryRepository {
   async update(itineraryId, itineraryData) {
     const {
       title, description, location, startDate, endDate,
-      numberOfPeople, budget, currency, category, photoUrl, photoPublicId, isPublic
+      numberOfPeople, budget, currency, category, photoUrl, photoPublicId, isPublic, clonedFromItineraryId
     } = itineraryData;
 
     const query = `
@@ -98,6 +98,7 @@ export class ItineraryRepository {
                 photo_url = $14, photo_public_id = $15,
                 is_public = $16,
                 location_country_code = $17,
+                cloned_from_itinerary_id = $18,
                 updated_at = NOW()
             WHERE id = $1 RETURNING *;
         `;
@@ -107,7 +108,7 @@ export class ItineraryRepository {
       location.name, location.label, location.lat, location.lon,
       startDate, endDate, numberOfPeople,
       budget, currency, category, photoUrl, photoPublicId,
-      isPublic ?? true, countryCodeFromLabel(location.label)
+      isPublic ?? true, countryCodeFromLabel(location.label), clonedFromItineraryId ?? null
     ]);
     return Itinerary.fromDb(result.rows[0]);
   }

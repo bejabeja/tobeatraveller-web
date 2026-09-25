@@ -1,7 +1,8 @@
 jest.mock('react-i18next', () => {
   // Stable like the real one.
   const t = (key) => key;
-  return { useTranslation: () => ({ t }) };
+  const i18n = { language: 'es' };
+  return { useTranslation: () => ({ t, i18n }) };
 });
 
 jest.mock('@tobeatraveller/shared', () => {
@@ -58,6 +59,14 @@ it('previews the public passport only, with just the site address on the card', 
   expect(screen.getByText('@jane')).toBeTruthy();
   expect(screen.getByText('tobeatraveller.test')).toBeTruthy();
   expect(screen.getByText('passport.sharePublicOnly')).toBeTruthy();
+});
+
+// As in the passport: each flag in its ink stamp, with the country's name.
+it("stamps each country on the card with its flag and its name in the user's language", async () => {
+  await renderModal();
+
+  expect(screen.getByText('🇪🇸')).toBeTruthy();
+  expect(screen.getByText('ESPAÑA')).toBeTruthy();
 });
 
 // The share sheet only takes the image, and a link in a picture can't be

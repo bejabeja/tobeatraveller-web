@@ -4,13 +4,16 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
-  BADGE_EMOJI, countryFlag, passportShareFlagLayout, passportUrl, summarizePassportForSharing,
+  BADGE_EMOJI, countryFlag, countryName, passportShareFlagLayout, passportUrl, summarizePassportForSharing,
 } from '@tobeatraveller/shared';
 import { useShareablePassport } from '../hooks/useShareablePassport';
 import {
-  captureAndShareStory, STORY_COLORS, storyPreviewHeight, storyScale as scale, StoryCardPreview,
+  captureAndShareStory, InkSeal, STORY_COLORS, storyPreviewHeight, storyScale as scale, StoryCardPreview,
 } from './StoryCard';
 import { WEB_URL } from '../utils/config';
+
+const FLAG_LINE_HEIGHT = 1.2;
+const COUNTRY_NAME_PADDING = 10;
 
 // Panel heights in image pixels, as on the web image.
 const COUNTRIES_PANEL_HEIGHT_ALONE = 1250;
@@ -30,11 +33,26 @@ const CardPanel = ({ title, height, children }) => (
   </View>
 );
 
-const PassportShareCard = ({ summary, t }) => {
+// A country as on the card of a single new country, and as on the web image:
+// its flag in a round ink seal, with its name under it. Sizes come from
+// passportShareFlagLayout, shared with the web image.
+const CountrySeal = ({ code, layout, language }) => (
+  <View style={[styles.cardCountryCell, { width: `${100 / layout.perRow}%`, height: scale(layout.cellHeight) }]}>
+    <InkSeal diameter={layout.sealDiameter}>
+      <Text style={{ fontSize: scale(layout.fontSize), lineHeight: scale(layout.fontSize * FLAG_LINE_HEIGHT) }}>{countryFlag(code)}</Text>
+    </InkSeal>
+    <Text
+      style={[styles.cardCountryName, { fontSize: scale(layout.nameFontSize), lineHeight: scale(layout.nameLineHeight) }]}
+      numberOfLines={1}
+      adjustsFontSizeToFit
+    >
+      {countryName(code, language).toUpperCase()}
+    </Text>
+  </View>
+);
+
+const PassportShareCard = ({ summary, t, language }) => {
   const flagLayout = passportShareFlagLayout(summary.flagCodes.length, summary.showAchievements);
-  const flagStyle = {
-    width: `${100 / flagLayout.perRow}%`, fontSize: scale(flagLayout.fontSize), lineHeight: scale(flagLayout.cellHeight),
-  };
 
   return (
     <>
@@ -51,7 +69,7 @@ const PassportShareCard = ({ summary, t }) => {
       >
         {summary.flagCodes.length > 0 ? (
           <View style={styles.cardGrid}>
-            {summary.flagCodes.map(code => <Text key={code} style={[styles.cardFlag, flagStyle]}>{countryFlag(code)}</Text>)}
+            {summary.flagCodes.map(code => <CountrySeal key={code} code={code} layout={flagLayout} language={language} />)}
           </View>
         ) : (
           <Text style={styles.cardEmpty}>{t('passport.noCountriesYet')}</Text>
@@ -89,7 +107,7 @@ const PassportShareCard = ({ summary, t }) => {
 // `initialIncludeAchievements` is for opening it from a badge notification,
 // where the new badge is what the owner wants to show.
 const PassportShareModal = ({ userId, visible, onClose, initialIncludeAchievements = false }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const cardRef = useRef(null);
   const [sharing, setSharing] = useState(false);
   const [includeAchievements, setIncludeAchievements] = useState(false);
@@ -130,7 +148,7 @@ const PassportShareModal = ({ userId, visible, onClose, initialIncludeAchievemen
             {error && <Text style={styles.errorText}>{t('passport.shareError')}</Text>}
             {summary && (
               <StoryCardPreview cardRef={cardRef} previewWidth={PREVIEW_WIDTH}>
-                <PassportShareCard summary={summary} t={t} />
+                <PassportShareCard summary={summary} t={t} language={i18n.language} />
               </StoryCardPreview>
             )}
 
@@ -155,12 +173,14 @@ const PassportShareModal = ({ userId, visible, onClose, initialIncludeAchievemen
                 trackColor={{ true: '#E8743B' }}
               />
             </View>
-            <Text
-              style={[styles.hint, includePrivate && styles.hintWarning]}
-              accessibilityLiveRegion={includePrivate ? 'polite' : 'none'}
-            >
-              {includePrivate ? t('passport.shareIncludesPrivate') : t('passport.sharePublicOnly')}
-            </Text>
+            {includePrivate ? (
+              <View style={styles.privateNote} accessibilityLiveRegion="polite">
+                <Text importantForAccessibility="no" accessibilityElementsHidden>🔒</Text>
+                <Text style={styles.privateNoteText}>{t('passport.shareIncludesPrivate')}</Text>
+              </View>
+            ) : (
+              <Text style={styles.hint}>{t('passport.sharePublicOnly')}</Text>
+            )}
 
             <View style={styles.actions}>
               <TouchableOpacity style={styles.cancelBtn} onPress={onClose}>
@@ -192,7 +212,12 @@ const styles = StyleSheet.create({
   toggle: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', alignSelf: 'stretch', marginTop: 8 },
   toggleLabel: { flex: 1, fontSize: 14, color: '#111827' },
   hint: { marginTop: 8, fontSize: 12, textAlign: 'center', color: '#6b7280' },
-  hintWarning: { color: '#b91c1c' },
+  // What sharing reveals: a note in the passport's colours, not an error.
+  privateNote: {
+    flexDirection: 'row', gap: 8, alignSelf: 'stretch', marginTop: 8,
+    paddingVertical: 10, paddingHorizontal: 12, borderRadius: 10, backgroundColor: 'rgba(27, 42, 65, 0.06)',
+  },
+  privateNoteText: { flex: 1, fontSize: 12, lineHeight: 17, color: STORY_COLORS.NAVY },
   actions: { flexDirection: 'row', gap: 10, marginTop: 16, alignSelf: 'stretch' },
   linkHint: { marginTop: 10, fontSize: 11, textAlign: 'center', color: '#6b7280' },
   reward: {
@@ -220,8 +245,10 @@ const styles = StyleSheet.create({
   // Stretched so the flags' and stamps' percentage widths resolve against
   // the panel, not against the grid's own content width.
   cardGrid: { alignSelf: 'stretch', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' },
-  // Width and size come from passportShareFlagLayout, shared with the web image.
-  cardFlag: { textAlign: 'center' },
+  cardCountryCell: { alignItems: 'center', justifyContent: 'center' },
+  cardCountryName: {
+    alignSelf: 'stretch', paddingHorizontal: scale(COUNTRY_NAME_PADDING), fontWeight: '800', textAlign: 'center', color: STORY_COLORS.NAVY,
+  },
   cardStamp: { width: '25%', textAlign: 'center', fontSize: scale(100), lineHeight: scale(140) },
   cardMore: { marginTop: scale(10), fontSize: scale(40), fontWeight: '700', color: PASSPORT_INK_MUTED },
   cardEmpty: { fontSize: scale(42), color: PASSPORT_INK_MUTED },

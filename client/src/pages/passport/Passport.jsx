@@ -5,10 +5,12 @@ import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import {
-  BADGE_EMOJI, BADGE_FAMILY_ORDER, PASSPORT_SHARE_PARAM, PASSPORT_SHARE_WITH_ACHIEVEMENTS,
+  BADGE_EMOJI, BADGE_FAMILY_ORDER, MOMENT_KINDS, findPassportMoment, PASSPORT_MOMENT_BADGE_PARAM, PASSPORT_MOMENT_COUNTRY_PARAM, PASSPORT_SHARE_MOMENT,
+  PASSPORT_SHARE_PARAM, PASSPORT_SHARE_WITH_ACHIEVEMENTS,
   countryFlag, countryName, passportStampStyle, signupUrlFromPassport,
 } from "@tobeatraveller/shared";
 import CountryPickerDialog from "../../components/passport/CountryPickerDialog";
+import MomentShareDialog from "../../components/passport/MomentShareDialog";
 import RecapBanner, { RECAP_SOURCES } from "../../components/recap/RecapBanner";
 import PassportShareDialog from "../../components/passport/PassportShareDialog";
 import { updateMyDeclaredCountries } from "../../services/passport";
@@ -34,7 +36,7 @@ const parseDate = (value) => {
 };
 
 const AchievementStamp = ({ achievement, language, t }) => {
-  const { id, earnedAt, current, threshold, isPrivate } = achievement;
+  const { id, earnedAt, current, threshold, isPrivate, visibleToOthers } = achievement;
   const earned = Boolean(earnedAt);
   const showProgress = !earned && current != null;
 
@@ -61,7 +63,8 @@ const AchievementStamp = ({ achievement, language, t }) => {
           <span className="passport__progress-label">{Math.min(current, threshold)} / {threshold}</span>
         </div>
       )}
-      {isPrivate && earned && (
+      {/* Only the owner sees it as earned: a private family, or one others see locked. */}
+      {(isPrivate || visibleToOthers === false) && earned && (
         <span className="passport__private passport__private--seal" title={t("badges.onlyYou")} aria-label={t("badges.onlyYou")}>🔒</span>
       )}
     </li>
@@ -278,20 +281,45 @@ const Passport = () => {
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [shareWithAchievements, setShareWithAchievements] = useState(false);
   const [shareSource, setShareSource] = useState(PASSPORT_SHARE_SOURCES.PASSPORT_PAGE);
+  const [moment, setMoment] = useState(null);
   const closeShare = useCallback(() => setIsShareOpen(false), []);
   const trackedViewRef = useRef(null);
   const referralCode = searchParams.get("ref");
   const shareRequest = searchParams.get(PASSPORT_SHARE_PARAM);
 
-  // Coming from a new country or badge notification: open the share dialog
-  // right away, then drop the parameter so a reload doesn't open it again.
+  // Coming from a new country or badge notification: open the card of that
+  // country or badge (or the whole passport's dialog if it can't be found)
+  // right away, then drop the parameters so a reload doesn't open it again.
+  // A moment waits for the passport, which says whether it's private.
   useEffect(() => {
     if (!shareRequest || !isOwner) return;
-    setShareWithAchievements(shareRequest === PASSPORT_SHARE_WITH_ACHIEVEMENTS);
+    if (shareRequest === PASSPORT_SHARE_MOMENT && !passport) return;
+    const momentFound = shareRequest === PASSPORT_SHARE_MOMENT
+      ? findPassportMoment(passport, {
+        countryCode: searchParams.get(PASSPORT_MOMENT_COUNTRY_PARAM),
+        badgeId: searchParams.get(PASSPORT_MOMENT_BADGE_PARAM),
+      })
+      : null;
+    if (momentFound) {
+      setMoment(momentFound);
+    } else {
+      setShareWithAchievements(shareRequest === PASSPORT_SHARE_WITH_ACHIEVEMENTS || Boolean(searchParams.get(PASSPORT_MOMENT_BADGE_PARAM)));
+      setShareSource(PASSPORT_SHARE_SOURCES.NOTIFICATION);
+      setIsShareOpen(true);
+    }
+    setSearchParams((params) => {
+      [PASSPORT_SHARE_PARAM, PASSPORT_MOMENT_COUNTRY_PARAM, PASSPORT_MOMENT_BADGE_PARAM].forEach(param => params.delete(param));
+      return params;
+    }, { replace: true });
+  }, [shareRequest, isOwner, passport, searchParams, setSearchParams]);
+
+  const closeMoment = useCallback(() => setMoment(null), []);
+  const shareWholePassport = () => {
+    setShareWithAchievements(moment?.kind === MOMENT_KINDS.BADGE);
     setShareSource(PASSPORT_SHARE_SOURCES.NOTIFICATION);
+    setMoment(null);
     setIsShareOpen(true);
-    setSearchParams((params) => { params.delete(PASSPORT_SHARE_PARAM); return params; }, { replace: true });
-  }, [shareRequest, isOwner, setSearchParams]);
+  };
 
   // Once per passport opened. `from_shared_link` is what tells a visit that
   // came from a shared image apart from browsing inside the app.
@@ -423,6 +451,16 @@ const Passport = () => {
               </button>
             </>
           )}
+        />
+      )}
+
+      {isOwner && (
+        <MomentShareDialog
+          moment={moment}
+          owner={authUser}
+          isOpen={Boolean(moment)}
+          onClose={closeMoment}
+          onShareWholePassport={shareWholePassport}
         />
       )}
 

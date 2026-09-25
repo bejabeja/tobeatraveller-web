@@ -58,7 +58,35 @@ export const captureAndShareStory = async (cardRef, { link, dialogTitle }) => {
   await Sharing.shareAsync(uri, { mimeType: 'image/png', UTI: 'public.png', dialogTitle });
 };
 
+// Proportions of the ink seal, relative to its diameter (a 600px seal has a
+// 14px ring and a dashed inner ring 20px inside it), as on the web images.
+const SEAL_RING_WIDTH = 14 / 600;
+const SEAL_INNER_RING_INSET = 20 / 600;
+const SEAL_INNER_RING_WIDTH = 6 / 600;
+
+// An ink seal like the passport's stamps: paper disc, solid ring, dashed
+// inner ring, with a flag or emoji inside. `diameter` is in image pixels.
+export const InkSeal = ({ diameter, style, children }) => (
+  <View
+    style={[styles.seal, {
+      width: storyScale(diameter), height: storyScale(diameter), borderRadius: storyScale(diameter / 2),
+      borderWidth: storyScale(diameter * SEAL_RING_WIDTH),
+    }, style]}
+  >
+    <View
+      style={[styles.sealInner, {
+        top: storyScale(diameter * SEAL_INNER_RING_INSET), left: storyScale(diameter * SEAL_INNER_RING_INSET),
+        right: storyScale(diameter * SEAL_INNER_RING_INSET), bottom: storyScale(diameter * SEAL_INNER_RING_INSET),
+        borderRadius: storyScale(diameter / 2), borderWidth: storyScale(diameter * SEAL_INNER_RING_WIDTH),
+      }]}
+    />
+    {children}
+  </View>
+);
+
 const styles = StyleSheet.create({
+  seal: { alignItems: 'center', justifyContent: 'center', backgroundColor: STORY_COLORS.PAPER, borderColor: STORY_COLORS.GOLD },
+  sealInner: { position: 'absolute', borderStyle: 'dashed', borderColor: 'rgba(217, 164, 65, 0.7)' },
   scaler: { position: 'absolute', width: CARD_WIDTH, height: CARD_HEIGHT },
   card: {
     width: CARD_WIDTH, height: CARD_HEIGHT,
