@@ -8,6 +8,7 @@ import {
   BADGE_EMOJI, BADGE_FAMILY_ORDER, PASSPORT_SHARE_WITH_ACHIEVEMENTS,
   countryFlag, countryName, passportStampStyle, selectAuthUser,
 } from '@tobeatraveller/shared';
+import CountryPickerModal from '../../components/CountryPickerModal';
 import PassportShareModal from '../../components/PassportShareModal';
 import { useUserPassport } from '../../hooks/useUserPassport';
 
@@ -78,12 +79,24 @@ const CountryStamp = ({ country, language, t }) => {
   );
 };
 
+// A country the user marked themselves: an outline stamp, apart from the
+// inked ones their activity earned.
+const DeclaredCountryStamp = ({ code, language, t }) => (
+  <View style={styles.declaredCountry} accessible accessibilityLabel={`${countryName(code, language)}, ${t('passport.declaredStampLabel')}`}>
+    <Text style={styles.countryFlag}>{countryFlag(code)}</Text>
+    <Text style={[styles.countryName, styles.declaredCountryName]} numberOfLines={2}>
+      {countryName(code, language).toUpperCase()}
+    </Text>
+  </View>
+);
+
 const PassportScreen = ({ navigation, route }) => {
   const { t, i18n } = useTranslation();
   const insets = useSafeAreaInsets();
   const authUser = useSelector(selectAuthUser);
   const userId = route.params?.userId;
-  const { passport, loading, error } = useUserPassport(userId);
+  const { passport, loading, error, reload } = useUserPassport(userId);
+  const [isDeclaredOpen, setIsDeclaredOpen] = useState(false);
   const isOwner = authUser?.id === userId;
   const language = i18n.language;
   const [isShareOpen, setIsShareOpen] = useState(false);
@@ -109,6 +122,7 @@ const PassportScreen = ({ navigation, route }) => {
     : passport ? t('passport.ofUser', { username: passport.owner.username }) : t('passport.title');
 
   const earnedCount = passport?.achievements.filter(achievement => achievement.earnedAt).length ?? 0;
+  const declaredCodes = (passport?.declaredCountries ?? []).map(country => country.code);
   const families = BADGE_FAMILY_ORDER
     .map(family => ({ family, stamps: passport?.achievements.filter(achievement => achievement.family === family) ?? [] }))
     .filter(({ stamps }) => stamps.length > 0);
@@ -171,6 +185,33 @@ const PassportScreen = ({ navigation, route }) => {
             )}
           </View>
 
+          {(isOwner || declaredCodes.length > 0) && (
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Text style={[styles.sectionTitle, styles.sectionHeaderTitle]}>
+                  {isOwner ? t('passport.declaredTitleOwn') : t('passport.declaredTitleOther')}
+                </Text>
+                {isOwner && (
+                  <TouchableOpacity onPress={() => setIsDeclaredOpen(true)} style={styles.declaredEdit} accessibilityRole="button">
+                    <Text style={styles.declaredEditText}>
+                      {declaredCodes.length > 0 ? t('passport.declaredEdit') : t('passport.declaredAdd')}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+              {isOwner && (
+                <Text style={styles.sectionHint}>
+                  {declaredCodes.length > 0 ? t('passport.declaredHint') : t('passport.declaredEmptyOwn')}
+                </Text>
+              )}
+              {declaredCodes.length > 0 && (
+                <View style={styles.grid}>
+                  {declaredCodes.map(code => <DeclaredCountryStamp key={code} code={code} language={language} t={t} />)}
+                </View>
+              )}
+            </View>
+          )}
+
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{t('passport.achievements')}</Text>
             {families.map(({ family, stamps }) => (
@@ -185,6 +226,16 @@ const PassportScreen = ({ navigation, route }) => {
             ))}
           </View>
         </ScrollView>
+      )}
+
+      {isOwner && passport && (
+        <CountryPickerModal
+          visible={isDeclaredOpen}
+          onClose={() => setIsDeclaredOpen(false)}
+          onSaved={() => { setIsDeclaredOpen(false); reload(); }}
+          initialSelected={declaredCodes}
+          lockedCodes={passport.countries.map(country => country.code)}
+        />
       )}
 
       {isOwner && (
@@ -231,6 +282,18 @@ const styles = StyleSheet.create({
     backgroundColor: PASSPORT_PAPER, borderWidth: 1, borderColor: '#efe4cf',
   },
   sectionTitle: { fontSize: 17, fontWeight: '800', color: PASSPORT_NAVY },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
+  sectionHeaderTitle: { flex: 1 },
+  declaredEdit: { paddingVertical: 6, paddingHorizontal: 10, borderRadius: 999, borderWidth: 1, borderColor: '#d9a441' },
+  declaredEditText: { fontSize: 12, fontWeight: '700', color: '#b08a45' },
+  // Marked by the user, not earned: dashed and faded, without date or tilt.
+  declaredCountry: {
+    width: '30%', minWidth: 96, alignItems: 'center', gap: 2,
+    paddingVertical: 10, paddingHorizontal: 6,
+    borderWidth: 2, borderStyle: 'dashed', borderColor: '#b8ae9c', borderRadius: 10,
+    backgroundColor: PASSPORT_PAPER, opacity: 0.85,
+  },
+  declaredCountryName: { color: '#8a8172' },
   sectionHint: { marginTop: 4, fontSize: 12, color: PASSPORT_INK_MUTED },
   familyTitle: { marginTop: 16, marginBottom: 8, fontSize: 11, fontWeight: '700', letterSpacing: 1.2, color: PASSPORT_INK_MUTED },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginTop: 12 },

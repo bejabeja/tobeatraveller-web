@@ -19,6 +19,7 @@ import { ItineraryCardSkeleton, ProfileSkeleton } from '../../components/Skeleto
 import { shadow } from '../../utils/styles';
 import { clearDeviceSessionData } from '../../utils/session';
 import { useOutbox } from '../../offline/useOutbox';
+import { WEB_URL } from '../../utils/config';
 import { useUserPassport } from '../../hooks/useUserPassport';
 import PassportShareModal from '../../components/PassportShareModal';
 
@@ -120,7 +121,8 @@ const ProfileScreen = ({ route, navigation }) => {
 
   const handleShare = async () => {
     try {
-      await Share.share({ message: `Check out @${user?.username} on Tobeatraveller`, title: user?.username });
+      const url = `${WEB_URL}/profile/${user?.id}`;
+      await Share.share({ message: `${t('profile.shareText', { username: user?.username })} ${url}`, url, title: user?.username });
     } catch {}
   };
 
@@ -211,7 +213,12 @@ const ProfileScreen = ({ route, navigation }) => {
           </View>
 
           <View style={styles.cardActions}>
-            <TouchableOpacity style={styles.iconBtn} onPress={handleShare}>
+            <TouchableOpacity
+              style={styles.iconBtn}
+              onPress={handleShare}
+              accessibilityRole="button"
+              accessibilityLabel={t('profile.shareProfile')}
+            >
               <Text style={styles.iconBtnText}>⤴</Text>
             </TouchableOpacity>
             {isOwnProfile ? (

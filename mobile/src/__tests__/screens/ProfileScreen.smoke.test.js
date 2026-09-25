@@ -12,7 +12,7 @@ jest.mock('react-redux', () => ({
 }));
 
 jest.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (key) => key, i18n: { language: 'es' } }),
+  useTranslation: () => ({ t: (key, vars) => (vars?.username ? `${key}:${vars.username}` : key), i18n: { language: 'es' } }),
 }));
 
 jest.mock('expo-linear-gradient', () => ({
@@ -23,6 +23,8 @@ jest.mock('expo-linear-gradient', () => ({
 jest.mock('../../utils/session', () => ({
   clearDeviceSessionData: jest.fn(),
 }));
+
+jest.mock('../../utils/config', () => ({ WEB_URL: 'https://tobeatraveller.test' }));
 
 jest.mock('../../offline/useOutbox', () => ({
   useOutbox: () => ({ changes: [] }),
@@ -58,7 +60,8 @@ jest.mock('@tobeatraveller/shared', () => {
 import {
   getUserPassport, selectAuthUser, selectIsAuthenticated, selectMe, selectMyItineraries,
 } from '@tobeatraveller/shared';
-import { act, render, screen } from '@testing-library/react-native';
+import { Share } from 'react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import ProfileScreen from '../../screens/profile/ProfileScreen';
 
@@ -99,4 +102,23 @@ it('renders the own profile header with counters and the passport card', async (
   expect(screen.getByText('profile.trips')).toBeTruthy();
   expect(screen.getByText('passport.title')).toBeTruthy();
   expect(screen.getByText(/badges\.nextTip\.trips/)).toBeTruthy();
+});
+
+// Without the link there is nothing to open or preview on the other side.
+it('shares the profile with a link to it', async () => {
+  getUserPassport.mockResolvedValue({ owner: { id: 'user-1', username: 'jane' }, achievements: [], countries: [] });
+  const shareSpy = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction' });
+
+  render(
+    <SafeAreaProvider initialMetrics={INITIAL_METRICS}>
+      <ProfileScreen route={{ params: {} }} navigation={{ navigate: jest.fn(), canGoBack: () => false }} />
+    </SafeAreaProvider>
+  );
+  await act(async () => {});
+  await act(async () => { fireEvent.press(screen.getByLabelText('profile.shareProfile')); });
+
+  expect(shareSpy).toHaveBeenCalledWith(expect.objectContaining({
+    message: 'profile.shareText:jane https://tobeatraveller.test/profile/user-1',
+    url: 'https://tobeatraveller.test/profile/user-1',
+  }));
 });

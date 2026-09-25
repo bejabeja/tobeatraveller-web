@@ -1,0 +1,98 @@
+.country-picker {
+  max-width: 480px;
+  max-height: calc(100vh - 2.5rem);
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-height: 0;
+    padding: 1rem 1.5rem 0.5rem;
+    overflow: hidden;
+  }
+
+  &__search {
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    font-size: 0.95rem;
+  }
+
+  &__count {
+    margin: 0;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary-color);
+  }
+
+  &__empty {
+    margin: 1rem 0;
+    font-size: 0.9rem;
+    text-align: center;
+    color: var(--text-secondary-color);
+  }
+
+  // Scrolls on its own so the search and the actions stay in view.
+  &__list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.35rem;
+    max-height: 50vh;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    list-style: none;
+  }
+
+  &__option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.6rem;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    cursor: pointer;
+
+    input {
+      width: auto;
+      margin: 0;
+    }
+
+    &--checked {
+      border-color: #d9a441;
+      background: #fdf6e9;
+    }
+
+    &:has(input:disabled) {
+      cursor: default;
+    }
+  }
+
+  &__flag {
+    width: auto;
+    font-size: 1.3rem;
+    line-height: 1;
+  }
+
+  &__name {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.85rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__note {
+    margin: 0;
+    padding: 0.5rem 1.5rem 0;
+    font-size: 0.8rem;
+    color: var(--text-secondary-color);
+  }
+
+  &__earned {
+    width: auto;
+    font-size: 0.7rem;
+    color: var(--text-secondary-color);
+  }
+}

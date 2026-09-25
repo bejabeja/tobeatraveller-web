@@ -4,8 +4,10 @@ import { getUserPassport } from '@tobeatraveller/shared';
 
 // Reloads on focus: the Profile tab stays mounted, so a stamp earned while
 // using another screen would otherwise not show up until the app restarts.
+// `reload` is for after the screen itself changes the passport.
 export const useUserPassport = (userId) => {
   const [state, setState] = useState({ passport: null, loading: Boolean(userId), error: false });
+  const [reloadCount, setReloadCount] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
@@ -16,8 +18,10 @@ export const useUserPassport = (userId) => {
         .then((passport) => { if (!cancelled) setState({ passport, loading: false, error: false }); })
         .catch(() => { if (!cancelled) setState((previous) => ({ ...previous, loading: false, error: previous.passport == null })); });
       return () => { cancelled = true; };
-    }, [userId])
+    }, [userId, reloadCount])
   );
 
-  return state;
+  const reload = useCallback(() => setReloadCount((count) => count + 1), []);
+
+  return { ...state, reload };
 };

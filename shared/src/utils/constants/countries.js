@@ -1,3 +1,5 @@
+import { normalizeSearchText } from "../normalizeSearchText.js";
+
 // Country names for the passport stamps, generated once with Intl.DisplayNames
 // (Node, full ICU) for the ISO codes in api/src/utils/countryCodes.js. Kept as
 // data because the mobile JS engine (Hermes) has no Intl.DisplayNames.
@@ -258,6 +260,17 @@ export const COUNTRY_NAMES = Object.freeze({
 export const countryFlag = (code) => String.fromCodePoint(
     ...code.toUpperCase().split("").map(letter => 0x1f1e6 + letter.charCodeAt(0) - 65)
 );
+
+export const countryCodesByName = (language) => Object.keys(COUNTRY_NAMES)
+    .sort((a, b) => countryName(a, language).localeCompare(countryName(b, language), language));
+
+export const searchCountryCodes = (query, language) => {
+    const term = normalizeSearchText(query.trim());
+    const codes = countryCodesByName(language);
+    if (!term) return codes;
+    // Accent-insensitive, so "japon" finds Japón.
+    return codes.filter(code => normalizeSearchText(countryName(code, language)).includes(term) || code.toLowerCase() === term);
+};
 
 export const countryName = (code, language) => {
     const names = COUNTRY_NAMES[code];

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { usePassportShareImage } from "../../hooks/usePassportShareImage";
+import { inAppBrowserName } from "../../utils/inAppBrowser";
 import { trackEvent } from "../../utils/analytics";
 import { ANALYTICS_EVENTS, PASSPORT_SHARE_METHODS, PASSPORT_SHARE_SOURCES } from "../../utils/analyticsEvents";
 import "../modal/Modal.scss";
@@ -64,6 +65,7 @@ const PassportShareDialog = ({
 
   const file = blob ? new File([blob], SHARE_FILE_NAME, { type: "image/png" }) : null;
   const canShareFile = canShareImages();
+  const inAppBrowser = canShareFile ? null : inAppBrowserName();
 
   // An Instagram story drops the text, so the link is also copied, ready
   // to paste into a link sticker.
@@ -141,6 +143,9 @@ const PassportShareDialog = ({
             </button>
           )}
         </div>
+        {inAppBrowser && (
+          <p className="passport-share__in-app" role="note">{t("passport.inAppBrowserHint", { app: inAppBrowser })}</p>
+        )}
         {canShareFile ? (
           <p className="passport-share__link-hint">{t("passport.linkHint")}</p>
         ) : (

@@ -22,6 +22,8 @@ describe('BadgeService', () => {
             getCountryVisits: vi.fn().mockResolvedValue([]),
             findStampedCountries: vi.fn().mockResolvedValue([]),
             insertCountryStamps: vi.fn(async (userId, countryCodes) => countryCodes),
+            findDeclaredCountries: vi.fn().mockResolvedValue([]),
+            replaceDeclaredCountries: vi.fn().mockResolvedValue(),
         };
         notificationsService = { createNotification: vi.fn().mockResolvedValue() };
         userRepository = { getUserById: vi.fn().mockResolvedValue({ id: 'user-1', username: 'jane', avatarUrl: null, email: 'jane@example.com' }) };
@@ -135,6 +137,71 @@ describe('BadgeService', () => {
             await service.getPassport('user-1', 'user-1');
 
             expect(badgeRepository.getCountryVisits).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe('declared countries', () => {
+        const declared = (...codes) => codes.map(countryCode => ({ countryCode, declaredAt: new Date('2026-09-01') }));
+        const visit = (code, firstPublicVisitedOn = null) => ({ code, firstVisitedOn: '2026-03-01', firstPublicVisitedOn });
+
+        it('shows the countries a user declared apart from the ones their activity earned', async () => {
+            badgeRepository.getCountryVisits.mockResolvedValue([visit('ES', '2026-03-01')]);
+            badgeRepository.findDeclaredCountries.mockResolvedValue(declared('JP', 'TH'));
+
+            const { countries, declaredCountries } = await service.getPassport('user-1', 'someone-else');
+
+            expect(countries.map(country => country.code)).toEqual(['ES']);
+            expect(declaredCountries).toEqual([
+                { code: 'JP', declaredAt: new Date('2026-09-01') },
+                { code: 'TH', declaredAt: new Date('2026-09-01') },
+            ]);
+        });
+
+        it('does not repeat as declared a country the viewer already sees as earned', async () => {
+            badgeRepository.getCountryVisits.mockResolvedValue([visit('ES', '2026-03-01')]);
+            badgeRepository.findDeclaredCountries.mockResolvedValue(declared('ES', 'JP'));
+
+            const { declaredCountries } = await service.getPassport('user-1', null);
+
+            expect(declaredCountries.map(country => country.code)).toEqual(['JP']);
+        });
+
+        // Earned from a private van log entry: others don't see it as earned,
+        // but the owner chose to declare it publicly.
+        it('shows others as declared a country earned only privately', async () => {
+            badgeRepository.getCountryVisits.mockResolvedValue([visit('FR')]);
+            badgeRepository.findDeclaredCountries.mockResolvedValue(declared('FR'));
+
+            const { countries, declaredCountries } = await service.getPassport('user-1', 'someone-else');
+
+            expect(countries).toEqual([]);
+            expect(declaredCountries.map(country => country.code)).toEqual(['FR']);
+        });
+
+        it('never counts declared countries towards badges', async () => {
+            badgeRepository.findDeclaredCountries.mockResolvedValue(declared('JP', 'TH', 'VN', 'KH', 'LA'));
+
+            await service.evaluateUser('user-1');
+
+            expect(badgeRepository.insertEarned).toHaveBeenCalledWith('user-1', []);
+        });
+
+        // Earned countries show as locked in the picker, so they never come
+        // back in the list; a declaration of one must not be lost on saving
+        // (others may only see it as declared, if it was earned privately).
+        it('keeps the declaration of a country the user has since earned', async () => {
+            badgeRepository.getCountryVisits.mockResolvedValue([visit('FR')]);
+            badgeRepository.findDeclaredCountries.mockResolvedValue(declared('FR', 'JP'));
+
+            await service.updateDeclaredCountries('user-1', ['TH']);
+
+            expect(badgeRepository.replaceDeclaredCountries).toHaveBeenCalledWith('user-1', ['TH', 'FR']);
+        });
+
+        it('saves the declared countries once each, in upper case', async () => {
+            await service.updateDeclaredCountries('user-1', ['jp', 'TH', 'JP']);
+
+            expect(badgeRepository.replaceDeclaredCountries).toHaveBeenCalledWith('user-1', ['JP', 'TH']);
         });
     });
 

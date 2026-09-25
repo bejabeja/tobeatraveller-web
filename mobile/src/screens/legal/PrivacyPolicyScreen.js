@@ -32,7 +32,7 @@ const PrivacyPolicyScreen = ({ navigation }) => {
       </View>
 
       <ScrollView contentContainerStyle={[styles.body, { paddingBottom: insets.bottom + 32 }]}>
-        <Text style={styles.meta}>{lp('lastUpdated', { date: '24 September 2026' })}</Text>
+        <Text style={styles.meta}>{lp('lastUpdated', { date: '25 September 2026' })}</Text>
 
         <Section title={lp('s1Title')}>
           <RichText text={lp('s1Body')} style={styles.p} linkStyle={styles.link} />

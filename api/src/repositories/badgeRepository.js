@@ -62,6 +62,31 @@ export class BadgeRepository {
         return result.rows.map(row => row.country_code);
     }
 
+    async findDeclaredCountries(userId) {
+        const result = await client.query(
+            `SELECT country_code, declared_at FROM user_declared_countries WHERE user_id = $1 ORDER BY declared_at, country_code`,
+            [userId]
+        );
+        return result.rows.map(row => ({ countryCode: row.country_code, declaredAt: row.declared_at }));
+    }
+
+    // Leaves exactly `countryCodes` declared, in one statement so the list is
+    // never seen half replaced. The DELETE and the INSERT touch different
+    // rows (the ones dropped and the ones added), and countries kept keep
+    // the date they were first declared.
+    async replaceDeclaredCountries(userId, countryCodes) {
+        await client.query(
+            `WITH dropped AS (
+                DELETE FROM user_declared_countries
+                WHERE user_id = $1 AND country_code <> ALL($2::CHAR(2)[])
+             )
+             INSERT INTO user_declared_countries (user_id, country_code)
+             SELECT $1, UNNEST($2::CHAR(2)[])
+             ON CONFLICT (user_id, country_code) DO NOTHING`,
+            [userId, countryCodes]
+        );
+    }
+
     async getMetrics(userId) {
         const result = await client.query(
             `WITH visits AS (${COUNTRY_VISITS_SQL})

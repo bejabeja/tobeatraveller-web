@@ -52,6 +52,27 @@ describe('BadgeRepository', () => {
         expect(await repo.findStampedCountries('user-1')).toEqual([{ countryCode: 'ES', stampedAt }]);
     });
 
+    it('maps the declared countries to camelCase', async () => {
+        const declaredAt = new Date('2026-09-01');
+        client.query.mockResolvedValueOnce({ rows: [{ country_code: 'JP', declared_at: declaredAt }] });
+
+        expect(await repo.findDeclaredCountries('user-1')).toEqual([{ countryCode: 'JP', declaredAt }]);
+    });
+
+    // One statement, so the list is never seen half replaced; the countries
+    // kept keep their original date.
+    it('replaces the declared countries in a single statement, keeping the ones still declared', async () => {
+        client.query.mockResolvedValueOnce({ rows: [] });
+
+        await repo.replaceDeclaredCountries('user-1', ['JP', 'TH']);
+
+        expect(client.query).toHaveBeenCalledTimes(1);
+        const [query, params] = client.query.mock.calls[0];
+        expect(query).toMatch(/DELETE FROM user_declared_countries[\s\S]*country_code <> ALL\(\$2/);
+        expect(query).toMatch(/INSERT INTO user_declared_countries[\s\S]*ON CONFLICT \(user_id, country_code\) DO NOTHING/);
+        expect(params).toEqual(['user-1', ['JP', 'TH']]);
+    });
+
     // Private trips are usually plans or clones, not places the user has been.
     it('counts countries by ISO code, from public trips, van log and diary only', async () => {
         client.query.mockResolvedValueOnce({ rows: [{

@@ -112,3 +112,28 @@ it("does not open the share sheet for someone else's passport", async () => {
 
   expect(screen.queryByText(/share-modal/)).toBeNull();
 });
+
+it('shows the countries someone declared apart from the earned ones', async () => {
+  selectAuthUser.mockReturnValue({ id: 'someone-else' });
+  getUserPassport.mockResolvedValue({
+    owner: { id: 'user-1', username: 'jane' },
+    achievements: [],
+    countries: [{ code: 'ES', firstVisitedOn: '2026-03-01', isPrivate: false }],
+    declaredCountries: [{ code: 'JP', declaredAt: '2026-09-01' }],
+  });
+
+  await renderScreen();
+
+  expect(screen.getByText('passport.declaredTitleOther')).toBeTruthy();
+  expect(screen.getByLabelText('Japón, passport.declaredStampLabel')).toBeTruthy();
+  expect(screen.queryByText('passport.declaredEdit')).toBeNull();
+});
+
+it('invites the owner to mark the countries they have been to', async () => {
+  getUserPassport.mockResolvedValue({ owner: { id: 'user-1', username: 'jane' }, achievements: [], countries: [], declaredCountries: [] });
+
+  await renderScreen();
+
+  expect(screen.getByText('passport.declaredAdd')).toBeTruthy();
+  expect(screen.getByText('passport.declaredEmptyOwn')).toBeTruthy();
+});

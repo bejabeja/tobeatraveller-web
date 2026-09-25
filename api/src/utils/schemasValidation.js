@@ -4,6 +4,7 @@ import { SUPPLY_CATEGORIES, SUPPLY_UNITS, SUPPLY_WHOLE_UNITS } from "./supplyCon
 import { PACKING_CATEGORIES } from "./packingConstants.js";
 import { ROLES } from "./roles.js";
 import { DEFAULT_PUSH_LOCALE, SUPPORTED_PUSH_LOCALES } from "./pushMessages.js";
+import { ISO_COUNTRY_CODES } from "./countryCodes.js";
 
 const PUSH_PLATFORMS = ["ios", "android"];
 // Matches push_tokens.token VARCHAR(255).
@@ -180,6 +181,14 @@ export const commentSchema = z.object({
 });
 
 export const userIdParamSchema = z.string().uuid("Invalid user id");
+
+const ISO_COUNTRY_CODE_SET = new Set(ISO_COUNTRY_CODES);
+
+export const declaredCountriesSchema = z.object({
+    countries: z.array(
+        z.string().transform(code => code.toUpperCase()).refine(code => ISO_COUNTRY_CODE_SET.has(code), "Unknown country")
+    ).max(ISO_COUNTRY_CODES.length, "Too many countries"),
+});
 
 export const PASSPORT_PUBLIC_VIEW = 'public';
 export const passportQuerySchema = z.object({

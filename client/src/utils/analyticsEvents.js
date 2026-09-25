@@ -5,6 +5,7 @@ export const ANALYTICS_EVENTS = Object.freeze({
   PASSPORT_SHARE_OPENED: "passport_share_opened",
   PASSPORT_SHARED: "passport_shared",
   PASSPORT_INVITE_CLICKED: "passport_invite_clicked",
+  PASSPORT_COUNTRIES_DECLARED: "passport_countries_declared",
   USER_SIGNED_UP: "user_signed_up",
 });
 

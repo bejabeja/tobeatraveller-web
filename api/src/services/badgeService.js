@@ -41,9 +41,10 @@ export class BadgeService {
         // The owner's own view also saves (and announces) anything not saved
         // yet: it can get there before the evaluation an action started, and
         // only whichever saves it first announces it.
-        const { metrics, earned, visits } = isOwner
-            ? await this._evaluate(profileUserId, { notify: true })
-            : await this._loadState(profileUserId);
+        const [{ metrics, earned, visits }, declared] = await Promise.all([
+            isOwner ? this._evaluate(profileUserId, { notify: true }) : this._loadState(profileUserId),
+            this.badgeRepository.findDeclaredCountries(profileUserId),
+        ]);
         const earnedAtById = new Map(earned.map(badge => [badge.badgeId, badge.earnedAt]));
 
         const achievements = BADGES
@@ -71,11 +72,34 @@ export class BadgeService {
             }))
             .sort((a, b) => a.firstVisitedOn.localeCompare(b.firstVisitedOn));
 
+        // Declared by the user, so public, but kept apart from (and never
+        // repeating) the countries this viewer sees as earned.
+        const shownCodes = new Set(countries.map(country => country.code));
+        const declaredCountries = declared
+            .filter(country => !shownCodes.has(country.countryCode))
+            .map(country => ({ code: country.countryCode, declaredAt: country.declaredAt }));
+
         return {
             owner: { id: owner.id, username: owner.username, avatarUrl: owner.avatarUrl },
             achievements,
             countries,
+            declaredCountries,
         };
+    }
+
+    // Replaces the whole list: the owner edits it as a set of countries. The
+    // ones they have earned since declaring them are locked in the picker, so
+    // they never come back in the list, and their declaration is kept: others
+    // may only see it as declared (if it was earned privately).
+    async updateDeclaredCountries(userId, countryCodes) {
+        const [visits, declared] = await Promise.all([
+            this.badgeRepository.getCountryVisits(userId),
+            this.badgeRepository.findDeclaredCountries(userId),
+        ]);
+        const earnedCodes = new Set(visits.map(visit => visit.code));
+        const keptCodes = declared.map(country => country.countryCode).filter(code => earnedCodes.has(code));
+        const unique = [...new Set([...countryCodes.map(code => code.toUpperCase()), ...keptCodes])];
+        await this.badgeRepository.replaceDeclaredCountries(userId, unique);
     }
 
     async _loadState(userId) {

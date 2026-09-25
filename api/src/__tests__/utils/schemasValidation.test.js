@@ -3,6 +3,7 @@ import {
     signupSchema, resetPasswordSchema, vanLogEntrySchema,
     createItineraryDataSchema, updateItineraryDataSchema,
     registerPushTokenSchema, createVanLogEntrySchema, vanLogEntrySchema as vanLogUpdateSchema,
+    declaredCountriesSchema,
 } from '../../utils/schemasValidation.js';
 
 const validSignupData = {
@@ -245,5 +246,34 @@ describe('client-generated ids on create schemas', () => {
         const result = vanLogUpdateSchema.safeParse({ ...entry, id: '8a6e0804-2bd0-4672-b79d-d97027f9071a' });
 
         expect(result.data.id).toBeUndefined();
+    });
+});
+
+describe('declaredCountriesSchema', () => {
+    it('accepts ISO country codes, in any case', () => {
+        const result = declaredCountriesSchema.safeParse({ countries: ['jp', 'TH'] });
+
+        expect(result.success).toBe(true);
+        expect(result.data.countries).toEqual(['JP', 'TH']);
+    });
+
+    it('accepts an empty list, to clear them all', () => {
+        expect(declaredCountriesSchema.safeParse({ countries: [] }).success).toBe(true);
+    });
+
+    it('rejects a code that is not a country', () => {
+        const result = declaredCountriesSchema.safeParse({ countries: ['JP', 'ZZ'] });
+
+        expect(result.success).toBe(false);
+        expect(result.error.errors[0].message).toBe('Unknown country');
+    });
+
+    it('rejects anything that is not a list of codes', () => {
+        expect(declaredCountriesSchema.safeParse({ countries: 'JP' }).success).toBe(false);
+        expect(declaredCountriesSchema.safeParse({}).success).toBe(false);
+    });
+
+    it('rejects more entries than there are countries', () => {
+        expect(declaredCountriesSchema.safeParse({ countries: Array(300).fill('JP') }).success).toBe(false);
     });
 });

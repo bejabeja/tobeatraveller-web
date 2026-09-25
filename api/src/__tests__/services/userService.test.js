@@ -527,13 +527,18 @@ describe('UserService.exportUserData()', () => {
         expect(result.pushDevices).toEqual([pushDevice]);
     });
 
-    it('includes the badges the user has earned and the countries stamped in their passport', async () => {
+    it('includes the badges the user has earned and the countries in their passport, stamped and declared', async () => {
         const userRepository = { getUserById: async () => makeUser() };
         const itinerariesRepository = { findByUserId: async () => [] };
         const followRepository = { getFollowers: async () => [], getFollowing: async () => [] };
         const earned = [{ badgeId: 'explorer', earnedAt: new Date('2026-09-01') }];
         const countryStamps = [{ countryCode: 'ES', stampedAt: new Date('2026-09-02') }];
-        const badgeRepository = { findEarnedByUserId: async () => earned, findStampedCountries: async () => countryStamps };
+        const declaredCountries = [{ countryCode: 'JP', declaredAt: new Date('2026-09-03') }];
+        const badgeRepository = {
+            findEarnedByUserId: async () => earned,
+            findStampedCountries: async () => countryStamps,
+            findDeclaredCountries: async () => declaredCountries,
+        };
         const service = new UserService(
             userRepository, itinerariesRepository, followRepository,
             null, null, null, null, null, null, null, null, null, null, badgeRepository
@@ -543,6 +548,7 @@ describe('UserService.exportUserData()', () => {
 
         expect(result.badges).toEqual(earned);
         expect(result.countryStamps).toEqual(countryStamps);
+        expect(result.declaredCountries).toEqual(declaredCountries);
     });
 });
 

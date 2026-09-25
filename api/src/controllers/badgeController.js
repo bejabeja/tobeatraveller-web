@@ -1,5 +1,7 @@
 import { ValidationError } from '../errors/ValidationError.js';
-import { PASSPORT_PUBLIC_VIEW, passportQuerySchema, userIdParamSchema } from '../utils/schemasValidation.js';
+import {
+    declaredCountriesSchema, PASSPORT_PUBLIC_VIEW, passportQuerySchema, userIdParamSchema,
+} from '../utils/schemasValidation.js';
 
 export class BadgeController {
     constructor(badgeService) {
@@ -20,6 +22,19 @@ export class BadgeController {
                 publicView: queryResult.data.view === PASSPORT_PUBLIC_VIEW,
             });
             res.status(200).json(passport);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async updateMyDeclaredCountries(req, res, next) {
+        const result = declaredCountriesSchema.safeParse(req.body);
+        if (!result.success) {
+            return next(new ValidationError(result.error.errors[0]?.message || "Invalid countries"));
+        }
+        try {
+            await this.badgeService.updateDeclaredCountries(req.user.id, result.data.countries);
+            res.status(204).end();
         } catch (error) {
             next(error);
         }

@@ -14,7 +14,10 @@ jest.mock("react-i18next", () => ({
 
 jest.mock("../../services/passport", () => ({
   getUserPassport: jest.fn(),
+  updateMyDeclaredCountries: jest.fn(),
 }));
+
+jest.mock("react-hot-toast", () => ({ __esModule: true, default: { error: jest.fn() } }));
 
 jest.mock("../../utils/analytics", () => ({ trackEvent: jest.fn() }));
 
@@ -26,7 +29,8 @@ jest.mock("../../components/passport/PassportShareDialog", () => ({
 }));
 
 import { fireEvent } from "@testing-library/react";
-import { getUserPassport } from "../../services/passport";
+import { getUserPassport, updateMyDeclaredCountries } from "../../services/passport";
+import { getPendingDeclaredCountries } from "../../utils/pendingDeclaredCountries";
 import { trackEvent } from "../../utils/analytics";
 
 const PASSPORT = {
@@ -52,6 +56,7 @@ const renderPassport = (path = "/profile/user-1/passport") =>
 describe("Passport page", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    localStorage.clear();
     mockAuthUser = { id: "user-1" };
   });
 
@@ -156,6 +161,67 @@ describe("Passport page", () => {
     expect(trackEvent.mock.calls.filter(([event]) => event === "passport_viewed")).toEqual([
       ["passport_viewed", { viewer: "owner", from_shared_link: false }],
     ]);
+  });
+
+  it("shows the countries someone declared apart from the earned ones", async () => {
+    mockAuthUser = { id: "someone-else" };
+    getUserPassport.mockResolvedValue({ ...PASSPORT, declaredCountries: [{ code: "JP", declaredAt: "2026-09-01" }] });
+
+    renderPassport();
+
+    expect(await screen.findByText("passport.declaredTitleOther")).toBeInTheDocument();
+    expect(screen.getByLabelText("Japón, passport.declaredStampLabel")).toBeInTheDocument();
+    expect(screen.queryByText("passport.declaredEdit")).not.toBeInTheDocument();
+  });
+
+  it("hides the declared section from others when there is nothing declared", async () => {
+    mockAuthUser = { id: "someone-else" };
+    getUserPassport.mockResolvedValue(PASSPORT);
+
+    renderPassport();
+
+    await screen.findByText("passport.ofUser:jane");
+    expect(screen.queryByText("passport.declaredTitleOther")).not.toBeInTheDocument();
+  });
+
+  it("lets the owner mark countries, saves them and shows them", async () => {
+    getUserPassport.mockResolvedValue(PASSPORT);
+    updateMyDeclaredCountries.mockResolvedValue();
+    renderPassport();
+
+    fireEvent.click(await screen.findByText("passport.declaredAdd"));
+    fireEvent.click(screen.getByLabelText(/Japón/));
+    getUserPassport.mockResolvedValue({ ...PASSPORT, declaredCountries: [{ code: "JP", declaredAt: "2026-09-01" }] });
+    fireEvent.click(screen.getByText("passport.pickerSave"));
+
+    expect(updateMyDeclaredCountries).toHaveBeenCalledWith(["JP"]);
+    expect(await screen.findByLabelText("Japón, passport.declaredStampLabel")).toBeInTheDocument();
+    expect(trackEvent).toHaveBeenCalledWith("passport_countries_declared", { stage: "owner", count: 1 });
+  });
+
+  it("locks the countries the owner already earned in the picker", async () => {
+    getUserPassport.mockResolvedValue(PASSPORT);
+    renderPassport();
+
+    fireEvent.click(await screen.findByText("passport.declaredAdd"));
+
+    expect(screen.getByLabelText(/Francia/)).toBeDisabled();
+  });
+
+  it("lets a visitor mark their countries, keeps them for after sign-up, and takes them there", async () => {
+    mockAuthUser = null;
+    getUserPassport.mockResolvedValue(PASSPORT);
+    renderPassport("/profile/user-1/passport?ref=jane");
+
+    fireEvent.click(await screen.findByText("passport.visitorTryButton"));
+    fireEvent.click(screen.getByLabelText(/Japón/));
+    fireEvent.click(screen.getByLabelText(/Tailandia/));
+
+    expect(getPendingDeclaredCountries()).toEqual(["JP", "TH"]);
+    const save = screen.getByRole("link", { name: "passport.visitorTrySave" });
+    expect(save).toHaveAttribute("href", "/register?source=passport&ref=jane");
+    fireEvent.click(save);
+    expect(trackEvent).toHaveBeenCalledWith("passport_countries_declared", { stage: "anonymous", count: 2 });
   });
 
   it("shows an error message when the passport cannot be loaded", async () => {

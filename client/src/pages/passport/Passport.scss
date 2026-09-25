@@ -119,9 +119,30 @@ $passport-ink-muted: #8a8172;
     color: $passport-ink-muted;
   }
 
+  &__invite-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
   &__invite-button {
     width: auto;
     text-decoration: none;
+  }
+
+  &__section-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  &__declared-edit {
+    width: auto;
+    padding: 0.35rem 0.8rem;
+    font-size: 0.8rem;
   }
 
   &__section {
@@ -326,6 +347,19 @@ $passport-ink-muted: #8a8172;
 
     &:hover {
       transform: rotate(0deg) scale(1.04);
+    }
+  }
+
+  // Marked by the user, not earned: dashed and faded, without date or tilt.
+  &__country--declared {
+    --stamp-color: #9a9080;
+    border-style: dashed;
+    box-shadow: none;
+    transform: none;
+    opacity: 0.85;
+
+    &:hover {
+      transform: scale(1.04);
     }
   }
 

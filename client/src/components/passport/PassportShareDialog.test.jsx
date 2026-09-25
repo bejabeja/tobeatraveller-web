@@ -212,6 +212,25 @@ describe("PassportShareDialog", () => {
     expect(screen.queryByText("passport.linkHint")).not.toBeInTheDocument();
   });
 
+  it("tells the owner to open the page in the phone's browser when inside Instagram's", async () => {
+    const userAgent = jest.spyOn(navigator, "userAgent", "get")
+      .mockReturnValue("Mozilla/5.0 (iPhone) AppleWebKit/605.1.15 Mobile/15E148 Instagram 330.0.0.0");
+    try {
+      renderDialog();
+
+      expect(await screen.findByRole("note")).toHaveTextContent("passport.inAppBrowserHint");
+    } finally {
+      userAgent.mockRestore();
+    }
+  });
+
+  it("does not show that hint in a regular browser", async () => {
+    renderDialog();
+    await screen.findByRole("img");
+
+    expect(screen.queryByRole("note")).not.toBeInTheDocument();
+  });
+
   it("explains the link sticker instead where the image can be shared", async () => {
     navigator.canShare = jest.fn(() => true);
     renderDialog();

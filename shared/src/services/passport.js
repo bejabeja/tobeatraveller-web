@@ -14,3 +14,15 @@ export const getUserPassport = async (userId, { publicView = false } = {}) => {
     }
     return response.json();
 };
+
+// Replaces the whole list of countries the signed-in user declared.
+export const updateMyDeclaredCountries = async (countryCodes) => {
+    const response = await authFetch(`${getApiUrl()}/users/me/declared-countries`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ countries: countryCodes }),
+    });
+    if (!response.ok) {
+        await parseError(response, 'Failed to save countries');
+    }
+};

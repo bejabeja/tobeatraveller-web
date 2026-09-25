@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import toast from "react-hot-toast";
 import { IoArrowBack, IoShareSocialOutline } from "react-icons/io5";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
@@ -7,7 +8,10 @@ import {
   BADGE_EMOJI, BADGE_FAMILY_ORDER, PASSPORT_SHARE_PARAM, PASSPORT_SHARE_WITH_ACHIEVEMENTS,
   countryFlag, countryName, passportStampStyle, signupUrlFromPassport,
 } from "@tobeatraveller/shared";
+import CountryPickerDialog from "../../components/passport/CountryPickerDialog";
 import PassportShareDialog from "../../components/passport/PassportShareDialog";
+import { updateMyDeclaredCountries } from "../../services/passport";
+import { getPendingDeclaredCountries, setPendingDeclaredCountries } from "../../utils/pendingDeclaredCountries";
 import { useUserPassport } from "../../hooks/useUserPassport";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { selectAuthUser } from "../../store/auth/authSelectors";
@@ -79,11 +83,59 @@ const CountryStamp = ({ country, language, t }) => {
 // Where a shared passport turns visitors into users: someone without an
 // account is invited to create their own (keeping the referral code the
 // link came with); a member is pointed to their own passport.
+// A country the user marked themselves: an outline stamp, apart from the
+// inked ones their activity earned.
+const DeclaredCountryStamp = ({ code, language, t }) => (
+  <li className="passport__country passport__country--declared" aria-label={`${countryName(code, language)}, ${t("passport.declaredStampLabel")}`}>
+    <span className="passport__country-flag" aria-hidden="true">{countryFlag(code)}</span>
+    <strong className="passport__country-name" aria-hidden="true">{countryName(code, language)}</strong>
+  </li>
+);
+
+const DeclaredCountriesSection = ({ codes, isOwner, onEdit, language, t }) => {
+  if (!isOwner && codes.length === 0) return null;
+  return (
+    <section className="passport__section passport__section--declared" aria-labelledby="passport-declared">
+      <div className="passport__section-header">
+        <h2 id="passport-declared" className="passport__section-title">
+          {isOwner ? t("passport.declaredTitleOwn") : t("passport.declaredTitleOther")}
+        </h2>
+        {isOwner && (
+          <button type="button" className="btn btn--secondary passport__declared-edit" onClick={onEdit}>
+            {codes.length > 0 ? t("passport.declaredEdit") : t("passport.declaredAdd")}
+          </button>
+        )}
+      </div>
+      {isOwner && <p className="passport__section-hint">{codes.length > 0 ? t("passport.declaredHint") : t("passport.declaredEmptyOwn")}</p>}
+      {codes.length > 0 && (
+        <ul className="passport__countries">
+          {codes.map(code => <DeclaredCountryStamp key={code} code={code} language={language} t={t} />)}
+        </ul>
+      )}
+    </section>
+  );
+};
+
 const PassportInvite = ({ authUserId, referralCode, t }) => {
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const [markedCodes, setMarkedCodes] = useState(getPendingDeclaredCountries);
+  const closePicker = useCallback(() => setIsPickerOpen(false), []);
   const trackClick = () => trackEvent(ANALYTICS_EVENTS.PASSPORT_INVITE_CLICKED, {
     viewer: authUserId ? PASSPORT_VIEWERS.MEMBER : PASSPORT_VIEWERS.ANONYMOUS,
     from_shared_link: Boolean(referralCode),
   });
+
+  // Kept in this browser as they go, and saved to the account once they
+  // sign up (see useSyncPendingDeclaredCountries).
+  const rememberMarks = (codes) => {
+    setMarkedCodes(codes);
+    setPendingDeclaredCountries(codes);
+  };
+
+  const goToSignup = () => {
+    trackEvent(ANALYTICS_EVENTS.PASSPORT_COUNTRIES_DECLARED, { stage: PASSPORT_VIEWERS.ANONYMOUS, count: markedCodes.length });
+    trackClick();
+  };
 
   return (
     <aside className="passport__invite">
@@ -95,9 +147,31 @@ const PassportInvite = ({ authUserId, referralCode, t }) => {
       ) : (
         <>
           <p className="passport__invite-text">{t("passport.visitorCtaText")}</p>
-          <Link to={signupUrlFromPassport(referralCode)} className="btn btn--primary passport__invite-button" onClick={trackClick}>
-            {t("passport.visitorCtaButton")}
-          </Link>
+          <div className="passport__invite-actions">
+            <button type="button" className="btn btn--primary passport__invite-button" onClick={() => setIsPickerOpen(true)}>
+              {t("passport.visitorTryButton")}
+            </button>
+            <Link to={signupUrlFromPassport(referralCode)} className="btn btn--secondary passport__invite-button" onClick={trackClick}>
+              {t("passport.visitorCtaButton")}
+            </Link>
+          </div>
+          <CountryPickerDialog
+            isOpen={isPickerOpen}
+            onClose={closePicker}
+            initialSelected={markedCodes}
+            onChange={rememberMarks}
+            note={t("passport.visitorTryHint")}
+            renderActions={(selected) => (
+              <Link
+                to={signupUrlFromPassport(referralCode)}
+                className={`btn btn--primary${selected.length === 0 ? " btn--disabled" : ""}`}
+                aria-disabled={selected.length === 0}
+                onClick={(event) => { if (selected.length === 0) event.preventDefault(); else goToSignup(); }}
+              >
+                {t("passport.visitorTrySave")}
+              </Link>
+            )}
+          />
         </>
       )}
     </aside>
@@ -108,7 +182,10 @@ const Passport = () => {
   const { t, i18n } = useTranslation();
   const { id } = useParams();
   const authUser = useSelector(selectAuthUser);
-  const { passport, loading, error } = useUserPassport(id);
+  const { passport, loading, error, reload } = useUserPassport(id);
+  const [isDeclaredOpen, setIsDeclaredOpen] = useState(false);
+  const [savingDeclared, setSavingDeclared] = useState(false);
+  const closeDeclared = useCallback(() => setIsDeclaredOpen(false), []);
   const isOwner = authUser?.id === id;
   const language = i18n.language;
   const [searchParams, setSearchParams] = useSearchParams();
@@ -141,6 +218,20 @@ const Passport = () => {
     });
   }, [passport, id, isOwner, authUser, referralCode]);
 
+  const saveDeclared = async (codes) => {
+    setSavingDeclared(true);
+    try {
+      await updateMyDeclaredCountries(codes);
+      trackEvent(ANALYTICS_EVENTS.PASSPORT_COUNTRIES_DECLARED, { stage: PASSPORT_VIEWERS.OWNER, count: codes.length });
+      setIsDeclaredOpen(false);
+      reload();
+    } catch {
+      toast.error(t("passport.pickerSaveError"));
+    } finally {
+      setSavingDeclared(false);
+    }
+  };
+
   const openShare = () => {
     setShareWithAchievements(false);
     setShareSource(PASSPORT_SHARE_SOURCES.PASSPORT_PAGE);
@@ -161,6 +252,7 @@ const Passport = () => {
   }
 
   const earnedCount = passport.achievements.filter(achievement => achievement.earnedAt).length;
+  const declaredCodes = (passport.declaredCountries ?? []).map(country => country.code);
   const families = BADGE_FAMILY_ORDER
     .map(family => ({ family, stamps: passport.achievements.filter(achievement => achievement.family === family) }))
     .filter(({ stamps }) => stamps.length > 0);
@@ -204,6 +296,14 @@ const Passport = () => {
         )}
       </section>
 
+      <DeclaredCountriesSection
+        codes={declaredCodes}
+        isOwner={isOwner}
+        onEdit={() => setIsDeclaredOpen(true)}
+        language={language}
+        t={t}
+      />
+
       <section className="passport__section" aria-labelledby="passport-achievements">
         <h2 id="passport-achievements" className="passport__section-title">{t("passport.achievements")}</h2>
         {families.map(({ family, stamps }) => (
@@ -217,6 +317,23 @@ const Passport = () => {
           </div>
         ))}
       </section>
+
+      {isOwner && (
+        <CountryPickerDialog
+          isOpen={isDeclaredOpen}
+          onClose={closeDeclared}
+          initialSelected={declaredCodes}
+          lockedCodes={passport.countries.map(country => country.code)}
+          renderActions={(selected) => (
+            <>
+              <button type="button" className="btn btn--ghost" onClick={closeDeclared} disabled={savingDeclared}>{t("common.cancel")}</button>
+              <button type="button" className="btn btn--primary" onClick={() => saveDeclared(selected)} disabled={savingDeclared}>
+                {savingDeclared ? "…" : t("passport.pickerSave")}
+              </button>
+            </>
+          )}
+        />
+      )}
 
       {isOwner && (
         <PassportShareDialog
