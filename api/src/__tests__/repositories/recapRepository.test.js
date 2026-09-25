@@ -31,14 +31,25 @@ describe('RecapRepository', () => {
             expect(query).toMatch(/life_diary_entries/);
             expect(query).toContain(livedTripCondition('i'));
             expect(query).toMatch(/generate_series/);
-            expect(query).not.toMatch(/user_declared_countries/);
             expect(params).toEqual(['user-1', FROM, TO]);
         });
 
-        it('maps each country with its days and the date of its first visit ever', async () => {
-            client.query.mockResolvedValueOnce({ rows: [{ code: 'PT', days: '12', first_ever: new Date(2026, 4, 3) }] });
+        it('maps each country with its days, the date of its first visit ever and whether others see it', async () => {
+            client.query.mockResolvedValueOnce({ rows: [{ code: 'PT', days: '12', first_ever: new Date(2026, 4, 3), is_public: true }] });
 
-            expect(await repo.getCountries('user-1', FROM, TO)).toEqual([{ code: 'PT', days: 12, firstEverVisitedOn: '2026-05-03' }]);
+            expect(await repo.getCountries('user-1', FROM, TO)).toEqual([{ code: 'PT', days: 12, firstEverVisitedOn: '2026-05-03', isPublic: true }]);
+        });
+
+        // As on the passport: public if a public trip ever went there, or if
+        // the user marked it themselves; otherwise only they see it.
+        it('tells apart the countries others see on the passport', async () => {
+            client.query.mockResolvedValueOnce({ rows: [] });
+
+            await repo.getCountries('user-1', FROM, TO);
+
+            const query = client.query.mock.calls[0][0];
+            expect(query).toMatch(/BOOL_OR\(is_public\)/);
+            expect(query).toMatch(/user_declared_countries/);
         });
     });
 

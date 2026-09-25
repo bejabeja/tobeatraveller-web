@@ -26,7 +26,7 @@ const RECAP = {
   available: true,
   year: 2026,
   hasActivity: true,
-  countries: { codes: ["PT", "ES"], newCodes: ["PT"], top: { code: "PT", days: 20 } },
+  countries: { codes: ["PT", "ES"], newCodes: ["PT"], privateCodes: [], top: { code: "PT", days: 20 } },
   daysOnRoad: 87,
   trips: { count: 0, longest: null },
   vanLog: { entries: 40, nights: 25, refuels: 9, liters: 413 },
@@ -161,6 +161,46 @@ describe("Recap page", () => {
     expect(await screen.findByRole("img", { name: "recap.shareTitle" })).toHaveAttribute("src", "blob:recap");
     expect(createRecapShareImage.mock.calls[0][0].summary).toMatchObject({ username: "jane", year: 2026, countryCount: 2 });
     expect(screen.getByText("passport.downloadImage")).toBeInTheDocument();
+  });
+
+  // As on the passport image: countries only the owner sees go out only if
+  // they choose so, knowing what it reveals.
+  describe("with countries only the owner sees", () => {
+    const goToShareSlide = async () => {
+      renderRecap();
+      await screen.findByText("recap.title");
+      for (let step = 0; step < 4; step += 1) fireEvent.keyDown(document, { key: "ArrowRight" });
+      await screen.findByRole("img", { name: "recap.shareTitle" });
+    };
+
+    beforeEach(() => {
+      getMyRecap.mockResolvedValue({ ...RECAP, countries: { ...RECAP.countries, codes: ["PT", "ES", "FR"], privateCodes: ["FR"] } });
+    });
+
+    it("leaves them out of the image by default", async () => {
+      await goToShareSlide();
+
+      expect(createRecapShareImage.mock.calls[0][0].summary).toMatchObject({ countryCount: 2, flagCodes: ["PT", "ES"] });
+      expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    });
+
+    it("adds them when the owner chooses to, saying what that reveals", async () => {
+      await goToShareSlide();
+
+      fireEvent.click(screen.getByLabelText("passport.shareIncludePrivate"));
+
+      await waitFor(() => expect(createRecapShareImage.mock.calls.at(-1)[0].summary).toMatchObject({ countryCount: 3 }));
+      expect(screen.getByRole("status")).toHaveTextContent("recap.shareIncludesPrivate");
+    });
+  });
+
+  it("offers no choice when every country of the year is public", async () => {
+    renderRecap();
+    await screen.findByText("recap.title");
+    for (let step = 0; step < 4; step += 1) fireEvent.keyDown(document, { key: "ArrowRight" });
+    await screen.findByRole("img", { name: "recap.shareTitle" });
+
+    expect(screen.queryByLabelText("passport.shareIncludePrivate")).not.toBeInTheDocument();
   });
 
   it("records the opening and where it came from", async () => {

@@ -48,9 +48,9 @@ describe('RecapService', () => {
 
         it("gathers the year: countries (new ones and where they spent the most days), trips, van, diary and badges", async () => {
             recapRepository.getCountries.mockResolvedValue([
-                { code: 'PT', days: 20, firstEverVisitedOn: '2026-05-01' },
-                { code: 'ES', days: 12, firstEverVisitedOn: '2024-08-10' },
-                { code: 'FR', days: 3, firstEverVisitedOn: '2026-10-02' },
+                { code: 'PT', days: 20, firstEverVisitedOn: '2026-05-01', isPublic: true },
+                { code: 'ES', days: 12, firstEverVisitedOn: '2024-08-10', isPublic: true },
+                { code: 'FR', days: 3, firstEverVisitedOn: '2026-10-02', isPublic: false },
             ]);
             recapRepository.getDaysOnRoad.mockResolvedValue(87);
             recapRepository.getTrips.mockResolvedValue({ count: 2, longest: { title: 'Portugal coast', days: 21 } });
@@ -64,7 +64,7 @@ describe('RecapService', () => {
                 available: true,
                 year: 2026,
                 hasActivity: true,
-                countries: { codes: ['PT', 'ES', 'FR'], newCodes: ['PT', 'FR'], top: { code: 'PT', days: 20 } },
+                countries: { codes: ['PT', 'ES', 'FR'], newCodes: ['PT', 'FR'], privateCodes: ['FR'], top: { code: 'PT', days: 20 } },
                 daysOnRoad: 87,
                 trips: { count: 2, longest: { title: 'Portugal coast', days: 21 } },
                 vanLog: { entries: 40, nights: 25, refuels: 9, liters: 413 },

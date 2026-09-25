@@ -1550,6 +1550,7 @@
     "badgesTitle_one": "You earned {{count}} stamp",
     "badgesTitle_other": "You earned {{count}} stamps",
     "shareTitle": "Share your year",
+    "shareIncludesPrivate": "The image shows countries from your year that only you can see in your passport, and anyone who sees it will see them too.",
     "shareHint": "The image only has figures: no diary text and no place names.",
     "shareKicker": "My {{year}} on the road",
     "statCountries_one": "country",

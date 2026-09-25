@@ -36,7 +36,7 @@ const RECAP = {
   available: true,
   year: 2026,
   hasActivity: true,
-  countries: { codes: ['PT', 'ES'], newCodes: ['PT'], top: { code: 'PT', days: 20 } },
+  countries: { codes: ['PT', 'ES'], newCodes: ['PT'], privateCodes: [], top: { code: 'PT', days: 20 } },
   daysOnRoad: 87,
   trips: { count: 0, longest: null },
   vanLog: { entries: 40, nights: 25, refuels: 9, liters: 413 },
@@ -88,6 +88,31 @@ it("shares the last slide's card, copying the link to the passport with the refe
 
   expect(Clipboard.setStringAsync).toHaveBeenCalledWith('https://tobeatraveller.test/profile/user-1/passport?ref=jane');
   expect(Sharing.shareAsync).toHaveBeenCalledWith('file:///tmp/year.png', expect.objectContaining({ mimeType: 'image/png' }));
+});
+
+// As on the passport image: countries only the owner sees go out only if
+// they choose so, knowing what it reveals.
+it('leaves out the countries only the owner sees unless they choose to include them', async () => {
+  getMyRecap.mockResolvedValue({ ...RECAP, countries: { ...RECAP.countries, codes: ['PT', 'ES', 'FR'], privateCodes: ['FR'] } });
+  await renderScreen();
+  for (let step = 0; step < 4; step += 1) fireEvent.press(screen.getByLabelText('recap.next'));
+  await act(async () => {});
+
+  expect(screen.queryByText('🇫🇷')).toBeNull();
+  expect(screen.queryByText('recap.shareIncludesPrivate')).toBeNull();
+
+  await act(async () => { fireEvent(screen.getByLabelText('passport.shareIncludePrivate'), 'valueChange', true); });
+
+  expect(screen.getByText('🇫🇷')).toBeTruthy();
+  expect(screen.getByText('recap.shareIncludesPrivate')).toBeTruthy();
+});
+
+it('offers no choice when every country of the year is public', async () => {
+  await renderScreen();
+  for (let step = 0; step < 4; step += 1) fireEvent.press(screen.getByLabelText('recap.next'));
+  await act(async () => {});
+
+  expect(screen.queryByLabelText('passport.shareIncludePrivate')).toBeNull();
 });
 
 it('says so for a year with nothing logged', async () => {

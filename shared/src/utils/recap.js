@@ -45,15 +45,22 @@ export const recapSlides = (recap) => {
 export const MAX_RECAP_SHARE_FLAGS = 12;
 
 // What the recap's share image shows: figures only, never diary text or
-// place names (the recap itself stays private).
-export const summarizeRecapForSharing = (recap, username) => ({
-    username,
-    year: recap.year,
-    countryCount: recap.countries.codes.length,
-    newCountryCount: recap.countries.newCodes.length,
-    flagCodes: recap.countries.codes.slice(0, MAX_RECAP_SHARE_FLAGS),
-    hiddenCountries: Math.max(recap.countries.codes.length - MAX_RECAP_SHARE_FLAGS, 0),
-    daysOnRoad: recap.daysOnRoad,
-    nights: recap.vanLog.nights,
-    stamps: recap.badges.length,
-});
+// place names (the recap itself stays private). As on the passport image,
+// the countries only the owner sees go out only if they choose to.
+export const summarizeRecapForSharing = (recap, username, { includePrivate = false } = {}) => {
+    const privateCodes = new Set(recap.countries.privateCodes ?? []);
+    const shareable = (codes) => (includePrivate ? codes : codes.filter(code => !privateCodes.has(code)));
+    const codes = shareable(recap.countries.codes);
+    return {
+        username,
+        year: recap.year,
+        countryCount: codes.length,
+        newCountryCount: shareable(recap.countries.newCodes).length,
+        flagCodes: codes.slice(0, MAX_RECAP_SHARE_FLAGS),
+        hiddenCountries: Math.max(codes.length - MAX_RECAP_SHARE_FLAGS, 0),
+        daysOnRoad: recap.daysOnRoad,
+        nights: recap.vanLog.nights,
+        stamps: recap.badges.length,
+        hasPrivateCountries: privateCodes.size > 0,
+    };
+};

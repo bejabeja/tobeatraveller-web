@@ -6,9 +6,10 @@ import { createRecapShareImage } from "../utils/recapShareImage";
 
 const EMPTY_IMAGE = { blob: null, previewUrl: null };
 
-// The recap's share image: figures only (see summarizeRecapForSharing). Its
-// link leads to the owner's passport, crediting them with any sign-up.
-export const useRecapShareImage = (recap, owner, enabled) => {
+// The recap's share image: figures only (see summarizeRecapForSharing), and
+// the countries only the owner sees just when `includePrivate`. Its link
+// leads to the owner's passport, crediting them with any sign-up.
+export const useRecapShareImage = (recap, owner, enabled, { includePrivate = false } = {}) => {
   const { t } = useTranslation();
   const referral = useReferralCode(enabled);
   const [image, setImage] = useState(EMPTY_IMAGE);
@@ -22,7 +23,7 @@ export const useRecapShareImage = (recap, owner, enabled) => {
     let cancelled = false;
     let previewUrl = null;
 
-    const summary = summarizeRecapForSharing(recap, owner.username);
+    const summary = summarizeRecapForSharing(recap, owner.username, { includePrivate });
     const tiles = [
       summary.countryCount > 0 && {
         value: summary.countryCount,
@@ -54,7 +55,7 @@ export const useRecapShareImage = (recap, owner, enabled) => {
       cancelled = true;
       if (previewUrl) URL.revokeObjectURL(previewUrl);
     };
-  }, [enabled, recap, owner, t]);
+  }, [enabled, recap, owner, includePrivate, t]);
 
   return {
     ...image,

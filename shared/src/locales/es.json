@@ -1550,6 +1550,7 @@
     "badgesTitle_one": "Conseguiste {{count}} sello",
     "badgesTitle_other": "Conseguiste {{count}} sellos",
     "shareTitle": "Comparte tu año",
+    "shareIncludesPrivate": "La imagen muestra países de tu año que en tu pasaporte solo ves tú, y quien la vea también los verá.",
     "shareHint": "La imagen solo lleva cifras: ni textos de tu diario ni nombres de sitios.",
     "shareKicker": "Mi {{year}} en ruta",
     "statCountries_one": "país",

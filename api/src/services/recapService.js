@@ -47,6 +47,8 @@ export class RecapService {
                 // Most days first, as the repository returns them.
                 codes: countries.map(country => country.code),
                 newCodes: countries.filter(country => country.firstEverVisitedOn?.startsWith(`${year}-`)).map(country => country.code),
+                // Only the owner sees these on their passport: the share image leaves them out unless they choose.
+                privateCodes: countries.filter(country => !country.isPublic).map(country => country.code),
                 top: countries[0] ? { code: countries[0].code, days: countries[0].days } : null,
             },
             daysOnRoad,

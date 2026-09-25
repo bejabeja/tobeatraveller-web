@@ -6,7 +6,7 @@ const at = (isoDate) => new Date(`${isoDate}T12:00:00Z`);
 const recap = (overrides = {}) => ({
     year: 2026,
     hasActivity: true,
-    countries: { codes: ['PT', 'ES'], newCodes: ['PT'], top: { code: 'PT', days: 20 } },
+    countries: { codes: ['PT', 'ES'], newCodes: ['PT'], privateCodes: [], top: { code: 'PT', days: 20 } },
     daysOnRoad: 87,
     trips: { count: 2, longest: { title: 'Portugal', days: 21 } },
     vanLog: { entries: 40, nights: 25, refuels: 9, liters: 413 },
@@ -51,8 +51,26 @@ describe('summarizeRecapForSharing', () => {
 
         expect(summary).toEqual({
             username: 'jane', year: 2026, countryCount: 2, newCountryCount: 1, flagCodes: ['PT', 'ES'],
-            hiddenCountries: 0, daysOnRoad: 87, nights: 25, stamps: 1,
+            hiddenCountries: 0, daysOnRoad: 87, nights: 25, stamps: 1, hasPrivateCountries: false,
         });
         expect(JSON.stringify(summary)).not.toContain('Portugal');
+    });
+
+    // As on the passport image: the countries only the owner sees (from
+    // private trips, expenses or diary) go out only if they choose so.
+    it('leaves out the countries only the owner sees, from the flags and the counts', () => {
+        const withPrivate = recap({ countries: { codes: ['PT', 'ES', 'FR'], newCodes: ['PT', 'FR'], privateCodes: ['FR'], top: null } });
+
+        expect(summarizeRecapForSharing(withPrivate, 'jane')).toMatchObject({
+            countryCount: 2, newCountryCount: 1, flagCodes: ['PT', 'ES'], hasPrivateCountries: true,
+        });
+    });
+
+    it('includes them when the owner chooses to', () => {
+        const withPrivate = recap({ countries: { codes: ['PT', 'ES', 'FR'], newCodes: ['PT', 'FR'], privateCodes: ['FR'], top: null } });
+
+        expect(summarizeRecapForSharing(withPrivate, 'jane', { includePrivate: true })).toMatchObject({
+            countryCount: 3, newCountryCount: 2, flagCodes: ['PT', 'ES', 'FR'], hasPrivateCountries: true,
+        });
     });
 });

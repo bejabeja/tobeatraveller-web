@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  AccessibilityInfo, ActivityIndicator, Alert, Animated, Easing, Pressable, ScrollView, StyleSheet, Text,
+  AccessibilityInfo, ActivityIndicator, Alert, Animated, Easing, Pressable, ScrollView, StyleSheet, Switch, Text,
   TouchableOpacity, View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -181,6 +181,10 @@ const RecapScreen = ({ navigation }) => {
   const slide = slides[index];
   const isShareSlide = slide === RECAP_SLIDES.SHARE;
   const referral = useReferralCode(isShareSlide);
+  // Opted into for one share at a time, as on the passport image.
+  const [includePrivate, setIncludePrivate] = useState(false);
+  const hasPrivateCountries = (recap?.countries?.privateCodes?.length ?? 0) > 0;
+  useEffect(() => { if (!isShareSlide) setIncludePrivate(false); }, [isShareSlide]);
 
   const next = () => setIndex(current => Math.min(current + 1, slides.length - 1));
   const previous = () => setIndex(current => Math.max(current - 1, 0));
@@ -278,8 +282,25 @@ const RecapScreen = ({ navigation }) => {
         <ScrollView contentContainerStyle={styles.shareContent}>
           <Text style={styles.title}>{t('recap.shareTitle')}</Text>
           <StoryCardPreview cardRef={cardRef} previewWidth={PREVIEW_WIDTH}>
-            <RecapShareCard summary={summarizeRecapForSharing(recap, owner?.username)} t={t} />
+            <RecapShareCard summary={summarizeRecapForSharing(recap, owner?.username, { includePrivate })} t={t} />
           </StoryCardPreview>
+          {hasPrivateCountries && (
+            <View style={styles.privateToggle}>
+              <Text style={styles.privateToggleText}>{t('passport.shareIncludePrivate')}</Text>
+              <Switch
+                value={includePrivate}
+                onValueChange={setIncludePrivate}
+                accessibilityLabel={t('passport.shareIncludePrivate')}
+                trackColor={{ true: '#E8743B' }}
+              />
+            </View>
+          )}
+          {includePrivate && (
+            <View style={styles.privateNote} accessibilityLiveRegion="polite">
+              <Text importantForAccessibility="no" accessibilityElementsHidden>🔒</Text>
+              <Text style={styles.privateNoteText}>{t('recap.shareIncludesPrivate')}</Text>
+            </View>
+          )}
           <Text style={styles.hint}>{t('recap.shareHint')}</Text>
           <TouchableOpacity
             style={[styles.shareBtn, (sharing || !referral.settled) && styles.shareBtnDisabled]}
@@ -352,6 +373,14 @@ const styles = StyleSheet.create({
   listItem: { fontSize: 18, color: '#fff', textAlign: 'center' },
   shareContent: { alignItems: 'center', gap: 14, padding: 24 },
   hint: { fontSize: 12, color: 'rgba(255, 255, 255, 0.75)', textAlign: 'center' },
+  privateToggle: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', alignSelf: 'stretch' },
+  privateToggleText: { flex: 1, fontSize: 14, color: '#fff' },
+  // What sharing reveals: a note, not an error (as on the passport sheet).
+  privateNote: {
+    flexDirection: 'row', gap: 8, alignSelf: 'stretch',
+    paddingVertical: 10, paddingHorizontal: 12, borderRadius: 10, backgroundColor: 'rgba(255, 255, 255, 0.12)',
+  },
+  privateNoteText: { flex: 1, fontSize: 12, lineHeight: 17, color: '#fff' },
   shareBtn: { alignSelf: 'stretch', paddingVertical: 14, borderRadius: 12, alignItems: 'center', backgroundColor: '#E8743B' },
   shareBtnDisabled: { opacity: 0.6 },
   shareText: { fontSize: 16, fontWeight: '700', color: '#fff' },

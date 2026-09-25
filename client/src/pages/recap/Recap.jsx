@@ -119,7 +119,11 @@ const Recap = () => {
   // Only the slides in between move on by themselves: not the share slide
   // (it waits for the user) nor the single slide of a year with nothing.
   const isTimedSlide = !isShareSlide && slide !== RECAP_SLIDES.EMPTY;
-  const shareImage = useRecapShareImage(recap, owner, isShareSlide);
+  // Opted into for one share at a time, as on the passport image.
+  const [includePrivate, setIncludePrivate] = useState(false);
+  const hasPrivateCountries = (recap?.countries?.privateCodes?.length ?? 0) > 0;
+  const shareImage = useRecapShareImage(recap, owner, isShareSlide, { includePrivate });
+  useEffect(() => { if (!isShareSlide) setIncludePrivate(false); }, [isShareSlide]);
   // The share slide stays until the user leaves it; the others move on by
   // themselves as their progress bar fills (see onAnimationEnd below).
   const isPaused = isHeld || isTabHidden || isPausedByUser;
@@ -221,6 +225,18 @@ const Recap = () => {
             {shareImage.previewUrl
               ? <img className="recap__preview" src={shareImage.previewUrl} alt={t("recap.shareTitle")} />
               : <div className="recap__preview recap__preview--loading" />}
+            {hasPrivateCountries && (
+              <label className="recap__private-toggle">
+                <input type="checkbox" checked={includePrivate} onChange={(event) => setIncludePrivate(event.target.checked)} />
+                {t("passport.shareIncludePrivate")}
+              </label>
+            )}
+            {includePrivate && (
+              <p className="recap__private-note" role="status">
+                <span aria-hidden="true">🔒</span>
+                {t("recap.shareIncludesPrivate")}
+              </p>
+            )}
             <p className="recap__hint">{t("recap.shareHint")}</p>
             <div className="recap__share-actions">
               <ShareImageActions
@@ -230,7 +246,7 @@ const Recap = () => {
                 fileName={SHARE_FILE_NAME}
                 shareText={t("recap.shareKicker", { year: recap.year })}
                 loading={shareImage.loading}
-                onShared={(method) => trackEvent(ANALYTICS_EVENTS.RECAP_SHARED, { method })}
+                onShared={(method) => trackEvent(ANALYTICS_EVENTS.RECAP_SHARED, { method, with_private: includePrivate })}
               />
             </div>
           </div>

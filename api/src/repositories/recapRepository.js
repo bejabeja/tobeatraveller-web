@@ -26,18 +26,25 @@ const YEAR_DAYS_SQL = `
 // The yearly recap's figures, computed on demand from the user's own data.
 // All private to them: only the recap's owner ever sees them.
 export class RecapRepository {
-    // Each country of the year, with how many days were spent there and
-    // when it was first visited ever (to tell the new ones apart).
+    // Each country of the year, with how many days were spent there, when it
+    // was first visited ever (to tell the new ones apart), and whether others
+    // see it on the passport: a public trip ever went there, or the user
+    // marked it themselves. The rest come only from what only they see.
     async getCountries(userId, from, to) {
         const result = await client.query(
             `WITH days AS (${YEAR_DAYS_SQL}),
                   first_visits AS (
-                      SELECT code, MIN(visited_on) AS first_ever FROM (${COUNTRY_VISITS_SQL}) visits GROUP BY code
+                      SELECT code, MIN(visited_on) AS first_ever, BOOL_OR(is_public) AS has_public_visit
+                      FROM (${COUNTRY_VISITS_SQL}) visits GROUP BY code
                   )
-             SELECT days.code, COUNT(DISTINCT days.day) AS days, first_visits.first_ever
+             SELECT days.code, COUNT(DISTINCT days.day) AS days, first_visits.first_ever,
+                    first_visits.has_public_visit OR EXISTS (
+                        SELECT 1 FROM user_declared_countries declared
+                        WHERE declared.user_id = $1 AND declared.country_code = days.code
+                    ) AS is_public
              FROM days JOIN first_visits ON first_visits.code = days.code
              WHERE days.code IS NOT NULL
-             GROUP BY days.code, first_visits.first_ever
+             GROUP BY days.code, first_visits.first_ever, first_visits.has_public_visit
              ORDER BY days DESC, days.code`,
             [userId, from, to]
         );
@@ -45,6 +52,7 @@ export class RecapRepository {
             code: row.code,
             days: Number(row.days),
             firstEverVisitedOn: toDateOnlyString(row.first_ever),
+            isPublic: row.is_public,
         }));
     }
 

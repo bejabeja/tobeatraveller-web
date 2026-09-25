@@ -161,6 +161,42 @@ $recap-gold: #d9a441;
     color: rgba(255, 255, 255, 0.75);
   }
 
+  &__private-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: #fff;
+    cursor: pointer;
+
+    input {
+      width: auto;
+      margin: 0;
+    }
+  }
+
+  // What sharing reveals: a note, not an error (as on the passport dialog).
+  &__private-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    width: 100%;
+    margin: 0;
+    padding: 0.6rem 0.75rem;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.12);
+    font-size: 0.8rem;
+    line-height: 1.4;
+    text-align: left;
+    color: #fff;
+
+    span {
+      width: auto;
+      flex-shrink: 0;
+    }
+  }
+
   // The share actions are styled for light surfaces (dialogs); here they
   // sit on a light card of their own.
   &__share-actions {
