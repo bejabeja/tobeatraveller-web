@@ -1,8 +1,8 @@
+import { countryFlag } from './countryCodes.js';
+
 export const SUPPORTED_PUSH_LOCALES = ['en', 'es'];
 export const DEFAULT_PUSH_LOCALE = 'en';
 
-const REGIONAL_INDICATOR_OFFSET = 0x1F1E6 - 'A'.charCodeAt(0);
-const countryFlag = (code) => String.fromCodePoint(...[...code].map(letter => letter.charCodeAt(0) + REGIONAL_INDICATOR_OFFSET));
 const countryNameIn = (locale, code) => new Intl.DisplayNames([locale], { type: 'region', fallback: 'code' }).of(code);
 
 // Only the actor and the itinerary title go into the message, never the

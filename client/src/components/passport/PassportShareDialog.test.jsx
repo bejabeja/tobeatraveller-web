@@ -232,6 +232,21 @@ describe("PassportShareDialog", () => {
     expect(toast.error).not.toHaveBeenCalled();
   });
 
+  it("tells the owner what they win when someone signs up from their link", async () => {
+    renderDialog();
+
+    expect(await screen.findByText("passport.shareReward")).toBeInTheDocument();
+  });
+
+  // Without their code in the link, the promise would be false.
+  it("does not promise the reward when the referral code cannot be loaded", async () => {
+    getMyReferralInfo.mockRejectedValue(new Error("offline"));
+    renderDialog();
+    await waitFor(() => expect(screen.getByText("passport.downloadImage")).toBeEnabled());
+
+    expect(screen.queryByText("passport.shareReward")).not.toBeInTheDocument();
+  });
+
   it("records where it was opened from", async () => {
     render(<PassportShareDialog userId="user-1" isOpen onClose={jest.fn()} source="notification" />);
 

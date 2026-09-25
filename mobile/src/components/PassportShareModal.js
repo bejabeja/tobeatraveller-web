@@ -157,6 +157,8 @@ const PassportShareModal = ({ userId, visible, onClose, initialIncludeAchievemen
               </View>
             )}
 
+            {/* Only when the link really carries their code: otherwise the promise would be false. */}
+            {referralCode && <Text style={styles.reward}>{t('passport.shareReward')}</Text>}
             <View style={styles.toggle}>
               <Text style={styles.toggleLabel}>{t('passport.shareIncludeAchievements')}</Text>
               <Switch
@@ -220,6 +222,11 @@ const styles = StyleSheet.create({
   hintWarning: { color: '#b91c1c' },
   actions: { flexDirection: 'row', gap: 10, marginTop: 16, alignSelf: 'stretch' },
   linkHint: { marginTop: 10, fontSize: 11, textAlign: 'center', color: '#6b7280' },
+  reward: {
+    alignSelf: 'stretch', marginTop: 12, paddingVertical: 8, paddingHorizontal: 10,
+    borderRadius: 10, borderWidth: 1, borderStyle: 'dashed', borderColor: '#d9a441', backgroundColor: '#fdf6e9',
+    fontSize: 12, fontWeight: '600', textAlign: 'center', color: '#1b2a41',
+  },
   cancelBtn: { flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center', backgroundColor: '#f3f4f6' },
   cancelText: { fontSize: 15, fontWeight: '600', color: '#374151' },
   shareBtn: { flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center', backgroundColor: '#E8743B' },

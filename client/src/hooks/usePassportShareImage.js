@@ -84,6 +84,7 @@ export const usePassportShareImage = (userId, enabled, { includePrivate = false,
   return {
     ...image,
     url,
+    referralCode: referral.code,
     loading: passportState.loading || (Boolean(passport) && !image.blob && !imageError) || (enabled && !referral.settled),
     error: passportState.error || imageError,
   };

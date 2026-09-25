@@ -1,6 +1,56 @@
 {
     "rewrites": [
-      { "source": "/sitemap.xml", "destination": "https://tfm-eta.vercel.app/sitemap.xml" },
-      { "source": "/(.*)", "destination": "/" }
+        {
+            "source": "/sitemap.xml",
+            "destination": "https://tfm-eta.vercel.app/sitemap.xml"
+        },
+        {
+            "source": "/profile/:id/passport",
+            "has": [
+                {
+                    "type": "header",
+                    "key": "user-agent",
+                    "value": ".*(facebookexternalhit|Facebot|WhatsApp|Twitterbot|TelegramBot|Slackbot|LinkedInBot|Discordbot|Pinterestbot|redditbot|SkypeUriPreview|Embedly).*"
+                }
+            ],
+            "destination": "https://tfm-eta.vercel.app/og/passport/:id"
+        },
+        {
+            "source": "/itinerary/:id",
+            "has": [
+                {
+                    "type": "header",
+                    "key": "user-agent",
+                    "value": ".*(facebookexternalhit|Facebot|WhatsApp|Twitterbot|TelegramBot|Slackbot|LinkedInBot|Discordbot|Pinterestbot|redditbot|SkypeUriPreview|Embedly).*"
+                }
+            ],
+            "destination": "https://tfm-eta.vercel.app/og/itinerary/:id"
+        },
+        {
+            "source": "/profile/:id",
+            "has": [
+                {
+                    "type": "header",
+                    "key": "user-agent",
+                    "value": ".*(facebookexternalhit|Facebot|WhatsApp|Twitterbot|TelegramBot|Slackbot|LinkedInBot|Discordbot|Pinterestbot|redditbot|SkypeUriPreview|Embedly).*"
+                }
+            ],
+            "destination": "https://tfm-eta.vercel.app/og/profile/:id"
+        },
+        {
+            "source": "/friend-profile/:id",
+            "has": [
+                {
+                    "type": "header",
+                    "key": "user-agent",
+                    "value": ".*(facebookexternalhit|Facebot|WhatsApp|Twitterbot|TelegramBot|Slackbot|LinkedInBot|Discordbot|Pinterestbot|redditbot|SkypeUriPreview|Embedly).*"
+                }
+            ],
+            "destination": "https://tfm-eta.vercel.app/og/profile/:id"
+        },
+        {
+            "source": "/(.*)",
+            "destination": "/"
+        }
     ]
-  }
+}

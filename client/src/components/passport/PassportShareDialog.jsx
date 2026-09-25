@@ -38,7 +38,7 @@ const PassportShareDialog = ({
   const { t } = useTranslation();
   const [includeAchievements, setIncludeAchievements] = useState(false);
   const [includePrivate, setIncludePrivate] = useState(false);
-  const { blob, previewUrl, summary, url, loading, error } = usePassportShareImage(
+  const { blob, previewUrl, summary, url, referralCode, loading, error } = usePassportShareImage(
     userId, isOpen, { includePrivate, includeAchievements },
   );
 
@@ -120,6 +120,8 @@ const PassportShareDialog = ({
             />
             {t("passport.shareIncludePrivate")}
           </label>
+          {/* Only when the link really carries their code: otherwise the promise would be false. */}
+          {referralCode && <p className="passport-share__reward">{t("passport.shareReward")}</p>}
           <p className={`passport-share__hint${includePrivate ? " passport-share__hint--warning" : ""}`} role={includePrivate ? "alert" : undefined}>
             {includePrivate ? t("passport.shareIncludesPrivate") : t("passport.sharePublicOnly")}
           </p>

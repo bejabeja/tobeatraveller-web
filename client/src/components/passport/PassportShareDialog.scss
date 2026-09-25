@@ -83,6 +83,18 @@
     white-space: nowrap;
   }
 
+  &__reward {
+    margin: 0;
+    padding: 0.5rem 0.75rem;
+    border-radius: 10px;
+    background: #fdf6e9;
+    border: 1px dashed #d9a441;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-align: center;
+    color: #1b2a41;
+  }
+
   &__hint {
     margin: 0;
     font-size: 0.8rem;

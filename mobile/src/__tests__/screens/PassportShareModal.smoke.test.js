@@ -72,6 +72,17 @@ it("copies the link, with the owner's referral code, before opening the share sh
   expect(screen.getByText('passport.linkHint')).toBeTruthy();
 });
 
+it('tells the owner what they win when someone signs up from their link, only if the link credits them', async () => {
+  await renderModal();
+  expect(screen.getByText('passport.shareReward')).toBeTruthy();
+});
+
+it('does not promise the reward when the referral code cannot be loaded', async () => {
+  getMyReferralInfo.mockRejectedValue(new Error('offline'));
+  await renderModal();
+  expect(screen.queryByText('passport.shareReward')).toBeNull();
+});
+
 it('does not let the owner share before the referral code is known', async () => {
   getMyReferralInfo.mockReturnValue(new Promise(() => {}));
   await renderModal();

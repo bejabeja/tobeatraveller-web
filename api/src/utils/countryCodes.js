@@ -57,6 +57,13 @@ export const countryCodeFromName = (name) => {
     return NAME_TO_CODE.get(normalizeCountryName(name)) ?? null;
 };
 
+const REGIONAL_INDICATOR_OFFSET = 0x1F1E6 - 'A'.charCodeAt(0);
+
+// "ES" -> 🇪🇸: a flag emoji is the country code spelled in regional indicators.
+export const countryFlag = (code) => String.fromCodePoint(
+    ...[...code.toUpperCase()].map(letter => letter.charCodeAt(0) + REGIONAL_INDICATOR_OFFSET)
+);
+
 // A trip only stores Geoapify's formatted label ("Assisi, UMB, Italy"),
 // which ends with the country.
 export const countryCodeFromLabel = (label) => {
