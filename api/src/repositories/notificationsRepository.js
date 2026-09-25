@@ -20,7 +20,7 @@ const mapPreferencesRow = (row) => ({
 });
 
 export class NotificationsRepository {
-    async create({ id, userId, actorId, type, itineraryId, commentId }) {
+    async create({ id, userId, actorId, type, itineraryId, commentId, badgeId }) {
         try {
             // Folds into an existing notification of the same (user, type, itinerary)
             // opened within the grouping window. `created_at` is intentionally left out
@@ -42,18 +42,19 @@ export class NotificationsRepository {
                      actor_id = $1, comment_id = $2, is_read = false, last_activity_at = NOW()
                  WHERE user_id = $3 AND type = $4
                    AND itinerary_id IS NOT DISTINCT FROM $5
+                   AND badge_id IS NOT DISTINCT FROM $6
                    AND created_at > NOW() - INTERVAL '${GROUPING_WINDOW_HOURS} hours'
                  RETURNING id`,
-                [actorId, commentId ?? null, userId, type, itineraryId ?? null]
+                [actorId, commentId ?? null, userId, type, itineraryId ?? null, badgeId ?? null]
             );
             if (grouped.rowCount > 0) return { grouped: true };
 
             const notificationId = id || uuidv4();
             const query = `
-                INSERT INTO notifications (id, user_id, actor_id, type, itinerary_id, comment_id, actor_ids)
-                VALUES ($1, $2, $3, $4, $5, $6, ARRAY[$3]::UUID[])
+                INSERT INTO notifications (id, user_id, actor_id, type, itinerary_id, comment_id, badge_id, actor_ids)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, ARRAY[$3]::UUID[])
             `;
-            await client.query(query, [notificationId, userId, actorId, type, itineraryId ?? null, commentId ?? null]);
+            await client.query(query, [notificationId, userId, actorId, type, itineraryId ?? null, commentId ?? null, badgeId ?? null]);
             return { grouped: false };
         } catch (err) {
             // fire-and-forget: don't let a notification failure break the caller's main flow
@@ -71,6 +72,7 @@ export class NotificationsRepository {
                 n.last_activity_at,
                 n.actor_ids,
                 n.comment_id,
+                n.badge_id,
                 a.id         AS actor_id,
                 a.username   AS actor_username,
                 a.avatar_url AS actor_avatar_url,
@@ -91,6 +93,7 @@ export class NotificationsRepository {
             postedAgo: timeAgo(row.last_activity_at),
             count: row.actor_ids?.length || 1,
             commentId: row.comment_id,
+            badgeId: row.badge_id,
             actor: {
                 id: row.actor_id,
                 username: row.actor_username,

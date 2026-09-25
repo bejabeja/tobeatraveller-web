@@ -39,6 +39,7 @@ const Terms = lazy(() => import("./pages/legal/Terms"));
 const Profile = lazy(() => import("./pages/profile/Profile"));
 const Itinerary = lazy(() => import("./pages/itinerary/Itinerary"));
 const FollowersList = lazy(() => import("./pages/follows/FollowersList"));
+const Passport = lazy(() => import("./pages/passport/Passport"));
 const FollowingList = lazy(() => import("./pages/follows/FollowingList"));
 const Onboarding = lazy(() => import("./pages/onboarding/Onboarding"));
 const Notifications = lazy(() => import("./pages/notifications/Notifications"));
@@ -153,6 +154,7 @@ const App = () => {
               <Route path="/itinerary/:id" element={<Itinerary />} />
               <Route path="/profile/:id/followers" element={<FollowersList />} />
               <Route path="/profile/:id/following" element={<FollowingList />} />
+              <Route path="/profile/:id/passport" element={<Passport />} />
 
               {/* private routes */}
               <Route element={<PrivateLayout />}>

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { IoAirplaneOutline, IoEarthOutline, IoLinkOutline, IoLocationOutline, IoSettingsOutline, IoStarOutline } from "react-icons/io5";
-import { MdExplore, MdOutlineCalendarMonth, MdOutlineEdit } from "react-icons/md";
+import { IoChevronForward, IoLinkOutline, IoLocationOutline, IoSettingsOutline } from "react-icons/io5";
+import { MdOutlineCalendarMonth, MdOutlineEdit } from "react-icons/md";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
@@ -10,25 +10,17 @@ import Modal from "../../components/modal/Modal";
 import { useFollow } from "../../hooks/useFollow";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useProfileData } from "../../hooks/useProfileData";
+import { useUserPassport } from "../../hooks/useUserPassport";
 import JsonLd from "../../components/seo/JsonLd";
 import { selectAuthUser } from "../../store/auth/authSelectors";
 import { optimizedCloudinaryUrl } from "../../utils/cloudinaryUrl";
 import { generateAvatar } from "../../utils/constants/constants";
 import { buildProfileJsonLd } from "../../utils/jsonLd";
-import { filterItineraries } from "@tobeatraveller/shared";
+import { BADGE_EMOJI, countryFlag, filterItineraries, summarizePassport } from "@tobeatraveller/shared";
 import FollowsModal from "../../components/follows/FollowsModal";
 import OfficialBadge from "../../components/users/OfficialBadge";
 import Error from "../error/Error";
 import "./Profile.scss";
-
-// ─── Badge definitions ────────────────────────────────────────────────────────
-// Sorted highest tier first: ProfileBadges.find() picks the first (highest)
-// tier the user qualifies for, and reads the previous entry as "next tier up".
-const TRIP_BADGES = [
-  { id: "globetrotter", labelKey: "Globetrotter", Icon: IoEarthOutline, min: 10, descKey: "profile.badgeGlobetrotterDesc" },
-  { id: "adventurer",   labelKey: "Adventurer",   Icon: IoAirplaneOutline, min: 5, descKey: "profile.badgeAdventurerDesc" },
-  { id: "explorer",     labelKey: "Explorer",     Icon: MdExplore, min: 1, descKey: "profile.badgeExplorerDesc" },
-];
 
 const COMPLETENESS_TIP_KEYS = [
   { key: "name",      tipKey: "profile.completenessTipName" },
@@ -213,107 +205,105 @@ const HeaderSection = ({
           onError={(e) => { e.currentTarget.src = generateAvatar(user?.username); }}
         />
 
-        {/* Instagram pattern: stats sit beside the avatar, not further down
-            under the bio, so the numbers that matter most (reach, activity)
-            are visible at a glance without reading through the bio first. */}
-        <div className="profile__stats">
-          {isAuthenticated ? (
-            <button className="profile__stat profile__stat--btn" onClick={() => onOpenFollows("followers")}>
-              <StatNumber value={user?.followers} />
-              <span>{t("profile.followers")}</span>
-            </button>
-          ) : (
-            <Link to="/login" className="profile__stat">
-              <StatNumber value={user?.followers} />
-              <span>{t("profile.followers")}</span>
-            </Link>
-          )}
-          {isAuthenticated ? (
-            <button className="profile__stat profile__stat--btn" onClick={() => onOpenFollows("following")}>
-              <StatNumber value={user?.following} />
-              <span>{t("profile.following")}</span>
-            </button>
-          ) : (
-            <Link to="/login" className="profile__stat">
-              <StatNumber value={user?.following} />
-              <span>{t("profile.following")}</span>
-            </Link>
-          )}
-          {isMyProfile ? (
-            <Link to="/my-itineraries" className="profile__stat">
-              <StatNumber value={user?.totalItineraries} />
-              <span>{t("profile.trips")}</span>
-            </Link>
-          ) : (
-            <span className="profile__stat">
-              <StatNumber value={user?.totalItineraries} />
-              <span>{t("profile.trips")}</span>
-            </span>
-          )}
-        </div>
-
-        {/* Grouped with the avatar + stats instead of on its own row below:
-            keeping them in the same cluster (left-aligned, no margin-left:
-            auto) keeps the buttons visually tied to the identity they act
-            on, instead of stranded alone on the far right of a wide card. */}
-        <div className="profile__card-actions">
-          <button
-            className="btn profile__copy-btn"
-            onClick={onCopyLink}
-            aria-label={t("profile.copyLink")}
-            title={t("profile.copyLink")}
-          >
-            <IoLinkOutline aria-hidden="true" />
-          </button>
-          {isMyProfile ? (
-            <>
-              <Link
-                to={`/profile/edit/${user?.id}`}
+        {/* Identity first (who this is), with the actions on the same row,
+            then the counters: the usual social-profile order, so "Follow"
+            is never offered before the viewer can see whose profile it is. */}
+        <div className="profile__headline">
+          <div className="profile__headline-row">
+            <div className="profile__identity">
+              {user?.name
+                ? <h1 className="profile__name">{user.name}</h1>
+                : isMyProfile && (
+                  <Link to={`/profile/edit/${user?.id}`} className="profile__empty-name">
+                    {t("profile.addYourName")}
+                  </Link>
+                )
+              }
+              <p className="profile__username">
+                @{user?.username}
+                {user?.role === "official" && <OfficialBadge size={18} />}
+                {followsYou && <span className="profile__follows-you">{t("profile.followsYou")}</span>}
+              </p>
+            </div>
+            <div className="profile__card-actions">
+              <button
                 className="btn profile__copy-btn"
-                title={t("profile.editProfile")}
-                aria-label={t("profile.editProfile")}
+                onClick={onCopyLink}
+                aria-label={t("profile.copyLink")}
+                title={t("profile.copyLink")}
               >
-                <MdOutlineEdit aria-hidden="true" />
+                <IoLinkOutline aria-hidden="true" />
+              </button>
+              {isMyProfile ? (
+                <>
+                  <Link
+                    to={`/profile/edit/${user?.id}`}
+                    className="btn profile__copy-btn"
+                    title={t("profile.editProfile")}
+                    aria-label={t("profile.editProfile")}
+                  >
+                    <MdOutlineEdit aria-hidden="true" />
+                  </Link>
+                  <Link
+                    to="/settings"
+                    className="btn profile__copy-btn"
+                    title={t("nav.settings") || "Settings"}
+                    aria-label={t("nav.settings") || "Settings"}
+                  >
+                    <IoSettingsOutline aria-hidden="true" />
+                  </Link>
+                </>
+              ) : (
+                <button
+                  ref={followBtnRef}
+                  className={`btn profile__btn ${isFollowing ? "btn--secondary" : "btn--primary"}`}
+                  onClick={onFollowToggle}
+                  disabled={isLoadingFollow}
+                >
+                  {isLoadingFollow ? "…" : isFollowing ? t("profile.unfollow") : t("profile.follow")}
+                </button>
+              )}
+            </div>
+          </div>
+          <div className="profile__stats">
+            {isMyProfile ? (
+              <Link to="/my-itineraries" className="profile__stat">
+                <StatNumber value={user?.totalItineraries} />
+                <span>{t("profile.trips")}</span>
               </Link>
-              <Link
-                to="/settings"
-                className="btn profile__copy-btn"
-                title={t("nav.settings") || "Settings"}
-                aria-label={t("nav.settings") || "Settings"}
-              >
-                <IoSettingsOutline aria-hidden="true" />
+            ) : (
+              <span className="profile__stat">
+                <StatNumber value={user?.totalItineraries} />
+                <span>{t("profile.trips")}</span>
+              </span>
+            )}
+            {isAuthenticated ? (
+              <button className="profile__stat profile__stat--btn" onClick={() => onOpenFollows("followers")}>
+                <StatNumber value={user?.followers} />
+                <span>{t("profile.followers")}</span>
+              </button>
+            ) : (
+              <Link to="/login" className="profile__stat">
+                <StatNumber value={user?.followers} />
+                <span>{t("profile.followers")}</span>
               </Link>
-            </>
-          ) : (
-            <button
-              ref={followBtnRef}
-              className={`btn profile__btn ${isFollowing ? "btn--secondary" : "btn--primary"}`}
-              onClick={onFollowToggle}
-              disabled={isLoadingFollow}
-            >
-              {isLoadingFollow ? "…" : isFollowing ? t("profile.unfollow") : t("profile.follow")}
-            </button>
-          )}
+            )}
+            {isAuthenticated ? (
+              <button className="profile__stat profile__stat--btn" onClick={() => onOpenFollows("following")}>
+                <StatNumber value={user?.following} />
+                <span>{t("profile.following")}</span>
+              </button>
+            ) : (
+              <Link to="/login" className="profile__stat">
+                <StatNumber value={user?.following} />
+                <span>{t("profile.following")}</span>
+              </Link>
+            )}
+          </div>
         </div>
       </div>
 
       <div className="profile__info">
-        <div className="profile__identity">
-          {user?.name
-            ? <h1 className="profile__name">{user.name}</h1>
-            : isMyProfile && (
-              <Link to={`/profile/edit/${user?.id}`} className="profile__empty-name">
-                {t("profile.addYourName")}
-              </Link>
-            )
-          }
-          <p className="profile__username">
-            @{user?.username}
-            {user?.role === "official" && <OfficialBadge size={18} />}
-            {followsYou && <span className="profile__follows-you">{t("profile.followsYou")}</span>}
-          </p>
-        </div>
-
         {user?.activeTrip && (
           <Link to={`/itinerary/${user.activeTrip.id}`} className="profile__traveling-badge">
             ✈️ {t("profile.travelingNow", { destination: user.activeTrip.location?.name })}
@@ -327,8 +317,6 @@ const HeaderSection = ({
             {t("profile.addBio")}
           </Link>
         ) : null}
-
-        <ProfileBadges user={user} t={t} />
 
         {(user?.location || user?.createdAt || isMyProfile) && (
           <div className="profile__meta">
@@ -353,6 +341,8 @@ const HeaderSection = ({
             )}
           </div>
         )}
+
+        <ProfilePassportCard userId={user?.id} isOwnProfile={isMyProfile} t={t} />
       </div>
     </div>
   );
@@ -396,37 +386,49 @@ const AboutSection = ({ about, t }) => {
   );
 };
 
-// ─── Achievement badges ───────────────────────────────────────────────────────
-const ProfileBadges = ({ user, t }) => {
-  const totalItineraries = user?.totalItineraries || 0;
-  const tripBadgeIndex = TRIP_BADGES.findIndex((b) => totalItineraries >= b.min);
-  const tripBadge = tripBadgeIndex !== -1 ? TRIP_BADGES[tripBadgeIndex] : null;
-  // TRIP_BADGES is sorted highest tier first, so the previous entry is the next tier up.
-  const nextTripBadge = tripBadgeIndex > 0 ? TRIP_BADGES[tripBadgeIndex - 1] : null;
+// ─── Passport card ────────────────────────────────────────────────────────────
+const MAX_PASSPORT_CARD_FLAGS = 5;
 
-  const popularBadge = (user?.followers || 0) >= 50
-    ? { id: "popular", labelKey: "Popular", Icon: IoStarOutline, descKey: "profile.badgePopularDesc" }
-    : null;
-
-  const badges = [tripBadge, popularBadge].filter(Boolean);
-  if (badges.length === 0) return null;
+// A compact teaser of the passport: flags of visited countries and the stamp
+// count, plus (for the owner) the stamp they are closest to. Hidden for other
+// viewers when there is nothing public to show yet.
+const ProfilePassportCard = ({ userId, isOwnProfile, t }) => {
+  const { passport } = useUserPassport(userId);
+  const summary = summarizePassport(passport, MAX_PASSPORT_CARD_FLAGS);
+  if (!summary) return null;
+  if (!isOwnProfile && summary.earnedCount === 0 && summary.countryCount === 0) return null;
 
   return (
-    <div className="profile__badges">
-      {badges.map(({ id, labelKey, Icon, descKey }) => {
-        const remaining = id === tripBadge?.id && nextTripBadge ? nextTripBadge.min - totalItineraries : 0;
-        const tooltip = remaining > 0
-          ? `${t(descKey)}\n${t("profile.badgeNextTip", { count: remaining, next: nextTripBadge.labelKey })}`
-          : t(descKey);
-
-        return (
-          <span key={id} className="profile__badge" title={tooltip}>
-            <Icon aria-hidden="true" />
-            {labelKey}
+    <Link to={`/profile/${userId}/passport`} className="profile__passport-card" aria-label={t("passport.view")}>
+      <span className="profile__passport-card-icon" aria-hidden="true">🛂</span>
+      <span className="profile__passport-card-body">
+        <strong className="profile__passport-card-title">{t("passport.title")}</strong>
+        <span className="profile__passport-card-meta">
+          {summary.countryCount > 0 ? (
+            <span className="profile__passport-card-flags" aria-label={t("passport.countriesCount", { count: summary.countryCount })}>
+              {summary.flagCodes.map(code => <span key={code} aria-hidden="true">{countryFlag(code)}</span>)}
+              {summary.hiddenCountries > 0 && (
+                <span className="profile__passport-card-more">{t("passport.moreCountries", { count: summary.hiddenCountries })}</span>
+              )}
+            </span>
+          ) : (
+            <span>{t("passport.noCountriesYet")}</span>
+          )}
+          <span aria-hidden="true">·</span>
+          <span>{t("passport.collected", { earned: summary.earnedCount, total: summary.totalCount })}</span>
+        </span>
+        {summary.nextGoal && (
+          <span className="profile__passport-card-goal">
+            {BADGE_EMOJI[summary.nextGoal.badgeId]}{" "}
+            {t(`badges.nextTip.${summary.nextGoal.family}`, {
+              count: summary.nextGoal.remaining,
+              next: t(`badges.${summary.nextGoal.badgeId}.name`),
+            })}
           </span>
-        );
-      })}
-    </div>
+        )}
+      </span>
+      <IoChevronForward className="profile__passport-card-chevron" aria-hidden="true" />
+    </Link>
   );
 };
 

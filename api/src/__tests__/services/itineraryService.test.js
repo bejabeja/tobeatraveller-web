@@ -232,6 +232,16 @@ describe('ItineraryService', () => {
       places: [],
     };
 
+    it('checks for new badges once the trip is created', async () => {
+      const badgeService = { evaluateUserInBackground: vi.fn() };
+      service = new ItineraryService(itinerariesRepository, placesRepository, userRepository, cloudinaryService, aiService, null, null, badgeService);
+      itinerariesRepository.create.mockResolvedValue(makeItinerary());
+
+      await service.createItinerary(baseData, null, [], 'user-1');
+
+      expect(badgeService.evaluateUserInBackground).toHaveBeenCalledWith('user-1');
+    });
+
     it('creates itinerary without image when no file provided', async () => {
       const itinerary = makeItinerary();
       itinerariesRepository.create.mockResolvedValue(itinerary);
@@ -430,6 +440,16 @@ describe('ItineraryService', () => {
       title: 'Updated Trip',
       places: [],
     };
+
+    it('checks for new badges after the update (it can make a trip public or change its country)', async () => {
+      const badgeService = { evaluateUserInBackground: vi.fn() };
+      service = new ItineraryService(itinerariesRepository, placesRepository, userRepository, cloudinaryService, aiService, null, null, badgeService);
+      itinerariesRepository.findById.mockResolvedValue(makeItinerary());
+
+      await service.updateItinerary('itin-1', { ...baseUpdateData }, null, [], 'user-1');
+
+      expect(badgeService.evaluateUserInBackground).toHaveBeenCalledWith('user-1');
+    });
 
     it('throws NotFoundError when itinerary does not exist', async () => {
       itinerariesRepository.findById.mockResolvedValue(null);

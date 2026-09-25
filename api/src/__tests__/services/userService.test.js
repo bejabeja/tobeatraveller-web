@@ -526,6 +526,22 @@ describe('UserService.exportUserData()', () => {
 
         expect(result.pushDevices).toEqual([pushDevice]);
     });
+
+    it('includes the badges the user has earned', async () => {
+        const userRepository = { getUserById: async () => makeUser() };
+        const itinerariesRepository = { findByUserId: async () => [] };
+        const followRepository = { getFollowers: async () => [], getFollowing: async () => [] };
+        const earned = [{ badgeId: 'explorer', earnedAt: new Date('2026-09-01') }];
+        const badgeRepository = { findEarnedByUserId: async () => earned };
+        const service = new UserService(
+            userRepository, itinerariesRepository, followRepository,
+            null, null, null, null, null, null, null, null, null, null, badgeRepository
+        );
+
+        const result = await service.exportUserData('user-1', { id: 'user-1', username: 'jane' });
+
+        expect(result.badges).toEqual(earned);
+    });
 });
 
 describe('UserService.changePassword()', () => {

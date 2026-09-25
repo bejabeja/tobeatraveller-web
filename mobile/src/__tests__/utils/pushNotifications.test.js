@@ -136,6 +136,10 @@ describe('routeForPushData', () => {
     expect(routeForPushData({ type: 'referral_reward', itineraryId: 'i1' })).toEqual({ name: 'Referral' });
   });
 
+  it("opens the user's own passport for a badge they earned", () => {
+    expect(routeForPushData({ type: 'badge_earned', actorId: 'u1' })).toEqual({ name: 'Passport', params: { userId: 'u1' } });
+  });
+
   it('ignores a push without a known destination', () => {
     expect(routeForPushData({})).toBeNull();
     expect(routeForPushData(undefined)).toBeNull();

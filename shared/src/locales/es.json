@@ -414,13 +414,7 @@
     "completenessTipBio": "Escribe una bio",
     "completenessTipAbout": "Completa la sección Acerca de",
     "completenessTipLocation": "Añade tu ubicación",
-    "completenessTipPhoto": "Sube una foto de perfil",
-    "badgeExplorerDesc": "Explorer · Se consigue creando tu primer viaje",
-    "badgeAdventurerDesc": "Adventurer · Se consigue creando 5 o más viajes",
-    "badgeGlobetrotterDesc": "Globetrotter · Se consigue creando 10 o más viajes",
-    "badgePopularDesc": "Popular · Se consigue llegando a 50 seguidores",
-    "badgeNextTip_one": "{{count}} viaje más para desbloquear {{next}}",
-    "badgeNextTip_other": "{{count}} viajes más para desbloquear {{next}}"
+    "completenessTipPhoto": "Sube una foto de perfil"
   },
   "editProfile": {
     "title": "Editar perfil",
@@ -756,7 +750,8 @@
     "seeAll": "Ver todas las notificaciones",
     "referralRewardPrefix": "Tú y",
     "referralRewardMiddle": "y tú",
-    "referralRewardSuffix": "habéis ganado 1 mes de Premium"
+    "referralRewardSuffix": "habéis ganado 1 mes de Premium",
+    "badgeEarned": "Has conseguido el badge "
   },
   "comments": {
     "title": "Comentarios",
@@ -1335,5 +1330,117 @@
     },
     "actionUnconfirmed": "No pudimos confirmar si se guardó: la conexión tardó demasiado. Revisa la lista antes de repetirlo.",
     "editingIsPremium": "Estás sin conexión. Guardar cambios sin conexión es una función Premium; inténtalo cuando vuelva la cobertura."
+  },
+  "badges": {
+    "explorer": {
+      "name": "Explorer",
+      "desc": "Publicó su primer viaje",
+      "goal": "Publica tu primer viaje"
+    },
+    "adventurer": {
+      "name": "Adventurer",
+      "desc": "Ha publicado 5 viajes",
+      "goal": "Publica 5 viajes"
+    },
+    "globetrotter": {
+      "name": "Globetrotter",
+      "desc": "Ha publicado 10 viajes",
+      "goal": "Publica 10 viajes"
+    },
+    "countries_1": {
+      "name": "Primer sello",
+      "desc": "Primer país en su pasaporte",
+      "goal": "Visita tu primer país"
+    },
+    "countries_5": {
+      "name": "Salta fronteras",
+      "desc": "5 países en su pasaporte",
+      "goal": "Visita 5 países"
+    },
+    "countries_10": {
+      "name": "Pasaporte sellado",
+      "desc": "10 países en su pasaporte",
+      "goal": "Visita 10 países"
+    },
+    "countries_25": {
+      "name": "Ciudadano del mundo",
+      "desc": "25 países en su pasaporte",
+      "goal": "Visita 25 países"
+    },
+    "popular": {
+      "name": "Popular",
+      "desc": "Le siguen 50 personas",
+      "goal": "Llega a 50 seguidores"
+    },
+    "van_log_1": {
+      "name": "Primer gasto",
+      "desc": "Registró su primer gasto de la furgo",
+      "goal": "Registra tu primer gasto"
+    },
+    "van_log_50": {
+      "name": "Contable de ruta",
+      "desc": "Ha registrado 50 gastos",
+      "goal": "Registra 50 gastos"
+    },
+    "van_log_200": {
+      "name": "Maestro de la furgo",
+      "desc": "Ha registrado 200 gastos",
+      "goal": "Registra 200 gastos"
+    },
+    "life_diary_1": {
+      "name": "Primera página",
+      "desc": "Escribió su primera entrada del diario",
+      "goal": "Escribe tu primera entrada del diario"
+    },
+    "life_diary_10": {
+      "name": "Cronista",
+      "desc": "Ha escrito 10 entradas del diario",
+      "goal": "Escribe 10 entradas del diario"
+    },
+    "life_diary_50": {
+      "name": "Memorias de ruta",
+      "desc": "Ha escrito 50 entradas del diario",
+      "goal": "Escribe 50 entradas del diario"
+    },
+    "nextTip": {
+      "trips_one": "{{count}} viaje más para {{next}}",
+      "trips_other": "{{count}} viajes más para {{next}}",
+      "countries_one": "{{count}} país más para {{next}}",
+      "countries_other": "{{count}} países más para {{next}}",
+      "followers_one": "{{count}} seguidor más para {{next}}",
+      "followers_other": "{{count}} seguidores más para {{next}}",
+      "vanLog_one": "{{count}} gasto más para {{next}}",
+      "vanLog_other": "{{count}} gastos más para {{next}}",
+      "lifeDiary_one": "{{count}} entrada más para {{next}}",
+      "lifeDiary_other": "{{count}} entradas más para {{next}}"
+    },
+    "onlyYou": "Solo lo ves tú",
+    "title": "Logros"
+  },
+  "passport": {
+    "title": "Pasaporte",
+    "ownTitle": "Mi pasaporte",
+    "ofUser": "Pasaporte de @{{username}}",
+    "view": "Ver pasaporte",
+    "achievements": "Logros",
+    "countries": "Países visitados",
+    "collected": "{{earned}} de {{total}} sellos",
+    "countriesCount_one": "{{count}} país",
+    "countriesCount_other": "{{count}} países",
+    "earnedOn": "Conseguido el {{date}}",
+    "locked": "Por conseguir",
+    "emptyCountriesOwn": "Todavía no tienes sellos de países. Publica un viaje o registra un gasto o una entrada del diario con ubicación.",
+    "emptyCountriesOther": "Todavía no tiene países públicos en su pasaporte.",
+    "countriesHowTo": "Cuentan tus viajes publicados, tus gastos y tu diario. Los que solo salen de gastos o diario solo los ves tú.",
+    "loadError": "No se pudo cargar el pasaporte.",
+    "family": {
+      "trips": "Viajes",
+      "countries": "Países",
+      "followers": "Comunidad",
+      "vanLog": "Gastos",
+      "lifeDiary": "Diario"
+    },
+    "moreCountries": "+{{count}}",
+    "noCountriesYet": "Todavía sin países"
   }
 }

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { VanLogService } from '../../services/vanLogService.js';
 
 const makeEntry = (overrides = {}) => ({
@@ -31,6 +31,25 @@ describe('VanLogService', () => {
     });
 
     describe('createEntry()', () => {
+        it('checks for new badges once the entry is created', async () => {
+            const badgeService = { evaluateUserInBackground: vi.fn() };
+            service = new VanLogService(repository, userRepository, badgeService);
+
+            await service.createEntry({ category: 'fuel' }, 'user-1');
+
+            expect(badgeService.evaluateUserInBackground).toHaveBeenCalledWith('user-1');
+        });
+
+        it('does not check badges again when a replayed create returns the existing entry', async () => {
+            const badgeService = { evaluateUserInBackground: vi.fn() };
+            service = new VanLogService(repository, userRepository, badgeService);
+            repository.findById = async () => makeEntry({ id: 'client-id-1' });
+
+            await service.createEntry({ id: 'client-id-1', category: 'fuel' }, 'user-1');
+
+            expect(badgeService.evaluateUserInBackground).not.toHaveBeenCalled();
+        });
+
         it('returns the entry already created with that client id instead of inserting it again', async () => {
             let created = false;
             repository.create = async () => { created = true; return makeEntry(); };

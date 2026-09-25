@@ -12,6 +12,7 @@
     "start": "node index.js && npm run sentry:sourcemaps",
     "migrate": "node src/migrations/migrate.js",
     "insertData": "node src/migrations/insertDBData.js",
+    "backfillPassport": "node src/migrations/backfillPassport.js",
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org tobeatravellercompany --project tobeatraveller . && sentry-cli sourcemaps upload --org tobeatravellercompany --project tobeatraveller ."
   },
   "repository": {

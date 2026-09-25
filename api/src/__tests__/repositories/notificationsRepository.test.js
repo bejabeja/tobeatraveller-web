@@ -56,6 +56,18 @@ describe('NotificationsRepository.create()', () => {
         expect(foldQuery).not.toMatch(/created_at\s*=\s*NOW\(\)/);
     });
 
+    // Two badges earned the same day are two pieces of news, not "X and 1 other".
+    it('only folds a badge notification into one for the same badge', async () => {
+        client.query.mockResolvedValueOnce({ rowCount: 0, rows: [] }).mockResolvedValueOnce({ rowCount: 1 });
+
+        await repo.create({ userId: 'u1', actorId: 'u1', type: 'badge_earned', badgeId: 'explorer' });
+
+        const [foldQuery, foldParams] = client.query.mock.calls[0];
+        expect(foldQuery).toMatch(/badge_id IS NOT DISTINCT FROM \$6/);
+        expect(foldParams[5]).toBe('explorer');
+        expect(client.query.mock.calls[1][1]).toContain('explorer');
+    });
+
     it('reports that the event folded into an existing notification', async () => {
         client.query.mockResolvedValueOnce({ rowCount: 1, rows: [{ id: 'existing-1' }] });
 

@@ -42,6 +42,18 @@ describe('LifeDiaryRepository', () => {
         expect(params[1]).toBe('user-1');
     });
 
+    it('stores the ISO code of the location country on create and update', async () => {
+        client.query.mockResolvedValue({ rows: [{ id: 'mock-uuid', user_id: 'user-1', entry_date: '2026-08-27' }] });
+        const location = { name: 'Porto', country: 'Portugal', label: 'Porto, Portugal', lat: 41.1, lon: -8.6 };
+
+        await repo.create({ userId: 'user-1', entryDate: '2026-08-27', location });
+        await repo.update('mock-uuid', { entryDate: '2026-08-27', location });
+
+        expect(client.query.mock.calls[0][1].at(-1)).toBe('PT');
+        expect(client.query.mock.calls[1][0]).toMatch(/location_country_code = \$13/);
+        expect(client.query.mock.calls[1][1][12]).toBe('PT');
+    });
+
     it('only fetches entries belonging to the requested user, most recent first', async () => {
         client.query.mockResolvedValue({ rows: [] });
 

@@ -10,10 +10,11 @@ const CLOUDINARY_FOLDER = 'life-diary';
 const FREE_ENTRY_LIMIT = 10;
 
 export class LifeDiaryService {
-    constructor(lifeDiaryRepository, cloudinaryService, userRepository) {
+    constructor(lifeDiaryRepository, cloudinaryService, userRepository, badgeService = null) {
         this.lifeDiaryRepository = lifeDiaryRepository;
         this.cloudinaryService = cloudinaryService;
         this.userRepository = userRepository;
+        this.badgeService = badgeService;
     }
 
     async createEntry(data, files, userId) {
@@ -28,6 +29,7 @@ export class LifeDiaryService {
         await this._assertCanCreateEntry(userId);
         const entry = await this.lifeDiaryRepository.create({ ...data, userId });
         await this._addImages(entry, files ?? []);
+        this.badgeService?.evaluateUserInBackground(userId);
         return entry.toDTO();
     }
 
@@ -72,6 +74,8 @@ export class LifeDiaryService {
 
         const updated = await this.lifeDiaryRepository.update(entry.id, data);
         updated.images = await this.lifeDiaryRepository.getImagesByEntryIds([entry.id]);
+        // An edit can add a location in a new country.
+        this.badgeService?.evaluateUserInBackground(userId);
         return updated.toDTO();
     }
 

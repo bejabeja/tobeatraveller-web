@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS user_badges (
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    badge_id VARCHAR(50) NOT NULL,
+    earned_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, badge_id)
+);
+
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS badge_id VARCHAR(50);

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { LifeDiaryService } from '../../services/lifeDiaryService.js';
 
 const makeEntry = (overrides = {}) => ({
@@ -39,6 +39,15 @@ describe('LifeDiaryService', () => {
     });
 
     describe('createEntry()', () => {
+        it('checks for new badges once the entry is created', async () => {
+            const badgeService = { evaluateUserInBackground: vi.fn() };
+            service = new LifeDiaryService(repository, cloudinaryService, userRepository, badgeService);
+
+            await service.createEntry({ entryDate: '2026-03-01' }, [], 'user-1');
+
+            expect(badgeService.evaluateUserInBackground).toHaveBeenCalledWith('user-1');
+        });
+
         it('returns the entry already created with that client id, with its images, instead of inserting it again', async () => {
             let created = false;
             repository.create = async () => { created = true; return makeEntry(); };

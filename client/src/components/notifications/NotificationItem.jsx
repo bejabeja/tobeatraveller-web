@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { BADGE_EMOJI } from "@tobeatraveller/shared";
 import { optimizedCloudinaryUrl } from "../../utils/cloudinaryUrl";
 import "./NotificationItem.scss";
 
@@ -17,16 +18,20 @@ const NotificationItem = ({ notification: n, onClick }) => {
     like:    () => <><strong>@{n.actor?.username}</strong>{others}{verb("liked")}<em>{n.itinerary?.title}</em></>,
     comment: () => <><strong>@{n.actor?.username}</strong>{others}{verb("commented")}<em>{n.itinerary?.title}</em></>,
     referral_reward: () => <>🎁 {t("notifications.referralRewardPrefix")}<strong>@{n.actor?.username}</strong> {t("notifications.referralRewardSuffix")}</>,
+    badge_earned: () => <>{BADGE_EMOJI[n.badgeId]} {t("notifications.badgeEarned")}<strong>{t(`badges.${n.badgeId}.name`)}</strong></>,
   };
   const label = TYPE_LABELS[n.type]?.();
 
+  // A badge notification's actor is the user who earned it.
   const href = n.type === "follow"
     ? `/profile/${n.actor?.id}`
-    : n.type === "referral_reward"
-      ? "/invite"
-      : n.itinerary?.id
-        ? `/itinerary/${n.itinerary.id}${n.type === "comment" && n.commentId ? `#comment-${n.commentId}` : ""}`
-        : "#";
+    : n.type === "badge_earned"
+      ? `/profile/${n.actor?.id}/passport`
+      : n.type === "referral_reward"
+        ? "/invite"
+        : n.itinerary?.id
+          ? `/itinerary/${n.itinerary.id}${n.type === "comment" && n.commentId ? `#comment-${n.commentId}` : ""}`
+          : "#";
 
   return (
     <Link to={href} className={`notif-item${n.isRead ? "" : " notif-item--unread"}`} onClick={onClick}>

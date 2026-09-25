@@ -52,6 +52,14 @@ describe('NotificationsService.createNotification()', () => {
         service = new NotificationsService(notificationsRepository);
     });
 
+    it('creates a badge notification even though the user is their own actor', async () => {
+        await service.createNotification({ userId: 'u1', actorId: 'u1', type: 'badge_earned', badgeId: 'explorer' });
+
+        expect(notificationsRepository.create).toHaveBeenCalledWith(expect.objectContaining({
+            userId: 'u1', type: 'badge_earned', badgeId: 'explorer',
+        }));
+    });
+
     it('does not create a notification when the actor is the recipient', async () => {
         await service.createNotification({ userId: 'u1', actorId: 'u1', type: 'like' });
 

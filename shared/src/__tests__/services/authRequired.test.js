@@ -9,6 +9,7 @@ import { toggleLike, checkIsLiked } from '../../services/likes.js';
 import { followUser, unfollowUser, getAllFollowers, getAllFollowing } from '../../services/followers.js';
 import { fetchNotifications, fetchUnreadCount, markNotificationsRead } from '../../services/notifications.js';
 import { registerPushToken, unregisterPushToken } from '../../services/pushTokens.js';
+import { getUserPassport } from '../../services/passport.js';
 import { getUserForAuth, getUserById, updateUser, deleteMyAccount, exportMyData, getSuggestedUsers } from '../../services/users.js';
 
 const FAKE_TOKEN = 'test-access-token';
@@ -49,6 +50,7 @@ const AUTHENTICATED_CALLS = [
     ['getSuggestedUsers', () => getSuggestedUsers()],
     ['registerPushToken', () => registerPushToken({ token: 'ExponentPushToken[a]', platform: 'android', locale: 'es' })],
     ['unregisterPushToken', () => unregisterPushToken('ExponentPushToken[a]')],
+    ['getUserPassport', () => getUserPassport('user-1')],
 ];
 
 describe('services gated by the logged-in user must send the access token', () => {

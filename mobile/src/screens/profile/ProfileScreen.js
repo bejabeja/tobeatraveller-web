@@ -6,9 +6,10 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
+import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import {
-  filterItineraries,
+  BADGE_EMOJI, countryFlag, filterItineraries, summarizePassport,
   followUser, getItinerariesByUserId, getUserById, getUserFavorites, logoutUser,
   selectAuthUser, selectIsAuthenticated, selectMe, selectMyItineraries,
   setUserInfo, unfollowUser,
@@ -18,12 +19,9 @@ import { ItineraryCardSkeleton, ProfileSkeleton } from '../../components/Skeleto
 import { shadow } from '../../utils/styles';
 import { clearDeviceSessionData } from '../../utils/session';
 import { useOutbox } from '../../offline/useOutbox';
+import { useUserPassport } from '../../hooks/useUserPassport';
 
-const TRIP_BADGES = [
-  { id: 'globetrotter', label: 'Globetrotter', emoji: '🌍', min: 10 },
-  { id: 'adventurer',   label: 'Adventurer',   emoji: '✈️',  min: 5  },
-  { id: 'explorer',     label: 'Explorer',     emoji: '🗺️',  min: 1  },
-];
+const MAX_PASSPORT_CARD_FLAGS = 5;
 const COMPLETENESS_FIELDS = [
   { key: 'name',      tipKey: 'profile.completenessTipName' },
   { key: 'bio',       tipKey: 'profile.completenessTipBio' },
@@ -72,6 +70,12 @@ const ProfileScreen = ({ route, navigation }) => {
   const [visibility, setVisibility] = useState('all');
 
   const user = isOwnProfile ? me : otherUser;
+  const passportUserId = isOwnProfile ? me?.id : profileId;
+  const { passport } = useUserPassport(passportUserId);
+  const passportSummary = summarizePassport(passport, MAX_PASSPORT_CARD_FLAGS);
+  // Other viewers only see the card once there is something public in it.
+  const showPassportCard = passportSummary
+    && (isOwnProfile || passportSummary.earnedCount > 0 || passportSummary.countryCount > 0);
   const rawItineraries = isOwnProfile ? (myItineraries ?? []) : otherItineraries;
   const itineraries = isOwnProfile
     ? filterItineraries(rawItineraries, { visibility: visibility === 'all' ? '' : visibility })
@@ -155,10 +159,6 @@ const ProfileScreen = ({ route, navigation }) => {
 
   const followsYou = !isOwnProfile && isAuthenticated && me &&
     user?.followingListIds?.some(f => String(f.id) === String(me.id));
-
-  const tripBadge = TRIP_BADGES.find(b => (user?.totalItineraries ?? 0) >= b.min);
-  const popularBadge = (user?.followers ?? 0) >= 50 ? { id: 'popular', label: 'Popular', emoji: '⭐' } : null;
-  const badges = [tripBadge, popularBadge].filter(Boolean);
 
   const completenessCount = COMPLETENESS_FIELDS.filter(f => !!user?.[f.key]).length;
   const completenessPct = Math.round((completenessCount / COMPLETENESS_FIELDS.length) * 100);
@@ -264,23 +264,40 @@ const ProfileScreen = ({ route, navigation }) => {
             )}
           </View>
 
+          {/* Counters right under the name: who this is, then their activity,
+              before the bio and the smaller details. */}
+          <View style={styles.stats}>
+            <TouchableOpacity
+              style={styles.stat}
+              onPress={() => isOwnProfile && navigation.navigate('MyItineraries')}
+            >
+              <Text style={styles.statNumber}>{user?.totalItineraries ?? 0}</Text>
+              <Text style={styles.statLabel}>{t('profile.trips')}</Text>
+            </TouchableOpacity>
+            <View style={styles.statDivider} />
+            <TouchableOpacity
+              style={styles.stat}
+              onPress={() => navigation.navigate('Follows', { userId: user?.id, type: 'followers' })}
+            >
+              <Text style={styles.statNumber}>{user?.followers ?? 0}</Text>
+              <Text style={styles.statLabel}>{t('profile.followers')}</Text>
+            </TouchableOpacity>
+            <View style={styles.statDivider} />
+            <TouchableOpacity
+              style={styles.stat}
+              onPress={() => navigation.navigate('Follows', { userId: user?.id, type: 'following' })}
+            >
+              <Text style={styles.statNumber}>{user?.following ?? 0}</Text>
+              <Text style={styles.statLabel}>{t('profile.following')}</Text>
+            </TouchableOpacity>
+          </View>
+
           {user?.bio ? (
             <Text style={styles.bio}>{user.bio}</Text>
           ) : isOwnProfile && (
             <TouchableOpacity onPress={() => navigation.navigate('EditProfile')}>
               <Text style={styles.emptyPrompt}>{t('profile.addBio')}</Text>
             </TouchableOpacity>
-          )}
-
-          {badges.length > 0 && (
-            <View style={styles.badges}>
-              {badges.map(b => (
-                <View key={b.id} style={styles.badge}>
-                  <Text style={styles.badgeEmoji}>{b.emoji}</Text>
-                  <Text style={styles.badgeLabel}>{b.label}</Text>
-                </View>
-              ))}
-            </View>
           )}
 
           <View style={styles.meta}>
@@ -298,31 +315,36 @@ const ProfileScreen = ({ route, navigation }) => {
             )}
           </View>
 
-          <View style={styles.stats}>
+          {showPassportCard && (
             <TouchableOpacity
-              style={styles.stat}
-              onPress={() => navigation.navigate('Follows', { userId: user?.id, type: 'followers' })}
+              style={styles.passportCard}
+              onPress={() => navigation.navigate('Passport', { userId: passportUserId })}
+              accessibilityRole="button"
+              accessibilityLabel={t('passport.view')}
             >
-              <Text style={styles.statNumber}>{user?.followers ?? 0}</Text>
-              <Text style={styles.statLabel}>{t('profile.followers')}</Text>
+              <Text style={styles.passportCardIcon}>🛂</Text>
+              <View style={styles.passportCardBody}>
+                <Text style={styles.passportCardTitle}>{t('passport.title')}</Text>
+                <Text style={styles.passportCardMeta}>
+                  {passportSummary.countryCount > 0
+                    ? `${passportSummary.flagCodes.map(countryFlag).join(' ')}${passportSummary.hiddenCountries > 0 ? `  ${t('passport.moreCountries', { count: passportSummary.hiddenCountries })}` : ''}`
+                    : t('passport.noCountriesYet')}
+                  {'  ·  '}
+                  {t('passport.collected', { earned: passportSummary.earnedCount, total: passportSummary.totalCount })}
+                </Text>
+                {passportSummary.nextGoal && (
+                  <Text style={styles.passportCardGoal}>
+                    {BADGE_EMOJI[passportSummary.nextGoal.badgeId]}{' '}
+                    {t(`badges.nextTip.${passportSummary.nextGoal.family}`, {
+                      count: passportSummary.nextGoal.remaining,
+                      next: t(`badges.${passportSummary.nextGoal.badgeId}.name`),
+                    })}
+                  </Text>
+                )}
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="#b08a45" />
             </TouchableOpacity>
-            <View style={styles.statDivider} />
-            <TouchableOpacity
-              style={styles.stat}
-              onPress={() => navigation.navigate('Follows', { userId: user?.id, type: 'following' })}
-            >
-              <Text style={styles.statNumber}>{user?.following ?? 0}</Text>
-              <Text style={styles.statLabel}>{t('profile.following')}</Text>
-            </TouchableOpacity>
-            <View style={styles.statDivider} />
-            <TouchableOpacity
-              style={styles.stat}
-              onPress={() => isOwnProfile && navigation.navigate('MyItineraries')}
-            >
-              <Text style={styles.statNumber}>{user?.totalItineraries ?? 0}</Text>
-              <Text style={styles.statLabel}>{t('profile.trips')}</Text>
-            </TouchableOpacity>
-          </View>
+          )}
         </View>
 
         {/* Completeness bar (own profile, < 100%) */}
@@ -640,23 +662,26 @@ const styles = StyleSheet.create({
   bio: { fontSize: 14, color: '#374151', marginTop: 8, lineHeight: 20 },
   emptyPrompt: { fontSize: 14, color: '#E8743B', marginTop: 6 },
 
-  badges: { flexDirection: 'row', gap: 6, marginTop: 10, flexWrap: 'wrap' },
-  badge: {
-    flexDirection: 'row', alignItems: 'center', gap: 4,
-    backgroundColor: '#FFF0E8', borderRadius: 999,
-    paddingVertical: 3, paddingHorizontal: 10,
-    borderWidth: 1, borderColor: '#bfdbfe',
+  passportCard: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    marginTop: 12, paddingVertical: 10, paddingHorizontal: 12,
+    borderRadius: 14, borderWidth: 1, borderStyle: 'dashed', borderColor: '#d9a441',
+    backgroundColor: '#fdf6e9',
   },
-  badgeEmoji: { fontSize: 12 },
-  badgeLabel: { fontSize: 12, color: '#1d4ed8', fontWeight: '600' },
+  passportCardIcon: { fontSize: 24 },
+  passportCardBody: { flex: 1, gap: 2 },
+  passportCardTitle: { fontSize: 14, fontWeight: '800', color: '#1b2a41' },
+  passportCardMeta: { fontSize: 12, color: '#6b5d45' },
+  passportCardGoal: { fontSize: 12, fontWeight: '600', color: '#E8743B' },
 
   meta: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginTop: 10 },
   metaItem: { fontSize: 13, color: '#6b7280' },
 
+  // A band under the name, set off from the bio and details below it.
   stats: {
     flexDirection: 'row', alignItems: 'center',
-    marginTop: 16, paddingTop: 14,
-    borderTopWidth: 1, borderTopColor: '#f3f4f6',
+    marginTop: 12, paddingVertical: 10,
+    borderTopWidth: 1, borderBottomWidth: 1, borderColor: '#f3f4f6',
   },
   stat: { flex: 1, alignItems: 'center' },
   statDivider: { width: 1, height: 28, backgroundColor: '#f3f4f6' },

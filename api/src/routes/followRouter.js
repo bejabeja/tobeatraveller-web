@@ -1,7 +1,9 @@
 import { Router } from "express";
 import { FollowController } from "../controllers/followController.js";
+import { BadgeRepository } from "../repositories/badgeRepository.js";
 import { FollowRepository } from "../repositories/followRepository.js";
 import { UserRepository } from "../repositories/userRepository.js";
+import { BadgeService } from "../services/badgeService.js";
 import { FollowService } from "../services/followService.js";
 import { NotificationsRepository } from "../repositories/notificationsRepository.js";
 import { NotificationsService } from "../services/notificationsService.js";
@@ -17,7 +19,8 @@ export const createFollowRouter = () => {
     const itineraryRepository = new ItineraryRepository();
     const pushNotificationsService = new PushNotificationsService(new PushTokensRepository(), userRepository, itineraryRepository);
     const notificationsService = new NotificationsService(notificationsRepository, pushNotificationsService);
-    const followService = new FollowService(userRepository, followRepository, notificationsService);
+    const badgeService = new BadgeService(new BadgeRepository(), notificationsService);
+    const followService = new FollowService(userRepository, followRepository, notificationsService, badgeService);
     const followController = new FollowController(followService);
 
     router.post("/:id/follow", followController.followUser.bind(followController));

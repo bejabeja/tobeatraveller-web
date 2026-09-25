@@ -1,9 +1,11 @@
 import { Router } from "express";
+import { BadgeController } from "../controllers/badgeController.js";
 import { UserController } from "../controllers/userController.js";
 import { authenticate, optionalAuthenticate } from "../middlewares/authenticate.js";
 import { requireRole } from "../middlewares/requireRole.js";
 import { upload } from "../middlewares/uploadImage.js";
 import { STAFF_ROLES } from "../utils/roles.js";
+import { BadgeRepository } from "../repositories/badgeRepository.js";
 import { FollowRepository } from "../repositories/followRepository.js";
 import { InventoryRepository } from "../repositories/inventoryRepository.js";
 import { ItineraryRepository } from "../repositories/itineraryRepository.js";
@@ -15,6 +17,7 @@ import { PushTokensRepository } from "../repositories/pushTokensRepository.js";
 import { UserRepository } from "../repositories/userRepository.js";
 import { VanLogRepository } from "../repositories/vanLogRepository.js";
 import { auditLogService } from "../services/sharedAuditLogService.js";
+import { BadgeService } from "../services/badgeService.js";
 import { CloudinaryService } from "../services/cloudinaryService.js";
 import { EmailService } from "../services/emailService.js";
 import { UserService } from "../services/userService.js";
@@ -31,11 +34,15 @@ export const createUsersRouter = () => {
     const packingChecklistRepository = new PackingChecklistRepository();
     const subscriptionRepository = new SubscriptionRepository();
     const emailService = new EmailService();
+    const badgeRepository = new BadgeRepository();
+    // No notifications here: this router only catches up silently when an
+    // owner opens their own passport (see BadgeService.getPassport).
+    const badgeController = new BadgeController(new BadgeService(badgeRepository, null, userRepository));
     const userService = new UserService(
         userRepository, itinerariesRepository, followRepository, emailService,
         lifeDiaryRepository, auditLogService, vanLogRepository,
         inventoryRepository, shoppingListRepository, packingChecklistRepository,
-        subscriptionRepository, null, new PushTokensRepository()
+        subscriptionRepository, null, new PushTokensRepository(), badgeRepository
     );
     const cloudinaryService = new CloudinaryService();
     const userController = new UserController(userService, cloudinaryService);
@@ -55,6 +62,7 @@ export const createUsersRouter = () => {
     router.get("/check-username", userController.checkUsernameAvailable.bind(userController));
     router.patch("/:id/role", authenticate, staffOnly, userController.updateUserRole.bind(userController));
     router.patch("/:id/tier", authenticate, staffOnly, userController.updateUserTier.bind(userController));
+    router.get("/:id/passport", optionalAuthenticate, badgeController.getUserPassport.bind(badgeController));
     router.get("/:id", optionalAuthenticate, userController.getUserById.bind(userController));
 
     return router;

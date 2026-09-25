@@ -7,10 +7,12 @@ import { globalAiRateLimit, perUserAiRateLimit } from "../middlewares/aiGenerati
 import { requirePremium } from "../middlewares/requirePremium.js";
 import { PlacesRepository } from "../repositories/placesRepository.js";
 import { ItineraryRepository } from "../repositories/itineraryRepository.js";
+import { BadgeRepository } from "../repositories/badgeRepository.js";
 import { NotificationsRepository } from "../repositories/notificationsRepository.js";
 import { ReferralRepository } from "../repositories/referralRepository.js";
 import { UserRepository } from "../repositories/userRepository.js";
 import { AIService } from "../services/AIService.js";
+import { BadgeService } from "../services/badgeService.js";
 import { auditLogService } from "../services/sharedAuditLogService.js";
 import { CloudinaryService } from "../services/cloudinaryService.js";
 import { EmailService } from "../services/emailService.js";
@@ -36,7 +38,8 @@ export const createItinerariesRouter = () => {
     const notificationsService = new NotificationsService(notificationsRepository, pushNotificationsService);
     const referralService = new ReferralService(referralRepository, userRepository, auditLogService, notificationsService, emailService);
 
-    const itineraryService = new ItineraryService(itinerariesRepository, placesRepository, userRepository, cloudinaryService, aiService, auditLogService, referralService);
+    const badgeService = new BadgeService(new BadgeRepository(), notificationsService);
+    const itineraryService = new ItineraryService(itinerariesRepository, placesRepository, userRepository, cloudinaryService, aiService, auditLogService, referralService, badgeService);
     const itinerariesService = new ItinerariesService(itinerariesRepository, userRepository, placesRepository);
 
     const itineraryController = new ItineraryController(itineraryService);

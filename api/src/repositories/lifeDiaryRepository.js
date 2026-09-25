@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import client from '../db/clientPostgres.js';
+import { countryCodeFromName } from '../utils/countryCodes.js';
 import { LifeDiaryEntry } from '../models/lifeDiaryEntry.js';
 
 export class LifeDiaryRepository {
@@ -13,9 +14,10 @@ export class LifeDiaryRepository {
         const query = `
             INSERT INTO life_diary_entries (
                 id, user_id, location_name, location_country, location_label, latitude, longitude,
-                entry_date, best_moment, lesson_learned, memories, people_met, would_return
+                entry_date, best_moment, lesson_learned, memories, people_met, would_return,
+                location_country_code
             )
-            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
             RETURNING *;
         `;
 
@@ -25,6 +27,7 @@ export class LifeDiaryRepository {
             location?.lat ?? null, location?.lon ?? null,
             entryDate, bestMoment ?? null, lessonLearned ?? null,
             memories ?? null, peopleMet ?? null, wouldReturn ?? null,
+            countryCodeFromName(location?.country),
         ]);
 
         return LifeDiaryEntry.fromDb(result.rows[0]);
@@ -62,6 +65,7 @@ export class LifeDiaryRepository {
                 location_name = $1, location_country = $2, location_label = $3,
                 latitude = $4, longitude = $5, entry_date = $6, best_moment = $7,
                 lesson_learned = $8, memories = $9, people_met = $10, would_return = $11,
+                location_country_code = $13,
                 updated_at = CURRENT_TIMESTAMP
             WHERE id = $12
             RETURNING *;
@@ -72,6 +76,7 @@ export class LifeDiaryRepository {
             location?.lat ?? null, location?.lon ?? null,
             entryDate, bestMoment ?? null, lessonLearned ?? null,
             memories ?? null, peopleMet ?? null, wouldReturn ?? null, id,
+            countryCodeFromName(location?.country),
         ]);
 
         return result.rows.length ? LifeDiaryEntry.fromDb(result.rows[0]) : null;

@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import client from '../db/clientPostgres.js';
 import { Itinerary } from '../models/itinerary.js';
+import { countryCodeFromLabel } from '../utils/countryCodes.js';
 
 export class ItineraryRepository {
   async findByUserId(userId) {
@@ -63,9 +64,10 @@ export class ItineraryRepository {
                 id, user_id, title, description,
                 location_name, location_label, latitude, longitude,
                 start_date, end_date, number_of_people,
-                category, budget, currency, photo_url, photo_public_id, is_public, source
+                category, budget, currency, photo_url, photo_public_id, is_public, source,
+                location_country_code
             )
-            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
             RETURNING *;
         `;
 
@@ -73,7 +75,7 @@ export class ItineraryRepository {
       id, userId, title, description,
       location.name, location.label, location.lat, location.lon,
       startDate, endDate, numberOfPeople, category, budget, currency, photoUrl, photoPublicId,
-      isPublic ?? true, source ?? 'itinerary'
+      isPublic ?? true, source ?? 'itinerary', countryCodeFromLabel(location.label)
     ]);
 
     return Itinerary.fromDb(result.rows[0]);
@@ -95,6 +97,7 @@ export class ItineraryRepository {
                 currency = $12, category = $13,
                 photo_url = $14, photo_public_id = $15,
                 is_public = $16,
+                location_country_code = $17,
                 updated_at = NOW()
             WHERE id = $1 RETURNING *;
         `;
@@ -104,7 +107,7 @@ export class ItineraryRepository {
       location.name, location.label, location.lat, location.lon,
       startDate, endDate, numberOfPeople,
       budget, currency, category, photoUrl, photoPublicId,
-      isPublic ?? true
+      isPublic ?? true, countryCodeFromLabel(location.label)
     ]);
     return Itinerary.fromDb(result.rows[0]);
   }

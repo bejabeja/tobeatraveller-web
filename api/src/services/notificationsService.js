@@ -12,20 +12,24 @@ const NOTIFICATION_TYPE_PREFERENCE_KEY = {
 // popular trip doesn't buzz its owner's phone once per like.
 const PUSH_ON_EVERY_EVENT_TYPES = new Set(['comment']);
 
+// Notifications about the user's own progress, where the recipient is also
+// the "actor", instead of someone else acting on their content.
+const SELF_NOTIFICATION_TYPES = new Set(['badge_earned']);
+
 export class NotificationsService {
     constructor(notificationsRepository, pushNotificationsService = null) {
         this.notificationsRepository = notificationsRepository;
         this.pushNotificationsService = pushNotificationsService;
     }
 
-    async createNotification({ userId, actorId, type, itineraryId, commentId }) {
-        if (userId === actorId) return;
+    async createNotification({ userId, actorId, type, itineraryId, commentId, badgeId }) {
+        if (userId === actorId && !SELF_NOTIFICATION_TYPES.has(type)) return;
 
         const preferences = await this.notificationsRepository.getPreferences(userId);
         const preferenceKey = NOTIFICATION_TYPE_PREFERENCE_KEY[type];
         if (preferenceKey && !preferences[preferenceKey]) return;
 
-        const created = await this.notificationsRepository.create({ userId, actorId, type, itineraryId, commentId });
+        const created = await this.notificationsRepository.create({ userId, actorId, type, itineraryId, commentId, badgeId });
         if (!created || !this._shouldPush(preferences, type, created)) return;
 
         // Callers fire this with .catch(() => {}), so a push failure would

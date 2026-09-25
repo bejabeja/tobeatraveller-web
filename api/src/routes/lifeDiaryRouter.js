@@ -5,6 +5,13 @@ import { LifeDiaryRepository } from "../repositories/lifeDiaryRepository.js";
 import { UserRepository } from "../repositories/userRepository.js";
 import { CloudinaryService } from "../services/cloudinaryService.js";
 import { LifeDiaryService } from "../services/lifeDiaryService.js";
+import { BadgeRepository } from "../repositories/badgeRepository.js";
+import { ItineraryRepository } from "../repositories/itineraryRepository.js";
+import { NotificationsRepository } from "../repositories/notificationsRepository.js";
+import { PushTokensRepository } from "../repositories/pushTokensRepository.js";
+import { BadgeService } from "../services/badgeService.js";
+import { NotificationsService } from "../services/notificationsService.js";
+import { PushNotificationsService } from "../services/pushNotificationsService.js";
 
 export const createLifeDiaryRouter = () => {
     const router = Router();
@@ -12,7 +19,10 @@ export const createLifeDiaryRouter = () => {
     const lifeDiaryRepository = new LifeDiaryRepository();
     const userRepository = new UserRepository();
     const cloudinaryService = new CloudinaryService();
-    const lifeDiaryService = new LifeDiaryService(lifeDiaryRepository, cloudinaryService, userRepository);
+    const pushNotificationsService = new PushNotificationsService(new PushTokensRepository(), userRepository, new ItineraryRepository());
+    const notificationsService = new NotificationsService(new NotificationsRepository(), pushNotificationsService);
+    const badgeService = new BadgeService(new BadgeRepository(), notificationsService);
+    const lifeDiaryService = new LifeDiaryService(lifeDiaryRepository, cloudinaryService, userRepository, badgeService);
     const lifeDiaryController = new LifeDiaryController(lifeDiaryService);
 
     const uploadImages = upload.fields([{ name: 'images', maxCount: 6 }]);

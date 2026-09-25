@@ -14,7 +14,7 @@ const MONTHLY_AI_GENERATION_LIMIT = 50;
 export class ItineraryService {
     constructor(
         itinerariesRepository, placesRepository, userRepository, cloudinaryService, aiService,
-        auditLogService = null, referralService = null
+        auditLogService = null, referralService = null, badgeService = null
     ) {
         this.itinerariesRepository = itinerariesRepository;
         this.placesRepository = placesRepository;
@@ -23,6 +23,7 @@ export class ItineraryService {
         this.aiService = aiService;
         this.auditLogService = auditLogService;
         this.referralService = referralService;
+        this.badgeService = badgeService;
     }
 
     // Fire-and-forget, same pattern as CommentsService -> NotificationsService:
@@ -87,6 +88,7 @@ export class ItineraryService {
 
         await this._addGalleryImages(itinerary, images ?? []);
         await this._rewardIfFirstItinerary(userId, itinerary.id);
+        this.badgeService?.evaluateUserInBackground(userId);
 
         return itinerary.toDTO();
     }
@@ -238,6 +240,8 @@ export class ItineraryService {
         await this._addGalleryImages(itinerary, images ?? [], nextOrderIndex);
 
         await this.itinerariesRepository.update(id, itineraryData);
+        // Making a trip public, or moving it to another country, can earn a badge.
+        this.badgeService?.evaluateUserInBackground(userId);
     }
 
     async generateSmartItinerary(destination, totalDays, context = {}, actingUser = null) {

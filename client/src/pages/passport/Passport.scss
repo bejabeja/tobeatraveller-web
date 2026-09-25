@@ -1,0 +1,317 @@
+$passport-navy: #1b2a41;
+$passport-gold: #d9a441;
+$passport-paper: #fbf6ec;
+$passport-ink-muted: #8a8172;
+
+.passport {
+  padding-top: 1.5rem;
+  padding-bottom: 3rem;
+
+  // index.scss gives every element `width: 100%`; icons and inline badges
+  // here must size to their content instead, or they fill the whole row.
+  svg {
+    width: 1em;
+    height: 1em;
+    flex-shrink: 0;
+  }
+
+  &__back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    width: fit-content;
+    margin-bottom: 1rem;
+    color: var(--text-secondary-color);
+    font-size: 0.9rem;
+    text-decoration: none;
+
+    &:hover {
+      color: var(--primary-color);
+    }
+  }
+
+  &__skeleton {
+    height: 220px;
+    border-radius: 18px;
+    background: linear-gradient(90deg, #eee 25%, #f5f5f5 50%, #eee 75%);
+    background-size: 200% 100%;
+    animation: passport-shimmer 1.4s infinite;
+  }
+
+  &__cover {
+    position: relative;
+    padding: 2rem 1.75rem;
+    border-radius: 18px;
+    background: $passport-navy;
+    color: $passport-gold;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(27, 42, 65, 0.25);
+    overflow: hidden;
+
+    // Embossed double frame, like a passport cover.
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 10px;
+      border: 1px solid rgba(217, 164, 65, 0.45);
+      border-radius: 12px;
+      pointer-events: none;
+    }
+  }
+
+  &__cover-kicker {
+    display: block;
+    font-size: 0.72rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    opacity: 0.8;
+  }
+
+  &__cover-title {
+    margin: 0.6rem 0 0.4rem;
+    font-size: clamp(1.4rem, 4vw, 2rem);
+    font-weight: 800;
+    color: $passport-gold;
+  }
+
+  &__cover-stats {
+    margin: 0;
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  &__section {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    border-radius: 18px;
+    background: $passport-paper;
+    border: 1px solid #efe4cf;
+  }
+
+  &__section-title {
+    margin: 0 0 0.25rem;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: $passport-navy;
+  }
+
+  &__section-hint,
+  &__empty {
+    margin: 0 0 1rem;
+    font-size: 0.85rem;
+    color: $passport-ink-muted;
+  }
+
+  &__family + &__family {
+    margin-top: 1.5rem;
+  }
+
+  &__family-title {
+    margin: 1rem 0 0.75rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: $passport-ink-muted;
+  }
+
+  &__stamps,
+  &__countries {
+    display: grid;
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__stamps {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+
+  &__countries {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    padding: 0.5rem 0.25rem;
+  }
+
+  // ─── Achievement stamps ──────────────────────────────────────────────
+  // Stamps in a row share its height, so their parts line up whether a
+  // name or goal takes one line or two: the name always reserves two lines
+  // and the progress bar sits at the bottom.
+  &__stamp {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    height: 100%;
+    padding: 0.75rem 0.5rem;
+    text-align: center;
+  }
+
+  // An ink seal: solid outer ring and a dashed inner one, like a rubber stamp.
+  &__stamp-seal {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    border: 3px solid var(--primary-color);
+    background: radial-gradient(circle, #fff 60%, var(--primary-light) 100%);
+    transform: rotate(-6deg);
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 5px;
+      border: 1.5px dashed rgba(232, 116, 59, 0.55);
+      border-radius: 50%;
+    }
+  }
+
+  &__stamp-emoji {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: auto;
+    font-size: 2.3rem;
+    line-height: 1;
+    // Undo the seal's tilt so the icon stays upright inside it.
+    transform: rotate(6deg);
+  }
+
+  &__stamp-name {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(2 * 1.25em);
+    font-size: 0.9rem;
+    line-height: 1.25;
+    color: $passport-navy;
+  }
+
+  &__stamp-detail {
+    font-size: 0.75rem;
+    color: $passport-ink-muted;
+  }
+
+  &__stamp--locked {
+    .passport__stamp-seal {
+      border: 2px dashed #c9bfae;
+      background: #f3eee4;
+      transform: none;
+      color: #b3a996;
+
+      &::before {
+        display: none;
+      }
+    }
+
+    .passport__stamp-emoji {
+      font-size: 1.5rem;
+      transform: none;
+      filter: grayscale(1);
+      opacity: 0.45;
+    }
+
+    .passport__stamp-name {
+      color: $passport-ink-muted;
+    }
+  }
+
+  &__progress {
+    position: relative;
+    margin-top: auto;
+    width: 100%;
+    max-width: 120px;
+    height: 16px;
+    border-radius: 999px;
+    background: #ebe3d3;
+    overflow: hidden;
+  }
+
+  &__progress-fill {
+    height: 100%;
+    background: var(--primary-color);
+    opacity: 0.75;
+  }
+
+  &__progress-label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: $passport-navy;
+  }
+
+  &__private {
+    position: absolute;
+    top: 0.4rem;
+    right: 0.4rem;
+    display: flex;
+    width: auto;
+    font-size: 0.8rem;
+    filter: grayscale(1);
+    opacity: 0.6;
+  }
+
+  // Next to the seal's ring rather than the corner of the (wider) stamp box.
+  &__private--seal {
+    top: 0.75rem;
+    right: calc(50% - 52px);
+  }
+
+  // ─── Country stamps ──────────────────────────────────────────────────
+  &__country {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.8rem 0.5rem;
+    border: 2px solid var(--stamp-color);
+    border-radius: 10px;
+    box-shadow: inset 0 0 0 3px $passport-paper, inset 0 0 0 4px var(--stamp-color);
+    color: var(--stamp-color);
+    text-align: center;
+    transform: rotate(var(--stamp-rotation));
+    transition: transform 0.2s ease;
+
+    &:hover {
+      transform: rotate(0deg) scale(1.04);
+    }
+  }
+
+  &__country-flag {
+    font-size: 2rem;
+    line-height: 1.1;
+  }
+
+  &__country-name {
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  &__country-date {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.85;
+  }
+}
+
+@keyframes passport-shimmer {
+  to { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .passport__country {
+    transition: none;
+  }
+}

@@ -21,7 +21,8 @@ export class UserService {
         userRepository, itinerariesRepository, followRepository, emailService = null,
         lifeDiaryRepository = null, auditLogService = null, vanLogRepository = null,
         inventoryRepository = null, shoppingListRepository = null, packingChecklistRepository = null,
-        subscriptionRepository = null, referralService = null, pushTokensRepository = null
+        subscriptionRepository = null, referralService = null, pushTokensRepository = null,
+        badgeRepository = null
     ) {
         this.userRepository = userRepository;
         this.itinerariesRepository = itinerariesRepository;
@@ -36,6 +37,7 @@ export class UserService {
         this.subscriptionRepository = subscriptionRepository;
         this.referralService = referralService;
         this.pushTokensRepository = pushTokensRepository;
+        this.badgeRepository = badgeRepository;
     }
 
     async create(userData, { ip, userAgent } = {}) {
@@ -319,7 +321,7 @@ export class UserService {
         const [
             itineraries, followers, following, commentsResult, likesResult, favoritesResult,
             lifeDiaryEntries, vanLogEntries, inventoryItems, shoppingListItems, packingChecklistItems,
-            pushDevices,
+            pushDevices, badges,
         ] = await Promise.all([
             this.itinerariesRepository.findByUserId(id),
             this.followRepository.getFollowers(id),
@@ -348,6 +350,7 @@ export class UserService {
             this.shoppingListRepository ? this.shoppingListRepository.findByUserId(id) : [],
             this.packingChecklistRepository ? this.packingChecklistRepository.findByUserId(id) : [],
             this.pushTokensRepository ? this.pushTokensRepository.findByUserId(id) : [],
+            this.badgeRepository ? this.badgeRepository.findEarnedByUserId(id) : [],
         ]);
 
         // Same batched entry+images composition as LifeDiaryService.getEntriesByUser.
@@ -394,6 +397,7 @@ export class UserService {
             },
             packingChecklist: packingChecklistItems.map(item => item.toDTO()),
             pushDevices,
+            badges,
             followers: followers.map(f => ({ id: f.id, username: f.username })),
             following: following.map(f => ({ id: f.id, username: f.username })),
         };

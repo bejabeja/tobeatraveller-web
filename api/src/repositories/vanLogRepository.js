@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import client from '../db/clientPostgres.js';
+import { countryCodeFromName } from '../utils/countryCodes.js';
 import { VanLogEntry, toDateOnlyString } from '../models/vanLogEntry.js';
 
 export class VanLogRepository {
@@ -14,9 +15,9 @@ export class VanLogRepository {
             INSERT INTO van_log_entries (
                 id, user_id, category, title, amount, currency, price_per_liter,
                 location_name, location_country, location_label, latitude, longitude,
-                notes, entry_date
+                notes, entry_date, location_country_code
             )
-            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
             RETURNING *;
         `;
 
@@ -24,7 +25,7 @@ export class VanLogRepository {
             id, userId, category, title ?? null, amount ?? null, currency ?? null, pricePerLiter ?? null,
             location?.name ?? null, location?.country ?? null, location?.label ?? null,
             location?.lat ?? null, location?.lon ?? null,
-            notes ?? null, entryDate,
+            notes ?? null, entryDate, countryCodeFromName(location?.country),
         ]);
 
         return VanLogEntry.fromDb(result.rows[0]);
@@ -102,6 +103,7 @@ export class VanLogRepository {
                 category = $1, title = $2, amount = $3, currency = $4, price_per_liter = $5,
                 location_name = $6, location_country = $7, location_label = $8,
                 latitude = $9, longitude = $10, notes = $11, entry_date = $12,
+                location_country_code = $14,
                 updated_at = CURRENT_TIMESTAMP
             WHERE id = $13
             RETURNING *;
@@ -111,7 +113,7 @@ export class VanLogRepository {
             category, title ?? null, amount ?? null, currency ?? null, pricePerLiter ?? null,
             location?.name ?? null, location?.country ?? null, location?.label ?? null,
             location?.lat ?? null, location?.lon ?? null,
-            notes ?? null, entryDate, id,
+            notes ?? null, entryDate, id, countryCodeFromName(location?.country),
         ]);
 
         return result.rows.length ? VanLogEntry.fromDb(result.rows[0]) : null;

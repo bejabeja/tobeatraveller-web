@@ -7,14 +7,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
-  initNotifications, loadMoreNotifications, markAllNotificationsRead,
+  BADGE_EMOJI, initNotifications, loadMoreNotifications, markAllNotificationsRead,
   selectNotifications, selectNotificationsError, selectNotificationsLoading,
   selectNotificationsLoadingMore, selectNotificationsPage, selectNotificationsTotalPages, selectUnreadCount,
 } from '@tobeatraveller/shared';
 import { UserRowSkeleton } from '../../components/Skeleton';
 import { shadow } from '../../utils/styles';
 
-const TYPE_ICON = { follow: '👤', like: '❤️', comment: '💬', referral_reward: '🎁' };
+const TYPE_ICON = { follow: '👤', like: '❤️', comment: '💬', referral_reward: '🎁', badge_earned: '🏅' };
 
 const NotificationsScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -43,6 +43,7 @@ const NotificationsScreen = ({ navigation }) => {
 
   const handlePress = (n) => {
     if (n.type === 'follow') navigation.navigate('UserProfile', { id: n.actor?.id });
+    else if (n.type === 'badge_earned') navigation.navigate('Passport', { userId: n.actor?.id });
     else if (n.type === 'referral_reward') navigation.navigate('Referral');
     else if (n.itinerary?.id) {
       navigation.navigate('Itinerary', {
@@ -116,12 +117,18 @@ const NotificationsScreen = ({ navigation }) => {
               </View>
               <View style={styles.body}>
                 <Text style={styles.text} numberOfLines={2}>
-                  <Text style={styles.bold}>@{n.actor?.username}</Text>
-                  {n.count > 1 && t('notifications.andOthers', { count: n.count - 1 })}
-                  {n.type === 'follow' && t(`notifications.startedFollowing${n.count > 1 ? 'Plural' : ''}`)}
-                  {n.type === 'like' && <Text>{t(`notifications.liked${n.count > 1 ? 'Plural' : ''}`)}<Text style={styles.italic}>{n.itinerary?.title}</Text></Text>}
-                  {n.type === 'comment' && <Text>{t(`notifications.commented${n.count > 1 ? 'Plural' : ''}`)}<Text style={styles.italic}>{n.itinerary?.title}</Text></Text>}
-                  {n.type === 'referral_reward' && <Text> {t('notifications.referralRewardMiddle')} {t('notifications.referralRewardSuffix')}</Text>}
+                  {n.type === 'badge_earned' ? (
+                    <Text>{BADGE_EMOJI[n.badgeId]} {t('notifications.badgeEarned')}<Text style={styles.bold}>{t(`badges.${n.badgeId}.name`)}</Text></Text>
+                  ) : (
+                    <>
+                      <Text style={styles.bold}>@{n.actor?.username}</Text>
+                      {n.count > 1 && t('notifications.andOthers', { count: n.count - 1 })}
+                      {n.type === 'follow' && t(`notifications.startedFollowing${n.count > 1 ? 'Plural' : ''}`)}
+                      {n.type === 'like' && <Text>{t(`notifications.liked${n.count > 1 ? 'Plural' : ''}`)}<Text style={styles.italic}>{n.itinerary?.title}</Text></Text>}
+                      {n.type === 'comment' && <Text>{t(`notifications.commented${n.count > 1 ? 'Plural' : ''}`)}<Text style={styles.italic}>{n.itinerary?.title}</Text></Text>}
+                      {n.type === 'referral_reward' && <Text> {t('notifications.referralRewardMiddle')} {t('notifications.referralRewardSuffix')}</Text>}
+                    </>
+                  )}
                 </Text>
                 <Text style={styles.time}>{n.postedAgo}</Text>
               </View>

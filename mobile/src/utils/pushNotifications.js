@@ -70,6 +70,8 @@ export const routeForPushData = (data) => {
   if (!data?.type) return null;
   if (data.type === 'follow' && data.actorId) return { name: 'UserProfile', params: { id: data.actorId } };
   if (data.type === 'referral_reward') return { name: 'Referral' };
+  // The badge's "actor" is the user who earned it.
+  if (data.type === 'badge_earned' && data.actorId) return { name: 'Passport', params: { userId: data.actorId } };
   if (data.itineraryId) {
     return {
       name: 'Itinerary',

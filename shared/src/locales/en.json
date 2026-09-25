@@ -414,13 +414,7 @@
     "completenessTipBio": "Write a bio",
     "completenessTipAbout": "Complete your About section",
     "completenessTipLocation": "Add your location",
-    "completenessTipPhoto": "Set a profile photo",
-    "badgeExplorerDesc": "Explorer · Earned by creating your first trip",
-    "badgeAdventurerDesc": "Adventurer · Earned by creating 5+ trips",
-    "badgeGlobetrotterDesc": "Globetrotter · Earned by creating 10+ trips",
-    "badgePopularDesc": "Popular · Earned by reaching 50 followers",
-    "badgeNextTip_one": "{{count}} more trip to unlock {{next}}",
-    "badgeNextTip_other": "{{count}} more trips to unlock {{next}}"
+    "completenessTipPhoto": "Set a profile photo"
   },
   "editProfile": {
     "title": "Edit profile",
@@ -779,7 +773,8 @@
     "seeAll": "See all notifications",
     "referralRewardPrefix": "You and",
     "referralRewardMiddle": "and you",
-    "referralRewardSuffix": "both got 1 month of Premium"
+    "referralRewardSuffix": "both got 1 month of Premium",
+    "badgeEarned": "You earned the badge "
   },
   "comments": {
     "title": "Comments",
@@ -1335,5 +1330,117 @@
     },
     "actionUnconfirmed": "We couldn't confirm it was saved: the connection took too long. Check the list before trying again.",
     "editingIsPremium": "You're offline. Saving changes offline is a Premium feature; try again once you're back online."
+  },
+  "badges": {
+    "explorer": {
+      "name": "Explorer",
+      "desc": "Published their first trip",
+      "goal": "Publish your first trip"
+    },
+    "adventurer": {
+      "name": "Adventurer",
+      "desc": "Has published 5 trips",
+      "goal": "Publish 5 trips"
+    },
+    "globetrotter": {
+      "name": "Globetrotter",
+      "desc": "Has published 10 trips",
+      "goal": "Publish 10 trips"
+    },
+    "countries_1": {
+      "name": "First stamp",
+      "desc": "First country in their passport",
+      "goal": "Visit your first country"
+    },
+    "countries_5": {
+      "name": "Border hopper",
+      "desc": "5 countries in their passport",
+      "goal": "Visit 5 countries"
+    },
+    "countries_10": {
+      "name": "Stamped passport",
+      "desc": "10 countries in their passport",
+      "goal": "Visit 10 countries"
+    },
+    "countries_25": {
+      "name": "Citizen of the world",
+      "desc": "25 countries in their passport",
+      "goal": "Visit 25 countries"
+    },
+    "popular": {
+      "name": "Popular",
+      "desc": "Followed by 50 people",
+      "goal": "Reach 50 followers"
+    },
+    "van_log_1": {
+      "name": "First expense",
+      "desc": "Logged their first van expense",
+      "goal": "Log your first expense"
+    },
+    "van_log_50": {
+      "name": "Road bookkeeper",
+      "desc": "Has logged 50 expenses",
+      "goal": "Log 50 expenses"
+    },
+    "van_log_200": {
+      "name": "Van master",
+      "desc": "Has logged 200 expenses",
+      "goal": "Log 200 expenses"
+    },
+    "life_diary_1": {
+      "name": "First page",
+      "desc": "Wrote their first diary entry",
+      "goal": "Write your first diary entry"
+    },
+    "life_diary_10": {
+      "name": "Chronicler",
+      "desc": "Has written 10 diary entries",
+      "goal": "Write 10 diary entries"
+    },
+    "life_diary_50": {
+      "name": "Road memoir",
+      "desc": "Has written 50 diary entries",
+      "goal": "Write 50 diary entries"
+    },
+    "nextTip": {
+      "trips_one": "{{count}} more trip for {{next}}",
+      "trips_other": "{{count}} more trips for {{next}}",
+      "countries_one": "{{count}} more country for {{next}}",
+      "countries_other": "{{count}} more countries for {{next}}",
+      "followers_one": "{{count}} more follower for {{next}}",
+      "followers_other": "{{count}} more followers for {{next}}",
+      "vanLog_one": "{{count}} more expense for {{next}}",
+      "vanLog_other": "{{count}} more expenses for {{next}}",
+      "lifeDiary_one": "{{count}} more entry for {{next}}",
+      "lifeDiary_other": "{{count}} more entries for {{next}}"
+    },
+    "onlyYou": "Only you can see this",
+    "title": "Achievements"
+  },
+  "passport": {
+    "title": "Passport",
+    "ownTitle": "My passport",
+    "ofUser": "@{{username}}'s passport",
+    "view": "View passport",
+    "achievements": "Achievements",
+    "countries": "Countries visited",
+    "collected": "{{earned}} of {{total}} stamps",
+    "countriesCount_one": "{{count}} country",
+    "countriesCount_other": "{{count}} countries",
+    "earnedOn": "Earned on {{date}}",
+    "locked": "Not yet earned",
+    "emptyCountriesOwn": "No country stamps yet. Publish a trip, or log an expense or diary entry with a location.",
+    "emptyCountriesOther": "No public countries in this passport yet.",
+    "countriesHowTo": "Your published trips, expenses and diary count. Countries that only come from expenses or diary are only visible to you.",
+    "loadError": "Couldn't load the passport.",
+    "family": {
+      "trips": "Trips",
+      "countries": "Countries",
+      "followers": "Community",
+      "vanLog": "Expenses",
+      "lifeDiary": "Diary"
+    },
+    "moreCountries": "+{{count}}",
+    "noCountriesYet": "No countries yet"
   }
 }

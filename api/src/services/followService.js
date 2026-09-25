@@ -2,10 +2,11 @@ import { ConflictError } from "../errors/ConflictError.js";
 import { NotFoundError } from "../errors/NotFoundError.js";
 
 export class FollowService {
-    constructor(userRepository, followRepository, notificationsService = null) {
+    constructor(userRepository, followRepository, notificationsService = null, badgeService = null) {
         this.userRepository = userRepository;
         this.followRepository = followRepository;
         this.notificationsService = notificationsService;
+        this.badgeService = badgeService;
     }
 
     async followUser(followerId, followedId) {
@@ -28,6 +29,7 @@ export class FollowService {
         this.notificationsService?.createNotification({
             userId: followedId, actorId: followerId, type: 'follow'
         }).catch(() => {});
+        this.badgeService?.evaluateUserInBackground(followedId);
     }
 
     async unfollowUser(followerId, followedId) {

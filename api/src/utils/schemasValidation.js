@@ -179,6 +179,8 @@ export const commentSchema = z.object({
     text: z.string().min(1, "Comment cannot be empty").max(COMMENT_MAX_LENGTH, `Comment must be at most ${COMMENT_MAX_LENGTH} characters`),
 });
 
+export const userIdParamSchema = z.string().uuid("Invalid user id");
+
 // Offline mobile clients generate the id of what they create, so replaying a
 // create whose response was lost returns the existing row instead of a duplicate.
 const clientGeneratedIdField = { id: z.string().uuid("Invalid id").optional() };

@@ -37,6 +37,31 @@ describe('VanLogRepository', () => {
         expect(params[1]).toBe('user-1');
     });
 
+    // The passport counts countries by ISO code, derived here from the English
+    // name Geoapify gives, on every create and update.
+    it('stores the ISO code of the location country on create and update', async () => {
+        client.query.mockResolvedValue({ rows: [{ id: 'mock-uuid', user_id: 'user-1', category: 'fuel', entry_date: '2026-08-27' }] });
+        const location = { name: 'Lyon', country: 'France', label: 'Lyon, France', lat: 45.7, lon: 4.8 };
+
+        await repo.create({ userId: 'user-1', category: 'fuel', entryDate: '2026-08-27', location });
+        await repo.update('mock-uuid', { category: 'fuel', entryDate: '2026-08-27', location });
+
+        const [insertQuery, insertParams] = client.query.mock.calls[0];
+        const [updateQuery, updateParams] = client.query.mock.calls[1];
+        expect(insertQuery).toMatch(/location_country_code/);
+        expect(insertParams).toContain('FR');
+        expect(updateQuery).toMatch(/location_country_code = \$14/);
+        expect(updateParams[13]).toBe('FR');
+    });
+
+    it('leaves the country code empty when there is no location', async () => {
+        client.query.mockResolvedValue({ rows: [{ id: 'mock-uuid', user_id: 'user-1', category: 'fuel', entry_date: '2026-08-27' }] });
+
+        await repo.create({ userId: 'user-1', category: 'fuel', entryDate: '2026-08-27' });
+
+        expect(client.query.mock.calls[0][1].at(-1)).toBeNull();
+    });
+
     it('passes price per liter through to the insert query', async () => {
         client.query.mockResolvedValue({
             rows: [{

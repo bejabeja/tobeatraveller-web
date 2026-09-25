@@ -22,6 +22,10 @@ const PUSH_MESSAGES = {
             title: 'Referral reward',
             body: `You and ${actorUsername} earned 1 month of Premium`,
         }),
+        badge_earned: () => ({
+            title: 'New badge',
+            body: 'You earned a new badge. Check it out on your profile.',
+        }),
     },
     es: {
         comment: ({ actorUsername, itineraryTitle }) => ({
@@ -39,6 +43,10 @@ const PUSH_MESSAGES = {
         referral_reward: ({ actorUsername }) => ({
             title: 'Recompensa por invitación',
             body: `${actorUsername} y tú habéis ganado 1 mes de Premium`,
+        }),
+        badge_earned: () => ({
+            title: 'Nuevo badge',
+            body: 'Has conseguido un badge nuevo. Míralo en tu perfil.',
         }),
     },
 };

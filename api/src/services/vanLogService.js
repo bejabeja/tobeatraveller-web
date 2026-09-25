@@ -8,9 +8,10 @@ import { findClientCreatedEntity, getOwnedEntity } from '../utils/ownedEntity.js
 const FREE_ENTRY_LIMIT = 10;
 
 export class VanLogService {
-    constructor(vanLogRepository, userRepository) {
+    constructor(vanLogRepository, userRepository, badgeService = null) {
         this.vanLogRepository = vanLogRepository;
         this.userRepository = userRepository;
+        this.badgeService = badgeService;
     }
 
     async createEntry(data, userId) {
@@ -21,6 +22,7 @@ export class VanLogService {
 
         await this._assertCanCreateEntry(userId);
         const entry = await this.vanLogRepository.create({ ...data, userId });
+        this.badgeService?.evaluateUserInBackground(userId);
         return entry.toDTO();
     }
 
@@ -32,6 +34,8 @@ export class VanLogService {
     async updateEntry(id, data, userId) {
         const entry = await this._getOwnedEntry(id, userId);
         const updated = await this.vanLogRepository.update(entry.id, data);
+        // An edit can add a location in a new country.
+        this.badgeService?.evaluateUserInBackground(userId);
         return updated.toDTO();
     }
 
