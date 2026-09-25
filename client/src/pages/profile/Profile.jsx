@@ -19,6 +19,7 @@ import { buildProfileJsonLd } from "../../utils/jsonLd";
 import { BADGE_EMOJI, countryFlag, filterItineraries, summarizePassport } from "@tobeatraveller/shared";
 import FollowsModal from "../../components/follows/FollowsModal";
 import PassportShareDialog from "../../components/passport/PassportShareDialog";
+import RecapBanner, { RECAP_SOURCES } from "../../components/recap/RecapBanner";
 import { PASSPORT_SHARE_SOURCES } from "../../utils/analyticsEvents";
 import OfficialBadge from "../../components/users/OfficialBadge";
 import Error from "../error/Error";
@@ -345,6 +346,7 @@ const HeaderSection = ({
         )}
 
         <ProfilePassportCard userId={user?.id} isOwnProfile={isMyProfile} t={t} />
+        {isMyProfile && <RecapBanner source={RECAP_SOURCES.PROFILE} />}
       </div>
     </div>
   );

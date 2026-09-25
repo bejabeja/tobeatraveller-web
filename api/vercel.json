@@ -20,6 +20,10 @@
         {
             "path": "/push-tokens/scheduled-purge",
             "schedule": "0 4 * * *"
+        },
+        {
+            "path": "/recap/scheduled-announce",
+            "schedule": "0 9 1 12 *"
         }
     ]
 }

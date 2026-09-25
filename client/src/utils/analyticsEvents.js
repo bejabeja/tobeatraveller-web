@@ -7,6 +7,8 @@ export const ANALYTICS_EVENTS = Object.freeze({
   PASSPORT_INVITE_CLICKED: "passport_invite_clicked",
   PASSPORT_COUNTRIES_DECLARED: "passport_countries_declared",
   PASSPORT_LEADERBOARD_CLICKED: "passport_leaderboard_clicked",
+  RECAP_OPENED: "recap_opened",
+  RECAP_SHARED: "recap_shared",
   USER_SIGNED_UP: "user_signed_up",
 });
 

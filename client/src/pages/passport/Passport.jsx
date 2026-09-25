@@ -9,6 +9,7 @@ import {
   countryFlag, countryName, passportStampStyle, signupUrlFromPassport,
 } from "@tobeatraveller/shared";
 import CountryPickerDialog from "../../components/passport/CountryPickerDialog";
+import RecapBanner, { RECAP_SOURCES } from "../../components/recap/RecapBanner";
 import PassportShareDialog from "../../components/passport/PassportShareDialog";
 import { updateMyDeclaredCountries } from "../../services/passport";
 import { getPendingDeclaredCountries, setPendingDeclaredCountries } from "../../utils/pendingDeclaredCountries";
@@ -354,6 +355,8 @@ const Passport = () => {
           </button>
         )}
       </div>
+
+      {isOwner && <RecapBanner source={RECAP_SOURCES.PASSPORT} />}
 
       <header className="passport__cover">
         <span className="passport__cover-kicker">{t("passport.title")} · ToBeATraveller</span>

@@ -16,6 +16,7 @@ export * from './services/subscription.js';
 export * from './services/referral.js';
 export * from './services/pushTokens.js';
 export * from './services/passport.js';
+export * from './services/recap.js';
 export * from './services/geocoding.js';
 
 // Store
@@ -63,4 +64,5 @@ export * from './utils/constants/premiumFeatures.js';
 export * from './utils/roles.js';
 export * from './utils/constants/badges.js';
 export * from './utils/constants/countries.js';
+export * from './utils/recap.js';
 export * from './utils/preloadImg.js';

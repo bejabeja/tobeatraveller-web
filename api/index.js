@@ -22,6 +22,7 @@ import { healthCheckRouter } from './src/routes/healthCheckRouter.js';
 import { createItinerariesRouter } from "./src/routes/itinerariesRouter.js";
 import { createUsersRouter } from './src/routes/usersRouter.js';
 import { createOgRouter } from './src/routes/ogRouter.js';
+import { createRecapRouter } from './src/routes/recapRouter.js';
 import { createSitemapRouter } from './src/routes/sitemapRouter.js';
 import { createVanLogsRouter } from './src/routes/vanLogsRouter.js';
 import { createSuppliesRouter } from './src/routes/suppliesRouter.js';
@@ -74,6 +75,8 @@ app.use('/audit-log', createAuditLogRouter());
 // Same as /audit-log: the scheduled token purge authenticates with the cron
 // secret, so authenticate() is applied per route inside the router.
 app.use('/push-tokens', createPushTokensRouter());
+// Same again: the yearly recap announcement runs on the cron secret.
+app.use('/recap', createRecapRouter());
 
 app.use('/', createEmailRouter());
 if (config.nodeEnv !== 'production') {

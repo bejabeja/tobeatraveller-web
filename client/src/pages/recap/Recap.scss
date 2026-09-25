@@ -1,0 +1,242 @@
+$recap-navy: #1b2a41;
+$recap-gold: #d9a441;
+
+// Full screen like any stories viewer, above the app's own chrome.
+.recap {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3.5rem 1.5rem 2rem;
+  background: radial-gradient(circle at 50% 20%, #26395a 0%, $recap-navy 70%);
+  color: #fff;
+  overflow-y: auto;
+
+  &--message p {
+    max-width: 420px;
+    text-align: center;
+    font-size: 1.05rem;
+  }
+
+  // width: auto (over index.scss's 100%) so left and right set its width;
+  // with 100% it ignores `right` and sticks out, scrolling the page sideways.
+  &__progress {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    right: 3.5rem;
+    width: auto;
+    display: flex;
+    gap: 0.3rem;
+  }
+
+  &__progress-bar {
+    flex: 1;
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.25);
+    overflow: hidden;
+  }
+
+  // Filled by scaling (cheaper than animating the width); the current one
+  // fills over the slide's duration, and its end moves to the next slide.
+  &__progress-fill {
+    display: block;
+    height: 100%;
+    background: $recap-gold;
+    transform-origin: left center;
+    transform: scaleX(0);
+
+    &--done {
+      transform: scaleX(1);
+    }
+
+    &--current {
+      animation: recap-progress linear forwards;
+    }
+
+    &--paused {
+      animation-play-state: paused;
+    }
+  }
+
+  &__close {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.75rem;
+    z-index: 2;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+
+  &__slide {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    max-width: 520px;
+    text-align: center;
+    // Taps go to the zones underneath; only the share slide needs its own clicks.
+    pointer-events: none;
+  }
+
+  &__emoji {
+    width: auto;
+    font-size: 4rem;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: clamp(1.8rem, 6vw, 2.6rem);
+    font-weight: 800;
+    color: $recap-gold;
+  }
+
+  &__subtitle {
+    margin: 0;
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  &__highlight {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  &__flags {
+    margin: 0;
+    font-size: 2rem;
+    line-height: 1.5;
+  }
+
+  &__list,
+  &__badges {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 1.2rem;
+  }
+
+  &__share {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    pointer-events: auto;
+  }
+
+  &__preview {
+    width: 100%;
+    max-width: 240px;
+    aspect-ratio: 9 / 16;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+
+    &--loading {
+      background: rgba(255, 255, 255, 0.1);
+    }
+  }
+
+  &__hint {
+    margin: 0;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.75);
+  }
+
+  // The share actions are styled for light surfaces (dialogs); here they
+  // sit on a light card of their own.
+  &__share-actions {
+    width: 100%;
+    border-radius: 16px;
+    background: var(--white-color);
+    color: var(--text-color);
+    overflow: hidden;
+  }
+
+  // Held to pause: no text selection, iOS callout menu or double-tap zoom.
+  &__tap {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 50%;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+
+    &--previous {
+      left: 0;
+    }
+
+    &--next {
+      right: 0;
+    }
+
+    &:disabled {
+      cursor: default;
+    }
+  }
+
+  &__back {
+    margin-top: 1rem;
+    width: auto;
+    border: none;
+    background: none;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+
+  &__spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255, 255, 255, 0.25);
+    border-top-color: $recap-gold;
+    border-radius: 50%;
+    animation: recap-spin 0.9s linear infinite;
+  }
+}
+
+@keyframes recap-progress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes recap-spin {
+  to { transform: rotate(360deg); }
+}
+
+// Nothing moves on by itself for those who asked for less motion: without
+// the animation there's no end to move on from, and the bar just shows full.
+@media (prefers-reduced-motion: reduce) {
+  .recap__spinner {
+    animation: none;
+  }
+
+  .recap__progress-fill--current {
+    animation: none;
+    transform: scaleX(1);
+  }
+}

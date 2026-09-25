@@ -41,6 +41,7 @@ const Profile = lazy(() => import("./pages/profile/Profile"));
 const Itinerary = lazy(() => import("./pages/itinerary/Itinerary"));
 const FollowersList = lazy(() => import("./pages/follows/FollowersList"));
 const Passport = lazy(() => import("./pages/passport/Passport"));
+const Recap = lazy(() => import("./pages/recap/Recap"));
 const FollowingList = lazy(() => import("./pages/follows/FollowingList"));
 const Onboarding = lazy(() => import("./pages/onboarding/Onboarding"));
 const Notifications = lazy(() => import("./pages/notifications/Notifications"));
@@ -162,6 +163,7 @@ const App = () => {
               {/* private routes */}
               <Route element={<PrivateLayout />}>
                 <Route path="/welcome" element={<Onboarding />} />
+                <Route path="/recap" element={<Recap />} />
                 <Route path="/notifications" element={<Notifications />} />
                 <Route path="/account" element={<Account />} />
                 <Route path="/invite" element={<Referral />} />

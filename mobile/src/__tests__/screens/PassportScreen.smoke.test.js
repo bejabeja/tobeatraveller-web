@@ -17,9 +17,11 @@ jest.mock('react-i18next', () => ({
 jest.mock('@tobeatraveller/shared', () => {
   const badges = jest.requireActual('../../../../shared/src/utils/constants/badges.js');
   const countries = jest.requireActual('../../../../shared/src/utils/constants/countries.js');
+  const recap = jest.requireActual('../../../../shared/src/utils/recap.js');
   return {
     ...badges,
     ...countries,
+    ...recap,
     getUserPassport: jest.fn(),
     getMyPassportLeaderboard: jest.fn(),
     selectAuthUser: jest.fn(),

@@ -77,6 +77,7 @@ export const routeForPushData = (data) => {
   if (data.type === 'badge_earned' && data.actorId) {
     return { name: 'Passport', params: { userId: data.actorId, share: PASSPORT_SHARE_WITH_ACHIEVEMENTS } };
   }
+  if (data.type === 'recap_ready') return { name: 'Recap' };
   if (data.type === 'country_stamp' && data.actorId) {
     return { name: 'Passport', params: { userId: data.actorId, share: PASSPORT_SHARE_COUNTRIES } };
   }

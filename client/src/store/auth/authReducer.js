@@ -10,6 +10,11 @@ const hint = getHint();
 const initialState = {
     user: hint,
     isAuthenticated: !!hint,
+    // Whether private pages can decide yet. With the hint of a previous
+    // sign-in they trust it straight away (and move to log in if the session
+    // turns out to be gone); without it they wait for the session check
+    // instead of sending a signed-in user to log in.
+    isAuthChecked: !!hint,
     error: null,
     imageHeroLoaded: false,
     imageAuthLoaded: false,
@@ -23,6 +28,7 @@ const initialState = {
           ...state,
           user: action.payload,
           isAuthenticated: !!action.payload,
+          isAuthChecked: true,
           error: action.error || null,
         };
   
@@ -37,6 +43,7 @@ const initialState = {
           ...state,
           user: null,
           isAuthenticated: false,
+          isAuthChecked: true,
         };
   
       case "@auth/clearError":

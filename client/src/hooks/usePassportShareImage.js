@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { passportUrl, summarizePassportForSharing } from "@tobeatraveller/shared";
 import { getUserPassport } from "../services/passport";
-import { getMyReferralInfo } from "../services/referral";
+import { useReferralCode } from "./useReferralCode";
 import { createPassportShareImage } from "../utils/passportShareImage";
 
 const EMPTY_IMAGE = { blob: null, previewUrl: null, summary: null };
@@ -15,7 +15,7 @@ const EMPTY_IMAGE = { blob: null, previewUrl: null, summary: null };
 export const usePassportShareImage = (userId, enabled, { includePrivate = false, includeAchievements = false } = {}) => {
   const { t } = useTranslation();
   const [passportState, setPassportState] = useState({ passport: null, loading: false, error: false });
-  const [referral, setReferral] = useState({ code: null, settled: false });
+  const referral = useReferralCode(enabled);
   const [image, setImage] = useState(EMPTY_IMAGE);
   const [imageError, setImageError] = useState(false);
   const { passport } = passportState;
@@ -30,19 +30,6 @@ export const usePassportShareImage = (userId, enabled, { includePrivate = false,
       .catch(() => { if (!cancelled) setPassportState({ passport: null, loading: false, error: true }); });
     return () => { cancelled = true; };
   }, [userId, enabled, includePrivate]);
-
-  // Still loading until the code is known (or known to be unavailable), so
-  // nothing is shared with a link that doesn't credit the owner by accident.
-  // Without a code the link still works; it just doesn't credit them.
-  useEffect(() => {
-    if (!enabled) return undefined;
-    let cancelled = false;
-    setReferral({ code: null, settled: false });
-    getMyReferralInfo()
-      .then((info) => { if (!cancelled) setReferral({ code: info?.referralCode ?? null, settled: true }); })
-      .catch(() => { if (!cancelled) setReferral({ code: null, settled: true }); });
-    return () => { cancelled = true; };
-  }, [enabled]);
 
   useEffect(() => {
     setImage(EMPTY_IMAGE);

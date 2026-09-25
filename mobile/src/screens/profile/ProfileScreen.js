@@ -22,6 +22,7 @@ import { useOutbox } from '../../offline/useOutbox';
 import { WEB_URL } from '../../utils/config';
 import { useUserPassport } from '../../hooks/useUserPassport';
 import PassportShareModal from '../../components/PassportShareModal';
+import RecapBanner from '../../components/RecapBanner';
 
 const MAX_PASSPORT_CARD_FLAGS = 5;
 const COMPLETENESS_FIELDS = [
@@ -365,6 +366,7 @@ const ProfileScreen = ({ route, navigation }) => {
               <Ionicons name="chevron-forward" size={16} color="#b08a45" />
             </TouchableOpacity>
           )}
+          {isOwnProfile && <RecapBanner onPress={() => navigation.navigate('Recap')} />}
           {isOwnProfile && (
             <PassportShareModal
               userId={passportUserId}

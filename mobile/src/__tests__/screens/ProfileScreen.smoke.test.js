@@ -33,12 +33,14 @@ jest.mock('../../offline/useOutbox', () => ({
 jest.mock('@tobeatraveller/shared', () => {
   const badges = jest.requireActual('../../../../shared/src/utils/constants/badges.js');
   const countries = jest.requireActual('../../../../shared/src/utils/constants/countries.js');
+  const recap = jest.requireActual('../../../../shared/src/utils/recap.js');
   const { filterItineraries } = jest.requireActual('../../../../shared/src/utils/filterItineraries.js');
   const { COLORS } = jest.requireActual('../../../../shared/src/utils/constants/colors.js');
   return {
     COLORS,
     ...badges,
     ...countries,
+    ...recap,
     filterItineraries,
     checkIsLiked: jest.fn(),
     toggleLike: jest.fn(),

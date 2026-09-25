@@ -1,4 +1,5 @@
 import { BADGE_EMOJI, countryFlag, passportShareFlagLayout } from "@tobeatraveller/shared";
+import { canvasToPngBlob, roundedRect, spacedText } from "./canvasDrawing";
 
 // Instagram/WhatsApp story size, so the image fills the screen as a story.
 export const SHARE_IMAGE_WIDTH = 1080;
@@ -21,20 +22,6 @@ const INK_MUTED = "#8a8172";
 
 const TEXT_FONT = "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
 const EMOJI_FONT = "'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif";
-
-// Drawn by hand instead of context.roundRect, which Safari only has since 16.
-const roundedRect = (context, x, y, width, height, radius) => {
-  context.beginPath();
-  context.moveTo(x + radius, y);
-  context.arcTo(x + width, y, x + width, y + height, radius);
-  context.arcTo(x + width, y + height, x, y + height, radius);
-  context.arcTo(x, y + height, x, y, radius);
-  context.arcTo(x, y, x + width, y, radius);
-  context.closePath();
-};
-
-// Canvas has no letter-spacing on every browser yet, so it is spread by hand.
-const spacedText = (text) => text.split("").join(" ");
 
 // A paper panel with its title, and its items in a grid centred in the rest
 // of the panel (a last, incomplete row centred too, as on the mobile card).
@@ -137,7 +124,5 @@ export const createPassportShareImage = ({ summary, labels, displayUrl }) => {
   context.font = `600 36px ${TEXT_FONT}`;
   context.fillText(displayUrl, SHARE_IMAGE_WIDTH / 2, SHARE_IMAGE_HEIGHT - 110, SHARE_IMAGE_WIDTH - PADDING * 2);
 
-  return new Promise((resolve, reject) => {
-    canvas.toBlob(blob => (blob ? resolve(blob) : reject(new Error("Could not render the passport image"))), "image/png");
-  });
+  return canvasToPngBlob(canvas, "Could not render the passport image");
 };

@@ -71,6 +71,19 @@ describe('PushNotificationsService.sendNotificationPush()', () => {
         expect(sentMessages()[0].data).toMatchObject({ type: 'country_stamp', actorId: 'u1' });
     });
 
+    it('announces the yearly recap in each device language', async () => {
+        pushTokensRepository.findByUserId.mockResolvedValue([
+            device('ExponentPushToken[en]', 'en'), device('ExponentPushToken[es]', 'es'),
+        ]);
+
+        await service.sendNotificationPush({ userId: 'u1', actorId: 'u1', type: 'recap_ready' });
+
+        expect(sentMessages()).toEqual([
+            expect.objectContaining({ title: expect.stringContaining('year') }),
+            expect.objectContaining({ title: expect.stringContaining('año') }),
+        ]);
+    });
+
     it('falls back to English for a locale without translations', async () => {
         pushTokensRepository.findByUserId.mockResolvedValue([device('ExponentPushToken[a]', 'fr')]);
 

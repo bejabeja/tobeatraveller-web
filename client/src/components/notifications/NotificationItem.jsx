@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { BADGE_EMOJI, countryFlag, countryName, passportSharePath } from "@tobeatraveller/shared";
+import { recapPath, RECAP_SOURCES } from "../recap/RecapBanner";
 import { optimizedCloudinaryUrl } from "../../utils/cloudinaryUrl";
 import "./NotificationItem.scss";
 
@@ -19,6 +20,7 @@ const NotificationItem = ({ notification: n, onClick }) => {
     comment: () => <><strong>@{n.actor?.username}</strong>{others}{verb("commented")}<em>{n.itinerary?.title}</em></>,
     referral_reward: () => <>🎁 {t("notifications.referralRewardPrefix")}<strong>@{n.actor?.username}</strong> {t("notifications.referralRewardSuffix")}</>,
     badge_earned: () => <>{BADGE_EMOJI[n.badgeId]} {t("notifications.badgeEarned")}<strong>{t(`badges.${n.badgeId}.name`)}</strong></>,
+    recap_ready: () => <>{t("notifications.recapReady")}<strong>{t("notifications.recapReadyCta")}</strong></>,
     country_stamp: () => <>{t("notifications.countryStamp")}<strong>{countryFlag(n.countryCode)} {countryName(n.countryCode, i18n.language)}</strong></>,
   };
   const label = TYPE_LABELS[n.type]?.();
@@ -29,11 +31,13 @@ const NotificationItem = ({ notification: n, onClick }) => {
     ? `/profile/${n.actor?.id}`
     : n.type === "badge_earned" || n.type === "country_stamp"
       ? passportSharePath(n.actor?.id, { withAchievements: n.type === "badge_earned" })
-      : n.type === "referral_reward"
-        ? "/invite"
-        : n.itinerary?.id
-          ? `/itinerary/${n.itinerary.id}${n.type === "comment" && n.commentId ? `#comment-${n.commentId}` : ""}`
-          : "#";
+      : n.type === "recap_ready"
+        ? recapPath(RECAP_SOURCES.NOTIFICATION)
+        : n.type === "referral_reward"
+          ? "/invite"
+          : n.itinerary?.id
+            ? `/itinerary/${n.itinerary.id}${n.type === "comment" && n.commentId ? `#comment-${n.commentId}` : ""}`
+            : "#";
 
   return (
     <Link to={href} className={`notif-item${n.isRead ? "" : " notif-item--unread"}`} onClick={onClick}>

@@ -6,7 +6,7 @@ import { toDateOnlyString } from '../models/vanLogEntry.js';
 // don't count: they are usually plans or clones of someone else's trip,
 // not places the user has been. Countries whose name couldn't be matched
 // to an ISO code (country_code NULL) are left out.
-const COUNTRY_VISITS_SQL = `
+export const COUNTRY_VISITS_SQL = `
     SELECT location_country_code AS code, start_date AS visited_on, true AS is_public
     FROM itineraries WHERE user_id = $1 AND is_public = true AND location_country_code IS NOT NULL
     UNION ALL

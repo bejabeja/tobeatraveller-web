@@ -43,6 +43,7 @@ import TermsScreen from '../screens/legal/TermsScreen';
 import PrivacyPolicyScreen from '../screens/legal/PrivacyPolicyScreen';
 import PendingChangesScreen from '../screens/pendingChanges/PendingChangesScreen';
 import PassportScreen from '../screens/passport/PassportScreen';
+import RecapScreen from '../screens/recap/RecapScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -242,6 +243,8 @@ const Navigation = () => {
         <Stack.Screen name="Notifications" component={NotificationsScreen} />
         <Stack.Screen name="PendingChanges" component={PendingChangesScreen} />
         <Stack.Screen name="Passport" component={PassportScreen} />
+        {/* Full screen, like any stories viewer. */}
+        <Stack.Screen name="Recap" component={RecapScreen} options={{ presentation: 'fullScreenModal', animation: 'fade' }} />
         <Stack.Screen name="Onboarding" component={OnboardingScreen} options={{ gestureEnabled: false }} />
         <Stack.Screen name="Terms" component={TermsScreen} />
         <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />

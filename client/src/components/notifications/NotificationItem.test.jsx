@@ -28,4 +28,10 @@ describe("NotificationItem", () => {
     expect(screen.getByText("badges.explorer.name")).toBeInTheDocument();
     expect(screen.getByRole("link")).toHaveAttribute("href", "/profile/user-1/passport?share=achievements");
   });
+
+  it("opens the yearly recap", () => {
+    renderItem(notification({ type: "recap_ready" }));
+
+    expect(screen.getByRole("link")).toHaveAttribute("href", "/recap?from=notification");
+  });
 });

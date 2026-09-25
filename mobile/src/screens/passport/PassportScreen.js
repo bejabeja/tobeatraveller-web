@@ -9,6 +9,7 @@ import {
   countryFlag, countryName, passportStampStyle, selectAuthUser,
 } from '@tobeatraveller/shared';
 import CountryPickerModal from '../../components/CountryPickerModal';
+import RecapBanner from '../../components/RecapBanner';
 import PassportShareModal from '../../components/PassportShareModal';
 import { usePassportLeaderboard } from '../../hooks/usePassportLeaderboard';
 import { useUserPassport } from '../../hooks/useUserPassport';
@@ -231,6 +232,8 @@ const PassportScreen = ({ navigation, route }) => {
         <Text style={styles.errorText}>{t('passport.loadError')}</Text>
       ) : (
         <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}>
+          {isOwner && <RecapBanner onPress={() => navigation.navigate('Recap')} />}
+
           <View style={styles.cover}>
             <View style={styles.coverFrame} pointerEvents="none" />
             <Text style={styles.coverKicker}>{t('passport.title').toUpperCase()} · TOBEATRAVELLER</Text>

@@ -45,54 +45,6 @@
     }
   }
 
-  &__link-hint {
-    margin: 0;
-    padding: 0 1.5rem 1.25rem;
-    font-size: 0.75rem;
-    text-align: center;
-    color: var(--text-secondary-color);
-  }
-
-  &__in-app {
-    margin: 0 1.5rem 0.75rem;
-    padding: 0.6rem 0.75rem;
-    border-radius: 10px;
-    background: color-mix(in srgb, var(--primary-color) 10%, transparent);
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--text-color);
-  }
-
-  &__link {
-    padding: 0 1.5rem 1.25rem;
-
-    .passport-share__link-hint {
-      padding: 0 0 0.5rem;
-    }
-  }
-
-  &__link-row {
-    display: flex;
-    gap: 0.5rem;
-  }
-
-  &__link-input {
-    flex: 1;
-    min-width: 0;
-    padding: 0.45rem 0.6rem;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    font-size: 0.8rem;
-    color: var(--text-color);
-    background: var(--surface-color);
-  }
-
-  &__copy {
-    flex-shrink: 0;
-    width: auto;
-    white-space: nowrap;
-  }
-
   &__reward {
     margin: 0;
     padding: 0.5rem 0.75rem;

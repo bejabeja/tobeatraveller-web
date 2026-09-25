@@ -1,38 +1,26 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator, Alert, Modal, PixelRatio, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View,
+  ActivityIndicator, Alert, Modal, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View,
 } from 'react-native';
-import * as Clipboard from 'expo-clipboard';
-import * as Sharing from 'expo-sharing';
-import { captureRef } from 'react-native-view-shot';
 import { useTranslation } from 'react-i18next';
 import {
   BADGE_EMOJI, countryFlag, passportShareFlagLayout, passportUrl, summarizePassportForSharing,
 } from '@tobeatraveller/shared';
 import { useShareablePassport } from '../hooks/useShareablePassport';
+import {
+  captureAndShareStory, STORY_COLORS, storyPreviewHeight, storyScale as scale, StoryCardPreview,
+} from './StoryCard';
 import { WEB_URL } from '../utils/config';
 
-// Instagram/WhatsApp story size, so the image fills the screen as a story.
-const SHARE_IMAGE_WIDTH = 1080;
-const SHARE_IMAGE_HEIGHT = 1920;
 // Panel heights in image pixels, as on the web image.
 const COUNTRIES_PANEL_HEIGHT_ALONE = 1250;
 const COUNTRIES_PANEL_HEIGHT_WITH_ACHIEVEMENTS = 720;
 const STAMPS_PANEL_HEIGHT = 480;
-// The card is laid out at the image's real size (in logical pixels) so the
-// capture is sharp, and only shrunk on screen for the preview. A transform
-// on the wrapper doesn't reach the captured view itself.
-const CARD_WIDTH = SHARE_IMAGE_WIDTH / PixelRatio.get();
-const CARD_HEIGHT = SHARE_IMAGE_HEIGHT / PixelRatio.get();
 // Small enough for most of the dialog (preview, toggles, buttons) to fit on
 // a small phone such as an iPhone SE without scrolling.
 const PREVIEW_WIDTH = 196;
-const PREVIEW_SCALE = PREVIEW_WIDTH / CARD_WIDTH;
 
-const PASSPORT_NAVY = '#1b2a41';
-const PASSPORT_GOLD = '#d9a441';
-const PASSPORT_PAPER = '#fbf6ec';
-const PASSPORT_INK_MUTED = '#8a8172';
+const { GOLD: PASSPORT_GOLD, PAPER: PASSPORT_PAPER, INK_MUTED: PASSPORT_INK_MUTED } = STORY_COLORS;
 
 // A paper panel with its title and its content centred below it.
 const CardPanel = ({ title, height, children }) => (
@@ -50,7 +38,6 @@ const PassportShareCard = ({ summary, t }) => {
 
   return (
     <>
-      <View style={styles.cardFrame} pointerEvents="none" />
       <Text style={styles.cardKicker}>{`${t('passport.title')} · ToBeATraveller`.toUpperCase()}</Text>
       <Text style={styles.cardUsername} numberOfLines={1} adjustsFontSizeToFit>@{summary.username}</Text>
       <Text style={styles.cardStats}>
@@ -120,14 +107,10 @@ const PassportShareModal = ({ userId, visible, onClose, initialIncludeAchievemen
   const handleShare = async () => {
     setSharing(true);
     try {
-      const uri = await captureRef(cardRef, {
-        format: 'png', quality: 1, result: 'tmpfile', width: CARD_WIDTH, height: CARD_HEIGHT,
+      await captureAndShareStory(cardRef, {
+        link: passportUrl(WEB_URL, userId, referralCode),
+        dialogTitle: t('passport.shareTitle'),
       });
-      if (!(await Sharing.isAvailableAsync())) throw new Error('Sharing is not available');
-      // The share sheet only takes the image, so the link goes to the
-      // clipboard, ready to paste into an Instagram link sticker.
-      await Clipboard.setStringAsync(passportUrl(WEB_URL, userId, referralCode));
-      await Sharing.shareAsync(uri, { mimeType: 'image/png', UTI: 'public.png', dialogTitle: t('passport.shareTitle') });
     } catch {
       Alert.alert(t('passport.shareError'));
     } finally {
@@ -146,15 +129,9 @@ const PassportShareModal = ({ userId, visible, onClose, initialIncludeAchievemen
             {loading && !summary && <ActivityIndicator style={styles.loading} size="large" color="#E8743B" />}
             {error && <Text style={styles.errorText}>{t('passport.shareError')}</Text>}
             {summary && (
-              <View style={styles.preview}>
-                <View style={styles.previewScaler}>
-                  {/* collapsable={false}: Android would otherwise drop this view
-                      from the native tree and there would be nothing to capture. */}
-                  <View ref={cardRef} collapsable={false} style={styles.card}>
-                    <PassportShareCard summary={summary} t={t} />
-                  </View>
-                </View>
-              </View>
+              <StoryCardPreview cardRef={cardRef} previewWidth={PREVIEW_WIDTH}>
+                <PassportShareCard summary={summary} t={t} />
+              </StoryCardPreview>
             )}
 
             {/* Only when the link really carries their code: otherwise the promise would be false. */}
@@ -205,16 +182,12 @@ const PassportShareModal = ({ userId, visible, onClose, initialIncludeAchievemen
   );
 };
 
-// Card sizes are the web image's (client/src/utils/passportShareImage.js),
-// in image pixels, so both apps produce the same-looking image.
-const scale = (size) => (size * CARD_WIDTH) / SHARE_IMAGE_WIDTH;
-
 const styles = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)', alignItems: 'center', justifyContent: 'center', padding: 20 },
   panel: { width: '100%', maxWidth: 360, maxHeight: '100%', backgroundColor: '#fff', borderRadius: 16 },
   panelContent: { alignItems: 'center', padding: 20 },
   title: { alignSelf: 'stretch', fontSize: 17, fontWeight: '700', color: '#111827', marginBottom: 12 },
-  loading: { height: CARD_HEIGHT * PREVIEW_SCALE },
+  loading: { height: storyPreviewHeight(PREVIEW_WIDTH) },
   errorText: { marginVertical: 24, textAlign: 'center', color: '#b91c1c' },
   toggle: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', alignSelf: 'stretch', marginTop: 8 },
   toggleLabel: { flex: 1, fontSize: 14, color: '#111827' },
@@ -233,24 +206,6 @@ const styles = StyleSheet.create({
   shareBtnDisabled: { opacity: 0.5 },
   shareText: { fontSize: 15, fontWeight: '700', color: '#fff' },
 
-  preview: { width: PREVIEW_WIDTH, height: CARD_HEIGHT * PREVIEW_SCALE, overflow: 'hidden' },
-  // Scaling shrinks around the centre, so the card is first centred on the
-  // (smaller) preview box.
-  previewScaler: {
-    position: 'absolute',
-    left: (PREVIEW_WIDTH - CARD_WIDTH) / 2, top: (CARD_HEIGHT * PREVIEW_SCALE - CARD_HEIGHT) / 2,
-    width: CARD_WIDTH, height: CARD_HEIGHT,
-    transform: [{ scale: PREVIEW_SCALE }],
-  },
-  card: {
-    width: CARD_WIDTH, height: CARD_HEIGHT,
-    alignItems: 'center', backgroundColor: PASSPORT_NAVY,
-    paddingTop: scale(150), paddingHorizontal: scale(90),
-  },
-  cardFrame: {
-    position: 'absolute', top: scale(36), left: scale(36), right: scale(36), bottom: scale(36),
-    borderWidth: scale(3), borderColor: 'rgba(217, 164, 65, 0.45)', borderRadius: scale(48),
-  },
   cardKicker: { fontSize: scale(34), fontWeight: '600', letterSpacing: scale(8), color: PASSPORT_GOLD },
   // Stretched, not sized to the text, so adjustsFontSizeToFit has a width
   // to shrink a long username or link into.

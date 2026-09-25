@@ -1,0 +1,30 @@
+.recap-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin: 1rem 0;
+  padding: 0.9rem 1.1rem;
+  border-radius: 16px;
+  background: linear-gradient(120deg, #1b2a41, #34507a);
+  color: #fff;
+  text-decoration: none;
+  box-shadow: 0 6px 18px rgba(27, 42, 65, 0.25);
+
+  &:hover {
+    filter: brightness(1.08);
+  }
+
+  &__title {
+    width: auto;
+    font-weight: 800;
+  }
+
+  &__cta {
+    width: auto;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #d9a441;
+  }
+}

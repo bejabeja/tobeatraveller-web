@@ -15,7 +15,7 @@ import {
 import { UserRowSkeleton } from '../../components/Skeleton';
 import { shadow } from '../../utils/styles';
 
-const TYPE_ICON = { follow: '👤', like: '❤️', comment: '💬', referral_reward: '🎁', badge_earned: '🏅', country_stamp: '🛂' };
+const TYPE_ICON = { follow: '👤', like: '❤️', comment: '💬', referral_reward: '🎁', badge_earned: '🏅', country_stamp: '🛂', recap_ready: '🎉' };
 
 const NotificationsScreen = ({ navigation }) => {
   const { t, i18n } = useTranslation();
@@ -47,6 +47,7 @@ const NotificationsScreen = ({ navigation }) => {
     // Opens the passport ready to share: the moment they most want to show it off.
     else if (n.type === 'badge_earned') navigation.navigate('Passport', { userId: n.actor?.id, share: PASSPORT_SHARE_WITH_ACHIEVEMENTS });
     else if (n.type === 'country_stamp') navigation.navigate('Passport', { userId: n.actor?.id, share: PASSPORT_SHARE_COUNTRIES });
+    else if (n.type === 'recap_ready') navigation.navigate('Recap');
     else if (n.type === 'referral_reward') navigation.navigate('Referral');
     else if (n.itinerary?.id) {
       navigation.navigate('Itinerary', {
@@ -122,6 +123,8 @@ const NotificationsScreen = ({ navigation }) => {
                 <Text style={styles.text} numberOfLines={2}>
                   {n.type === 'badge_earned' ? (
                     <Text>{BADGE_EMOJI[n.badgeId]} {t('notifications.badgeEarned')}<Text style={styles.bold}>{t(`badges.${n.badgeId}.name`)}</Text></Text>
+                  ) : n.type === 'recap_ready' ? (
+                    <Text>{t('notifications.recapReady')}<Text style={styles.bold}>{t('notifications.recapReadyCta')}</Text></Text>
                   ) : n.type === 'country_stamp' ? (
                     <Text>{t('notifications.countryStamp')}<Text style={styles.bold}>{countryFlag(n.countryCode)} {countryName(n.countryCode, i18n.language)}</Text></Text>
                   ) : (

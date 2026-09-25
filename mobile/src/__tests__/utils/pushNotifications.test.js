@@ -146,6 +146,10 @@ describe('routeForPushData', () => {
       .toEqual({ name: 'Passport', params: { userId: 'u1', share: 'achievements' } });
   });
 
+  it('opens the yearly recap', () => {
+    expect(routeForPushData({ type: 'recap_ready', actorId: 'u1' })).toEqual({ name: 'Recap' });
+  });
+
   it("opens the user's own passport, ready to share, for a new country", () => {
     expect(routeForPushData({ type: 'country_stamp', actorId: 'u1' }))
       .toEqual({ name: 'Passport', params: { userId: 'u1', share: 'countries' } });

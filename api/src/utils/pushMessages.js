@@ -30,6 +30,10 @@ const PUSH_MESSAGES = {
             title: 'New badge',
             body: 'You earned a new badge. Tap to see it and share it.',
         }),
+        recap_ready: () => ({
+            title: 'Your year on the road is ready',
+            body: 'Countries, nights in the van, stamps... See your year and share it.',
+        }),
         country_stamp: ({ countryCode }) => ({
             title: 'New country in your passport',
             body: `${countryFlag(countryCode)} ${countryNameIn('en', countryCode)} is in your passport now. Tap to share it.`,
@@ -55,6 +59,10 @@ const PUSH_MESSAGES = {
         badge_earned: () => ({
             title: 'Nuevo badge',
             body: 'Has conseguido un badge nuevo. Tócalo para verlo y compartirlo.',
+        }),
+        recap_ready: () => ({
+            title: 'Tu año en ruta ya está listo',
+            body: 'Países, noches en la furgo, sellos... Descubre tu año y compártelo.',
         }),
         country_stamp: ({ countryCode }) => ({
             title: 'Nuevo país en tu pasaporte',
