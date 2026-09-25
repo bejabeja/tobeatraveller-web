@@ -1434,6 +1434,14 @@
     "title": "Achievements"
   },
   "passport": {
+    "startTitle": "Start your passport",
+    "startIntro": "Every country you visit and what you do in the app earn you stamps. Get your first one:",
+    "startTrip": "Publish a trip",
+    "startTripHint": "A trip that has started stamps its country and earns your first achievement.",
+    "startLog": "Log an expense or a diary entry",
+    "startLogHint": "With its location, it stamps the country (only you see it).",
+    "startDeclare": "Mark where you have been",
+    "startDeclareHint": "They show on your passport, though they earn no stamps.",
     "momentCountryTitle": "New country in my passport!",
     "momentBadgeTitle": "New stamp in my passport!",
     "momentShareTitle": "Share your new achievement",

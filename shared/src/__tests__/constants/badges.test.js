@@ -3,7 +3,7 @@ import { BADGES as API_BADGES } from '../../../../api/src/utils/badges.js';
 import { ISO_COUNTRY_CODES } from '../../../../api/src/utils/countryCodes.js';
 import {
     BADGE_EMOJI, BADGE_FAMILY_ORDER, PASSPORT_SHARE_LIMITS, PASSPORT_SHARE_STAMP_LAYOUT, passportShareFlagLayout, passportUrl, summarizePassport,
-    describePassportMoment, findPassportMoment, passportSharePath, signupUrlFromPassport, summarizePassportForSharing,
+    describePassportMoment, findPassportMoment, isPassportUnstarted, passportSharePath, signupUrlFromPassport, summarizePassportForSharing,
 } from '../../utils/constants/badges.js';
 import en from '../../locales/en.json';
 import es from '../../locales/es.json';
@@ -245,6 +245,27 @@ describe('PASSPORT_SHARE_STAMP_LAYOUT', () => {
         expect(fontSize).toBeLessThan(sealDiameter);
         expect(sealDiameter).toBeLessThan(900 / perRow);
         expect(sealDiameter).toBeLessThan(cellHeight);
+    });
+});
+
+describe('isPassportUnstarted', () => {
+    const passport = (overrides) => ({ countries: [], achievements: [{ id: 'explorer', earnedAt: null }], ...overrides });
+
+    it('is unstarted with no country and no stamp earned', () => {
+        expect(isPassportUnstarted(passport())).toBe(true);
+    });
+
+    it('is started once a country is stamped', () => {
+        expect(isPassportUnstarted(passport({ countries: [{ code: 'PT' }] }))).toBe(false);
+    });
+
+    it('is started once any stamp is earned, even without countries', () => {
+        expect(isPassportUnstarted(passport({ achievements: [{ id: 'popular', earnedAt: '2026-09-01' }] }))).toBe(false);
+    });
+
+    // They show on the passport but give no stamp: the first stamp is still to get.
+    it('is still unstarted with only countries marked by hand', () => {
+        expect(isPassportUnstarted(passport({ declaredCountries: [{ code: 'PT' }] }))).toBe(true);
     });
 });
 

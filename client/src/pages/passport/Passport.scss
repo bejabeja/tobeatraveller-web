@@ -52,6 +52,113 @@ $passport-ink-muted: #8a8172;
     animation: passport-shimmer 1.4s infinite;
   }
 
+  // ─── First steps (owner, before the first stamp) ────────────────────
+  &__start {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    border: 2px dashed $passport-gold;
+    border-radius: 16px;
+    background: $passport-paper;
+  }
+
+  &__start-title {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: $passport-navy;
+  }
+
+  &__start-intro {
+    margin: 0.35rem 0 1rem;
+    font-size: 0.9rem;
+    color: $passport-ink-muted;
+  }
+
+  &__start-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: start-step;
+  }
+
+  &__start-step {
+    counter-increment: start-step;
+  }
+
+  // Each step reads as a numbered stamp slot: the whole row is the action.
+  &__start-action {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    width: 100%;
+    padding: 0.75rem 0.9rem 0.75rem 3rem;
+    border: 1px solid rgba($passport-gold, 0.45);
+    border-radius: 12px;
+    background: #fff;
+    font: inherit;
+    text-align: left;
+    color: $passport-navy;
+    text-decoration: none;
+    cursor: pointer;
+
+    &::before {
+      content: counter(start-step);
+      position: absolute;
+      top: 0.75rem;
+      left: 0.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.5rem;
+      height: 1.5rem;
+      border: 2px solid $passport-gold;
+      border-radius: 50%;
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: $passport-gold;
+    }
+
+    strong {
+      font-size: 0.95rem;
+    }
+
+    span {
+      font-size: 0.82rem;
+      color: $passport-ink-muted;
+    }
+
+    &:hover:not(&--static),
+    &:focus-visible {
+      border-color: $passport-gold;
+    }
+
+    &--static {
+      cursor: default;
+    }
+  }
+
+  &__start-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.4rem;
+
+    a {
+      width: auto;
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      background: $passport-navy;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #fff;
+      text-decoration: none;
+    }
+  }
+
   &__cover {
     position: relative;
     padding: 2rem 1.75rem;

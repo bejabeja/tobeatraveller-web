@@ -1434,6 +1434,14 @@
     "title": "Logros"
   },
   "passport": {
+    "startTitle": "Empieza tu pasaporte",
+    "startIntro": "Cada país en el que estés y lo que hagas en la app te dan sellos. Consigue el primero:",
+    "startTrip": "Publica un viaje",
+    "startTripHint": "Un viaje ya empezado sella su país y te da tu primer logro.",
+    "startLog": "Apunta un gasto o una entrada del diario",
+    "startLogHint": "Con su ubicación, sella el país (solo lo ves tú).",
+    "startDeclare": "Marca dónde has estado",
+    "startDeclareHint": "Aparecen en tu pasaporte, aunque no dan sellos.",
     "momentCountryTitle": "¡Nuevo país en mi pasaporte!",
     "momentBadgeTitle": "¡Nuevo sello en mi pasaporte!",
     "momentShareTitle": "Comparte tu nuevo logro",

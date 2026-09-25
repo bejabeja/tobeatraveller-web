@@ -7,6 +7,7 @@ export const ANALYTICS_EVENTS = Object.freeze({
     PASSPORT_INVITE_CLICKED: 'passport_invite_clicked',
     PASSPORT_COUNTRIES_DECLARED: 'passport_countries_declared',
     PASSPORT_LEADERBOARD_CLICKED: 'passport_leaderboard_clicked',
+    PASSPORT_START_STEP_CLICKED: 'passport_start_step_clicked',
     ACHIEVEMENT_CELEBRATED: 'achievement_celebrated',
     RECAP_OPENED: 'recap_opened',
     RECAP_SHARED: 'recap_shared',
@@ -24,6 +25,14 @@ export const RECAP_SOURCES = Object.freeze({
     PASSPORT: 'passport',
     PROFILE: 'profile',
     NOTIFICATION: 'notification',
+});
+
+// The ways to get a first stamp, offered on an unstarted passport.
+export const PASSPORT_START_STEPS = Object.freeze({
+    TRIP: 'trip',
+    VAN_LOG: 'van_log',
+    DIARY: 'diary',
+    DECLARE: 'declare',
 });
 
 export const PASSPORT_SHARE_METHODS = Object.freeze({

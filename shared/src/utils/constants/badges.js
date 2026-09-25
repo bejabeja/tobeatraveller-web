@@ -147,6 +147,12 @@ export const passportSharePath = (userId, { withAchievements = false, moment = n
     return `${base}${withAchievements ? PASSPORT_SHARE_WITH_ACHIEVEMENTS : PASSPORT_SHARE_COUNTRIES}`;
 };
 
+// Nothing earned yet (countries marked by hand give no stamp): the owner is
+// shown how to get the first one.
+export const isPassportUnstarted = (passport) => (
+    passport.countries.length === 0 && !passport.achievements.some(achievement => achievement.earnedAt)
+);
+
 export const MOMENT_KINDS = Object.freeze({ COUNTRY: 'country', BADGE: 'badge' });
 
 // The single new country or badge a notification pointed at, as the owner

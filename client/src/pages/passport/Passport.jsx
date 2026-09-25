@@ -7,7 +7,7 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import {
   BADGE_EMOJI, BADGE_FAMILY_ORDER, MOMENT_KINDS, findPassportMoment, PASSPORT_MOMENT_BADGE_PARAM, PASSPORT_MOMENT_COUNTRY_PARAM, PASSPORT_SHARE_MOMENT,
   PASSPORT_SHARE_PARAM, PASSPORT_SHARE_WITH_ACHIEVEMENTS,
-  countryFlag, countryName, passportStampStyle, signupUrlFromPassport,
+  countryFlag, countryName, isPassportUnstarted, passportStampStyle, signupUrlFromPassport,
 } from "@tobeatraveller/shared";
 import CountryPickerDialog from "../../components/passport/CountryPickerDialog";
 import MomentShareDialog from "../../components/passport/MomentShareDialog";
@@ -22,7 +22,7 @@ import { selectAuthUser } from "../../store/auth/authSelectors";
 import { trackEvent } from "../../utils/analytics";
 import { optimizedCloudinaryUrl } from "../../utils/cloudinaryUrl";
 import { generateAvatar } from "../../utils/constants/constants";
-import { ANALYTICS_EVENTS, PASSPORT_SHARE_SOURCES, PASSPORT_VIEWERS } from "../../utils/analyticsEvents";
+import { ANALYTICS_EVENTS, PASSPORT_SHARE_SOURCES, PASSPORT_START_STEPS, PASSPORT_VIEWERS } from "../../utils/analyticsEvents";
 import "./Passport.scss";
 
 // "2026-03-01" is a calendar date, not an instant: parsed as local so it
@@ -201,6 +201,47 @@ const PassportLeaderboard = ({ t }) => {
           })}
         </ol>
       )}
+    </section>
+  );
+};
+
+// Shown to the owner until their first stamp: how to get it, and honest
+// about which way earns one (marked countries show but don't).
+const PassportStart = ({ onDeclare, t }) => {
+  const track = (step) => trackEvent(ANALYTICS_EVENTS.PASSPORT_START_STEP_CLICKED, { step });
+  const declare = () => {
+    track(PASSPORT_START_STEPS.DECLARE);
+    onDeclare();
+  };
+
+  return (
+    <section className="passport__start" aria-labelledby="passport-start">
+      <h2 id="passport-start" className="passport__start-title">{t("passport.startTitle")}</h2>
+      <p className="passport__start-intro">{t("passport.startIntro")}</p>
+      <ol className="passport__start-steps">
+        <li className="passport__start-step">
+          <Link to="/create-itinerary" className="passport__start-action" onClick={() => track(PASSPORT_START_STEPS.TRIP)}>
+            <strong>{t("passport.startTrip")}</strong>
+            <span>{t("passport.startTripHint")}</span>
+          </Link>
+        </li>
+        <li className="passport__start-step">
+          <div className="passport__start-action passport__start-action--static">
+            <strong>{t("passport.startLog")}</strong>
+            <span>{t("passport.startLogHint")}</span>
+            <div className="passport__start-links">
+              <Link to="/van-log" onClick={() => track(PASSPORT_START_STEPS.VAN_LOG)}>{t("nav.vanLog")}</Link>
+              <Link to="/life-diary" onClick={() => track(PASSPORT_START_STEPS.DIARY)}>{t("nav.lifeDiary")}</Link>
+            </div>
+          </div>
+        </li>
+        <li className="passport__start-step">
+          <button type="button" className="passport__start-action" onClick={declare}>
+            <strong>{t("passport.startDeclare")}</strong>
+            <span>{t("passport.startDeclareHint")}</span>
+          </button>
+        </li>
+      </ol>
     </section>
   );
 };
@@ -396,6 +437,7 @@ const Passport = () => {
         </p>
       </header>
 
+      {isOwner && isPassportUnstarted(passport) && <PassportStart onDeclare={() => setIsDeclaredOpen(true)} t={t} />}
       {passport.comparison && <CountriesInCommon comparison={passport.comparison} t={t} />}
       {!isOwner && <PassportInvite authUserId={authUser?.id} referralCode={referralCode} t={t} />}
 

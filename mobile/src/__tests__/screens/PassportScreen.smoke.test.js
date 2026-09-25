@@ -43,7 +43,10 @@ jest.mock('../../components/PassportShareModal', () => {
   );
 });
 
+jest.mock('../../utils/analytics', () => ({ trackEvent: jest.fn() }));
+
 import { getMyPassportLeaderboard, getUserPassport, selectAuthUser } from '@tobeatraveller/shared';
+import { trackEvent } from '../../utils/analytics';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import PassportScreen from '../../screens/passport/PassportScreen';
@@ -83,6 +86,41 @@ it('shows earned and locked stamps with progress, and a stamp per visited countr
   expect(screen.getByText('badges.adventurer.goal')).toBeTruthy();
   expect(screen.getByText('3 / 5')).toBeTruthy();
   expect(screen.getByText('ESPAÑA')).toBeTruthy();
+});
+
+// A new user's passport shows them how to get their first stamp.
+describe('before the first stamp', () => {
+  const UNSTARTED = {
+    owner: { id: 'user-1', username: 'jane', avatarUrl: null },
+    achievements: [{ id: 'explorer', family: 'trips', threshold: 1, isPrivate: false, earnedAt: null, current: 0 }],
+    countries: [],
+  };
+
+  it('takes the owner to publish a trip, log an expense or write in the diary, recording the step', async () => {
+    getUserPassport.mockResolvedValue(UNSTARTED);
+    const navigation = { goBack: jest.fn(), setParams: jest.fn(), push: jest.fn(), navigate: jest.fn() };
+    await renderScreen({}, navigation);
+
+    expect(screen.getByText('passport.startTitle')).toBeTruthy();
+    fireEvent.press(screen.getByText('passport.startTrip'));
+    fireEvent.press(screen.getByText('nav.vanLog'));
+    fireEvent.press(screen.getByText('nav.lifeDiary'));
+
+    expect(navigation.navigate.mock.calls.map(([name]) => name)).toEqual(['CreateItinerary', 'VanLog', 'LifeDiary']);
+    expect(trackEvent).toHaveBeenCalledWith('passport_start_step_clicked', { step: 'trip' });
+  });
+
+  it('is gone once they have a stamp, and never shown on someone else', async () => {
+    getUserPassport.mockResolvedValue({ ...UNSTARTED, countries: [{ code: 'ES', firstVisitedOn: '2026-03-01', isPrivate: false }] });
+    await renderScreen();
+    expect(screen.queryByText('passport.startTitle')).toBeNull();
+
+    screen.unmount();
+    selectAuthUser.mockReturnValue({ id: 'someone-else' });
+    getUserPassport.mockResolvedValue(UNSTARTED);
+    await renderScreen();
+    expect(screen.queryByText('passport.startTitle')).toBeNull();
+  });
 });
 
 it('says there are no public countries yet when viewing someone else', async () => {

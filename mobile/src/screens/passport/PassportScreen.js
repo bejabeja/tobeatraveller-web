@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
   ANALYTICS_EVENTS, BADGE_EMOJI, BADGE_FAMILY_ORDER, MOMENT_KINDS, PASSPORT_SHARE_MOMENT, PASSPORT_SHARE_SOURCES,
-  PASSPORT_SHARE_WITH_ACHIEVEMENTS, PASSPORT_VIEWERS, RECAP_SOURCES,
+  PASSPORT_SHARE_WITH_ACHIEVEMENTS, PASSPORT_START_STEPS, PASSPORT_VIEWERS, RECAP_SOURCES, isPassportUnstarted,
   findPassportMoment,
   countryFlag, countryName, passportStampStyle, selectAuthUser,
 } from '@tobeatraveller/shared';
@@ -101,6 +101,52 @@ const MAX_COMMON_FLAGS = 12;
 
 // For a member looking at someone else's passport: what they share, and how
 // many of theirs are still to visit, as a friendly challenge.
+// Shown to the owner until their first stamp: how to get it, and honest
+// about which way earns one (marked countries show but don't).
+const PassportStart = ({ navigation, onDeclare, t }) => {
+  const go = (step, screen) => {
+    trackEvent(ANALYTICS_EVENTS.PASSPORT_START_STEP_CLICKED, { step });
+    if (screen) navigation.navigate(screen);
+    else onDeclare();
+  };
+
+  return (
+    <View style={styles.start}>
+      <Text style={styles.startTitle} accessibilityRole="header">{t('passport.startTitle')}</Text>
+      <Text style={styles.startIntro}>{t('passport.startIntro')}</Text>
+      <TouchableOpacity style={styles.startStep} onPress={() => go(PASSPORT_START_STEPS.TRIP, 'CreateItinerary')} accessibilityRole="button">
+        <View style={styles.startNumber}><Text style={styles.startNumberText}>1</Text></View>
+        <View style={styles.startText}>
+          <Text style={styles.startStepTitle}>{t('passport.startTrip')}</Text>
+          <Text style={styles.startStepHint}>{t('passport.startTripHint')}</Text>
+        </View>
+      </TouchableOpacity>
+      <View style={styles.startStep}>
+        <View style={styles.startNumber}><Text style={styles.startNumberText}>2</Text></View>
+        <View style={styles.startText}>
+          <Text style={styles.startStepTitle}>{t('passport.startLog')}</Text>
+          <Text style={styles.startStepHint}>{t('passport.startLogHint')}</Text>
+          <View style={styles.startLinks}>
+            <TouchableOpacity style={styles.startLink} onPress={() => go(PASSPORT_START_STEPS.VAN_LOG, 'VanLog')} accessibilityRole="button">
+              <Text style={styles.startLinkText}>{t('nav.vanLog')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.startLink} onPress={() => go(PASSPORT_START_STEPS.DIARY, 'LifeDiary')} accessibilityRole="button">
+              <Text style={styles.startLinkText}>{t('nav.lifeDiary')}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+      <TouchableOpacity style={styles.startStep} onPress={() => go(PASSPORT_START_STEPS.DECLARE)} accessibilityRole="button">
+        <View style={styles.startNumber}><Text style={styles.startNumberText}>3</Text></View>
+        <View style={styles.startText}>
+          <Text style={styles.startStepTitle}>{t('passport.startDeclare')}</Text>
+          <Text style={styles.startStepHint}>{t('passport.startDeclareHint')}</Text>
+        </View>
+      </TouchableOpacity>
+    </View>
+  );
+};
+
 const CountriesInCommon = ({ comparison, t }) => {
   const { inCommon, onlyTheirs } = comparison;
   // Nothing to compare against: "you've been to all of theirs" would be nonsense.
@@ -284,6 +330,9 @@ const PassportScreen = ({ navigation, route }) => {
             </Text>
           </View>
 
+          {isOwner && isPassportUnstarted(passport) && (
+            <PassportStart navigation={navigation} onDeclare={() => setIsDeclaredOpen(true)} t={t} />
+          )}
           {passport.comparison && <CountriesInCommon comparison={passport.comparison} t={t} />}
 
           <View style={styles.section}>
@@ -409,6 +458,29 @@ const styles = StyleSheet.create({
   coverKicker: { fontSize: 10, letterSpacing: 2.5, color: PASSPORT_GOLD, opacity: 0.85 },
   coverTitle: { marginTop: 8, fontSize: 22, fontWeight: '800', color: PASSPORT_GOLD, textAlign: 'center' },
   coverStats: { marginTop: 4, fontSize: 13, color: 'rgba(255, 255, 255, 0.85)', textAlign: 'center' },
+
+  start: {
+    gap: 10, padding: 16, borderRadius: 18,
+    backgroundColor: PASSPORT_PAPER, borderWidth: 2, borderStyle: 'dashed', borderColor: PASSPORT_GOLD,
+  },
+  startTitle: { fontSize: 17, fontWeight: '800', color: PASSPORT_NAVY },
+  startIntro: { fontSize: 13, lineHeight: 18, color: PASSPORT_INK_MUTED },
+  startStep: {
+    flexDirection: 'row', gap: 12, padding: 12, borderRadius: 12,
+    backgroundColor: '#fff', borderWidth: 1, borderColor: 'rgba(217, 164, 65, 0.45)',
+  },
+  // A View, not a Text: iOS doesn't round a Text's border reliably.
+  startNumber: {
+    width: 24, height: 24, borderRadius: 12, borderWidth: 2, borderColor: PASSPORT_GOLD,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  startNumberText: { fontSize: 12, fontWeight: '800', color: PASSPORT_GOLD },
+  startText: { flex: 1, gap: 2 },
+  startStepTitle: { fontSize: 15, fontWeight: '700', color: PASSPORT_NAVY },
+  startStepHint: { fontSize: 12, lineHeight: 17, color: PASSPORT_INK_MUTED },
+  startLinks: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 6 },
+  startLink: { paddingVertical: 6, paddingHorizontal: 12, borderRadius: 999, backgroundColor: PASSPORT_NAVY },
+  startLinkText: { fontSize: 12, fontWeight: '700', color: '#fff' },
 
   section: {
     padding: 16, borderRadius: 18,

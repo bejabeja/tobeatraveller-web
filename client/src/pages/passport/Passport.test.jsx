@@ -67,6 +67,51 @@ describe("Passport page", () => {
     mockAuthUser = { id: "user-1" };
   });
 
+  // A new user's passport shows them how to get their first stamp, not just "no countries yet".
+  describe("before the first stamp", () => {
+    const UNSTARTED = { ...PASSPORT, countries: [], achievements: PASSPORT.achievements.map(achievement => ({ ...achievement, earnedAt: null })) };
+
+    it("shows the owner the ways to get their first stamp", async () => {
+      getUserPassport.mockResolvedValue(UNSTARTED);
+
+      renderPassport();
+
+      expect(await screen.findByRole("heading", { name: "passport.startTitle" })).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: /passport.startTrip/ })).toHaveAttribute("href", "/create-itinerary");
+      expect(screen.getByRole("link", { name: "nav.vanLog" })).toHaveAttribute("href", "/van-log");
+      expect(screen.getByRole("link", { name: "nav.lifeDiary" })).toHaveAttribute("href", "/life-diary");
+    });
+
+    it("opens the country picker to mark where they have been, and records which step they chose", async () => {
+      getUserPassport.mockResolvedValue(UNSTARTED);
+      renderPassport();
+
+      fireEvent.click(await screen.findByRole("button", { name: /passport.startDeclare/ }));
+
+      expect(await screen.findByRole("dialog")).toBeInTheDocument();
+      expect(trackEvent).toHaveBeenCalledWith("passport_start_step_clicked", { step: "declare" });
+    });
+
+    it("disappears once they have a stamp", async () => {
+      getUserPassport.mockResolvedValue(PASSPORT);
+
+      renderPassport();
+
+      await screen.findByText("passport.countries");
+      expect(screen.queryByRole("heading", { name: "passport.startTitle" })).not.toBeInTheDocument();
+    });
+
+    it("is never shown on someone else's passport", async () => {
+      mockAuthUser = { id: "someone-else" };
+      getUserPassport.mockResolvedValue(UNSTARTED);
+
+      renderPassport();
+
+      await screen.findByText("passport.countries");
+      expect(screen.queryByRole("heading", { name: "passport.startTitle" })).not.toBeInTheDocument();
+    });
+  });
+
   it("shows the owner their stamps, locked ones with progress, and their countries", async () => {
     getUserPassport.mockResolvedValue(PASSPORT);
 
