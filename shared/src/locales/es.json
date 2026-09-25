@@ -1218,7 +1218,7 @@
       "<strong>Cloudinary</strong>: usado para almacenar y servir fotos de perfil e imágenes de portada de itinerarios. Las imágenes que subes se almacenan en los servidores de Cloudinary. Consulta su <a href=\"https://cloudinary.com/privacy\">Política de Privacidad</a>.",
       "<strong>Geoapify</strong>: usado para buscar destinos y lugares de interés al crear un itinerario. Las búsquedas (nombres de lugares) se envían a su API. Consulta su <a href=\"https://www.geoapify.com/privacy-policy\">Política de Privacidad</a>.",
       "<strong>Generación de itinerarios con IA</strong>: cuando usas la función \"Generar con IA\", el destino, la duración del viaje y la categoría se envían a un servicio de IA para generar sugerencias de lugares. No se incluye información personal identificable en estas peticiones.",
-      "<strong>PostHog</strong>: usado para analítica de producto (qué páginas se usan, ubicación aproximada, tipo de dispositivo), solo si aceptas las cookies analíticas en el aviso de cookies. La grabación de sesión está desactivada. Consulta su <a href=\"https://posthog.com/privacy\">Política de Privacidad</a>.",
+      "<strong>PostHog</strong>: usado para analítica de producto (qué páginas se usan, ubicación aproximada, tipo de dispositivo), solo si aceptas las cookies analíticas en el aviso de cookies de la web o la medición de uso en el aviso de la app. La grabación de sesión está desactivada. Consulta su <a href=\"https://posthog.com/privacy\">Política de Privacidad</a>.",
       "<strong>Servicio push de Expo</strong> (Expo, junto con Apple Push Notification service y Firebase Cloud Messaging): usado para entregar notificaciones push en la app móvil. Recibe el token push de tu dispositivo y el texto de la notificación (quién interactuó y el título del viaje, nunca el contenido de los comentarios). Consulta su <a href=\"https://expo.dev/privacy\">Política de Privacidad</a>."
     ],
     "s5Title": "5. Conservación de datos",
@@ -1238,8 +1238,8 @@
     "s7Title": "7. Cookies y almacenamiento de sesión",
     "s7Body": [
       "Usamos una única cookie de sesión para mantener tu sesión iniciada. Esta cookie es estrictamente necesaria para el funcionamiento del servicio y no requiere consentimiento según las normas de ePrivacy.",
-      "Si aceptas las cookies analíticas en el aviso que aparece en tu primera visita, también cargamos PostHog para recopilar los datos analíticos descritos en la sección 4. Nada relacionado con analítica se carga hasta que aceptas, y podés cambiar tu elección en cualquier momento desde \"Preferencias de cookies\" en el pie de página. No usamos cookies publicitarias ni píxeles de seguimiento.",
-      "En mobile, los tokens de autenticación se almacenan en el almacenamiento seguro del dispositivo en vez de en cookies."
+      "Si aceptas las cookies analíticas en el aviso que aparece en tu primera visita, también cargamos PostHog para recopilar los datos analíticos descritos en la sección 4. Nada relacionado con analítica se carga hasta que aceptas, y puedes cambiar tu elección en cualquier momento desde \"Preferencias de cookies\" en el pie de página. No usamos cookies publicitarias ni píxeles de seguimiento.",
+      "En la app, los tokens de autenticación se almacenan en el almacenamiento seguro del dispositivo en vez de en cookies. La app pregunta la primera vez si puede medir cómo se usa; nada relacionado con analítica se carga hasta que aceptas, y puedes cambiarlo cuando quieras en Ajustes."
     ],
     "s8Title": "8. Seguridad de los datos",
     "s8Body": "Las contraseñas se cifran con un algoritmo seguro antes de almacenarse. Todos los datos se transmiten mediante HTTPS. Aplicamos medidas técnicas y organizativas razonables para proteger tus datos, aunque ningún sistema está completamente exento de riesgo.",
@@ -1262,6 +1262,11 @@
     "getInTouch": "Ponerse en contacto",
     "rightsReserved": "Todos los derechos reservados.",
     "cookiePreferences": "Preferencias de cookies"
+  },
+  "analyticsConsent": {
+    "description": "Nos gustaría medir cómo se usa ToBeATraveller para mejorarla, nunca para publicidad ni para vender tus datos. No medimos nada a menos que nos digas que está bien.",
+    "setting": "Ayudar a mejorar la app",
+    "settingHint": "Mide cómo se usa la app, solo con tu permiso. Nunca para publicidad ni para vender tus datos."
   },
   "cookieConsent": {
     "title": "Preferencias de cookies",

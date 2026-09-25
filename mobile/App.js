@@ -18,6 +18,8 @@ import { API_URL } from './src/utils/config';
 import { usePushNotificationReceived, usePushTokenRegistration } from './src/hooks/usePushNotifications';
 import { useOutboxSync } from './src/offline/useOutbox';
 import { useNetworkStatus } from './src/hooks/useNetworkStatus';
+import { useAnalyticsConsent } from './src/hooks/useAnalyticsConsent';
+import { identifyUser } from './src/utils/analytics';
 
 setApiUrl(API_URL);
 
@@ -56,6 +58,13 @@ function AppContent() {
   useEffect(() => {
     dispatch(initAuthUser());
   }, [dispatch]);
+
+  // Only does something once the person agreed to analytics, so it runs
+  // again when they do.
+  const { consent: analyticsConsent } = useAnalyticsConsent();
+  useEffect(() => {
+    if (isAuthenticated && authUser?.id) identifyUser(authUser);
+  }, [isAuthenticated, authUser?.id, analyticsConsent]);
 
   // After login, fetch full profile (includes followers/following/totalItineraries)
   useEffect(() => {

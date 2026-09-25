@@ -8,7 +8,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
-  BADGE_EMOJI, RECAP_SLIDE_DURATION_MS, RECAP_SLIDES, countryFlag, countryName, passportUrl, recapSlides,
+  ANALYTICS_EVENTS, BADGE_EMOJI, PASSPORT_SHARE_METHODS, RECAP_SLIDE_DURATION_MS, RECAP_SLIDES, countryFlag, countryName,
+  passportUrl, recapSlides,
   selectAuthUser, summarizeRecapForSharing,
 } from '@tobeatraveller/shared';
 import {
@@ -16,6 +17,7 @@ import {
 } from '../../components/StoryCard';
 import { useRecap } from '../../hooks/useRecap';
 import { useReferralCode } from '../../hooks/useReferralCode';
+import { trackEvent } from '../../utils/analytics';
 import { WEB_URL } from '../../utils/config';
 
 const MAX_SLIDE_FLAGS = 24;
@@ -166,7 +168,7 @@ const useAutoAdvance = () => {
 // The yearly recap as full-screen stories: they move on by themselves as the
 // bar at the top fills, hold to pause, tap the right or left half to go
 // through them, and share the last one. Only its owner ever sees it.
-const RecapScreen = ({ navigation }) => {
+const RecapScreen = ({ navigation, route }) => {
   const { t, i18n } = useTranslation();
   const insets = useSafeAreaInsets();
   const owner = useSelector(selectAuthUser);
@@ -185,6 +187,14 @@ const RecapScreen = ({ navigation }) => {
   const [includePrivate, setIncludePrivate] = useState(false);
   const hasPrivateCountries = (recap?.countries?.privateCodes?.length ?? 0) > 0;
   useEffect(() => { if (!isShareSlide) setIncludePrivate(false); }, [isShareSlide]);
+
+  // Once per opening, with where it was opened from, as on the web.
+  const trackedOpenRef = useRef(false);
+  useEffect(() => {
+    if (!recap?.available || trackedOpenRef.current) return;
+    trackedOpenRef.current = true;
+    trackEvent(ANALYTICS_EVENTS.RECAP_OPENED, { has_activity: recap.hasActivity, source: route?.params?.from ?? null });
+  }, [recap, route?.params?.from]);
 
   const next = () => setIndex(current => Math.min(current + 1, slides.length - 1));
   const previous = () => setIndex(current => Math.max(current - 1, 0));
@@ -228,6 +238,7 @@ const RecapScreen = ({ navigation }) => {
         link: passportUrl(WEB_URL, owner.id, referral.code),
         dialogTitle: t('recap.shareTitle'),
       });
+      trackEvent(ANALYTICS_EVENTS.RECAP_SHARED, { method: PASSPORT_SHARE_METHODS.SHARE_SHEET, with_private: includePrivate });
     } catch {
       Alert.alert(t('passport.shareError'));
     } finally {

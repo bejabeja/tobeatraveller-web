@@ -4,6 +4,7 @@ jest.mock('react-i18next', () => {
 });
 
 jest.mock('@tobeatraveller/shared', () => ({
+  ...jest.requireActual('../../../../shared/src/utils/analyticsEvents.js'),
   ...jest.requireActual('../../../../shared/src/utils/constants/badges.js'),
   ...jest.requireActual('../../../../shared/src/utils/constants/countries.js'),
 }));

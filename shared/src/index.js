@@ -66,4 +66,5 @@ export * from './utils/constants/badges.js';
 export * from './utils/constants/countries.js';
 export * from './utils/recap.js';
 export * from './utils/celebrations.js';
+export * from './utils/analyticsEvents.js';
 export * from './utils/preloadImg.js';

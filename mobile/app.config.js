@@ -25,6 +25,7 @@ module.exports = ({ config }) => ({
   web: { favicon: './assets/favicon.png' },
   plugins: [
     'expo-sharing',
+    'expo-localization',
     'expo-notifications',
     ['expo-location', {
       locationWhenInUsePermission: 'Allow To Be a Traveller to use your location to fill in nearby places.',
@@ -35,6 +36,8 @@ module.exports = ({ config }) => ({
     apiUrl: process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000',
     webUrl: process.env.EXPO_PUBLIC_WEB_URL || 'http://localhost:5173',
     geoapifyKey: process.env.EXPO_PUBLIC_GEOAPIFY_KEY || '',
+    posthogKey: process.env.EXPO_PUBLIC_POSTHOG_KEY || '',
+    posthogHost: process.env.EXPO_PUBLIC_POSTHOG_HOST || '',
   },
   owner: 'mirabaix',
 });

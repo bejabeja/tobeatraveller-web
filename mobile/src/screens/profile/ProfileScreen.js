@@ -12,7 +12,7 @@ import {
   BADGE_EMOJI, countryFlag, filterItineraries, summarizePassport,
   followUser, getItinerariesByUserId, getUserById, getUserFavorites, logoutUser,
   selectAuthUser, selectIsAuthenticated, selectMe, selectMyItineraries,
-  setUserInfo, unfollowUser,
+  PASSPORT_SHARE_SOURCES, RECAP_SOURCES, setUserInfo, unfollowUser,
 } from '@tobeatraveller/shared';
 import ItineraryCard from '../../components/ItineraryCard';
 import { ItineraryCardSkeleton, ProfileSkeleton } from '../../components/Skeleton';
@@ -366,12 +366,13 @@ const ProfileScreen = ({ route, navigation }) => {
               <Ionicons name="chevron-forward" size={16} color="#b08a45" />
             </TouchableOpacity>
           )}
-          {isOwnProfile && <RecapBanner onPress={() => navigation.navigate('Recap')} />}
+          {isOwnProfile && <RecapBanner onPress={() => navigation.navigate('Recap', { from: RECAP_SOURCES.PROFILE })} />}
           {isOwnProfile && (
             <PassportShareModal
               userId={passportUserId}
               visible={isPassportShareOpen}
               onClose={() => setIsPassportShareOpen(false)}
+              source={PASSPORT_SHARE_SOURCES.PROFILE}
             />
           )}
         </View>

@@ -18,6 +18,8 @@ import { shadow } from '../../utils/styles';
 import { RichText } from '../../components/RichText';
 import { registerForPushNotifications } from '../../utils/pushNotifications';
 import { clearDeviceSessionData } from '../../utils/session';
+import { useAnalyticsConsent } from '../../hooks/useAnalyticsConsent';
+import { ANALYTICS_CONSENT } from '../../utils/analytics';
 
 const NOTIFICATION_PREFERENCE_TOGGLES = [
   // Push only exists in the native app, not in the web build of mobile.
@@ -29,6 +31,7 @@ const NOTIFICATION_PREFERENCE_TOGGLES = [
 
 const SettingsScreen = ({ navigation }) => {
   const { t } = useTranslation();
+  const { consent: analyticsConsent, answer: answerAnalytics } = useAnalyticsConsent();
   const dispatch = useDispatch();
   const insets = useSafeAreaInsets();
   const meDetail = useSelector(selectMe);
@@ -269,6 +272,21 @@ const SettingsScreen = ({ navigation }) => {
                 />
               </View>
             ))}
+          </View>
+
+          {/* Analytics: the same answer as the first-launch notice */}
+          <View style={styles.card}>
+            <View style={styles.toggleRow}>
+              <Text style={styles.toggleLabel}>{t('analyticsConsent.setting')}</Text>
+              <Switch
+                value={analyticsConsent === ANALYTICS_CONSENT.GRANTED}
+                onValueChange={answerAnalytics}
+                accessibilityLabel={t('analyticsConsent.setting')}
+                trackColor={{ false: '#e5e7eb', true: '#E8743B' }}
+                thumbColor="#fff"
+              />
+            </View>
+            <Text style={[styles.cardDesc, { marginTop: 8 }]}>{t('analyticsConsent.settingHint')}</Text>
           </View>
 
           {/* Your data */}

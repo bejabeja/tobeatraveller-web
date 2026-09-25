@@ -38,8 +38,9 @@ const CountryPickerModal = ({ visible, onClose, onSaved, initialSelected = [], l
   const save = async () => {
     setSaving(true);
     try {
-      await updateMyDeclaredCountries([...selected]);
-      onSaved();
+      const codes = [...selected];
+      await updateMyDeclaredCountries(codes);
+      onSaved(codes);
     } catch {
       Alert.alert(t('passport.pickerSaveError'));
     } finally {

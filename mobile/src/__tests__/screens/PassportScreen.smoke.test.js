@@ -19,6 +19,7 @@ jest.mock('@tobeatraveller/shared', () => {
   const countries = jest.requireActual('../../../../shared/src/utils/constants/countries.js');
   const recap = jest.requireActual('../../../../shared/src/utils/recap.js');
   return {
+    ...jest.requireActual('../../../../shared/src/utils/analyticsEvents.js'),
     ...badges,
     ...countries,
     ...recap,

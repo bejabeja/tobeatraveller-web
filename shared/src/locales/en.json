@@ -1218,7 +1218,7 @@
       "<strong>Cloudinary</strong>: used to store and serve profile photos and itinerary cover images. Images you upload are stored on Cloudinary's servers. See their <a href=\"https://cloudinary.com/privacy\">Privacy Policy</a>.",
       "<strong>Geoapify</strong>: used to search for destinations and places of interest when creating an itinerary. Search queries (place names) are sent to their API. See their <a href=\"https://www.geoapify.com/privacy-policy\">Privacy Policy</a>.",
       "<strong>AI itinerary generation</strong>: when you use the \"Generate with AI\" feature, the destination, trip duration, and category are sent to an AI service to generate place suggestions. No personally identifiable information is included in these requests.",
-      "<strong>PostHog</strong>: used for product analytics (which pages are used, approximate location, device type), only if you accept analytics cookies in the cookie banner. Session recording is disabled. See their <a href=\"https://posthog.com/privacy\">Privacy Policy</a>.",
+      "<strong>PostHog</strong>: used for product analytics (which pages are used, approximate location, device type), only if you accept analytics cookies in the website cookie banner or usage measurement in the app notice. Session recording is disabled. See their <a href=\"https://posthog.com/privacy\">Privacy Policy</a>.",
       "<strong>Expo push service</strong> (Expo, with Apple Push Notification service and Firebase Cloud Messaging): used to deliver push notifications to the mobile app. It receives your device's push token and the notification text (who interacted and the trip title, never the content of comments). See their <a href=\"https://expo.dev/privacy\">Privacy Policy</a>."
     ],
     "s5Title": "5. Data retention",
@@ -1239,7 +1239,7 @@
     "s7Body": [
       "We use a single session cookie to keep you logged in. This cookie is strictly necessary for the service to function and does not require consent under ePrivacy rules.",
       "If you accept analytics cookies in the cookie banner shown on your first visit, we also load PostHog to collect the analytics data described in section 4. Nothing analytics-related loads until you accept, and you can change your choice at any time from \"Cookie preferences\" in the footer. We do not use advertising cookies or tracking pixels.",
-      "On mobile, authentication tokens are stored in the device's secure storage rather than cookies."
+      "In the app, authentication tokens are stored in the device's secure storage rather than cookies. The app asks the first time whether it may measure how it is used; nothing analytics-related loads until you accept, and you can change it at any time in Settings."
     ],
     "s8Title": "8. Data security",
     "s8Body": "Passwords are hashed using a secure algorithm before being stored. All data is transmitted over HTTPS. We apply reasonable technical and organisational measures to protect your data, though no system is completely immune to risk.",
@@ -1262,6 +1262,11 @@
     "getInTouch": "Get in touch",
     "rightsReserved": "All rights reserved.",
     "cookiePreferences": "Cookie preferences"
+  },
+  "analyticsConsent": {
+    "description": "We'd like to measure how people use ToBeATraveller to improve it, never for ads or to sell your data. We won't measure anything unless you say it's OK.",
+    "setting": "Help improve the app",
+    "settingHint": "Measures how the app is used, only with your permission. Never for ads or to sell your data."
   },
   "cookieConsent": {
     "title": "Cookie preferences",

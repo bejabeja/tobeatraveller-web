@@ -1,9 +1,9 @@
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-import { recapYear } from "@tobeatraveller/shared";
+import { RECAP_SOURCES, recapYear } from "@tobeatraveller/shared";
 import "./RecapBanner.scss";
 
-export const RECAP_SOURCES = Object.freeze({ PASSPORT: "passport", PROFILE: "profile", NOTIFICATION: "notification" });
+export { RECAP_SOURCES };
 export const recapPath = (source) => `/recap?from=${source}`;
 
 // The way into the yearly recap, only while it's in season (December and

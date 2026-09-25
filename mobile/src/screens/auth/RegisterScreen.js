@@ -8,7 +8,8 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { checkUsernameAvailable, registerUser, selectAuthError, translateAuthError } from '@tobeatraveller/shared';
+import { ANALYTICS_EVENTS, checkUsernameAvailable, registerUser, selectAuthError, translateAuthError } from '@tobeatraveller/shared';
+import { trackEvent } from '../../utils/analytics';
 import { shadow, textShadow } from '../../utils/styles';
 import { RichText } from '../../components/RichText';
 
@@ -83,7 +84,10 @@ const RegisterScreen = ({ navigation }) => {
           email: email.trim(), username: username.trim(), password, confirmPassword, termsAccepted, ageConfirmed,
           referralCode: referralCode.trim() || undefined,
         },
-        () => navigation.navigate('Onboarding')
+        () => {
+          trackEvent(ANALYTICS_EVENTS.USER_SIGNED_UP, { source: null, referred: Boolean(referralCode.trim()) });
+          navigation.navigate('Onboarding');
+        }
       ));
     } catch {
       // authError below already reflects the failure; this only avoids an unhandled rejection.

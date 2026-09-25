@@ -8,10 +8,12 @@ jest.mock('react-i18next', () => {
 jest.mock('@tobeatraveller/shared', () => {
   const badges = jest.requireActual('../../../../shared/src/utils/constants/badges.js');
   const countries = jest.requireActual('../../../../shared/src/utils/constants/countries.js');
-  return { ...badges, ...countries, getUserPassport: jest.fn(), getMyReferralInfo: jest.fn() };
+  const analyticsEvents = jest.requireActual('../../../../shared/src/utils/analyticsEvents.js');
+  return { ...analyticsEvents, ...badges, ...countries, getUserPassport: jest.fn(), getMyReferralInfo: jest.fn() };
 });
 
 jest.mock('../../utils/config', () => ({ WEB_URL: 'https://tobeatraveller.test' }));
+jest.mock('../../utils/analytics', () => ({ trackEvent: jest.fn() }));
 
 jest.mock('react-native-view-shot', () => ({ captureRef: jest.fn() }));
 
@@ -29,6 +31,7 @@ import * as Sharing from 'expo-sharing';
 import { captureRef } from 'react-native-view-shot';
 import { getMyReferralInfo, getUserPassport } from '@tobeatraveller/shared';
 import PassportShareModal from '../../components/PassportShareModal';
+import { trackEvent } from '../../utils/analytics';
 
 const PUBLIC_PASSPORT = {
   owner: { id: 'user-1', username: 'jane' },
@@ -67,6 +70,19 @@ it("stamps each country on the card with its flag and its name in the user's lan
 
   expect(screen.getByText('🇪🇸')).toBeTruthy();
   expect(screen.getByText('ESPAÑA')).toBeTruthy();
+});
+
+// Same events as the web, so the sharing funnel covers both.
+it('records opening the sheet and sharing, with where it was opened from and what went out', async () => {
+  render(<PassportShareModal userId="user-1" visible onClose={jest.fn()} source="profile" />);
+  await act(async () => {});
+
+  await act(async () => { fireEvent.press(screen.getByText('passport.shareImage')); });
+
+  expect(trackEvent).toHaveBeenCalledWith('passport_share_opened', { source: 'profile' });
+  expect(trackEvent).toHaveBeenCalledWith('passport_shared', {
+    method: 'share_sheet', source: 'profile', with_achievements: false, with_private: false, countries: 1, stamps: 0,
+  });
 });
 
 // The share sheet only takes the image, and a link in a picture can't be

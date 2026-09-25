@@ -10,7 +10,7 @@ import {
   BADGE_EMOJI, PASSPORT_SHARE_MOMENT, countryFlag, countryName,
   initNotifications, loadMoreNotifications, markAllNotificationsRead,
   selectNotifications, selectNotificationsError, selectNotificationsLoading,
-  selectNotificationsLoadingMore, selectNotificationsPage, selectNotificationsTotalPages, selectUnreadCount,
+  RECAP_SOURCES, selectNotificationsLoadingMore, selectNotificationsPage, selectNotificationsTotalPages, selectUnreadCount,
 } from '@tobeatraveller/shared';
 import { UserRowSkeleton } from '../../components/Skeleton';
 import { shadow } from '../../utils/styles';
@@ -47,7 +47,7 @@ const NotificationsScreen = ({ navigation }) => {
     // Opens the card of that badge or country ready to share: the moment they most want to show it off.
     else if (n.type === 'badge_earned') navigation.navigate('Passport', { userId: n.actor?.id, share: PASSPORT_SHARE_MOMENT, badge: n.badgeId });
     else if (n.type === 'country_stamp') navigation.navigate('Passport', { userId: n.actor?.id, share: PASSPORT_SHARE_MOMENT, country: n.countryCode });
-    else if (n.type === 'recap_ready') navigation.navigate('Recap');
+    else if (n.type === 'recap_ready') navigation.navigate('Recap', { from: RECAP_SOURCES.NOTIFICATION });
     else if (n.type === 'referral_reward') navigation.navigate('Referral');
     else if (n.itinerary?.id) {
       navigation.navigate('Itinerary', {

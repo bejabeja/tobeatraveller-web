@@ -13,6 +13,7 @@ jest.mock('expo-constants', () => ({
 jest.mock('@tobeatraveller/shared', () => {
   const { PASSPORT_SHARE_COUNTRIES, PASSPORT_SHARE_MOMENT, PASSPORT_SHARE_WITH_ACHIEVEMENTS } = jest.requireActual('../../../../shared/src/utils/constants/badges.js');
   return {
+    ...jest.requireActual('../../../../shared/src/utils/analyticsEvents.js'),
     PASSPORT_SHARE_COUNTRIES,
     PASSPORT_SHARE_MOMENT,
     PASSPORT_SHARE_WITH_ACHIEVEMENTS,
@@ -154,7 +155,7 @@ describe('routeForPushData', () => {
   });
 
   it('opens the yearly recap', () => {
-    expect(routeForPushData({ type: 'recap_ready', actorId: 'u1' })).toEqual({ name: 'Recap' });
+    expect(routeForPushData({ type: 'recap_ready', actorId: 'u1' })).toEqual({ name: 'Recap', params: { from: 'notification' } });
   });
 
   it('opens the card of the new country, ready to share', () => {

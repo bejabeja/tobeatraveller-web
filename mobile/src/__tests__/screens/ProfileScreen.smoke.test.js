@@ -37,6 +37,7 @@ jest.mock('@tobeatraveller/shared', () => {
   const { filterItineraries } = jest.requireActual('../../../../shared/src/utils/filterItineraries.js');
   const { COLORS } = jest.requireActual('../../../../shared/src/utils/constants/colors.js');
   return {
+    ...jest.requireActual('../../../../shared/src/utils/analyticsEvents.js'),
     COLORS,
     ...badges,
     ...countries,

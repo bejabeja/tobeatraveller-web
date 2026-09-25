@@ -4,13 +4,14 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
-  BADGE_EMOJI, countryFlag, countryName, PASSPORT_SHARE_STAMP_LAYOUT, passportShareFlagLayout, passportUrl, summarizePassportForSharing,
+  ANALYTICS_EVENTS, BADGE_EMOJI, countryFlag, countryName, PASSPORT_SHARE_METHODS, PASSPORT_SHARE_SOURCES, PASSPORT_SHARE_STAMP_LAYOUT, passportShareFlagLayout, passportUrl, summarizePassportForSharing,
 } from '@tobeatraveller/shared';
 import { useShareablePassport } from '../hooks/useShareablePassport';
 import {
   captureAndShareStory, InkSeal, STORY_COLORS, storyPreviewHeight, storyScale as scale, StoryCardPreview,
 } from './StoryCard';
 import { WEB_URL } from '../utils/config';
+import { trackEvent } from '../utils/analytics';
 
 const FLAG_LINE_HEIGHT = 1.2;
 const COUNTRY_NAME_PADDING = 10;
@@ -111,8 +112,11 @@ const PassportShareCard = ({ summary, t, language }) => {
 // is in it: by default only their public countries, and achievements or
 // private ones only if they opt in.
 // `initialIncludeAchievements` is for opening it from a badge notification,
-// where the new badge is what the owner wants to show.
-const PassportShareModal = ({ userId, visible, onClose, initialIncludeAchievements = false }) => {
+// where the new badge is what the owner wants to show. `source` says where it
+// was opened from, for analytics.
+const PassportShareModal = ({
+  userId, visible, onClose, initialIncludeAchievements = false, source = PASSPORT_SHARE_SOURCES.PASSPORT_PAGE,
+}) => {
   const { t, i18n } = useTranslation();
   const cardRef = useRef(null);
   const [sharing, setSharing] = useState(false);
@@ -128,12 +132,24 @@ const PassportShareModal = ({ userId, visible, onClose, initialIncludeAchievemen
     if (!visible) setIncludePrivate(false);
   }, [visible, initialIncludeAchievements]);
 
+  useEffect(() => {
+    if (visible) trackEvent(ANALYTICS_EVENTS.PASSPORT_SHARE_OPENED, { source });
+  }, [visible, source]);
+
   const handleShare = async () => {
     setSharing(true);
     try {
       await captureAndShareStory(cardRef, {
         link: passportUrl(WEB_URL, userId, referralCode),
         dialogTitle: t('passport.shareTitle'),
+      });
+      trackEvent(ANALYTICS_EVENTS.PASSPORT_SHARED, {
+        method: PASSPORT_SHARE_METHODS.SHARE_SHEET,
+        source,
+        with_achievements: Boolean(summary?.showAchievements),
+        with_private: includePrivate,
+        countries: summary?.countryCount ?? 0,
+        stamps: summary?.showAchievements ? summary.earnedCount : 0,
       });
     } catch {
       Alert.alert(t('passport.shareError'));

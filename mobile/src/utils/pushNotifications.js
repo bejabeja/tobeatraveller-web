@@ -2,7 +2,8 @@ import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import * as Notifications from 'expo-notifications';
 import {
-  PASSPORT_SHARE_COUNTRIES, PASSPORT_SHARE_MOMENT, PASSPORT_SHARE_WITH_ACHIEVEMENTS, registerPushToken, unregisterPushToken,
+  PASSPORT_SHARE_COUNTRIES, PASSPORT_SHARE_MOMENT, PASSPORT_SHARE_WITH_ACHIEVEMENTS, RECAP_SOURCES, registerPushToken,
+  unregisterPushToken,
 } from '@tobeatraveller/shared';
 
 // Must match ANDROID_NOTIFICATION_CHANNEL_ID in api/src/services/pushNotificationsService.js.
@@ -72,7 +73,7 @@ export const routeForPushData = (data) => {
   if (!data?.type) return null;
   if (data.type === 'follow' && data.actorId) return { name: 'UserProfile', params: { id: data.actorId } };
   if (data.type === 'referral_reward') return { name: 'Referral' };
-  if (data.type === 'recap_ready') return { name: 'Recap' };
+  if (data.type === 'recap_ready') return { name: 'Recap', params: { from: RECAP_SOURCES.NOTIFICATION } };
   // A badge or country's "actor" is the user who earned it; the card of that
   // badge or country opens ready to share, the moment they most want to show
   // it off. Pushes sent before they carried which one open the passport's.

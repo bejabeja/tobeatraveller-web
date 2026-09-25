@@ -49,9 +49,10 @@ export const denyCookieConsent = () => {
   posthogPromise?.then((posthog) => posthog.opt_out_capturing());
 };
 
+// Only the id and username: PostHog needs nothing else to tell people apart.
 export const identifyUser = (user) => {
   if (!user?.id || getCookieConsent() !== "granted") return;
-  loadPosthog()?.then((posthog) => posthog.identify(user.id, { email: user.email, username: user.username }));
+  loadPosthog()?.then((posthog) => posthog.identify(user.id, { username: user.username }));
 };
 
 export const resetAnalytics = () => {

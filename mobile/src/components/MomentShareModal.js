@@ -1,9 +1,12 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Alert, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { describePassportMoment, MOMENT_KINDS, passportUrl } from '@tobeatraveller/shared';
+import {
+  ANALYTICS_EVENTS, describePassportMoment, MOMENT_KINDS, PASSPORT_SHARE_METHODS, PASSPORT_SHARE_SOURCES, passportUrl,
+} from '@tobeatraveller/shared';
 import { useReferralCode } from '../hooks/useReferralCode';
 import { WEB_URL } from '../utils/config';
+import { trackEvent } from '../utils/analytics';
 import { captureAndShareStory, InkSeal, STORY_COLORS, storyScale as scale, StoryCardPreview } from './StoryCard';
 
 const PREVIEW_WIDTH = 196;
@@ -36,6 +39,10 @@ const MomentShareModal = ({ moment, owner, visible, onClose, onShareWholePasspor
   const [sharing, setSharing] = useState(false);
   const referral = useReferralCode(visible);
 
+  useEffect(() => {
+    if (visible && moment) trackEvent(ANALYTICS_EVENTS.PASSPORT_SHARE_OPENED, { source: PASSPORT_SHARE_SOURCES.NOTIFICATION, moment: moment.kind });
+  }, [visible, moment]);
+
   if (!moment) return null;
   const description = describePassportMoment(moment, t, i18n.language);
 
@@ -45,6 +52,12 @@ const MomentShareModal = ({ moment, owner, visible, onClose, onShareWholePasspor
       await captureAndShareStory(cardRef, {
         link: passportUrl(WEB_URL, owner.id, referral.code),
         dialogTitle: t('passport.momentShareTitle'),
+      });
+      trackEvent(ANALYTICS_EVENTS.PASSPORT_SHARED, {
+        method: PASSPORT_SHARE_METHODS.SHARE_SHEET,
+        source: PASSPORT_SHARE_SOURCES.NOTIFICATION,
+        moment: moment.kind,
+        with_private: Boolean(moment.isPrivate),
       });
     } catch {
       Alert.alert(t('passport.shareError'));

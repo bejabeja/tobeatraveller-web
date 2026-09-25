@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
-  BADGE_EMOJI, BADGE_FAMILY_ORDER, MOMENT_KINDS, PASSPORT_SHARE_MOMENT, PASSPORT_SHARE_WITH_ACHIEVEMENTS,
+  ANALYTICS_EVENTS, BADGE_EMOJI, BADGE_FAMILY_ORDER, MOMENT_KINDS, PASSPORT_SHARE_MOMENT, PASSPORT_SHARE_SOURCES,
+  PASSPORT_SHARE_WITH_ACHIEVEMENTS, PASSPORT_VIEWERS, RECAP_SOURCES,
   findPassportMoment,
   countryFlag, countryName, passportStampStyle, selectAuthUser,
 } from '@tobeatraveller/shared';
@@ -15,6 +16,7 @@ import RecapBanner from '../../components/RecapBanner';
 import PassportShareModal from '../../components/PassportShareModal';
 import { usePassportLeaderboard } from '../../hooks/usePassportLeaderboard';
 import { useUserPassport } from '../../hooks/useUserPassport';
+import { trackEvent } from '../../utils/analytics';
 
 const PASSPORT_NAVY = '#1b2a41';
 const PASSPORT_GOLD = '#d9a441';
@@ -144,7 +146,10 @@ const PassportLeaderboard = ({ navigation, t }) => {
           style={[styles.leaderboardRow, isMe && styles.leaderboardRowMe]}
           // push, not navigate: from one passport to another of the same screen.
           // Their own row does nothing: it would stack their passport again.
-          onPress={() => navigation.push('Passport', { userId: user.id })}
+          onPress={() => {
+            trackEvent(ANALYTICS_EVENTS.PASSPORT_LEADERBOARD_CLICKED, { rank });
+            navigation.push('Passport', { userId: user.id });
+          }}
           disabled={isMe}
           accessibilityRole={isMe ? undefined : 'button'}
           accessibilityLabel={`${rank}. ${isMe ? t('passport.leaderboardYou') : `@${user.username}`}, ${t('passport.countriesCount', { count: countries })}`}
@@ -178,6 +183,15 @@ const PassportScreen = ({ navigation, route }) => {
   const language = i18n.language;
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [shareWithAchievements, setShareWithAchievements] = useState(false);
+  const [shareSource, setShareSource] = useState(PASSPORT_SHARE_SOURCES.PASSPORT_PAGE);
+  const trackedViewRef = useRef(null);
+
+  // Once per passport opened, as on the web (a member here is always signed in).
+  useEffect(() => {
+    if (!passport || trackedViewRef.current === userId) return;
+    trackedViewRef.current = userId;
+    trackEvent(ANALYTICS_EVENTS.PASSPORT_VIEWED, { viewer: isOwner ? PASSPORT_VIEWERS.OWNER : PASSPORT_VIEWERS.MEMBER, from_shared_link: false });
+  }, [passport, userId, isOwner]);
   const [moment, setMoment] = useState(null);
   const shareRequest = route.params?.share;
 
@@ -197,6 +211,7 @@ const PassportScreen = ({ navigation, route }) => {
       setMoment(momentFound);
     } else {
       setShareWithAchievements(shareRequest === PASSPORT_SHARE_WITH_ACHIEVEMENTS || Boolean(momentBadge));
+      setShareSource(PASSPORT_SHARE_SOURCES.NOTIFICATION);
       setIsShareOpen(true);
     }
     navigation.setParams({ share: undefined, country: undefined, badge: undefined });
@@ -204,12 +219,14 @@ const PassportScreen = ({ navigation, route }) => {
 
   const shareWholePassport = () => {
     setShareWithAchievements(moment?.kind === MOMENT_KINDS.BADGE);
+    setShareSource(PASSPORT_SHARE_SOURCES.NOTIFICATION);
     setMoment(null);
     setIsShareOpen(true);
   };
 
   const openShare = () => {
     setShareWithAchievements(false);
+    setShareSource(PASSPORT_SHARE_SOURCES.PASSPORT_PAGE);
     setIsShareOpen(true);
   };
 
@@ -254,7 +271,7 @@ const PassportScreen = ({ navigation, route }) => {
         <Text style={styles.errorText}>{t('passport.loadError')}</Text>
       ) : (
         <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}>
-          {isOwner && <RecapBanner onPress={() => navigation.navigate('Recap')} />}
+          {isOwner && <RecapBanner onPress={() => navigation.navigate('Recap', { from: RECAP_SOURCES.PASSPORT })} />}
 
           <View style={styles.cover}>
             <View style={styles.coverFrame} pointerEvents="none" />
@@ -334,7 +351,11 @@ const PassportScreen = ({ navigation, route }) => {
         <CountryPickerModal
           visible={isDeclaredOpen}
           onClose={() => setIsDeclaredOpen(false)}
-          onSaved={() => { setIsDeclaredOpen(false); reload(); }}
+          onSaved={(codes) => {
+            trackEvent(ANALYTICS_EVENTS.PASSPORT_COUNTRIES_DECLARED, { stage: PASSPORT_VIEWERS.OWNER, count: codes.length });
+            setIsDeclaredOpen(false);
+            reload();
+          }}
           initialSelected={declaredCodes}
           lockedCodes={passport.countries.map(country => country.code)}
         />
@@ -355,6 +376,7 @@ const PassportScreen = ({ navigation, route }) => {
           visible={isShareOpen}
           onClose={() => setIsShareOpen(false)}
           initialIncludeAchievements={shareWithAchievements}
+          source={shareSource}
         />
       )}
     </View>

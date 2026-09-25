@@ -13,6 +13,7 @@ import { COLORS } from '../utils/styles';
 import { usePushNotificationNavigation } from '../hooks/usePushNotifications';
 import { useAchievementCelebrations } from '../hooks/useAchievementCelebrations';
 import AchievementCelebration from '../components/AchievementCelebration';
+import AnalyticsConsentBanner from '../components/AnalyticsConsentBanner';
 
 import HomeScreen from '../screens/home/HomeScreen';
 import ExploreScreen from '../screens/explore/ExploreScreen';
@@ -292,6 +293,7 @@ const Navigation = () => {
           </>
         )}
       </Stack.Navigator>
+      <AnalyticsConsentBanner onLearnMore={() => navigationRef.navigate('PrivacyPolicy')} />
       {celebrations.celebration && (
         <AchievementCelebration
           celebration={celebrations.celebration}

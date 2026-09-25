@@ -6,7 +6,8 @@ jest.mock('react-i18next', () => {
 jest.mock('@tobeatraveller/shared', () => {
   const badges = jest.requireActual('../../../../shared/src/utils/constants/badges.js');
   const countries = jest.requireActual('../../../../shared/src/utils/constants/countries.js');
-  return { ...badges, ...countries, getMyReferralInfo: jest.fn() };
+  const analyticsEvents = jest.requireActual('../../../../shared/src/utils/analyticsEvents.js');
+  return { ...analyticsEvents, ...badges, ...countries, getMyReferralInfo: jest.fn() };
 });
 
 jest.mock('../../utils/config', () => ({ WEB_URL: 'https://tobeatraveller.test' }));

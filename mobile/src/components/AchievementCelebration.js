@@ -1,8 +1,9 @@
 import { useEffect, useRef } from 'react';
 import { Animated, Easing, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { describePassportMoment, MOMENT_KINDS } from '@tobeatraveller/shared';
+import { ANALYTICS_EVENTS, describePassportMoment, MOMENT_KINDS } from '@tobeatraveller/shared';
 import { useReduceMotion } from '../hooks/useReduceMotion';
+import { trackEvent } from '../utils/analytics';
 import { STORY_COLORS } from './StoryCard';
 
 const SEAL_SIZE = 176;
@@ -29,6 +30,10 @@ const AchievementCelebration = ({ celebration, position, total, onDismiss, onSha
   const { notificationId, moment } = celebration;
   const { symbol, name } = describePassportMoment(moment, t, i18n.language);
   const title = moment.kind === MOMENT_KINDS.COUNTRY ? t('passport.celebrationCountryTitle') : t('passport.celebrationBadgeTitle');
+
+  useEffect(() => {
+    trackEvent(ANALYTICS_EVENTS.ACHIEVEMENT_CELEBRATED, { moment: moment.kind });
+  }, [notificationId]);
 
   useEffect(() => {
     if (reduceMotion) {
