@@ -48,6 +48,8 @@ const Contact = lazy(() => import("./pages/legal/Contact"));
 const PrivacyPolicy = lazy(() => import("./pages/legal/PrivacyPolicy"));
 const Terms = lazy(() => import("./pages/legal/Terms"));
 const Profile = lazy(() => import("./pages/profile/Profile"));
+const ProfileByHandle = lazy(() => import("./pages/profile/ProfileByHandle"));
+const NotFound = lazy(() => import("./pages/error/NotFound"));
 const Itinerary = lazy(() => import("./pages/itinerary/Itinerary"));
 const FollowersList = lazy(() => import("./pages/follows/FollowersList"));
 const Passport = lazy(() => import("./pages/passport/Passport"));
@@ -189,6 +191,8 @@ const App = () => {
 
               {/* routes to decide if private or not */}
               <Route path="/friend-profile/:id" element={<Profile />} />
+              {/* /@username. One segment, so it also catches unknown addresses and says so. */}
+              <Route path="/:handle" element={<ProfileByHandle />} />
               <Route path="/itinerary/:id" element={<Itinerary />} />
               <Route path="/profile/:id/followers" element={<FollowersList />} />
               <Route path="/profile/:id/following" element={<FollowingList />} />
@@ -228,6 +232,7 @@ const App = () => {
                   </Route>
                 </Route>
               </Route>
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
         </main>

@@ -71,4 +71,5 @@ export * from './utils/recap.js';
 export * from './utils/celebrations.js';
 export * from './utils/analyticsEvents.js';
 export * from './utils/passportMap.js';
+export * from './utils/profileLinks.js';
 export * from './utils/preloadImg.js';

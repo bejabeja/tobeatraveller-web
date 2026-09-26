@@ -2,16 +2,21 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Image, ScrollView, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { getMyReferralInfo } from '@tobeatraveller/shared';
 import { WEB_URL } from '../../utils/config';
-import { shadow } from '../../utils/styles';
+import { COLORS, shadow } from '../../utils/styles';
 
 const COPIED_FEEDBACK_DURATION_MS = 2000;
 
-const STEP_KEYS = ['howItWorksStep1', 'howItWorksStep2', 'howItWorksStep3'];
+const STEPS = [
+  { key: 'howItWorksStep1', icon: 'link-outline' },
+  { key: 'howItWorksStep2', icon: 'person-add-outline' },
+  { key: 'howItWorksStep3', icon: 'map-outline' },
+];
 
 const ReferralScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -79,24 +84,27 @@ const ReferralScreen = ({ navigation }) => {
         contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 40 }]}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.hero}>
-          <Ionicons name="gift-outline" size={40} color="#E8743B" style={styles.heroIcon} />
+        {/* The reward leads: a month for each of you is what makes it worth sharing. */}
+        <LinearGradient colors={[COLORS.accent, COLORS.primary]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
+          <Ionicons name="gift-outline" size={40} color="#fff" style={styles.heroIcon} />
           <Text style={styles.title}>{t('referral.title')}</Text>
           <Text style={styles.subtitle}>{t('referral.subtitle')}</Text>
-        </View>
-
-        <View style={styles.stats}>
-          <View style={styles.stat}>
-            <Text style={styles.statNumber}>{loading ? '…' : info?.invited ?? 0}</Text>
-            <Text style={styles.statLabel}>{t('referral.statsInvited')}</Text>
+          <View style={styles.rewards}>
+            {[t('referral.rewardForYou'), t('referral.rewardForFriend')].map((forWhom) => (
+              <View key={forWhom} style={styles.reward}>
+                <Text style={styles.rewardAmount}>{t('referral.rewardAmount')}</Text>
+                <Text style={styles.rewardFor}>{forWhom}</Text>
+              </View>
+            ))}
           </View>
-          <View style={styles.stat}>
-            <Text style={styles.statNumber}>{loading ? '…' : info?.rewarded ?? 0}</Text>
-            <Text style={styles.statLabel}>{t('referral.statsRewarded')}</Text>
-          </View>
-        </View>
+        </LinearGradient>
 
-        <View style={styles.linkCard}>
+        <View style={styles.card}>
+          <TouchableOpacity style={styles.shareBtn} onPress={handleShare} disabled={loading || !inviteLink} accessibilityRole="button">
+            <Ionicons name="share-social-outline" size={18} color="#fff" />
+            <Text style={styles.shareBtnText}>{t('referral.shareButton')}</Text>
+          </TouchableOpacity>
+
           <Text style={styles.linkLabel}>{t('referral.linkLabel')}</Text>
           <View style={styles.linkRow}>
             <Text style={styles.linkText} selectable numberOfLines={1}>
@@ -106,49 +114,68 @@ const ReferralScreen = ({ navigation }) => {
               style={styles.copyBtn}
               onPress={handleCopy}
               disabled={loading || !inviteLink}
+              accessibilityRole="button"
               accessibilityLabel={t('referral.copyButton')}
             >
-              <Ionicons name={copied ? 'checkmark' : 'copy-outline'} size={18} color={copied ? '#16a34a' : '#374151'} />
+              <Ionicons name={copied ? 'checkmark' : 'copy-outline'} size={16} color={copied ? '#16a34a' : '#374151'} />
+              <Text style={styles.copyBtnText}>{t('referral.copyButton')}</Text>
             </TouchableOpacity>
           </View>
-          <TouchableOpacity style={styles.shareBtn} onPress={handleShare} disabled={loading || !inviteLink}>
-            <Ionicons name="share-social-outline" size={18} color="#fff" />
-            <Text style={styles.shareBtnText}>{t('referral.shareButton')}</Text>
-          </TouchableOpacity>
+          {/* Signing up in the app there's no link to follow: the code is typed in. */}
+          {info?.referralCode && (
+            <Text style={styles.codeHint}>
+              {t('referral.appCodeHint')} <Text style={styles.codeHintCode}>{info.referralCode}</Text>
+            </Text>
+          )}
         </View>
 
-        {!loading && info?.invites?.length > 0 && (
-          <View style={styles.invites}>
-            <Text style={styles.invitesTitle}>{t('referral.invitesTitle')}</Text>
-            {info.invites.map((invite) => (
-              <View key={invite.id} style={styles.invite}>
-                <Image
-                  source={{ uri: invite.referredUser.avatarUrl }}
-                  style={styles.inviteAvatar}
-                  onError={() => {}}
-                />
-                <Text style={styles.inviteUsername} numberOfLines={1}>@{invite.referredUser.username}</Text>
-                <View style={[styles.inviteStatus, invite.status === 'rewarded' && styles.inviteStatusRewarded]}>
-                  <Text style={[styles.inviteStatusText, invite.status === 'rewarded' && styles.inviteStatusTextRewarded]}>
-                    {invite.status === 'rewarded' ? t('referral.inviteStatusRewarded') : t('referral.inviteStatusPending')}
-                  </Text>
-                </View>
-              </View>
-            ))}
-          </View>
-        )}
-
         <View style={styles.how}>
-          <Text style={styles.howTitle}>{t('referral.howItWorksTitle')}</Text>
-          {STEP_KEYS.map((key, i) => (
+          <Text style={styles.sectionTitle}>{t('referral.howItWorksTitle')}</Text>
+          {STEPS.map(({ key, icon }) => (
             <View key={key} style={styles.step}>
-              <View style={styles.stepNumber}>
-                <Text style={styles.stepNumberText}>{i + 1}</Text>
+              <View style={styles.stepIcon}>
+                <Ionicons name={icon} size={20} color={COLORS.primary} />
               </View>
               <Text style={styles.stepText}>{t(`referral.${key}`)}</Text>
             </View>
           ))}
         </View>
+
+        {!loading && info && (
+          info.invited > 0 ? (
+            <View style={styles.card}>
+              <Text style={styles.sectionTitle}>{t('referral.progressTitle')}</Text>
+              <View style={styles.stats}>
+                <View style={styles.stat}>
+                  <Text style={styles.statNumber}>{info.invited}</Text>
+                  <Text style={styles.statLabel}>{t('referral.statsInvited')}</Text>
+                </View>
+                <View style={styles.stat}>
+                  <Text style={styles.statNumber}>{info.rewarded ?? 0}</Text>
+                  <Text style={styles.statLabel}>{t('referral.statsRewarded')}</Text>
+                </View>
+              </View>
+              {info.invites?.map((invite) => (
+                <View key={invite.id} style={styles.invite}>
+                  <Image
+                    source={{ uri: invite.referredUser.avatarUrl }}
+                    style={styles.inviteAvatar}
+                    onError={() => {}}
+                  />
+                  <Text style={styles.inviteUsername} numberOfLines={1}>@{invite.referredUser.username}</Text>
+                  <View style={[styles.inviteStatus, invite.status === 'rewarded' && styles.inviteStatusRewarded]}>
+                    <Text style={[styles.inviteStatusText, invite.status === 'rewarded' && styles.inviteStatusTextRewarded]}>
+                      {invite.status === 'rewarded' ? t('referral.inviteStatusRewarded') : t('referral.inviteStatusPending')}
+                    </Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          ) : (
+            // A row of zeros discourages: before the first invite, a nudge instead.
+            <Text style={styles.firstHint}>{t('referral.firstInviteHint')}</Text>
+          )
+        )}
       </ScrollView>
     </View>
   );
@@ -173,53 +200,70 @@ const styles = StyleSheet.create({
 
   scroll: { padding: 16, gap: 14 },
 
-  hero: { alignItems: 'center', paddingTop: 12, paddingBottom: 8 },
-  heroIcon: { marginBottom: 12 },
-  title: {
-    fontSize: 24, fontWeight: '800', color: '#111827',
-    textAlign: 'center', marginBottom: 8,
+  hero: {
+    alignItems: 'center', gap: 8, padding: 24, borderRadius: 20,
+    ...shadow(8, 0.18, 16, 4),
   },
-  subtitle: {
-    fontSize: 14, color: '#6b7280', textAlign: 'center',
-    lineHeight: 20, paddingHorizontal: 8,
+  heroIcon: { marginBottom: 4 },
+  title: { fontSize: 24, fontWeight: '800', color: '#fff', textAlign: 'center' },
+  subtitle: { fontSize: 14, color: 'rgba(255,255,255,0.9)', textAlign: 'center', lineHeight: 20 },
+  rewards: { flexDirection: 'row', gap: 10, marginTop: 8, alignSelf: 'stretch' },
+  // A ticket: dashed edge, like something to tear off and hand over.
+  reward: {
+    flex: 1, alignItems: 'center', gap: 2, paddingVertical: 10, paddingHorizontal: 8,
+    borderWidth: 1.5, borderStyle: 'dashed', borderColor: 'rgba(255,255,255,0.7)', borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.14)',
   },
+  rewardAmount: { fontSize: 15, fontWeight: '800', color: '#fff', textAlign: 'center' },
+  rewardFor: { fontSize: 12, color: 'rgba(255,255,255,0.9)' },
 
-  stats: { flexDirection: 'row', gap: 12 },
-  stat: {
-    flex: 1, alignItems: 'center', gap: 2,
-    backgroundColor: '#fff', borderRadius: 14, padding: 16,
+  card: {
+    gap: 10, backgroundColor: '#fff', borderRadius: 16, padding: 18,
     ...shadow(2, 0.05, 6, 2),
   },
+  sectionTitle: { fontSize: 15, fontWeight: '700', color: '#111827' },
+
+  shareBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    backgroundColor: COLORS.primary, borderRadius: 999, paddingVertical: 14,
+  },
+  shareBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
+  linkLabel: { fontSize: 12, fontWeight: '700', color: '#6b7280', marginTop: 4 },
+  // One pill: the link and its copy button, not two boxes side by side.
+  linkRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    backgroundColor: '#f7f9fc', borderRadius: 999, borderWidth: 1, borderColor: '#e5e7eb',
+    paddingVertical: 4, paddingLeft: 14, paddingRight: 4,
+  },
+  linkText: { flex: 1, fontSize: 14, color: '#111827' },
+  copyBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    paddingVertical: 8, paddingHorizontal: 12, borderRadius: 999, backgroundColor: '#fff',
+    ...shadow(1, 0.1, 3, 1),
+  },
+  copyBtnText: { fontSize: 13, fontWeight: '700', color: '#374151' },
+  codeHint: { fontSize: 13, color: '#6b7280', lineHeight: 18 },
+  codeHintCode: { fontWeight: '700', color: '#111827' },
+
+  how: { gap: 10 },
+  step: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    backgroundColor: COLORS.bgLight, borderRadius: 14, padding: 14,
+  },
+  stepIcon: {
+    width: 40, height: 40, borderRadius: 20, flexShrink: 0,
+    backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center',
+  },
+  stepText: { flex: 1, fontSize: 14, color: '#374151', lineHeight: 20 },
+
+  stats: { flexDirection: 'row', gap: 10 },
+  stat: { flex: 1, alignItems: 'center', gap: 2, backgroundColor: '#f7f9fc', borderRadius: 12, padding: 14 },
   statNumber: { fontSize: 24, fontWeight: '800', color: '#111827' },
   statLabel: { fontSize: 12, color: '#6b7280', textAlign: 'center' },
 
-  linkCard: {
-    backgroundColor: '#fff', borderRadius: 16, padding: 18,
-    ...shadow(2, 0.05, 6, 2),
-  },
-  linkLabel: { fontSize: 12, fontWeight: '700', color: '#6b7280', marginBottom: 8 },
-  linkRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
-  linkText: {
-    flex: 1, fontSize: 14, color: '#111827',
-    backgroundColor: '#f7f9fc', borderRadius: 10,
-    paddingVertical: 10, paddingHorizontal: 12,
-  },
-  copyBtn: {
-    width: 40, height: 40, borderRadius: 10,
-    backgroundColor: '#f7f9fc', alignItems: 'center', justifyContent: 'center',
-  },
-  shareBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    backgroundColor: '#E8743B', borderRadius: 999, paddingVertical: 13,
-  },
-  shareBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
-
-  invites: { gap: 8 },
-  invitesTitle: { fontSize: 15, fontWeight: '700', color: '#111827', marginBottom: 2 },
   invite: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
-    backgroundColor: '#fff', borderRadius: 12, padding: 12,
-    ...shadow(2, 0.05, 6, 2),
+    borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 12, padding: 10,
   },
   inviteAvatar: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#e5e7eb' },
   inviteUsername: { flex: 1, fontSize: 14, fontWeight: '600', color: '#111827' },
@@ -228,18 +272,10 @@ const styles = StyleSheet.create({
   inviteStatusText: { fontSize: 11, fontWeight: '700', color: '#6b7280' },
   inviteStatusTextRewarded: { color: '#16a34a' },
 
-  how: {
-    backgroundColor: '#fff', borderRadius: 16, padding: 18, gap: 14,
-    ...shadow(2, 0.05, 6, 2),
+  firstHint: {
+    padding: 14, borderWidth: 1.5, borderStyle: 'dashed', borderColor: COLORS.primary, borderRadius: 12,
+    fontSize: 14, fontWeight: '600', color: '#111827', textAlign: 'center',
   },
-  howTitle: { fontSize: 15, fontWeight: '700', color: '#111827', marginBottom: 2 },
-  step: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
-  stepNumber: {
-    width: 24, height: 24, borderRadius: 12, flexShrink: 0,
-    backgroundColor: '#E8743B', alignItems: 'center', justifyContent: 'center',
-  },
-  stepNumberText: { color: '#fff', fontSize: 12, fontWeight: '700' },
-  stepText: { flex: 1, fontSize: 14, color: '#374151', lineHeight: 20 },
 });
 
 export default ReferralScreen;

@@ -10,6 +10,8 @@ import { countryCodeFromIp } from "../utils/geoLookup.js";
 import { logger } from "../utils/logger.js";
 import { AUDIT_EVENTS } from "../utils/auditEvents.js";
 import { ROLES } from "../utils/roles.js";
+import { referralCodeFromUsername } from "../utils/referralCode.js";
+import { isUsernameChange, USERNAME_CHANGE_COOLDOWN_DAYS, usernameChangeAvailableAt } from "../utils/usernameChange.js";
 
 // A staff-granted premium override (no Stripe subscription behind it yet):
 // far enough out to behave as "indefinite" without a magic null/sentinel
@@ -180,6 +182,16 @@ export class UserService {
         return user.toSimpleDTO();
     }
 
+    // For profile links by name (/@username): the same profile, and the same
+    // fields for each viewer, as by id.
+    async getUserByUsername(username, requestingUserId) {
+        const user = await this.userRepository.findByName(username);
+        if (!user) {
+            throw new NotFoundError("User not found");
+        }
+        return this.getUserById(user.id, requestingUserId);
+    }
+
     async getUserById(id, requestingUserId) {
         const user = await this.userRepository.getUserById(id);
         if (!user) {
@@ -214,12 +226,20 @@ export class UserService {
         return user.toDTO();
     }
 
-    async updateUser(id, userData) {
-        await this._ensureUsernameAvailable(userData.username, id);
-
+    async updateUser(id, userData, { ip, userAgent } = {}) {
         const user = await this.userRepository.getUserById(id);
         if (!user) {
             throw new NotFoundError("User not found");
+        }
+        // Checked only when the name is edited: an unchanged one is theirs
+        // already, whatever it may collide with.
+        const previousUsername = user.username;
+        if (userData.username && userData.username !== previousUsername) {
+            await this._ensureUsernameAvailable(userData.username, id);
+        }
+        const renamed = isUsernameChange(previousUsername, userData.username);
+        if (renamed && usernameChangeAvailableAt(user.usernameChangedAt)) {
+            throw new ConflictError(`The username can only be changed once every ${USERNAME_CHANGE_COOLDOWN_DAYS} days.`, "username");
         }
 
         user.updateProfile(
@@ -231,7 +251,19 @@ export class UserService {
             userData.username
         );
 
-        return await this.userRepository.updateUser(id, user);
+        const updatedUser = await this.userRepository.updateUser(id, user);
+        if (renamed) {
+            await this.referralService?.changeCodeForUsername(id, updatedUser.username);
+            // Links and invite codes follow the name: who changed it, when and from what.
+            this.auditLogService?.log({
+                actorId: id, actorUsername: updatedUser.username,
+                action: AUDIT_EVENTS.USERNAME_CHANGED,
+                targetUserId: id, targetUsername: updatedUser.username,
+                metadata: { previousUsername, newUsername: updatedUser.username },
+                ipAddress: ip, userAgent,
+            });
+        }
+        return updatedUser;
     }
 
     async changePassword(id, currentPassword, newPassword, { ip, userAgent } = {}) {
@@ -327,7 +359,7 @@ export class UserService {
         const [
             itineraries, followers, following, commentsResult, likesResult, favoritesResult,
             lifeDiaryEntries, vanLogEntries, inventoryItems, shoppingListItems, packingChecklistItems,
-            pushDevices, badges, countryStamps, declaredCountries,
+            pushDevices, badges, countryStamps, declaredCountries, previousReferralCodes,
         ] = await Promise.all([
             this.itinerariesRepository.findByUserId(id),
             this.followRepository.getFollowers(id),
@@ -359,6 +391,7 @@ export class UserService {
             this.badgeRepository ? this.badgeRepository.findEarnedByUserId(id) : [],
             this.badgeRepository ? this.badgeRepository.findStampedCountries(id) : [],
             this.badgeRepository ? this.badgeRepository.findDeclaredCountries(id) : [],
+            this.userRepository.findRetiredReferralCodes(id),
         ]);
 
         // Same batched entry+images composition as LifeDiaryService.getEntriesByUser.
@@ -391,6 +424,8 @@ export class UserService {
                 location: user.location,
                 avatarUrl: user.avatarUrl,
                 referralCode: user.referralCode,
+                // Earlier codes, kept for a year after a change of username.
+                previousReferralCodes,
                 language: user.language,
                 createdAt: user.createdAt,
             },
@@ -414,15 +449,22 @@ export class UserService {
         };
     }
 
-    async isUsernameAvailable(username) {
+    // Asked by someone signed in, their own name (in other capitals) and
+    // their own earlier codes count as available to them.
+    async isUsernameAvailable(username, currentUserId = null) {
         if (!username || username.length < 2) return false;
         const existing = await this.userRepository.findByName(username);
-        return !existing;
+        if (existing && existing.id !== currentUserId) return false;
+        return !(await this.userRepository.isReferralCodeTakenByOther(referralCodeFromUsername(username), currentUserId));
     }
 
+    // A name that was someone's invite code (their old username, kept for a
+    // while) is taken too: whoever took it would receive their invitations.
     async _ensureUsernameAvailable(username, currentUserId = null) {
         const existingUser = await this.userRepository.findByName(username);
-        if (existingUser && existingUser.id !== currentUserId) {
+        const takenAsCode = username
+            && await this.userRepository.isReferralCodeTakenByOther(referralCodeFromUsername(username), currentUserId);
+        if ((existingUser && existingUser.id !== currentUserId) || takenAsCode) {
             throw new ConflictError("Username is not available. Please choose another one.", "username");
         }
     }

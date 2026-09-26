@@ -1,4 +1,5 @@
 import { AUDIT_EVENTS } from '../utils/auditEvents.js';
+import { referralCodeFromUsername } from '../utils/referralCode.js';
 
 // Both sides win (Dropbox-style), rewarded only once the invitee shows real
 // engagement (their first itinerary), not at signup: guards against
@@ -33,7 +34,17 @@ export class ReferralService {
     // at signup (or on first lazy generation below) rather than read live off
     // the username, so a later rename never breaks a link someone already shared.
     codeFromUsername(username) {
-        return username.trim().toLowerCase();
+        return referralCodeFromUsername(username);
+    }
+
+    // After a change of username the code follows the new name; the old one
+    // stays theirs for a while (see UserRepository.changeReferralCode).
+    async changeCodeForUsername(userId, username) {
+        await this.userRepository.changeReferralCode(userId, this.codeFromUsername(username));
+    }
+
+    async purgeRetiredCodes() {
+        return this.userRepository.purgeRetiredReferralCodes();
     }
 
     async getOrCreateReferralCode(userId) {
@@ -77,7 +88,9 @@ export class ReferralService {
     async registerSignup(referralCode, referredUserId) {
         if (!referralCode) return;
 
-        const referrer = await this.userRepository.findByReferralCode(referralCode);
+        // Typed by hand in the signup form, "Tbat" still means "tbat": codes
+        // are stored lowercased.
+        const referrer = await this.userRepository.findByReferralCode(this.codeFromUsername(referralCode));
         if (!referrer || referrer.id === referredUserId) return;
 
         await this.referralRepository.createPending(referrer.id, referredUserId);

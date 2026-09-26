@@ -13,6 +13,7 @@ import {
   followUser, getItinerariesByUserId, getUserById, getUserFavorites, logoutUser,
   selectAuthUser, selectIsAuthenticated, selectMe, selectMyItineraries,
   PASSPORT_SHARE_SOURCES, RECAP_SOURCES, setUserInfo, unfollowUser, formatDate, selectMyItinerariesLoaded,
+  getMyReferralInfo, profileShareUrl,
 } from '@tobeatraveller/shared';
 import ItineraryCard from '../../components/ItineraryCard';
 import { ItineraryCardSkeleton, ProfileSkeleton } from '../../components/Skeleton';
@@ -121,9 +122,14 @@ const ProfileScreen = ({ route, navigation }) => {
     })();
   }, [profileId, isOwnProfile, me?.id]);
 
+  // By name (/@tbat), a page anyone can open, and on your own profile with
+  // your invite code, so whoever signs up from it counts as invited by you.
   const handleShare = async () => {
+    // Still loading: without the name there is no link to share yet.
+    if (!user?.username) return;
     try {
-      const url = `${WEB_URL}/profile/${user?.id}`;
+      const referralCode = isOwnProfile ? (await getMyReferralInfo().catch(() => null))?.referralCode : null;
+      const url = profileShareUrl(WEB_URL, user?.username, referralCode);
       await Share.share({ message: `${t('profile.shareText', { username: user?.username })} ${url}`, url, title: user?.username });
     } catch {}
   };

@@ -407,3 +407,10 @@
     &--taken     { color: var(--error-color);           background-color: #fef2f2; }
   }
 }
+
+// Optional, so it reads as an aside under the fields that matter.
+.auth__field-hint {
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary-color);
+}

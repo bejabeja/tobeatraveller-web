@@ -211,14 +211,14 @@ const RegisterScreen = ({ navigation }) => {
               />
 
               <Field
-                label={t('referral.mobileCodeLabel')}
+                label={t('referral.signupCodeLabel')}
                 value={referralCode}
                 onChangeText={setReferralCode}
                 autoCapitalize="none"
                 autoCorrect={false}
-                placeholder={t('referral.mobileCodePlaceholder')}
+                placeholder={t('referral.signupCodePlaceholder')}
               />
-              <Text style={fieldStyles.hint}>{t('referral.mobileCodeHint')}</Text>
+              <Text style={fieldStyles.hint}>{t('referral.signupCodeHint')}</Text>
 
               {/* Age + Terms consent */}
               <View style={styles.consentBox}>

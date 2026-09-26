@@ -444,6 +444,8 @@
     "locationAbout": "📍 Location & About",
     "namePlaceholder": "Your display name",
     "usernamePlaceholder": "your_username",
+    "usernameLockedUntil": "You changed your username recently. You can change it again on {{date}}.",
+    "usernameChangeLimit": "You can only change it once every 30 days, and your profile's address will change with it.",
     "bioPlaceholder": "A short description of yourself…",
     "locationPlaceholder": "City, Country",
     "aboutPlaceholder": "Tell the community about yourself and your travel style…",
@@ -451,6 +453,7 @@
     "saveProfile": "Save profile",
     "undoRemove": "↩ Undo remove",
     "removePhoto": "Remove photo",
+    "addPhoto": "Upload photo",
     "changePassword": "Change password",
     "changePasswordModal": "Change password",
     "currentPasswordLabel": "Current password",
@@ -895,6 +898,7 @@
     "errorSave": "Failed to save. Please try again."
   },
   "itineraryForm": {
+    "placeNeedsDestination": "Choose a destination first",
     "movePlaceUp": "Move place up",
     "movePlaceDown": "Move place down",
     "deletePlace": "Delete place",
@@ -996,6 +1000,10 @@
     "dangerZone": "Danger zone"
   },
   "errors": {
+    "title": "Something went wrong",
+    "backHome": "Back to home",
+    "pageNotFound": "This page doesn't exist.",
+    "profileNotFound": "This profile doesn't exist or has changed its name.",
     "profileLoad": "We couldn't load the profile info. Please try again later.",
     "itineraryLoad": "We couldn't load the itinerary page. Please try again later.",
     "itineraryNotFoundOrPrivate": "This itinerary doesn't exist or you don't have access to it.",
@@ -1311,6 +1319,14 @@
   "referral": {
     "title": "Invite friends, earn Premium",
     "subtitle": "For every friend who joins with your link and shares their first trip, you both get 1 month of Premium, free.",
+    "rewardAmount": "1 month of Premium",
+    "rewardForYou": "for you",
+    "rewardForFriend": "for your friend",
+    "shareWhatsApp": "WhatsApp",
+    "shareEmail": "Email",
+    "appCodeHint": "Signing up from the app? They can type your code:",
+    "firstInviteHint": "Your first month of Premium is one link away.",
+    "progressTitle": "Your progress",
     "howItWorksTitle": "How it works",
     "howItWorksStep1": "Share your personal invite link",
     "howItWorksStep2": "A friend creates an account with it",
@@ -1330,9 +1346,9 @@
     "invitesTitle": "Your invites",
     "inviteStatusPending": "Waiting for their first trip",
     "inviteStatusRewarded": "Premium unlocked 🎁",
-    "mobileCodeLabel": "Invite code (optional)",
-    "mobileCodePlaceholder": "e.g. a friend's username",
-    "mobileCodeHint": "Were you invited by a friend? Enter their username here."
+    "signupCodeLabel": "Invite code (optional)",
+    "signupCodePlaceholder": "e.g. a friend's username",
+    "signupCodeHint": "Were you invited by a friend? Enter their username here."
   },
   "offline": {
     "pendingSync": "Waiting to sync",

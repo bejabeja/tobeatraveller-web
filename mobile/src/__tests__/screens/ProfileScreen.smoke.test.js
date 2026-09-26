@@ -44,6 +44,8 @@ jest.mock('@tobeatraveller/shared', () => {
     ...countries,
     ...recap,
     filterItineraries,
+    ...jest.requireActual('../../../../shared/src/utils/profileLinks.js'),
+    getMyReferralInfo: jest.fn(),
     checkIsLiked: jest.fn(),
     toggleLike: jest.fn(),
     followUser: jest.fn(),
@@ -63,7 +65,7 @@ jest.mock('@tobeatraveller/shared', () => {
 });
 
 import {
-  checkIsLiked, getUserPassport, selectAuthUser, selectIsAuthenticated, selectMe, selectMyItineraries, selectMyItinerariesLoaded,
+  checkIsLiked, getMyReferralInfo, getUserPassport, selectAuthUser, selectIsAuthenticated, selectMe, selectMyItineraries, selectMyItinerariesLoaded,
 } from '@tobeatraveller/shared';
 import { Share } from 'react-native';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
@@ -111,8 +113,11 @@ it('renders the own profile header with counters and the passport card', async (
 });
 
 // Without the link there is nothing to open or preview on the other side.
-it('shares the profile with a link to it', async () => {
+// Regression: it linked /profile/<id>, a page only for signed-in users,
+// without the invite code.
+it('shares your profile by name, with your invite code', async () => {
   getUserPassport.mockResolvedValue({ owner: { id: 'user-1', username: 'jane' }, achievements: [], countries: [] });
+  getMyReferralInfo.mockResolvedValue({ referralCode: 'jane' });
   const shareSpy = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction' });
 
   render(
@@ -124,8 +129,8 @@ it('shares the profile with a link to it', async () => {
   await act(async () => { fireEvent.press(screen.getByLabelText('profile.shareProfile')); });
 
   expect(shareSpy).toHaveBeenCalledWith(expect.objectContaining({
-    message: 'profile.shareText:jane https://tobeatraveller.test/profile/user-1',
-    url: 'https://tobeatraveller.test/profile/user-1',
+    message: 'profile.shareText:jane https://tobeatraveller.test/@jane?ref=jane',
+    url: 'https://tobeatraveller.test/@jane?ref=jane',
   }));
 });
 

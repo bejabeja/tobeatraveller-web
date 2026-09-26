@@ -255,3 +255,63 @@ describe('UserRepository.getFeaturedUsers()', () => {
         expect(db.query.mock.calls[0][1][0]).toBeNull();
     });
 });
+
+describe('UserRepository invite codes after a change of username', () => {
+    const repo = new UserRepository();
+
+    beforeEach(() => {
+        db.query.mockReset();
+        db.query.mockResolvedValue({ rows: [], rowCount: 0 });
+    });
+
+    it('finds the owner of an earlier code only while it is still reserved', async () => {
+        await repo.findByReferralCode('ana');
+
+        const [query, params] = db.query.mock.calls[0];
+        expect(query).toMatch(/FROM referral_code_history/);
+        expect(query).toMatch(/retired_at > NOW\(\) - \$2::interval/);
+        expect(params).toEqual(['ana', '1 year']);
+    });
+
+    it("counts someone else's current and reserved codes as taken, not one's own", async () => {
+        await repo.isReferralCodeTakenByOther('ana', 'user-1');
+
+        const [query, params] = db.query.mock.calls[0];
+        expect(query).toMatch(/referral_code = \$1 AND id IS DISTINCT FROM \$2/);
+        expect(query).toMatch(/user_id IS DISTINCT FROM \$2/);
+        expect(params).toEqual(['ana', 'user-1', '1 year']);
+    });
+
+    it('keeps the old code in the history and takes back one of its own', async () => {
+        await repo.changeReferralCode('user-1', 'ana_vanlife');
+
+        const [query, params] = db.query.mock.calls[0];
+        expect(query).toMatch(/INSERT INTO referral_code_history/);
+        expect(query).toMatch(/DELETE FROM referral_code_history WHERE code = \$2 AND user_id = \$1/);
+        expect(query).toMatch(/UPDATE users SET referral_code = \$2 WHERE id = \$1/);
+        expect(params).toEqual(['user-1', 'ana_vanlife', '1 year']);
+    });
+
+    it('frees the earlier codes whose year is over', async () => {
+        db.query.mockResolvedValue({ rows: [], rowCount: 3 });
+
+        await expect(repo.purgeRetiredReferralCodes()).resolves.toBe(3);
+        expect(db.query.mock.calls[0][0]).toMatch(/DELETE FROM referral_code_history WHERE retired_at <= NOW\(\) - \$1::interval/);
+    });
+});
+
+describe('UserRepository.updateUser()', () => {
+    const repo = new UserRepository();
+
+    beforeEach(() => {
+        db.query.mockReset();
+        db.query.mockResolvedValue({ rows: [{ id: 'user-1', username: 'jane' }] });
+    });
+
+    // The 30-day limit counts from the last real change of name.
+    it('moves the change date only when the name itself changes', async () => {
+        await repo.updateUser('user-1', { username: 'jane', name: null, avatarUrl: null, location: null, bio: null, about: null, updatedAt: new Date() });
+
+        expect(db.query.mock.calls[0][0]).toMatch(/username_changed_at = CASE WHEN LOWER\(users\.username\) <> LOWER\(\$1\) THEN NOW\(\) ELSE users\.username_changed_at END/);
+    });
+});

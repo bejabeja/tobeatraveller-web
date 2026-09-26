@@ -15,6 +15,7 @@ import { PackingChecklistRepository } from "../repositories/packingChecklistRepo
 import { ShoppingListRepository } from "../repositories/shoppingListRepository.js";
 import { SubscriptionRepository } from "../repositories/subscriptionRepository.js";
 import { PushTokensRepository } from "../repositories/pushTokensRepository.js";
+import { ReferralRepository } from "../repositories/referralRepository.js";
 import { UserRepository } from "../repositories/userRepository.js";
 import { VanLogRepository } from "../repositories/vanLogRepository.js";
 import { auditLogService } from "../services/sharedAuditLogService.js";
@@ -23,6 +24,7 @@ import { CloudinaryService } from "../services/cloudinaryService.js";
 import { EmailService } from "../services/emailService.js";
 import { NotificationsService } from "../services/notificationsService.js";
 import { PushNotificationsService } from "../services/pushNotificationsService.js";
+import { ReferralService } from "../services/referralService.js";
 import { UserService } from "../services/userService.js";
 
 export const createUsersRouter = () => {
@@ -48,7 +50,8 @@ export const createUsersRouter = () => {
         userRepository, itinerariesRepository, followRepository, emailService,
         lifeDiaryRepository, auditLogService, vanLogRepository,
         inventoryRepository, shoppingListRepository, packingChecklistRepository,
-        subscriptionRepository, null, pushTokensRepository, badgeRepository
+        subscriptionRepository, new ReferralService(new ReferralRepository(), userRepository, auditLogService),
+        pushTokensRepository, badgeRepository
     );
     const cloudinaryService = new CloudinaryService();
     const userController = new UserController(userService, cloudinaryService);
@@ -68,9 +71,10 @@ export const createUsersRouter = () => {
     router.get("/all", userController.getAllUsersFiltered.bind(userController));
     router.get("/admin", authenticate, staffOnly, userController.getAllUsersForAdmin.bind(userController));
     router.get("/suggested", authenticate, userController.getSuggestedUsers.bind(userController));
-    router.get("/check-username", userController.checkUsernameAvailable.bind(userController));
+    router.get("/check-username", optionalAuthenticate, userController.checkUsernameAvailable.bind(userController));
     router.patch("/:id/role", authenticate, staffOnly, userController.updateUserRole.bind(userController));
     router.patch("/:id/tier", authenticate, staffOnly, userController.updateUserTier.bind(userController));
+    router.get("/by-username/:username", optionalAuthenticate, userController.getUserByUsername.bind(userController));
     router.get("/:id/passport", optionalAuthenticate, badgeController.getUserPassport.bind(badgeController));
     router.get("/:id", optionalAuthenticate, userController.getUserById.bind(userController));
 

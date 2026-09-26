@@ -298,3 +298,22 @@ describe('language', () => {
         expect(updateLanguageSchema.safeParse({ language: 'en' }).success).toBe(true);
     });
 });
+
+// Regression: codes were capped at 20 characters while a code is its owner's
+// username (up to 50), so being invited by someone with a long name made the
+// whole signup fail.
+describe('signupSchema referral code', () => {
+    const validSignup = { ...validSignupData, password: 'abcdef', confirmPassword: 'abcdef' };
+
+    it('accepts a code as long as the longest username', () => {
+        const result = signupSchema.safeParse({ ...validSignup, referralCode: 'a'.repeat(50) });
+
+        expect(result.success).toBe(true);
+    });
+
+    it('rejects a code longer than any username', () => {
+        const result = signupSchema.safeParse({ ...validSignup, referralCode: 'a'.repeat(51) });
+
+        expect(result.success).toBe(false);
+    });
+});

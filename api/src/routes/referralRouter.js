@@ -1,5 +1,7 @@
 import { Router } from "express";
 import { ReferralController } from "../controllers/referralController.js";
+import { authenticate } from "../middlewares/authenticate.js";
+import { requireCronSecret } from "../middlewares/requireCronSecret.js";
 import { requireRole } from "../middlewares/requireRole.js";
 import { ReferralRepository } from "../repositories/referralRepository.js";
 import { UserRepository } from "../repositories/userRepository.js";
@@ -16,8 +18,9 @@ export const createReferralRouter = () => {
     const referralController = new ReferralController(referralService);
     const staffOnly = requireRole(...STAFF_ROLES);
 
-    router.get("/me", referralController.getMyReferralInfo.bind(referralController));
-    router.get("/admin/overview", staffOnly, referralController.getAdminOverview.bind(referralController));
+    router.get("/me", authenticate, referralController.getMyReferralInfo.bind(referralController));
+    router.get("/admin/overview", authenticate, staffOnly, referralController.getAdminOverview.bind(referralController));
+    router.get("/scheduled-purge", requireCronSecret, referralController.purgeRetiredCodesScheduled.bind(referralController));
 
     return router;
 };

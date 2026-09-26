@@ -66,7 +66,9 @@ export const signupSchema = z.object({
     ageConfirmed: z.literal(true, {
         errorMap: () => ({ message: "You must confirm you are at least 16 years old" }),
     }),
-    referralCode: z.string().trim().max(20).optional().or(z.literal("")),
+    // A code is its owner's username (see ReferralService.codeFromUsername),
+    // so it can be as long as one.
+    referralCode: z.string().trim().max(50).optional().or(z.literal("")),
     // The app's language when signing up, for the welcome email and the
     // ones after it.
     language: z.enum(SUPPORTED_LANGUAGES).optional(),

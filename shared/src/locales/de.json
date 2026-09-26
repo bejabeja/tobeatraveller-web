@@ -444,6 +444,8 @@
     "locationAbout": "📍 Standort & Über mich",
     "namePlaceholder": "Dein Anzeigename",
     "usernamePlaceholder": "dein_benutzername",
+    "usernameLockedUntil": "Du hast deinen Benutzernamen vor Kurzem geändert. Du kannst ihn am {{date}} wieder ändern.",
+    "usernameChangeLimit": "Du kannst ihn nur alle 30 Tage ändern, und die Adresse deines Profils ändert sich mit.",
     "bioPlaceholder": "Eine kurze Beschreibung von dir…",
     "locationPlaceholder": "Stadt, Land",
     "aboutPlaceholder": "Erzähl der Community von dir und deinem Reisestil…",
@@ -451,6 +453,7 @@
     "saveProfile": "Profil speichern",
     "undoRemove": "↩ Entfernen rückgängig",
     "removePhoto": "Foto entfernen",
+    "addPhoto": "Foto hochladen",
     "changePassword": "Passwort ändern",
     "changePasswordModal": "Passwort ändern",
     "currentPasswordLabel": "Aktuelles Passwort",
@@ -895,6 +898,7 @@
     "errorSave": "Speichern fehlgeschlagen. Bitte versuch es erneut."
   },
   "itineraryForm": {
+    "placeNeedsDestination": "Wähle zuerst ein Reiseziel",
     "movePlaceUp": "Ort nach oben verschieben",
     "movePlaceDown": "Ort nach unten verschieben",
     "deletePlace": "Ort löschen",
@@ -996,6 +1000,10 @@
     "dangerZone": "Gefahrenzone"
   },
   "errors": {
+    "title": "Etwas ist schiefgelaufen",
+    "backHome": "Zur Startseite",
+    "pageNotFound": "Diese Seite gibt es nicht.",
+    "profileNotFound": "Dieses Profil gibt es nicht oder es hat seinen Namen geändert.",
     "profileLoad": "Die Profilinfos konnten nicht geladen werden. Bitte versuch es später erneut.",
     "itineraryLoad": "Der Reiseplan konnte nicht geladen werden. Bitte versuch es später erneut.",
     "itineraryNotFoundOrPrivate": "Dieser Reiseplan existiert nicht oder du hast keinen Zugriff darauf.",
@@ -1311,6 +1319,14 @@
   "referral": {
     "title": "Freunde einladen, Premium bekommen",
     "subtitle": "Für jede Person, die sich über deinen Link anmeldet und ihre erste Reise teilt, bekommt ihr beide 1 Monat Premium gratis.",
+    "rewardAmount": "1 Monat Premium",
+    "rewardForYou": "für dich",
+    "rewardForFriend": "für deinen Freund",
+    "shareWhatsApp": "WhatsApp",
+    "shareEmail": "E-Mail",
+    "appCodeHint": "Meldet sich die Person per App an? Dann gibt sie deinen Code ein:",
+    "firstInviteHint": "Dein erster Monat Premium ist nur einen Link entfernt.",
+    "progressTitle": "Dein Fortschritt",
     "howItWorksTitle": "So funktioniert's",
     "howItWorksStep1": "Teile deinen persönlichen Einladungslink",
     "howItWorksStep2": "Jemand erstellt damit ein Konto",
@@ -1330,9 +1346,9 @@
     "invitesTitle": "Deine Einladungen",
     "inviteStatusPending": "Wartet auf die erste Reise",
     "inviteStatusRewarded": "Premium freigeschaltet 🎁",
-    "mobileCodeLabel": "Einladungscode (optional)",
-    "mobileCodePlaceholder": "z. B. der Benutzername einer befreundeten Person",
-    "mobileCodeHint": "Hat dich jemand eingeladen? Gib hier den Benutzernamen ein."
+    "signupCodeLabel": "Einladungscode (optional)",
+    "signupCodePlaceholder": "z. B. der Benutzername einer befreundeten Person",
+    "signupCodeHint": "Hat dich jemand eingeladen? Gib hier den Benutzernamen ein."
   },
   "offline": {
     "pendingSync": "Wartet auf Sync",

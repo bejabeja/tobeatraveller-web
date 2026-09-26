@@ -11,15 +11,19 @@ import { useTranslation } from 'react-i18next';
 import {
   checkUsernameAvailable, initAuthUser, reverseGeocode,
   selectMe, selectAuthUser,
-  setUserInfo, updateUser,
+  setUserInfo, updateUser, formatDate,
 } from '@tobeatraveller/shared';
 import { shadow } from '../../utils/styles';
 import { GEOAPIFY_KEY } from '../../utils/config';
 import { useCurrentLocation } from '../../hooks/useCurrentLocation';
 import { UseCurrentLocationButton } from '../../components/UseCurrentLocationButton';
 
+// The API's answer when the name changed less than 30 days ago (e.g. on
+// another device, where the field wasn't locked yet).
+const USERNAME_COOLDOWN_ERROR = 'The username can only be changed';
+
 const EditProfileScreen = ({ navigation }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const dispatch = useDispatch();
   const insets = useSafeAreaInsets();
   const meDetail = useSelector(selectMe);
@@ -145,6 +149,15 @@ const EditProfileScreen = ({ navigation }) => {
     }
   };
 
+  // Changed less than 30 days ago: locked until then (the API refuses it too).
+  const usernameLockedUntil = meDetail?.usernameChangeAvailableAt;
+  const usernameEdited = !usernameLockedUntil && fields.username
+    && fields.username.toLowerCase() !== user?.username?.toLowerCase();
+  const usernameHint = usernameLockedUntil
+    ? t('editProfile.usernameLockedUntil', { date: formatDate(usernameLockedUntil, i18n.language, { day: 'numeric', month: 'long', year: 'numeric' }) })
+    // Before saving, not after: the old address stops working.
+    : usernameEdited ? t('editProfile.usernameChangeLimit') : undefined;
+
   const handleSave = async () => {
     if (!validate() || usernameStatus === 'taken' || usernameStatus === 'checking') return;
     setSaving(true);
@@ -167,7 +180,9 @@ const EditProfileScreen = ({ navigation }) => {
       await Promise.all(refreshes);
       navigation.goBack();
     } catch (err) {
-      setSubmitError(err?.message || t('errors.updateProfileFailed'));
+      setSubmitError(err?.message?.startsWith(USERNAME_COOLDOWN_ERROR)
+        ? t('editProfile.usernameChangeLimit')
+        : err?.message || t('errors.updateProfileFailed'));
     } finally {
       setSaving(false);
     }
@@ -267,9 +282,10 @@ const EditProfileScreen = ({ navigation }) => {
               />
             </Field>
 
-            <Field label={t('editProfile.usernameLabel')} error={errors.username}>
+            <Field label={t('editProfile.usernameLabel')} error={errors.username} hint={usernameHint}>
               <TextInput
-                style={styles.input}
+                style={[styles.input, usernameLockedUntil && styles.inputLocked]}
+                editable={!usernameLockedUntil}
                 value={fields.username}
                 onChangeText={v => setField('username', v)}
                 placeholder={t('editProfile.usernamePlaceholder')}
@@ -408,6 +424,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f7f9fc', paddingVertical: 11, paddingHorizontal: 13,
     fontSize: 15, color: '#111827',
   },
+  inputLocked: { opacity: 0.55 },
   textarea: { minHeight: 72, textAlignVertical: 'top' },
   textareaLarge: { minHeight: 120, textAlignVertical: 'top' },
 

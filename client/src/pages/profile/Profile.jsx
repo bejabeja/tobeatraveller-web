@@ -18,7 +18,8 @@ import { selectAuthUser } from "../../store/auth/authSelectors";
 import { optimizedCloudinaryUrl } from "../../utils/cloudinaryUrl";
 import { generateAvatar } from "../../utils/constants/constants";
 import { buildProfileJsonLd } from "../../utils/jsonLd";
-import { BADGE_EMOJI, countryFlag, filterItineraries, formatDate, summarizePassport } from "@tobeatraveller/shared";
+import { BADGE_EMOJI, countryFlag, filterItineraries, formatDate, profileShareUrl, summarizePassport } from "@tobeatraveller/shared";
+import { getMyReferralInfo } from "../../services/referral";
 import FollowsModal from "../../components/follows/FollowsModal";
 import PassportShareDialog from "../../components/passport/PassportShareDialog";
 import RecapBanner, { RECAP_SOURCES } from "../../components/recap/RecapBanner";
@@ -41,9 +42,12 @@ const COMPLETENESS_TIP_KEYS = [
 const TRIPS_TABS = Object.freeze({ MINE: "mine", SAVED: "saved" });
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
-const Profile = () => {
+// `id` comes from the address (/profile/:id) or, for a profile opened by
+// name (/@username), from the page that looked the name up.
+const Profile = ({ id: idFromName }) => {
   const { t } = useTranslation();
-  const { id } = useParams();
+  const params = useParams();
+  const id = idFromName ?? params.id;
   const authUser = useSelector(selectAuthUser);
   const {
     user, itineraries, loadingUser, error,
@@ -59,6 +63,17 @@ const Profile = () => {
   // Remounting the filters is what empties them: they keep their own values.
   const [tripFiltersResetKey, setTripFiltersResetKey] = useState(0);
   const [tripsTab, setTripsTab] = useState(TRIPS_TABS.MINE);
+  // Asked for up front, not on the click: browsers only let a page copy
+  // right after the click, not after waiting for the API.
+  const [ownReferralCode, setOwnReferralCode] = useState(null);
+  useEffect(() => {
+    if (!isMyProfile) return;
+    let cancelled = false;
+    getMyReferralInfo()
+      .then((info) => { if (!cancelled) setOwnReferralCode(info.referralCode); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [isMyProfile]);
   // Only the owner has the saved tab: saved trips are private.
   const savedTrips = useSavedTrips(isMyProfile);
 
@@ -96,7 +111,7 @@ const Profile = () => {
     user,
     description: profileDescription,
     image: profileImage,
-    url: user && window.location.href,
+    url: user && profileShareUrl(window.location.origin, user.username),
   });
 
   if (error) return <Error message={t("errors.profileLoad")} />;
@@ -106,9 +121,11 @@ const Profile = () => {
     else toggleFollow();
   };
 
+  // By name (/@tbat), and on your own profile with your invite code, so
+  // whoever signs up from it counts as invited by you.
   const handleCopyLink = () => {
     navigator.clipboard
-      .writeText(window.location.href)
+      .writeText(profileShareUrl(window.location.origin, user.username, isMyProfile ? ownReferralCode : null))
       .then(() => toast.success(t("itinerary.linkCopied")))
       .catch(() => toast.error(t("itinerary.couldntCopyLink")));
   };

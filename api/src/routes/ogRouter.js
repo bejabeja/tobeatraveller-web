@@ -51,6 +51,16 @@ export const passportPageUrls = (appUrl, userId, referralCode) => {
     return { pageUrl, redirectUrl };
 };
 
+// A profile shared by name (/@tbat): the preview is for that address, and a
+// person landing here keeps the owner's invite code on the way in.
+export const profileHandlePageUrls = (appUrl, username, referralCode) => {
+    const pageUrl = `${appUrl}/@${encodeURIComponent(username)}`;
+    const redirectUrl = typeof referralCode === 'string' && referralCode
+        ? `${pageUrl}?ref=${encodeURIComponent(referralCode)}`
+        : pageUrl;
+    return { pageUrl, redirectUrl };
+};
+
 // These pages are reached through the web's Vercel rewrite for link-preview
 // bots, on the very URL being previewed. A redirect back to that URL would
 // send the bot through the rewrite again, in a loop, so when the content
@@ -98,6 +108,18 @@ export const createOgRouter = () => {
             sendOgPage(res, buildUserOgMeta(user, appUrl), { pageUrl: redirectUrl, redirectUrl, type: 'profile' });
         } catch {
             sendOgPage(res, buildDefaultOgMeta(appUrl), { pageUrl: redirectUrl, redirectUrl, type: 'website' });
+        }
+    });
+
+    router.get('/user/:username', async (req, res) => {
+        const appUrl = config.appUrl;
+        const { pageUrl, redirectUrl } = profileHandlePageUrls(appUrl, req.params.username, req.query.ref);
+
+        try {
+            const user = await userService.getUserByUsername(req.params.username);
+            sendOgPage(res, buildUserOgMeta(user, appUrl), { pageUrl, redirectUrl, type: 'profile' });
+        } catch {
+            sendOgPage(res, buildDefaultOgMeta(appUrl), { pageUrl, redirectUrl, type: 'website' });
         }
     });
 

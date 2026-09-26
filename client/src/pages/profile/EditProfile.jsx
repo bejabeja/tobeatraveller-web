@@ -6,6 +6,7 @@ import { IoCameraOutline, IoTrashOutline, IoArrowBackOutline } from "react-icons
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { formatDate } from "@tobeatraveller/shared";
 import { InputForm, TextAreaForm } from "../../components/form/InputForm";
 import UseCurrentLocationButton from "../../components/form/UseCurrentLocationButton";
 import Modal from "../../components/modal/Modal";
@@ -21,8 +22,12 @@ import { generateAvatar } from "../../utils/constants/constants";
 import { updateUserSchema } from "../../utils/schemasValidation";
 import "./EditProfile.scss";
 
+// The API's answer when the name changed less than 30 days ago (e.g. from
+// another tab, where the field wasn't locked yet).
+const USERNAME_COOLDOWN_ERROR = "The username can only be changed";
+
 const EditProfile = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const dispatch = useDispatch();
   const { id } = useParams();
   const userMe = useSelector(selectMe);
@@ -105,6 +110,9 @@ const EditProfile = () => {
   if (!userMe) return <EditProfileSkeleton />;
 
   const hasChanges = isDirty || !!avatarFile || removeAvatar;
+  // Changed less than 30 days ago: locked until then (the API refuses it too).
+  const usernameLockedUntil = userMe.usernameChangeAvailableAt;
+  const usernameEdited = !usernameLockedUntil && usernameValue && usernameValue.toLowerCase() !== userMe.username?.toLowerCase();
 
   const saveUser = async (data) => {
     setErrorSubmit(null);
@@ -118,7 +126,8 @@ const EditProfile = () => {
       navigate(`/profile/${id}`);
     } catch (err) {
       if (err.field && err.field in updateUserSchema.shape) {
-        setError(err.field, { type: "server", message: err.message });
+        const message = err.message?.startsWith(USERNAME_COOLDOWN_ERROR) ? t("editProfile.usernameChangeLimit") : err.message;
+        setError(err.field, { type: "server", message });
         document.getElementById(err.field)?.scrollIntoView({ behavior: "smooth", block: "center" });
         document.getElementById(err.field)?.focus();
       } else {
@@ -174,7 +183,8 @@ const EditProfile = () => {
                 placeholder={t("editProfile.namePlaceholder")} error={errors.name} maxLength={50} />
               <div className="ep__username-wrap">
                 <InputForm name="username" label={t("editProfile.usernameLabel")} control={control} type="text"
-                  placeholder={t("editProfile.usernamePlaceholder")} error={errors.username} maxLength={50} />
+                  placeholder={t("editProfile.usernamePlaceholder")} error={errors.username} maxLength={50}
+                  inputProps={{ disabled: Boolean(usernameLockedUntil) }} />
                 {usernameStatus && (
                   <span className={`ep__username-status ep__username-status--${usernameStatus}`} aria-live="polite">
                     {usernameStatus === "checking"  && t("common.checking")}
@@ -182,6 +192,13 @@ const EditProfile = () => {
                     {usernameStatus === "taken"     && t("editProfile.alreadyTaken")}
                   </span>
                 )}
+                {usernameLockedUntil && (
+                  <p className="ep__field-hint">
+                    {t("editProfile.usernameLockedUntil", { date: formatDate(usernameLockedUntil, i18n.language, { day: "numeric", month: "long", year: "numeric" }) })}
+                  </p>
+                )}
+                {/* Before saving, not after: the old address stops working. */}
+                {usernameEdited && <p className="ep__field-hint">{t("editProfile.usernameChangeLimit")}</p>}
               </div>
               <TextAreaForm name="bio" label={t("editProfile.bioLabel")} control={control}
                 placeholder={t("editProfile.bioPlaceholder")} error={errors.bio} maxLength={160} />
@@ -255,7 +272,7 @@ const AvatarEditor = ({ userMe, avatarPreview, removeAvatar, onAvatarChange, onR
         </button>
       ) : (
         <button type="button" className="ep__avatar-action" onClick={() => inputRef.current?.click()}>
-          {t("editProfile.basicInfo")}
+          {t("editProfile.addPhoto")}
         </button>
       )}
     </div>

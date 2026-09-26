@@ -120,7 +120,7 @@ const AutocompletePlaceInput = ({
                 onChange={(e) =>
                   handleInputChange(e.target.value, field.onChange)
                 }
-                placeholder={!destination?.name ? "Select a destination first" : "Search for a place..."}
+                placeholder={!destination?.name ? t("itineraryForm.placeNeedsDestination") : t("createExperience.locationPlaceholder")}
                 className={`input__field ${error ? "input__field--invalid" : ""}`}
                 autoComplete="off"
                 aria-invalid={!!error}

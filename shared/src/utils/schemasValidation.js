@@ -43,7 +43,8 @@ export const signupSchema = z.object({
         .min(6, "Password must be at least 6 characters")
         .refine((password) => password.trim().length >= 6, "Password must be at least 6 characters"),
     confirmPassword: z.string(),
-
+    // Optional; a code is its owner's username, so it's at most as long.
+    referralCode: z.string().trim().max(50, "Invite code must be at most 50 characters").optional(),
 }).refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
     path: ["confirmPassword"],

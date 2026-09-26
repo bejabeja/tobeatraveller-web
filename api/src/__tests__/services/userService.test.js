@@ -9,6 +9,7 @@ import { User } from '../../models/user.js';
 import { UserService } from '../../services/userService.js';
 import { AuthError } from '../../errors/AuthError.js';
 import { NotFoundError } from '../../errors/NotFoundError.js';
+import { ConflictError } from '../../errors/ConflictError.js';
 import { AUDIT_EVENTS } from '../../utils/auditEvents.js';
 
 const makeUser = (overrides = {}) => new User({
@@ -340,9 +341,20 @@ describe('UserService.create()', () => {
         userRepository = {
             findByName: async () => null,
             findByEmail: async () => null,
+            isReferralCodeTakenByOther: async () => false,
             save: async (user) => makeUser(user),
         };
         service = new UserService(userRepository, { findPublicByUserId: async () => [] }, {});
+    });
+
+    // Regression: a name someone had before (and still their invite code)
+    // could be taken, and the signup then failed on the duplicate code.
+    it("rejects a username that is still someone else's invite code", async () => {
+        userRepository.isReferralCodeTakenByOther = vi.fn().mockResolvedValue(true);
+
+        await expect(service.create({ username: 'Ana', email: 'x@example.com', password: 'secret1' }))
+            .rejects.toBeInstanceOf(ConflictError);
+        expect(userRepository.isReferralCodeTakenByOther).toHaveBeenCalledWith('ana', null);
     });
 
     it('resolves the signup country from the request IP', async () => {
@@ -441,7 +453,7 @@ describe('UserService.create()', () => {
 describe('UserService.exportUserData()', () => {
     it('logs a data_exported event for the requesting user, a GDPR data-subject request', async () => {
         let loggedEntry;
-        const userRepository = { getUserById: async () => makeUser() };
+        const userRepository = { getUserById: async () => makeUser(), findRetiredReferralCodes: async () => [] };
         const itinerariesRepository = { findByUserId: async () => [] };
         const followRepository = { getFollowers: async () => [], getFollowing: async () => [] };
         const auditLogService = { log: (entry) => { loggedEntry = entry; } };
@@ -457,7 +469,7 @@ describe('UserService.exportUserData()', () => {
 
     it('forwards the caller\'s ip and user agent to the log', async () => {
         let loggedEntry;
-        const userRepository = { getUserById: async () => makeUser() };
+        const userRepository = { getUserById: async () => makeUser(), findRetiredReferralCodes: async () => [] };
         const itinerariesRepository = { findByUserId: async () => [] };
         const followRepository = { getFollowers: async () => [], getFollowing: async () => [] };
         const auditLogService = { log: (entry) => { loggedEntry = entry; } };
@@ -474,7 +486,7 @@ describe('UserService.exportUserData()', () => {
     // record in the audit trail.
     it('does not log data_exported when assembling the export data fails', async () => {
         let loggedEntry;
-        const userRepository = { getUserById: async () => makeUser() };
+        const userRepository = { getUserById: async () => makeUser(), findRetiredReferralCodes: async () => [] };
         const itinerariesRepository = { findByUserId: async () => { throw new Error('db down'); } };
         const followRepository = { getFollowers: async () => [], getFollowing: async () => [] };
         const auditLogService = { log: (entry) => { loggedEntry = entry; } };
@@ -492,7 +504,7 @@ describe('UserService.exportUserData()', () => {
     // (the "Download data" button) didn't actually return everything the user
     // had created in the app.
     it('includes van-log, supplies, packing-checklist, and life-diary (with images) content', async () => {
-        const userRepository = { getUserById: async () => makeUser() };
+        const userRepository = { getUserById: async () => makeUser(), findRetiredReferralCodes: async () => [] };
         const itinerariesRepository = { findByUserId: async () => [] };
         const followRepository = { getFollowers: async () => [], getFollowing: async () => [] };
         const lifeDiaryRepository = {
@@ -520,7 +532,7 @@ describe('UserService.exportUserData()', () => {
     });
 
     it('omits van-log, supplies, packing-checklist, and life-diary content when those repositories are not wired', async () => {
-        const userRepository = { getUserById: async () => makeUser() };
+        const userRepository = { getUserById: async () => makeUser(), findRetiredReferralCodes: async () => [] };
         const itinerariesRepository = { findByUserId: async () => [] };
         const followRepository = { getFollowers: async () => [], getFollowing: async () => [] };
         const service = new UserService(userRepository, itinerariesRepository, followRepository);
@@ -534,7 +546,7 @@ describe('UserService.exportUserData()', () => {
     });
 
     it('includes the devices registered for push notifications', async () => {
-        const userRepository = { getUserById: async () => makeUser() };
+        const userRepository = { getUserById: async () => makeUser(), findRetiredReferralCodes: async () => [] };
         const itinerariesRepository = { findByUserId: async () => [] };
         const followRepository = { getFollowers: async () => [], getFollowing: async () => [] };
         const pushDevice = { token: 'ExponentPushToken[a]', platform: 'android', locale: 'es' };
@@ -550,7 +562,7 @@ describe('UserService.exportUserData()', () => {
     });
 
     it('includes the badges the user has earned and the countries in their passport, stamped and declared', async () => {
-        const userRepository = { getUserById: async () => makeUser() };
+        const userRepository = { getUserById: async () => makeUser(), findRetiredReferralCodes: async () => [] };
         const itinerariesRepository = { findByUserId: async () => [] };
         const followRepository = { getFollowers: async () => [], getFollowing: async () => [] };
         const earned = [{ badgeId: 'explorer', earnedAt: new Date('2026-09-01') }];
@@ -572,7 +584,20 @@ describe('UserService.exportUserData()', () => {
         expect(result.countryStamps).toEqual(countryStamps);
         expect(result.declaredCountries).toEqual(declaredCountries);
     });
+
+    it('includes the earlier invite codes still kept after a change of username', async () => {
+        const retired = [{ code: 'jane_old', retiredAt: '2026-03-01T00:00:00Z' }];
+        const userRepository = { getUserById: async () => makeUser(), findRetiredReferralCodes: async () => retired };
+        const service = new UserService(
+            userRepository, { findByUserId: async () => [] }, { getFollowers: async () => [], getFollowing: async () => [] }
+        );
+
+        const result = await service.exportUserData('user-1', { id: 'user-1', username: 'jane' });
+
+        expect(result.profile.previousReferralCodes).toEqual(retired);
+    });
 });
+
 
 describe('UserService.changePassword()', () => {
     let service;
@@ -693,5 +718,190 @@ describe('UserService.getFeaturedUsers()', () => {
         const { service } = makeService([]);
 
         await expect(service.getFeaturedUsers('viewer-1')).resolves.toEqual([]);
+    });
+});
+
+describe('UserService.getUserByUsername()', () => {
+    const makeService = (found) => {
+        const userRepository = { findByName: vi.fn().mockResolvedValue(found), getUserById: vi.fn().mockResolvedValue(found) };
+        const itinerariesRepository = { findPublicByUserId: async () => [], findActiveByUserId: async () => null };
+        const followRepository = { getFollowers: async () => [], getFollowing: async () => [] };
+        const subscriptionRepository = { hasAnySubscription: async () => false };
+        return new UserService(userRepository, itinerariesRepository, followRepository, null, null, null, null, null, null, null, subscriptionRepository);
+    };
+
+    it('returns the same public profile as by id, without the email', async () => {
+        const service = makeService(makeUser());
+
+        const result = await service.getUserByUsername('Jane', 'someone-else');
+
+        expect(result.id).toBe('user-1');
+        expect(result.email).toBeUndefined();
+    });
+
+    it('throws NotFoundError when nobody has that name', async () => {
+        const service = makeService(null);
+
+        await expect(service.getUserByUsername('nobody', null)).rejects.toBeInstanceOf(NotFoundError);
+    });
+});
+
+describe('UserService.updateUser() and the invite code', () => {
+    const makeService = (overrides = {}) => {
+        const userRepository = {
+            findByName: async () => null,
+            isReferralCodeTakenByOther: async () => false,
+            getUserById: async () => makeUser(),
+            updateUser: async (id, user) => user,
+            ...overrides,
+        };
+        const referralService = { changeCodeForUsername: vi.fn().mockResolvedValue(undefined) };
+        const service = new UserService(userRepository, {}, {}, null, null, null, null, null, null, null, null, referralService);
+        return { service, referralService };
+    };
+
+    it('moves the invite code to the new name after a change of username', async () => {
+        const { service, referralService } = makeService();
+
+        await service.updateUser('user-1', { username: 'jane_vanlife' });
+
+        expect(referralService.changeCodeForUsername).toHaveBeenCalledWith('user-1', 'jane_vanlife');
+    });
+
+    it('leaves the invite code alone when the username stays the same', async () => {
+        const { service, referralService } = makeService();
+
+        await service.updateUser('user-1', { username: 'jane', bio: 'New bio' });
+
+        expect(referralService.changeCodeForUsername).not.toHaveBeenCalled();
+    });
+
+    it("refuses a new name that is still someone else's earlier code", async () => {
+        const { service, referralService } = makeService({ isReferralCodeTakenByOther: async () => true });
+
+        await expect(service.updateUser('user-1', { username: 'ana' })).rejects.toBeInstanceOf(ConflictError);
+        expect(referralService.changeCodeForUsername).not.toHaveBeenCalled();
+    });
+});
+
+describe('UserService.isUsernameAvailable()', () => {
+    it("says a name is taken while it is still someone's earlier code", async () => {
+        const userRepository = { findByName: async () => null, isReferralCodeTakenByOther: vi.fn().mockResolvedValue(true) };
+        const service = new UserService(userRepository, {}, {});
+
+        await expect(service.isUsernameAvailable('Ana')).resolves.toBe(false);
+        expect(userRepository.isReferralCodeTakenByOther).toHaveBeenCalledWith('ana', null);
+    });
+});
+
+describe('UserService.updateUser() limits username changes', () => {
+    const DAY_MS = 24 * 60 * 60 * 1000;
+    const makeService = (usernameChangedAt) => {
+        const userRepository = {
+            findByName: async () => null,
+            isReferralCodeTakenByOther: async () => false,
+            getUserById: async () => makeUser({ usernameChangedAt }),
+            updateUser: vi.fn(async (id, user) => user),
+        };
+        const service = new UserService(userRepository, {}, {}, null, null, null, null, null, null, null, null,
+            { changeCodeForUsername: async () => {} });
+        return { service, userRepository };
+    };
+
+    it('allows the first change of username', async () => {
+        const { service, userRepository } = makeService(null);
+
+        await service.updateUser('user-1', { username: 'jane_vanlife' });
+
+        expect(userRepository.updateUser).toHaveBeenCalled();
+    });
+
+    it('throws ConflictError when the name changed less than 30 days ago', async () => {
+        const { service, userRepository } = makeService(new Date(Date.now() - 10 * DAY_MS));
+
+        await expect(service.updateUser('user-1', { username: 'jane_vanlife' })).rejects.toBeInstanceOf(ConflictError);
+        expect(userRepository.updateUser).not.toHaveBeenCalled();
+    });
+
+    it('allows a new change once 30 days have passed', async () => {
+        const { service, userRepository } = makeService(new Date(Date.now() - 31 * DAY_MS));
+
+        await service.updateUser('user-1', { username: 'jane_vanlife' });
+
+        expect(userRepository.updateUser).toHaveBeenCalled();
+    });
+
+    // Same code and same link: not a change of name.
+    it('lets capitals be changed at any time', async () => {
+        const { service, userRepository } = makeService(new Date(Date.now() - DAY_MS));
+
+        await service.updateUser('user-1', { username: 'Jane', bio: 'Van life' });
+
+        expect(userRepository.updateUser).toHaveBeenCalled();
+    });
+});
+
+describe('UserService.updateUser() name checks and audit', () => {
+    const makeService = ({ takenAsCode = false } = {}) => {
+        const userRepository = {
+            findByName: async () => null,
+            isReferralCodeTakenByOther: vi.fn().mockResolvedValue(takenAsCode),
+            getUserById: async () => makeUser(),
+            updateUser: vi.fn(async (id, user) => user),
+        };
+        const auditLogService = { log: vi.fn() };
+        const service = new UserService(userRepository, {}, {}, null, null, auditLogService, null, null, null, null, null,
+            { changeCodeForUsername: async () => {} });
+        return { service, userRepository, auditLogService };
+    };
+
+    // Regression: an unchanged name was checked on every save, so a profile
+    // whose name matched someone's reserved earlier code could not be saved.
+    it('saves the rest of the profile without checking an unchanged name', async () => {
+        const { service, userRepository } = makeService({ takenAsCode: true });
+
+        await service.updateUser('user-1', { username: 'jane', bio: 'Van life' });
+
+        expect(userRepository.isReferralCodeTakenByOther).not.toHaveBeenCalled();
+        expect(userRepository.updateUser).toHaveBeenCalled();
+    });
+
+    it('records who changed the name, from what to what', async () => {
+        const { service, auditLogService } = makeService();
+
+        await service.updateUser('user-1', { username: 'jane_vanlife' }, { ip: '1.2.3.4', userAgent: 'UA' });
+
+        expect(auditLogService.log).toHaveBeenCalledWith(expect.objectContaining({
+            action: AUDIT_EVENTS.USERNAME_CHANGED,
+            targetUserId: 'user-1',
+            metadata: { previousUsername: 'jane', newUsername: 'jane_vanlife' },
+            ipAddress: '1.2.3.4',
+        }));
+    });
+
+    it('records nothing when only the bio changes', async () => {
+        const { service, auditLogService } = makeService();
+
+        await service.updateUser('user-1', { username: 'jane', bio: 'Van life' });
+
+        expect(auditLogService.log).not.toHaveBeenCalled();
+    });
+});
+
+describe('UserService.isUsernameAvailable() for the one asking', () => {
+    // Regression: "jane" asking for "Jane" (capitals only) got "taken".
+    it("counts one's own name, in other capitals, as available", async () => {
+        const userRepository = { findByName: async () => makeUser({ id: 'user-1' }), isReferralCodeTakenByOther: vi.fn().mockResolvedValue(false) };
+        const service = new UserService(userRepository, {}, {});
+
+        await expect(service.isUsernameAvailable('Jane', 'user-1')).resolves.toBe(true);
+        expect(userRepository.isReferralCodeTakenByOther).toHaveBeenCalledWith('jane', 'user-1');
+    });
+
+    it("still counts someone else's name as taken", async () => {
+        const userRepository = { findByName: async () => makeUser({ id: 'user-2' }), isReferralCodeTakenByOther: async () => false };
+        const service = new UserService(userRepository, {}, {});
+
+        await expect(service.isUsernameAvailable('jane', 'user-1')).resolves.toBe(false);
     });
 });

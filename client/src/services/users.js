@@ -6,6 +6,7 @@ export {
     getUserForAuth,
     getFeaturedUsers,
     getUserById,
+    getUserByUsername,
     updateUser,
     changePassword,
     updateMyLanguage,

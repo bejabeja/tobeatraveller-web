@@ -449,6 +449,8 @@
     "locationAbout": "📍 Ubicación y descripción",
     "namePlaceholder": "Tu nombre visible",
     "usernamePlaceholder": "tu_usuario",
+    "usernameLockedUntil": "Ya cambiaste tu nombre de usuario hace poco. Podrás volver a cambiarlo el {{date}}.",
+    "usernameChangeLimit": "Solo puedes cambiarlo una vez cada 30 días, y la dirección de tu perfil cambiará con él.",
     "bioPlaceholder": "Una breve descripción de ti mismo…",
     "locationPlaceholder": "Ciudad, País",
     "aboutPlaceholder": "Cuéntale a la comunidad sobre ti y tu estilo de viaje…",
@@ -456,6 +458,7 @@
     "saveProfile": "Guardar perfil",
     "undoRemove": "↩ Deshacer eliminación",
     "removePhoto": "Eliminar foto",
+    "addPhoto": "Subir foto",
     "changePassword": "Cambiar contraseña",
     "changePasswordModal": "Cambiar contraseña",
     "currentPasswordLabel": "Contraseña actual",
@@ -887,6 +890,7 @@
     "errorSave": "No se pudo guardar. Por favor, inténtalo de nuevo."
   },
   "itineraryForm": {
+    "placeNeedsDestination": "Elige primero un destino",
     "movePlaceUp": "Subir lugar",
     "movePlaceDown": "Bajar lugar",
     "deletePlace": "Eliminar lugar",
@@ -1006,6 +1010,10 @@
     "dangerZone": "Zona de peligro"
   },
   "errors": {
+    "title": "Algo no ha ido bien",
+    "backHome": "Volver al inicio",
+    "pageNotFound": "Esta página no existe.",
+    "profileNotFound": "Este perfil no existe o ha cambiado de nombre.",
     "profileLoad": "No pudimos cargar el perfil. Por favor, inténtalo más tarde.",
     "itineraryLoad": "No pudimos cargar el itinerario. Por favor, inténtalo más tarde.",
     "itineraryNotFoundOrPrivate": "Este itinerario no existe o no tienes acceso a él.",
@@ -1322,6 +1330,14 @@
   "referral": {
     "title": "Invita a amigos, gana Premium",
     "subtitle": "Por cada amigo que se una con tu enlace y comparta su primer viaje, los dos ganáis 1 mes de Premium gratis.",
+    "rewardAmount": "1 mes de Premium",
+    "rewardForYou": "para ti",
+    "rewardForFriend": "para tu amigo",
+    "shareWhatsApp": "WhatsApp",
+    "shareEmail": "Email",
+    "appCodeHint": "¿Se registra desde la app? Que escriba tu código:",
+    "firstInviteHint": "Tu primer mes de Premium está a un enlace de distancia.",
+    "progressTitle": "Tu progreso",
     "howItWorksTitle": "Cómo funciona",
     "howItWorksStep1": "Comparte tu enlace de invitación personal",
     "howItWorksStep2": "Un amigo crea una cuenta con él",
@@ -1341,9 +1357,9 @@
     "invitesTitle": "Tus invitaciones",
     "inviteStatusPending": "Esperando su primer viaje",
     "inviteStatusRewarded": "Premium desbloqueado 🎁",
-    "mobileCodeLabel": "Código de invitación (opcional)",
-    "mobileCodePlaceholder": "ej. el nombre de usuario de un amigo",
-    "mobileCodeHint": "¿Te invitó un amigo? Escribe aquí su nombre de usuario."
+    "signupCodeLabel": "Código de invitación (opcional)",
+    "signupCodePlaceholder": "ej. el nombre de usuario de un amigo",
+    "signupCodeHint": "¿Te invitó un amigo? Escribe aquí su nombre de usuario."
   },
   "offline": {
     "pendingSync": "Pendiente de sincronizar",

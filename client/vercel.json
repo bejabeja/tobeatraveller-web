@@ -49,6 +49,17 @@
             "destination": "https://tfm-eta.vercel.app/og/profile/:id"
         },
         {
+            "source": "/@:username",
+            "has": [
+                {
+                    "type": "header",
+                    "key": "user-agent",
+                    "value": ".*(facebookexternalhit|Facebot|WhatsApp|Twitterbot|TelegramBot|Slackbot|LinkedInBot|Discordbot|Pinterestbot|redditbot|SkypeUriPreview|Embedly).*"
+                }
+            ],
+            "destination": "https://tfm-eta.vercel.app/og/user/:username"
+        },
+        {
             "source": "/(.*)",
             "destination": "/"
         }

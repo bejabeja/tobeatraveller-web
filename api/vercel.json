@@ -28,6 +28,10 @@
         {
             "path": "/badges/scheduled-evaluate",
             "schedule": "0 7 * * *"
+        },
+        {
+            "path": "/referrals/scheduled-purge",
+            "schedule": "0 5 * * *"
         }
     ]
 }

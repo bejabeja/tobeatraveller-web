@@ -1,15 +1,18 @@
 import { MdErrorOutline } from "react-icons/md";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-import "./Error.scss"; // opcional para estilos
+import "./Error.scss";
 
 const Error = ({ message }) => {
+  const { t } = useTranslation();
+
   return (
     <div className="section__container error__component">
       <MdErrorOutline size={48} className="error__icon" />
-      <h2>Something went wrong</h2>
-      <p>{message || "Please try again later."}</p>
+      <h2>{t("errors.title")}</h2>
+      <p>{message || t("errors.somethingWrong")}</p>
       <Link to="/" className="btn btn--secondary">
-        Go Back Home
+        {t("errors.backHome")}
       </Link>
     </div>
   );

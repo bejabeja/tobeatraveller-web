@@ -129,6 +129,16 @@ describe('ReferralService', () => {
     });
   });
 
+  describe('changeCodeForUsername()', () => {
+    it('makes the new username, lowercased, the invite code', async () => {
+      userRepository.changeReferralCode = vi.fn().mockResolvedValue(undefined);
+
+      await service.changeCodeForUsername('user-1', 'Jane_Vanlife');
+
+      expect(userRepository.changeReferralCode).toHaveBeenCalledWith('user-1', 'jane_vanlife');
+    });
+  });
+
   describe('registerSignup()', () => {
     it('does nothing when no referral code is given', async () => {
       await service.registerSignup(undefined, 'new-user');
@@ -151,6 +161,15 @@ describe('ReferralService', () => {
       await service.registerSignup('own-code', 'new-user');
 
       expect(referralRepository.createPending).not.toHaveBeenCalled();
+    });
+
+    // Regression: a code typed by hand with capitals or spaces matched nobody.
+    it('finds the referrer whatever the case or spaces the code was typed with', async () => {
+      userRepository.findByReferralCode.mockResolvedValue(makeUser({ id: 'referrer-1' }));
+
+      await service.registerSignup('  TBat ', 'new-user');
+
+      expect(userRepository.findByReferralCode).toHaveBeenCalledWith('tbat');
     });
 
     it('creates a pending referral linking the referrer to the new user', async () => {

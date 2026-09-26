@@ -1,5 +1,6 @@
 import db from '../db/clientPostgres.js';
 import { User } from '../models/user.js';
+import { RETIRED_REFERRAL_CODE_RESERVATION } from '../utils/referralCode.js';
 
 const FEATURED_USERS_LIMIT = 3;
 
@@ -23,14 +24,77 @@ export class UserRepository {
         return User.fromDb(result.rows[0]);
     }
 
+    // A current code, or an earlier one still reserved for its owner after a
+    // change of username.
     async findByReferralCode(code) {
-        const result = await db.query(
-            "SELECT * FROM users WHERE referral_code = $1",
-            [code]
-        );
+        const result = await db.query(`
+            SELECT users.* FROM users WHERE users.referral_code = $1
+            UNION ALL
+            SELECT users.* FROM referral_code_history
+            JOIN users ON users.id = referral_code_history.user_id
+            WHERE referral_code_history.code = $1
+              AND referral_code_history.retired_at > NOW() - $2::interval
+            LIMIT 1
+        `, [code, RETIRED_REFERRAL_CODE_RESERVATION]);
         if (result.rows.length === 0) return null;
 
         return User.fromDb(result.rows[0]);
+    }
+
+    // Whether someone other than `userId` holds this code, now or as an
+    // earlier one still reserved: taking that username would take their code.
+    async isReferralCodeTakenByOther(code, userId = null) {
+        const result = await db.query(`
+            SELECT 1 FROM users WHERE referral_code = $1 AND id IS DISTINCT FROM $2
+            UNION ALL
+            SELECT 1 FROM referral_code_history
+            WHERE code = $1 AND user_id IS DISTINCT FROM $2
+              AND retired_at > NOW() - $3::interval
+            LIMIT 1
+        `, [code, userId, RETIRED_REFERRAL_CODE_RESERVATION]);
+        return result.rows.length > 0;
+    }
+
+    // One statement, so the old code is never lost halfway: it moves to the
+    // history (a row of theirs, or one whose reservation is over, is taken
+    // over) and the new one becomes current; changing back to an earlier
+    // name takes that code out of the history again.
+    async changeReferralCode(userId, newCode) {
+        await db.query(`
+            WITH current_code AS (
+                SELECT referral_code FROM users WHERE id = $1
+            ),
+            retired AS (
+                INSERT INTO referral_code_history (code, user_id)
+                SELECT referral_code, $1 FROM current_code
+                WHERE referral_code IS NOT NULL AND referral_code <> $2
+                ON CONFLICT (code) DO UPDATE
+                SET user_id = EXCLUDED.user_id, retired_at = CURRENT_TIMESTAMP
+                WHERE referral_code_history.user_id = EXCLUDED.user_id
+                   OR referral_code_history.retired_at <= NOW() - $3::interval
+            ),
+            reclaimed AS (
+                DELETE FROM referral_code_history WHERE code = $2 AND user_id = $1
+            )
+            UPDATE users SET referral_code = $2 WHERE id = $1
+        `, [userId, newCode, RETIRED_REFERRAL_CODE_RESERVATION]);
+    }
+
+    async findRetiredReferralCodes(userId) {
+        const result = await db.query(
+            "SELECT code, retired_at FROM referral_code_history WHERE user_id = $1 ORDER BY retired_at DESC",
+            [userId]
+        );
+        return result.rows.map(row => ({ code: row.code, retiredAt: row.retired_at }));
+    }
+
+    // Once the reservation is over the name is free for anyone: the row goes.
+    async purgeRetiredReferralCodes() {
+        const result = await db.query(
+            "DELETE FROM referral_code_history WHERE retired_at <= NOW() - $1::interval",
+            [RETIRED_REFERRAL_CODE_RESERVATION]
+        );
+        return result.rowCount;
     }
 
     // Guarded on referral_code IS NULL for the same reason as
@@ -137,8 +201,12 @@ export class UserRepository {
     async updateUser(id, userData) {
         const { username, name, avatarUrl, location, bio, about, updatedAt } = userData;
 
+        // The change date moves only when the name really changes: the
+        // right-hand side reads the row as it was before this update.
         const result = await db.query(
-            "UPDATE users SET username = $1, name = $2, avatar_url = $3, location = $4, bio = $5, about = $6, updated_at =$7 WHERE id = $8 RETURNING *",
+            `UPDATE users SET username = $1, name = $2, avatar_url = $3, location = $4, bio = $5, about = $6, updated_at = $7,
+                username_changed_at = CASE WHEN LOWER(users.username) <> LOWER($1) THEN NOW() ELSE users.username_changed_at END
+             WHERE id = $8 RETURNING *`,
             [username, name, avatarUrl, location, bio, about, updatedAt, id]
         );
 

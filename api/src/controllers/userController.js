@@ -77,7 +77,7 @@ export class UserController {
                 validatedData.avatarUrl = null;
             }
 
-            const updatedUser = await this.userService.updateUser(id, validatedData);
+            const updatedUser = await this.userService.updateUser(id, validatedData, getRequestContext(req));
             res.status(200).json(updatedUser);
         } catch (error) {
             next(error);
@@ -132,10 +132,20 @@ export class UserController {
         }
     }
 
+    async getUserByUsername(req, res, next) {
+        const { username } = req.params;
+        try {
+            const user = await this.userService.getUserByUsername(username, req.user?.id);
+            res.status(200).json(user);
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async checkUsernameAvailable(req, res, next) {
         const { username } = req.query;
         try {
-            const available = await this.userService.isUsernameAvailable(username);
+            const available = await this.userService.isUsernameAvailable(username, req.user?.id);
             res.status(200).json({ available });
         } catch (error) {
             next(error);

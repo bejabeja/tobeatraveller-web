@@ -68,7 +68,8 @@ app.use('/supplies', authenticate, createSuppliesRouter());
 app.use('/packing-checklist', authenticate, premiumOnly, createPackingChecklistRouter());
 app.use('/life-diary', authenticate, createLifeDiaryRouter());
 app.use('/subscription', authenticate, createSubscriptionRouter());
-app.use('/referrals', authenticate, createReferralRouter());
+// Same again: the purge of earlier invite codes runs on the cron secret.
+app.use('/referrals', createReferralRouter());
 // Auth/role checks live inside the router itself: the scheduled-purge route
 // is triggered by Vercel Cron with a shared secret instead of a user JWT, so
 // it can't sit behind a blanket authenticate() at the mount point.

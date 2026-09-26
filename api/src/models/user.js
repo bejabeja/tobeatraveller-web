@@ -1,12 +1,13 @@
 import { generateAvatar } from "../utils/avatar.js";
 import { formatDate } from "../utils/date.js";
+import { usernameChangeAvailableAt } from "../utils/usernameChange.js";
 
 export class User {
     constructor({
         id, username, email, password, location, avatarUrl, avatarPublicId,
         createdAt, updatedAt, name, followersListIds,
         followingListIds, itineraries, bio, about, totalItineraries, role, premiumUntil,
-        stripeCustomerId, referralCode, language
+        stripeCustomerId, referralCode, language, usernameChangedAt
     }) {
         this.id = id;
         this.username = username;
@@ -20,6 +21,7 @@ export class User {
         this.stripeCustomerId = stripeCustomerId || null;
         this.referralCode = referralCode || null;
         this.language = language || null;
+        this.usernameChangedAt = usernameChangedAt || null;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.name = name || null;
@@ -45,6 +47,7 @@ export class User {
             stripeCustomerId: row.stripe_customer_id,
             referralCode: row.referral_code,
             language: row.language,
+            usernameChangedAt: row.username_changed_at,
             createdAt: row.created_at,
             updatedAt: row.updated_at,
             name: row.name,
@@ -94,6 +97,8 @@ export class User {
             premiumUntil: this.premiumUntil,
             isPremium: this.isPremium(),
             referralCode: this.referralCode,
+            // When the username can change again (null: now). Own view only.
+            usernameChangeAvailableAt: usernameChangeAvailableAt(this.usernameChangedAt),
             // Left raw (not formatDate()'d like updatedAt below): formatDate()
             // hardcodes en-US, so a Spanish-language viewer would see "Joined
             // August 2026" mid-sentence. The client formats this with the
@@ -114,7 +119,7 @@ export class User {
     }
 
     toPublicDTO() {
-        const { email, premiumUntil, isTrialEligible, referralCode, ...publicFields } = this.toDTO();
+        const { email, premiumUntil, isTrialEligible, referralCode, usernameChangeAvailableAt: _changeAvailableAt, ...publicFields } = this.toDTO();
         return publicFields;
     }
 

@@ -4,8 +4,10 @@ import { authFetch } from "../utils/authFetch";
 
 const baseUrl = () => `${getApiUrl()}/users`;
 
+// authFetch, not fetch: signed in (editing the profile), one's own name in
+// other capitals and one's own earlier names count as available.
 export const checkUsernameAvailable = async (username) => {
-    const response = await fetch(`${baseUrl()}/check-username?username=${encodeURIComponent(username)}`);
+    const response = await authFetch(`${baseUrl()}/check-username?username=${encodeURIComponent(username)}`);
     if (!response.ok) return null;
     const data = await response.json();
     return data.available;
@@ -39,6 +41,17 @@ export const getFeaturedUsers = async () => {
         return null;
     }
 }
+
+export const getUserByUsername = async (username) => {
+    const response = await authFetch(`${baseUrl()}/by-username/${encodeURIComponent(username)}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+    });
+    if (!response.ok) {
+        await parseError(response, 'Failed to get user');
+    }
+    return response.json();
+};
 
 export const getUserById = async (id) => {
     const response = await authFetch(`${baseUrl()}/${id}`, {

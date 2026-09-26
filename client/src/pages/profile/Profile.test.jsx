@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { Link, MemoryRouter, Route, Routes } from "react-router-dom";
 
 let mockIsMyProfile = true;
@@ -22,6 +22,7 @@ jest.mock("../../hooks/useFollow", () => ({ useFollow: () => ({ isFollowing: fal
 jest.mock("../../hooks/useUserPassport", () => ({ useUserPassport: () => ({ passport: null }) }));
 jest.mock("../../hooks/usePageMeta", () => ({ usePageMeta: jest.fn() }));
 jest.mock("../../hooks/useSavedTrips", () => ({ useSavedTrips: jest.fn() }));
+jest.mock("../../services/referral", () => ({ getMyReferralInfo: jest.fn().mockResolvedValue({ referralCode: "jane" }) }));
 jest.mock("../../components/itineraries/ItinerariesSection", () => ({
   __esModule: true,
   default: ({ itineraries }) => (
@@ -194,5 +195,32 @@ describe("Profile trips", () => {
     expect(screen.getByText("trip:Norway")).toBeInTheDocument();
     expect(screen.queryByRole("tab")).not.toBeInTheDocument();
     expect(useSavedTrips).toHaveBeenCalledWith(false);
+  });
+
+  describe("copying the profile link", () => {
+    beforeEach(() => {
+      Object.assign(navigator, { clipboard: { writeText: jest.fn().mockResolvedValue() } });
+    });
+
+    // Regression: it copied /profile/<internal id>, with no invite code, so
+    // someone signing up from your profile didn't count as invited by you.
+    it("copies your profile by name, with your invite code", async () => {
+      renderProfile();
+      await waitFor(() => expect(jest.requireMock("../../services/referral").getMyReferralInfo).toHaveBeenCalled());
+      await act(async () => {});
+
+      fireEvent.click(screen.getByRole("button", { name: "profile.copyLink" }));
+
+      expect(navigator.clipboard.writeText).toHaveBeenCalledWith(`${window.location.origin}/@jane?ref=jane`);
+    });
+
+    it("copies someone else's profile by name, without any code", () => {
+      mockIsMyProfile = false;
+      renderProfile();
+
+      fireEvent.click(screen.getByRole("button", { name: "profile.copyLink" }));
+
+      expect(navigator.clipboard.writeText).toHaveBeenCalledWith(`${window.location.origin}/@jane`);
+    });
   });
 });

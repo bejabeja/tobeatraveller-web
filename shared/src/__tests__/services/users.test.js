@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { setApiUrl } from '../../utils/apiConfig.js';
 import { setTokenStorage } from '../../utils/tokenStorage.js';
-import { getFeaturedUsers, updateMyLanguage } from '../../services/users.js';
+import { checkUsernameAvailable, getFeaturedUsers, updateMyLanguage } from '../../services/users.js';
 import { sendContact } from '../../services/auth.js';
 
 describe('updateMyLanguage', () => {
@@ -60,5 +60,21 @@ describe('getFeaturedUsers', () => {
 
         expect(global.fetch.mock.calls[0][0]).toBe('http://api.test/users/featured');
         expect(global.fetch.mock.calls[0][1].headers.Authorization).toBeUndefined();
+    });
+});
+
+describe('checkUsernameAvailable', () => {
+    beforeEach(() => {
+        setApiUrl('http://api.test');
+        global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ available: true }) });
+    });
+
+    // Regression: without the session, going back to one's own earlier name
+    // (still reserved for them) was reported as taken.
+    it('sends the session when signed in', async () => {
+        setTokenStorage({ getItem: async () => 'token', setItem: async () => {}, removeItem: async () => {} });
+
+        await expect(checkUsernameAvailable('jane')).resolves.toBe(true);
+        expect(global.fetch.mock.calls[0][1].headers.Authorization).toBe('Bearer token');
     });
 });

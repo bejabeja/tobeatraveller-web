@@ -16,6 +16,17 @@ export class ReferralController {
         }
     }
 
+    // Daily, from Vercel Cron: earlier invite codes whose year is over are
+    // deleted, and those names become free for anyone.
+    async purgeRetiredCodesScheduled(req, res, next) {
+        try {
+            const deletedCount = await this.referralService.purgeRetiredCodes();
+            res.status(200).json({ deletedCount });
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async getAdminOverview(req, res, next) {
         try {
             const overview = await this.referralService.getPlatformOverview();

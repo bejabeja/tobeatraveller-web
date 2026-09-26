@@ -1,45 +1,256 @@
 .referral {
-  &__hero {
-    padding: 96px 24px 56px;
-    text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding-top: 2rem;
+  padding-bottom: 4rem;
+
+  svg {
+    width: 1.1em;
+    height: 1.1em;
+    flex-shrink: 0;
   }
 
-  &__hero-icon {
-    width: 1em;
-    height: 1em;
-    font-size: 44px;
-    color: var(--primary-color);
-    margin-bottom: 16px;
+  &__top {
+    display: grid;
+    gap: 1.5rem;
+
+    @media (min-width: 900px) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-items: stretch;
+    }
+  }
+
+  // ─── Hero: the reward, on the brand gradient ───────────────────────
+  &__hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 2.25rem 1.5rem;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #1A535C 0%, #E8743B 100%);
+    color: #fff;
+    justify-content: center;
+    text-align: center;
+    box-shadow: 0 12px 30px rgba(26, 83, 92, 0.25);
+  }
+
+  & &__hero-icon {
+    width: 44px;
+    height: 44px;
   }
 
   &__title {
-    max-width: 700px;
-    margin: 0 auto 16px;
-    font-size: 40px;
+    max-width: 560px;
+    font-size: clamp(1.6rem, 4vw, 2.25rem);
     font-weight: 800;
     letter-spacing: -0.01em;
-    color: var(--text-color);
+    line-height: 1.15;
+    color: #fff;
   }
 
   &__subtitle {
-    max-width: 560px;
-    margin: 0 auto;
+    max-width: 520px;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  &__rewards {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  // A ticket: dashed edge, like something to tear off and hand over.
+  &__reward {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    width: auto;
+    min-width: 150px;
+    padding: 0.75rem 1rem;
+    border: 1.5px dashed rgba(255, 255, 255, 0.7);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.14);
+
+    strong {
+      font-size: 1rem;
+      font-weight: 800;
+    }
+
+    span {
+      font-size: 0.8rem;
+      opacity: 0.9;
+    }
+  }
+
+  // ─── Cards ─────────────────────────────────────────────────────────
+  &__card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    background: var(--white-color);
+  }
+
+  &__section-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-color);
+  }
+
+  // ─── Sharing ───────────────────────────────────────────────────────
+  & &__share-btn {
+    width: 100%;
+    padding: 0.9em 1.4em;
+    font-size: 1rem;
+  }
+
+  &__channels {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  & &__channel {
+    flex: 1;
+    width: auto;
+    font-size: 0.9rem;
+  }
+
+  &__link-label {
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
     color: var(--text-secondary-color);
-    font-size: 17px;
-    line-height: 1.7;
   }
 
-  &__content {
-    padding-top: 24px;
-    padding-bottom: 88px;
-    max-width: 560px;
-    margin: 0 auto;
+  // One pill: the link and its copy button, not two boxes side by side.
+  &__link-row {
+    display: flex;
+    align-items: center;
+    padding: 0.25rem 0.25rem 0.25rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    background: #f7f9fc;
   }
 
+  &__link-input {
+    flex: 1;
+    min-width: 0;
+    padding: 0.5rem 0;
+    border: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 0.9rem;
+    color: var(--text-color);
+    text-overflow: ellipsis;
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  &__copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    width: auto;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 999px;
+    background: var(--white-color);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-color);
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+      color: var(--primary-color);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+  }
+
+  &__code-hint {
+    font-size: 0.85rem;
+    color: var(--text-secondary-color);
+
+    strong {
+      color: var(--text-color);
+    }
+  }
+
+  // ─── How it works ──────────────────────────────────────────────────
+  &__how {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  &__steps {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__step {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 1.25rem 1rem;
+    border-radius: 16px;
+    background: #fff7f2;
+    text-align: center;
+  }
+
+  &__step-icon {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--white-color);
+    font-size: 1.3rem;
+    color: var(--primary-color);
+  }
+
+  &__step-number {
+    position: absolute;
+    top: 0.6rem;
+    left: 0.75rem;
+    width: auto;
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--primary-color);
+  }
+
+  &__step-text {
+    font-size: 0.88rem;
+    line-height: 1.4;
+    color: var(--text-color);
+  }
+
+  // ─── Progress ──────────────────────────────────────────────────────
   &__stats {
     display: flex;
-    gap: 16px;
-    margin-bottom: 32px;
+    gap: 0.75rem;
   }
 
   &__stat {
@@ -47,113 +258,54 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
-    padding: 20px 12px;
-    background: var(--white-color);
-    border: 1px solid var(--border-color);
-    border-radius: 16px;
+    gap: 0.15rem;
+    padding: 1rem;
+    border-radius: 12px;
+    background: #f7f9fc;
+    text-align: center;
 
     strong {
-      font-size: 28px;
+      width: auto;
+      font-size: 1.6rem;
       font-weight: 800;
       color: var(--text-color);
     }
 
     span {
-      font-size: 13px;
+      font-size: 0.8rem;
       color: var(--text-secondary-color);
-      text-align: center;
     }
   }
 
-  &__link-card {
-    background: var(--white-color);
-    border: 1px solid var(--border-color);
-    border-radius: 20px;
-    padding: 24px;
-    margin-bottom: 32px;
-  }
-
-  &__link-label {
-    display: block;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-secondary-color);
-    margin-bottom: 8px;
-  }
-
-  &__link-row {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 12px;
-  }
-
-  &__link-input {
-    flex: 1;
-    min-width: 0;
-    padding: 0.7rem 0.9rem;
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    font-size: 14px;
-    color: var(--text-color);
-    background: var(--background-color, transparent);
-  }
-
-  &__copy-btn,
-  &__share-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    white-space: nowrap;
-  }
-
-  &__share-btn {
-    width: 100%;
-    justify-content: center;
-  }
-
   &__invites {
-    margin-bottom: 32px;
-  }
-
-  &__invites-title {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--text-color);
-    margin-bottom: 12px;
-  }
-
-  &__invites-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 0.5rem;
+    padding: 0;
+    list-style: none;
   }
 
   &__invite {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px 14px;
-    background: var(--white-color);
+    gap: 0.75rem;
+    padding: 0.6rem 0.75rem;
     border: 1px solid var(--border-color);
     border-radius: 12px;
   }
 
   &__invite-avatar {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
     border-radius: 50%;
     object-fit: cover;
-    flex-shrink: 0;
   }
 
   &__invite-username {
     flex: 1;
     min-width: 0;
-    font-size: 14px;
+    font-size: 0.9rem;
     font-weight: 600;
     color: var(--text-color);
     overflow: hidden;
@@ -162,61 +314,68 @@
   }
 
   &__invite-status {
+    width: auto;
     flex-shrink: 0;
-    font-size: 12px;
-    font-weight: 600;
-    padding: 4px 10px;
+    padding: 0.25rem 0.6rem;
     border-radius: 999px;
-    background: var(--border-color);
+    background: #eef1f5;
+    font-size: 0.72rem;
+    font-weight: 700;
     color: var(--text-secondary-color);
 
     &--rewarded {
-      background: rgba(46, 160, 67, 0.15);
-      color: #2ea043;
+      background: #dcfce7;
+      color: #15803d;
     }
   }
 
-  &__how {
+  &__first-hint {
+    padding: 1rem;
+    border: 1.5px dashed var(--primary-color);
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
     text-align: center;
-  }
-
-  &__how-title {
-    font-size: 20px;
-    font-weight: 700;
     color: var(--text-color);
-    margin-bottom: 20px;
   }
 
-  &__steps {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    text-align: left;
-  }
+  @media (max-width: 599px) {
+    gap: 1.25rem;
+    padding-top: 1rem;
 
-  &__step {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    color: var(--text-secondary-color);
-    font-size: 15px;
-    line-height: 1.5;
-  }
+    &__hero {
+      padding: 1.75rem 1.25rem;
+    }
 
-  &__step-number {
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    background: var(--primary-color);
-    color: var(--white-color);
-    font-size: 13px;
-    font-weight: 700;
+    &__reward {
+      min-width: 0;
+      flex: 1;
+      padding: 0.6rem 0.75rem;
+    }
+
+    &__card {
+      padding: 1.25rem;
+    }
+
+    // Stacked on a phone: three narrow columns of text would wrap word by word.
+    &__steps {
+      grid-template-columns: 1fr;
+    }
+
+    &__step {
+      flex-direction: row;
+      text-align: left;
+      padding: 0.9rem 1rem;
+    }
+
+    &__step-number {
+      display: none;
+    }
+
+    &__step-icon {
+      width: 40px;
+      height: 40px;
+      flex-shrink: 0;
+    }
   }
 }

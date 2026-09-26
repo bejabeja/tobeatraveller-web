@@ -28,7 +28,8 @@ const Signup = () => {
   const location = useLocation();
   const redirectTo = location.state?.redirectTo;
   const [searchParams] = useSearchParams();
-  const referralCode = searchParams.get("ref") || undefined;
+  // From an invite link it comes filled in; typed by hand otherwise.
+  const linkReferralCode = searchParams.get("ref") || "";
   const signupSource = searchParams.get(SIGNUP_SOURCE_PARAM);
   const imageAuthLoaded = useSelector(selectimageAuthLoaded);
   const errorInAuth = useSelector(selectAuthError);
@@ -57,7 +58,7 @@ const Signup = () => {
   } = useForm({
     resolver: zodResolver(signupSchema),
     mode: "onBlur",
-    defaultValues: { email: "", username: "", password: "", confirmPassword: "" },
+    defaultValues: { email: "", username: "", password: "", confirmPassword: "", referralCode: linkReferralCode },
   });
 
   const usernameValue = useWatch({ control, name: "username" });
@@ -110,7 +111,8 @@ const Signup = () => {
         (cErrors.ageConfirmed ? ageCheckboxRef : termsCheckboxRef).current?.focus();
         return;
       }
-      return dispatch(createUser({ ...data, termsAccepted, ageConfirmed, referralCode, language: i18n.resolvedLanguage }, () => {
+      const referralCode = data.referralCode?.trim() || undefined;
+      return dispatch(createUser({ ...data, referralCode, termsAccepted, ageConfirmed, language: i18n.resolvedLanguage }, () => {
         trackEvent(ANALYTICS_EVENTS.USER_SIGNED_UP, { source: signupSource ?? null, referred: Boolean(referralCode) });
         navigate("/welcome", { state: redirectTo ? { redirectTo } : undefined });
       }));
@@ -146,7 +148,7 @@ const Signup = () => {
             <p className="auth__form-subtitle">{t("auth.createAccountSubtitle")}</p>
           </div>
 
-          {referralCode && (
+          {linkReferralCode && (
             <p className="auth__form-referral-banner">{t("referral.signupBannerTitle")}</p>
           )}
 
@@ -183,6 +185,22 @@ const Signup = () => {
             hint={t("errors.passwordMin")}
           />
           <PasswordInputForm name="confirmPassword" label={t("auth.confirmPasswordLabel")} control={control} error={errors.confirmPassword} autoComplete="new-password" />
+
+          <div className="auth__referral-field">
+            <InputForm
+              name="referralCode"
+              label={t("referral.signupCodeLabel")}
+              type="text"
+              control={control}
+              error={errors.referralCode}
+              placeholder={t("referral.signupCodePlaceholder")}
+              inputProps={{ autoCapitalize: "none", spellCheck: false }}
+              autoComplete="off"
+              maxLength={50}
+              showCounter={false}
+            />
+            {!linkReferralCode && <p className="auth__field-hint">{t("referral.signupCodeHint")}</p>}
+          </div>
 
           <div className="auth__consent" ref={consentRef}>
             <label className={`auth__consent-label${consentErrors.ageConfirmed ? " auth__consent-label--error" : ""}`}>
