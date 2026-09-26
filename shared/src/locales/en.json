@@ -404,7 +404,8 @@
     "savedTrips": "Saved trips",
     "noTripsYet": "No trips yet. Start creating!",
     "noPublicTrips": "No public trips yet.",
-    "filterTrips": "Search and filter →",
+    "filterTrips": "Search and filter",
+    "tripsLoadError": "Your trips couldn't be loaded.",
     "savedOnlyYou": "Only you can see them.",
     "tripsStat_one": "Trip",
     "tripsStat_other": "Trips",
@@ -547,13 +548,6 @@
     "errorLike": "Could not update like. Please try again."
   },
   "myItineraries": {
-    "planTrip": "Plan a trip",
-    "noItineraries": "You haven't created any trips yet.",
-    "planFirstTrip": "Plan your first trip",
-    "noFiltersResults": "No itineraries found for these filters.",
-    "tryAdjusting": "Try adjusting your search criteria.",
-    "errorMsg": "Oops! Something went wrong while loading itineraries.",
-    "tryAgain": "Try again",
     "title": "My trips",
     "newBtn": "+ New",
     "searchPlaceholder": "Search by destination…",

@@ -55,7 +55,6 @@ const Recap = lazy(() => import("./pages/recap/Recap"));
 const FollowingList = lazy(() => import("./pages/follows/FollowingList"));
 const Onboarding = lazy(() => import("./pages/onboarding/Onboarding"));
 const Notifications = lazy(() => import("./pages/notifications/Notifications"));
-const MyItineraries = lazy(() => import("./pages/myItineraries/MyItineraries"));
 const Favorites = lazy(() => import("./pages/favorites/Favorites"));
 const EditProfile = lazy(() => import("./pages/profile/EditProfile"));
 const Settings = lazy(() => import("./pages/settings/Settings"));
@@ -202,7 +201,11 @@ const App = () => {
                 <Route path="/notifications" element={<Notifications />} />
                 <Route path="/account" element={<Account />} />
                 <Route path="/invite" element={<Referral />} />
-                <Route path="/my-itineraries" element={<MyItineraries />} />
+                {/* Your trips live in your profile now; kept so saved links still land there. */}
+                <Route
+                  path="/my-itineraries"
+                  element={<Navigate to={`/profile/${userAuthenticated?.id}`} replace />}
+                />
                 <Route path="/itineraries/saved" element={<Favorites />} />
                 <Route path="/van-log" element={<VanLog />} />
                 <Route path="/supplies" element={<Supplies />} />

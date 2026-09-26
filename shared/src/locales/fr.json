@@ -406,7 +406,8 @@
     "savedTrips": "Voyages enregistrés",
     "noTripsYet": "Aucun voyage pour l'instant. Lance-toi !",
     "noPublicTrips": "Aucun voyage public pour l'instant.",
-    "filterTrips": "Rechercher et filtrer →",
+    "filterTrips": "Rechercher et filtrer",
+    "tripsLoadError": "Impossible de charger tes voyages.",
     "savedOnlyYou": "Visibles uniquement par toi.",
     "tripsStat_one": "Voyage",
     "tripsStat_other": "Voyages",
@@ -551,13 +552,6 @@
     "errorLike": "Impossible de mettre à jour le j'aime. Réessaie."
   },
   "myItineraries": {
-    "planTrip": "Planifier un voyage",
-    "noItineraries": "Tu n'as encore créé aucun voyage.",
-    "planFirstTrip": "Planifie ton premier voyage",
-    "noFiltersResults": "Aucun itinéraire trouvé pour ces filtres.",
-    "tryAdjusting": "Essaie de modifier tes critères de recherche.",
-    "errorMsg": "Oups ! Un problème est survenu lors du chargement des itinéraires.",
-    "tryAgain": "Réessayer",
     "title": "Mes voyages",
     "newBtn": "+ Nouveau",
     "searchPlaceholder": "Rechercher par destination…",

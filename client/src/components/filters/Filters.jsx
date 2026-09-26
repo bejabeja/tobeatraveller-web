@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { IoChevronDown, IoChevronUp, IoFilterOutline, IoSearchOutline } from "react-icons/io5";
 import { useTranslation } from "react-i18next";
-import { itineraryCategories } from "../../../utils/constants/constants";
+import { itineraryCategories } from "../../utils/constants/constants";
 import "./Filters.scss";
 
 const categoryEmojis = {

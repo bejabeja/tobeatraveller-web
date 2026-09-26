@@ -404,7 +404,8 @@
     "savedTrips": "Gespeicherte Reisen",
     "noTripsYet": "Noch keine Reisen. Leg los!",
     "noPublicTrips": "Noch keine öffentlichen Reisen.",
-    "filterTrips": "Suchen und filtern →",
+    "filterTrips": "Suchen und filtern",
+    "tripsLoadError": "Deine Reisen konnten nicht geladen werden.",
     "savedOnlyYou": "Nur du kannst sie sehen.",
     "tripsStat_one": "Reise",
     "tripsStat_other": "Reisen",
@@ -547,13 +548,6 @@
     "errorLike": "Das Like konnte nicht aktualisiert werden. Bitte versuch es erneut."
   },
   "myItineraries": {
-    "planTrip": "Reise planen",
-    "noItineraries": "Du hast noch keine Reisen erstellt.",
-    "planFirstTrip": "Plane deine erste Reise",
-    "noFiltersResults": "Keine Reisepläne für diese Filter gefunden.",
-    "tryAdjusting": "Passe deine Suchkriterien an.",
-    "errorMsg": "Hoppla! Beim Laden der Reisepläne ist etwas schiefgelaufen.",
-    "tryAgain": "Erneut versuchen",
     "title": "Meine Reisen",
     "newBtn": "+ Neu",
     "searchPlaceholder": "Nach Reiseziel suchen…",

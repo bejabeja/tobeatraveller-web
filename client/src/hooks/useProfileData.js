@@ -4,7 +4,7 @@ import { getAllFollowers, getAllFollowing } from "../services/followers";
 import { getItinerariesByUserId } from "../services/itineraries";
 import { getUserById } from "../services/users";
 import { selectAuthUser, selectIsAuthenticated } from "../store/auth/authSelectors";
-import { selectMe, selectMyFollowers, selectMyFollowing, selectMyItineraries, selectMyItinerariesLoaded, selectMyItinerariesLoading } from "../store/user/userInfoSelectors";
+import { selectMe, selectMyFollowers, selectMyFollowing, selectMyItineraries, selectMyItinerariesError, selectMyItinerariesLoaded, selectMyItinerariesLoading } from "../store/user/userInfoSelectors";
 
 export const useProfileData = (profileId, { withFollows = false } = {}) => {
     const authUser = useSelector(selectAuthUser)
@@ -12,6 +12,7 @@ export const useProfileData = (profileId, { withFollows = false } = {}) => {
     const myItineraries = useSelector(selectMyItineraries)
     const myItinerariesLoading = useSelector(selectMyItinerariesLoading)
     const myItinerariesLoaded = useSelector(selectMyItinerariesLoaded)
+    const myItinerariesError = useSelector(selectMyItinerariesError)
     const myFollowers = useSelector(selectMyFollowers)
     const myFollowing = useSelector(selectMyFollowing)
     const isAuthenticated = useSelector(selectIsAuthenticated)
@@ -85,6 +86,7 @@ export const useProfileData = (profileId, { withFollows = false } = {}) => {
         loadingFollowing,
         loadingItineraries: isMyProfile ? myItinerariesLoading : loadingItineraries,
         itinerariesLoaded: isMyProfile ? myItinerariesLoaded : !loadingItineraries,
+        itinerariesError: isMyProfile ? myItinerariesError : null,
         error,
         isAuthenticated
     };

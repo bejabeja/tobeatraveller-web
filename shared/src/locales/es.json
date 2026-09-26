@@ -406,7 +406,8 @@
     "savedTrips": "Viajes guardados",
     "noTripsYet": "Todavía no hay viajes. ¡Empieza a crear!",
     "noPublicTrips": "Todavía no hay viajes públicos.",
-    "filterTrips": "Buscar y filtrar →",
+    "filterTrips": "Buscar y filtrar",
+    "tripsLoadError": "No se han podido cargar tus viajes.",
     "savedOnlyYou": "Solo los ves tú.",
     "tripsStat_one": "Viaje",
     "tripsStat_other": "Viajes",
@@ -963,13 +964,6 @@
     "daySummary": "{{places}} · {{days}}"
   },
   "myItineraries": {
-    "planTrip": "Planificar un viaje",
-    "noItineraries": "Todavía no has creado ningún viaje.",
-    "planFirstTrip": "Planifica tu primer viaje",
-    "noFiltersResults": "No se encontraron itinerarios con estos filtros.",
-    "tryAdjusting": "Intenta ajustar tus criterios de búsqueda.",
-    "errorMsg": "¡Vaya! Algo salió mal al cargar los itinerarios.",
-    "tryAgain": "Intentar de nuevo",
     "title": "Mis viajes",
     "newBtn": "+ Nuevo",
     "searchPlaceholder": "Buscar por destino…",

@@ -6,7 +6,7 @@ import { IoSearchOutline } from "react-icons/io5";
 
 import LoadingButton from "../../components/LoadingButton.jsx";
 import ItinerariesSection from "../../components/itineraries/ItinerariesSection.jsx";
-import Filters from "../myItineraries/filters/Filters.jsx";
+import Filters from "../../components/filters/Filters.jsx";
 import { usePageMeta } from "../../hooks/usePageMeta.js";
 import { selectIsAuthenticated } from "../../store/auth/authSelectors.js";
 

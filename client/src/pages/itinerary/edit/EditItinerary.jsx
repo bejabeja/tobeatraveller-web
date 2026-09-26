@@ -12,6 +12,7 @@ import {
   loadMyUserInfo,
   setUserInfo,
 } from "../../../store/user/userInfoActions";
+import { selectAuthUser } from "../../../store/auth/authSelectors";
 import { selectMe } from "../../../store/user/userInfoSelectors";
 import { createItinerarySchema, EXISTING_ITINERARY_VISIBILITY_FALLBACK } from "../../../utils/schemasValidation";
 import BasicInfoForm from "../sectionsForm/BasicInfoForm";
@@ -30,6 +31,9 @@ const EditItinerary = () => {
 
   const { id } = useParams();
   const userMe = useSelector(selectMe);
+  const authUser = useSelector(selectAuthUser);
+  // Your trips live in your profile.
+  const myTripsPath = `/profile/${authUser?.id}`;
 
   const [itineraryData, setItineraryData] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -97,7 +101,7 @@ const EditItinerary = () => {
         response = await getItineraryById(id);
       } catch {
         toast.error(t("errors.itineraryLoad"));
-        navigate("/my-itineraries");
+        navigate(myTripsPath);
         return;
       }
       const resetValues = {
@@ -215,7 +219,7 @@ const EditItinerary = () => {
 
   const handleCancel = () => {
     if (isDirty || imageFile || galleryChanged()) setShowExitConfirm(true);
-    else navigate("/my-itineraries");
+    else navigate(myTripsPath);
   };
 
   if (!itineraryData) {
@@ -303,7 +307,7 @@ const EditItinerary = () => {
       <Modal
         isOpen={showExitConfirm}
         onClose={() => setShowExitConfirm(false)}
-        onConfirm={() => navigate("/my-itineraries")}
+        onConfirm={() => navigate(myTripsPath)}
         title={t("editProfile.discardChanges")}
         description={t("editProfile.discardChangesDesc")}
         confirmText={t("common.discard")}

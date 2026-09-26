@@ -1,10 +1,12 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { Link, MemoryRouter, Route, Routes } from "react-router-dom";
 
 let mockIsMyProfile = true;
 let mockTripsLoaded = true;
+let mockTripsError = null;
+const mockDispatch = jest.fn();
 
-jest.mock("react-redux", () => ({ useSelector: () => ({ id: "user-1" }) }));
+jest.mock("react-redux", () => ({ useSelector: () => ({ id: "user-1" }), useDispatch: () => mockDispatch }));
 jest.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (key) => key, i18n: { language: "es" } }),
 }));
@@ -13,7 +15,7 @@ jest.mock("../../hooks/useProfileData", () => ({
   useProfileData: () => ({
     user: { id: "user-1", username: "jane", followingListIds: [], followersListIds: [] },
     itineraries: [{ id: "trip-1", title: "Norway", isPublic: true }],
-    loadingUser: false, error: null, isMyProfile: mockIsMyProfile, loadingItineraries: false, itinerariesLoaded: mockTripsLoaded, isAuthenticated: true,
+    loadingUser: false, error: null, isMyProfile: mockIsMyProfile, loadingItineraries: false, itinerariesLoaded: mockTripsLoaded, itinerariesError: mockTripsError, isAuthenticated: true,
   }),
 }));
 jest.mock("../../hooks/useFollow", () => ({ useFollow: () => ({ isFollowing: false, toggleFollow: jest.fn(), isLoadingFollow: false }) }));
@@ -22,16 +24,14 @@ jest.mock("../../hooks/usePageMeta", () => ({ usePageMeta: jest.fn() }));
 jest.mock("../../hooks/useSavedTrips", () => ({ useSavedTrips: jest.fn() }));
 jest.mock("../../components/itineraries/ItinerariesSection", () => ({
   __esModule: true,
-  default: ({ itineraries, headerActions }) => (
-    <div>
-      {headerActions}
-      {itineraries.map(itinerary => <p key={itinerary.id}>trip:{itinerary.title}</p>)}
-    </div>
+  default: ({ itineraries }) => (
+    <div>{itineraries.map(itinerary => <p key={itinerary.id}>trip:{itinerary.title}</p>)}</div>
   ),
 }));
 jest.mock("../../components/recap/RecapBanner", () => ({ __esModule: true, default: () => null, RECAP_SOURCES: {} }));
 jest.mock("../../components/passport/PassportShareDialog", () => ({ __esModule: true, default: () => null }));
 jest.mock("../../components/follows/FollowsModal", () => ({ __esModule: true, default: () => null }));
+jest.mock("../../store/user/userInfoActions", () => ({ setUserInfoItineraries: () => "load-my-trips" }));
 jest.mock("../../components/seo/JsonLd", () => ({ __esModule: true, default: () => null }));
 
 import { useSavedTrips } from "../../hooks/useSavedTrips";
@@ -43,6 +43,8 @@ describe("Profile trips", () => {
   beforeEach(() => {
     mockIsMyProfile = true;
     mockTripsLoaded = true;
+    mockTripsError = null;
+    mockDispatch.mockClear();
     useSavedTrips.mockReturnValue({ trips: [{ id: "saved-1", title: "Lofoten" }], loading: false, error: false });
   });
 
@@ -73,10 +75,66 @@ describe("Profile trips", () => {
     expect(screen.getByText("profile.noSavedTrips")).toBeInTheDocument();
   });
 
-  it("links the owner's trips to the full list with search and filters", () => {
+  it("opens the search and filters of the owner's trips from a button", () => {
+    renderProfile();
+    const toggle = screen.getByRole("button", { name: "profile.filterTrips" });
+
+    fireEvent.click(toggle);
+
+    expect(toggle).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByPlaceholderText("explore.searchPlaceholder")).toBeVisible();
+  });
+
+  // Regression risk: with no trip left to show, the filters must stay on
+  // screen so they can be changed back.
+  it("says nothing matches, keeping the filters at hand, when a search finds no trip", async () => {
+    renderProfile();
+    fireEvent.click(screen.getByRole("button", { name: "profile.filterTrips" }));
+
+    fireEvent.change(screen.getByPlaceholderText("explore.searchPlaceholder"), { target: { value: "Iceland" } });
+
+    expect(await screen.findByText(/explore.noResultsTitle/)).toBeInTheDocument();
+    expect(screen.queryByText("trip:Norway")).not.toBeInTheDocument();
+    expect(screen.getByPlaceholderText("explore.searchPlaceholder")).toHaveValue("Iceland");
+    await waitFor(() => expect(screen.getByRole("button", { name: /profile.filterTrips/ })).toHaveTextContent("1"));
+  });
+
+  it("empties the search and filters from the no-match message", async () => {
+    renderProfile();
+    fireEvent.click(screen.getByRole("button", { name: "profile.filterTrips" }));
+    fireEvent.change(screen.getByPlaceholderText("explore.searchPlaceholder"), { target: { value: "Iceland" } });
+    fireEvent.click(await screen.findByRole("button", { name: "explore.clearFiltersLink" }));
+
+    expect(await screen.findByText("trip:Norway")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("explore.searchPlaceholder")).toHaveValue("");
+  });
+
+  // Regression: with no private trip, "Private" said they had no trips yet
+  // and offered to create the first one.
+  it("says nothing matches, not that there are no trips, when a visibility leaves none", () => {
     renderProfile();
 
-    expect(screen.getByRole("link", { name: "profile.filterTrips" })).toHaveAttribute("href", "/my-itineraries");
+    fireEvent.click(screen.getByRole("button", { name: /myItineraries.private/ }));
+
+    expect(screen.getByText(/explore.noResultsTitle/)).toBeInTheDocument();
+  });
+
+  // Regression: a failed load looked like having no trips at all.
+  it("says the trips could not be loaded and offers to try again", () => {
+    mockTripsError = "Network error";
+    renderProfile();
+
+    fireEvent.click(screen.getByRole("button", { name: "common.retry" }));
+
+    expect(screen.getByText("profile.tripsLoadError")).toBeInTheDocument();
+    expect(mockDispatch).toHaveBeenCalledWith("load-my-trips");
+  });
+
+  it("offers no trip filters on someone else's profile", () => {
+    mockIsMyProfile = false;
+    renderProfile();
+
+    expect(screen.queryByRole("button", { name: "profile.filterTrips" })).not.toBeInTheDocument();
   });
 
   // Regression: the page is reused from one profile to the next, and it

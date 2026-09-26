@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { IoChevronForward, IoLinkOutline, IoLocationOutline, IoLockClosedOutline, IoSettingsOutline, IoShareSocialOutline } from "react-icons/io5";
+import { IoChevronForward, IoLinkOutline, IoLocationOutline, IoLockClosedOutline, IoOptionsOutline, IoSettingsOutline, IoShareSocialOutline } from "react-icons/io5";
 import { MdOutlineCalendarMonth, MdOutlineEdit } from "react-icons/md";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
+import Filters from "../../components/filters/Filters";
 import ItinerariesSection from "../../components/itineraries/ItinerariesSection";
 import Modal from "../../components/modal/Modal";
 import { useFollow } from "../../hooks/useFollow";
@@ -24,6 +25,7 @@ import RecapBanner, { RECAP_SOURCES } from "../../components/recap/RecapBanner";
 import { PASSPORT_SHARE_SOURCES } from "../../utils/analyticsEvents";
 import OfficialBadge from "../../components/users/OfficialBadge";
 import Error from "../error/Error";
+import { setUserInfoItineraries } from "../../store/user/userInfoActions";
 import "./Profile.scss";
 
 const COMPLETENESS_TIP_KEYS = [
@@ -45,12 +47,17 @@ const Profile = () => {
   const authUser = useSelector(selectAuthUser);
   const {
     user, itineraries, loadingUser, error,
-    isMyProfile, loadingItineraries, itinerariesLoaded, isAuthenticated,
+    isMyProfile, loadingItineraries, itinerariesLoaded, itinerariesError, isAuthenticated,
   } = useProfileData(id);
+  const dispatch = useDispatch();
   const { isFollowing, toggleFollow, isLoadingFollow } = useFollow(id);
   const [showUnfollowModal, setShowUnfollowModal] = useState(false);
   const [followsModal, setFollowsModal] = useState(null); // null | 'followers' | 'following'
   const [visibility, setVisibility] = useState('all');
+  const [tripFilters, setTripFilters] = useState({});
+  const [tripFiltersOpen, setTripFiltersOpen] = useState(false);
+  // Remounting the filters is what empties them: they keep their own values.
+  const [tripFiltersResetKey, setTripFiltersResetKey] = useState(0);
   const [tripsTab, setTripsTab] = useState(TRIPS_TABS.MINE);
   // Only the owner has the saved tab: saved trips are private.
   const savedTrips = useSavedTrips(isMyProfile);
@@ -61,8 +68,15 @@ const Profile = () => {
 
   const filteredItineraries = useMemo(() => {
     if (!isMyProfile) return itineraries;
-    return filterItineraries(itineraries, { visibility: visibility === 'all' ? '' : visibility });
-  }, [itineraries, visibility, isMyProfile]);
+    return filterItineraries(itineraries, { ...tripFilters, visibility: visibility === 'all' ? '' : visibility });
+  }, [itineraries, tripFilters, visibility, isMyProfile]);
+  const activeTripFilterCount = Object.values(tripFilters).filter(Boolean).length;
+  const hasTripFilters = activeTripFilterCount > 0 || visibility !== 'all';
+
+  const clearTripFilters = () => {
+    setVisibility('all');
+    setTripFiltersResetKey((key) => key + 1);
+  };
 
   const followsYou = !isMyProfile && isAuthenticated &&
     user?.followingListIds?.some((u) => String(u.id) === String(authUser?.id));
@@ -182,11 +196,8 @@ const Profile = () => {
                   )}
                 </div>
               ) : (
-                <ItinerariesSection
-                  user={user}
-                  itineraries={filteredItineraries}
-                  title={isMyProfile ? "" : `${t("profile.otherTrips")} (${filteredItineraries.length})`}
-                  headerActions={isMyProfile && (
+                <>
+                  {isMyProfile && (
                     <div className="profile__trips-actions">
                       <div className="profile__visibility-toggle">
                         {[
@@ -204,13 +215,51 @@ const Profile = () => {
                           </button>
                         ))}
                       </div>
-                      {/* The full list, with search and filters by destination and dates. */}
-                      <Link to="/my-itineraries" className="profile__trips-filter">{t("profile.filterTrips")}</Link>
+                      <button
+                        type="button"
+                        className={`profile__trips-filter${tripFiltersOpen ? " profile__trips-filter--open" : ""}`}
+                        onClick={() => setTripFiltersOpen((open) => !open)}
+                        aria-expanded={tripFiltersOpen}
+                        aria-controls="profile-trip-filters"
+                      >
+                        <IoOptionsOutline aria-hidden="true" />
+                        {t("profile.filterTrips")}
+                        {activeTripFilterCount > 0 && <span className="profile__trips-filter-count">{activeTripFilterCount}</span>}
+                      </button>
+                      {/* Out of the list and hidden rather than unmounted when
+                          closed: the filters keep their values and keep
+                          applying (the count on the button says so), even
+                          when they leave no trip to show. */}
+                      <div id="profile-trip-filters" className="profile__trip-filters" hidden={!tripFiltersOpen}>
+                        <Filters key={tripFiltersResetKey} onChange={setTripFilters} />
+                      </div>
                     </div>
                   )}
-                  isLoading={loadingItineraries}
-                  isOwner={isMyProfile}
-                />
+                  {isMyProfile && itinerariesError ? (
+                    <div className="profile__saved-empty">
+                      <p className="error-message">{t("profile.tripsLoadError")}</p>
+                      <button type="button" className="btn btn--secondary" onClick={() => dispatch(setUserInfoItineraries())}>
+                        {t("common.retry")}
+                      </button>
+                    </div>
+                  ) : isMyProfile && hasTripFilters && filteredItineraries.length === 0 && !loadingItineraries ? (
+                    // Not "no trips yet": they have some, the filters leave none.
+                    <div className="profile__saved-empty">
+                      <p>{t("explore.noResultsTitle")} {t("explore.noResultsSub")}</p>
+                      <button type="button" className="btn btn--secondary" onClick={clearTripFilters}>
+                        {t("explore.clearFiltersLink")}
+                      </button>
+                    </div>
+                  ) : (
+                    <ItinerariesSection
+                      user={user}
+                      itineraries={filteredItineraries}
+                      title={isMyProfile ? "" : `${t("profile.otherTrips")} (${filteredItineraries.length})`}
+                      isLoading={loadingItineraries}
+                      isOwner={isMyProfile}
+                    />
+                  )}
+                </>
               )}
             </div>
             {/* SuggestedUsersWidget hidden for now: too few users on the

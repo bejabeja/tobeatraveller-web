@@ -10,6 +10,7 @@ import Modal from "../../../components/modal/Modal";
 import SubmitButton from "../../../components/form/SubmitButton";
 import { createItinerary } from "../../../services/itinerary";
 import { setUserInfo, setUserInfoItineraries } from "../../../store/user/userInfoActions";
+import { selectAuthUser } from "../../../store/auth/authSelectors";
 import { selectMe } from "../../../store/user/userInfoSelectors";
 import { createItinerarySchema, NEW_ITINERARY_DEFAULT_VISIBILITY } from "../../../utils/schemasValidation";
 import BasicInfoForm from "../sectionsForm/BasicInfoForm";
@@ -44,6 +45,9 @@ const CreateItinerary = () => {
   const [pace, setPace] = useState(DEFAULT_AI_PACE);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const userMe = useSelector(selectMe);
+  const authUser = useSelector(selectAuthUser);
+  // Your trips live in your profile.
+  const myTripsPath = `/profile/${authUser?.id}`;
 
   const today = new Date().toISOString().split("T")[0];
   const { control, handleSubmit, setFocus, formState: { errors }, watch, setValue } = useForm({
@@ -100,7 +104,7 @@ const CreateItinerary = () => {
   const hasProgress = !!(titleVal || destVal?.name || fields.length > 0);
   const handleCancel = () => {
     if (hasProgress) setShowExitConfirm(true);
-    else navigate("/my-itineraries");
+    else navigate(myTripsPath);
   };
 
   const addItinerary = async (data) => {
@@ -255,7 +259,7 @@ const CreateItinerary = () => {
       <Modal
         isOpen={showExitConfirm}
         onClose={() => setShowExitConfirm(false)}
-        onConfirm={() => navigate("/my-itineraries")}
+        onConfirm={() => navigate(myTripsPath)}
         title={t("editProfile.discardChanges")}
         description={t("editProfile.discardChangesDesc")}
         confirmText={t("common.discard")}

@@ -9,7 +9,6 @@ const ItinerariesSection = ({
   user,
   itineraries,
   title = "",
-  headerActions,
   isLoading,
   limit,
   isOwner = false,
@@ -27,10 +26,9 @@ const ItinerariesSection = ({
 
   return (
     <div className="itineraries-section">
-      {(title || headerActions) && (
+      {title && (
         <div className="itineraries-section__header">
-          {title && <h2 className="itineraries-section__title">{title}</h2>}
-          {headerActions}
+          <h2 className="itineraries-section__title">{title}</h2>
         </div>
       )}
 

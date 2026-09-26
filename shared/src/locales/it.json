@@ -406,7 +406,8 @@
     "savedTrips": "Viaggi salvati",
     "noTripsYet": "Ancora nessun viaggio. Inizia a crearne uno!",
     "noPublicTrips": "Ancora nessun viaggio pubblico.",
-    "filterTrips": "Cerca e filtra →",
+    "filterTrips": "Cerca e filtra",
+    "tripsLoadError": "Non è stato possibile caricare i tuoi viaggi.",
     "savedOnlyYou": "Li vedi solo tu.",
     "tripsStat_one": "Viaggio",
     "tripsStat_other": "Viaggi",
@@ -551,13 +552,6 @@
     "errorLike": "Impossibile aggiornare il mi piace. Riprova."
   },
   "myItineraries": {
-    "planTrip": "Pianifica un viaggio",
-    "noItineraries": "Non hai ancora creato nessun viaggio.",
-    "planFirstTrip": "Pianifica il tuo primo viaggio",
-    "noFiltersResults": "Nessun itinerario trovato con questi filtri.",
-    "tryAdjusting": "Prova a modificare i criteri di ricerca.",
-    "errorMsg": "Ops! Qualcosa è andato storto durante il caricamento degli itinerari.",
-    "tryAgain": "Riprova",
     "title": "I miei viaggi",
     "newBtn": "+ Nuovo",
     "searchPlaceholder": "Cerca per destinazione…",

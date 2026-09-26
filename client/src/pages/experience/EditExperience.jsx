@@ -33,6 +33,7 @@ import ImageUpload from "../itinerary/sectionsForm/ImageUpload";
 import { GENERATE_TIMEOUT_MESSAGE, generateSmartItinerary } from "../../services/itineraries";
 import { getItineraryById, updateItinerary } from "../../services/itinerary";
 import { setUserInfo, setUserInfoItineraries } from "../../store/user/userInfoActions";
+import { selectAuthUser } from "../../store/auth/authSelectors";
 import { selectMe } from "../../store/user/userInfoSelectors";
 import { itineraryCategories } from "../../utils/constants/constants";
 import { useGeocodeSearch } from "../../hooks/useGeocodeSearch";
@@ -139,6 +140,7 @@ const EditExperience = () => {
   const dispatch   = useDispatch();
   const navigate   = useNavigate();
   const userMe     = useSelector(selectMe);
+  const authUser   = useSelector(selectAuthUser);
   const { searchDestinations, reverseGeocode } = useGeocodeSearch();
   const { getCurrentLocation, getLocationIfPermitted, loading: locating } = useCurrentLocation();
 
@@ -212,8 +214,8 @@ const EditExperience = () => {
       setSteps(loadedSteps);
       setLoading(false);
     }).catch(() => {
-      toast.error("Could not load the experience.");
-      navigate("/my-itineraries");
+      toast.error(t("errors.itineraryLoad"));
+      navigate(`/profile/${authUser?.id}`);
     });
   }, [id]);
 
