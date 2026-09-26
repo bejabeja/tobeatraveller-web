@@ -74,6 +74,105 @@ const PUSH_MESSAGES = {
             ? { title: 'Nuevo país', body: `${actorUsername} ha añadido ${countryFlag(countryCode)} ${countryNameIn('es', countryCode)} a su pasaporte` }
             : { title: 'Nuevo sello', body: `${actorUsername} ha conseguido un sello nuevo en su pasaporte` }),
     },
+    fr: {
+        comment: ({ actorUsername, itineraryTitle }) => ({
+            title: 'Nouveau commentaire',
+            body: `${actorUsername} a commenté « ${itineraryTitle} »`,
+        }),
+        like: ({ actorUsername, itineraryTitle }) => ({
+            title: "Nouveau j'aime",
+            body: `${actorUsername} a aimé « ${itineraryTitle} »`,
+        }),
+        follow: ({ actorUsername }) => ({
+            title: 'Nouvel abonné',
+            body: `${actorUsername} a commencé à te suivre`,
+        }),
+        referral_reward: ({ actorUsername }) => ({
+            title: 'Récompense de parrainage',
+            body: `${actorUsername} et toi avez gagné 1 mois de Premium`,
+        }),
+        badge_earned: () => ({
+            title: 'Nouveau badge',
+            body: 'Tu as obtenu un nouveau badge. Touche pour le voir et le partager.',
+        }),
+        recap_ready: () => ({
+            title: 'Ton année sur la route est prête',
+            body: 'Pays, nuits en van, tampons... Découvre ton année et partage-la.',
+        }),
+        country_stamp: ({ countryCode }) => ({
+            title: 'Nouveau pays dans ton passeport',
+            body: `${countryFlag(countryCode)} ${countryNameIn('fr', countryCode)} est maintenant dans ton passeport. Touche pour le partager.`,
+        }),
+        friend_stamp: ({ actorUsername, countryCode }) => (countryCode
+            ? { title: 'Nouveau pays', body: `${actorUsername} a ajouté ${countryFlag(countryCode)} ${countryNameIn('fr', countryCode)} à son passeport` }
+            : { title: 'Nouveau tampon', body: `${actorUsername} a obtenu un nouveau tampon dans son passeport` }),
+    },
+    it: {
+        comment: ({ actorUsername, itineraryTitle }) => ({
+            title: 'Nuovo commento',
+            body: `${actorUsername} ha commentato "${itineraryTitle}"`,
+        }),
+        like: ({ actorUsername, itineraryTitle }) => ({
+            title: 'Nuovo mi piace',
+            body: `A ${actorUsername} piace "${itineraryTitle}"`,
+        }),
+        follow: ({ actorUsername }) => ({
+            title: 'Nuovo follower',
+            body: `${actorUsername} ha iniziato a seguirti`,
+        }),
+        referral_reward: ({ actorUsername }) => ({
+            title: 'Premio per invito',
+            body: `Tu e ${actorUsername} avete ottenuto 1 mese di Premium`,
+        }),
+        badge_earned: () => ({
+            title: 'Nuovo badge',
+            body: 'Hai ottenuto un nuovo badge. Tocca per vederlo e condividerlo.',
+        }),
+        recap_ready: () => ({
+            title: 'Il tuo anno in viaggio è pronto',
+            body: 'Paesi, notti in van, timbri... Scopri il tuo anno e condividilo.',
+        }),
+        country_stamp: ({ countryCode }) => ({
+            title: 'Nuovo paese nel tuo passaporto',
+            body: `${countryFlag(countryCode)} ${countryNameIn('it', countryCode)} è ora nel tuo passaporto. Tocca per condividerlo.`,
+        }),
+        friend_stamp: ({ actorUsername, countryCode }) => (countryCode
+            ? { title: 'Nuovo paese', body: `${actorUsername} ha aggiunto ${countryFlag(countryCode)} ${countryNameIn('it', countryCode)} al suo passaporto` }
+            : { title: 'Nuovo timbro', body: `${actorUsername} ha ottenuto un nuovo timbro nel suo passaporto` }),
+    },
+    de: {
+        comment: ({ actorUsername, itineraryTitle }) => ({
+            title: 'Neuer Kommentar',
+            body: `${actorUsername} hat „${itineraryTitle}“ kommentiert`,
+        }),
+        like: ({ actorUsername, itineraryTitle }) => ({
+            title: 'Neues Like',
+            body: `${actorUsername} gefällt „${itineraryTitle}“`,
+        }),
+        follow: ({ actorUsername }) => ({
+            title: 'Neuer Follower',
+            body: `${actorUsername} folgt dir jetzt`,
+        }),
+        referral_reward: ({ actorUsername }) => ({
+            title: 'Einladungsprämie',
+            body: `Du und ${actorUsername} habt 1 Monat Premium bekommen`,
+        }),
+        badge_earned: () => ({
+            title: 'Neues Abzeichen',
+            body: 'Du hast ein neues Abzeichen bekommen. Tippe, um es anzusehen und zu teilen.',
+        }),
+        recap_ready: () => ({
+            title: 'Dein Jahr unterwegs ist fertig',
+            body: 'Länder, Nächte im Van, Stempel... Sieh dir dein Jahr an und teile es.',
+        }),
+        country_stamp: ({ countryCode }) => ({
+            title: 'Neues Land in deinem Pass',
+            body: `${countryFlag(countryCode)} ${countryNameIn('de', countryCode)} ist jetzt in deinem Pass. Tippe, um es zu teilen.`,
+        }),
+        friend_stamp: ({ actorUsername, countryCode }) => (countryCode
+            ? { title: 'Neues Land', body: `${actorUsername} hat jetzt ${countryFlag(countryCode)} ${countryNameIn('de', countryCode)} im Pass` }
+            : { title: 'Neuer Stempel', body: `${actorUsername} hat einen neuen Stempel im Pass bekommen` }),
+    },
 };
 
 export const buildPushMessage = (type, locale, context) => {

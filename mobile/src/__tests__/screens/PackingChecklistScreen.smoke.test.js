@@ -22,6 +22,7 @@ jest.mock('@tobeatraveller/shared', () => {
     isNetworkError: parseError.isNetworkError,
     isPremiumRequiredError: parseError.isPremiumRequiredError,
     normalizeSearchText,
+    toAppLanguage: jest.requireActual('../../../../shared/src/utils/constants/languages.js').toAppLanguage,
     packingCategories: constants.packingCategories,
     defaultPackingItems: { es: {}, en: {} },
     getPackingChecklist: jest.fn(),

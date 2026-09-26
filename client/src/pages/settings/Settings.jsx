@@ -7,7 +7,7 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { Trans, useTranslation } from "react-i18next";
-import { fetchNotificationPreferences, updateNotificationPreferences } from "@tobeatraveller/shared";
+import { APP_LANGUAGES, fetchNotificationPreferences, toAppLanguage, updateNotificationPreferences } from "@tobeatraveller/shared";
 import i18n from "../../i18n";
 import Spinner from "../../components/spinner/Spinner";
 import { REOPEN_COOKIE_PREFERENCES_EVENT } from "../../utils/analytics";
@@ -49,7 +49,7 @@ const Settings = () => {
   const [passwordError, setPasswordError] = useState("");
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
-  const currentLang = i18n.language?.startsWith("en") ? "en" : "es";
+  const currentLang = toAppLanguage(i18n.language);
 
   useEffect(() => {
     if (authUser?.id && !meDetail && !meLoading) dispatch(setUserInfo(authUser.id));
@@ -197,20 +197,17 @@ const Settings = () => {
             <p className="ep__section-label">{t("settings.language").toUpperCase()}</p>
           </div>
           <div className="ep__lang-toggle">
-            <button
-              type="button"
-              className={`ep__lang-btn${currentLang === "es" ? " ep__lang-btn--active" : ""}`}
-              onClick={() => i18n.changeLanguage("es")}
-            >
-              🇪🇸 Español
-            </button>
-            <button
-              type="button"
-              className={`ep__lang-btn${currentLang === "en" ? " ep__lang-btn--active" : ""}`}
-              onClick={() => i18n.changeLanguage("en")}
-            >
-              🇬🇧 English
-            </button>
+            {APP_LANGUAGES.map(({ code, flag, name }) => (
+              <button
+                key={code}
+                type="button"
+                className={`ep__lang-btn${currentLang === code ? " ep__lang-btn--active" : ""}`}
+                aria-pressed={currentLang === code}
+                onClick={() => i18n.changeLanguage(code)}
+              >
+                {flag} {name}
+              </button>
+            ))}
           </div>
         </section>
 

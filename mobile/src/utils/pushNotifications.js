@@ -3,20 +3,14 @@ import Constants from 'expo-constants';
 import * as Notifications from 'expo-notifications';
 import {
   PASSPORT_SHARE_COUNTRIES, PASSPORT_SHARE_MOMENT, PASSPORT_SHARE_WITH_ACHIEVEMENTS, RECAP_SOURCES, registerPushToken,
-  unregisterPushToken,
+  toAppLanguage, unregisterPushToken,
 } from '@tobeatraveller/shared';
 
 // Must match ANDROID_NOTIFICATION_CHANNEL_ID in api/src/services/pushNotificationsService.js.
 const ANDROID_NOTIFICATION_CHANNEL_ID = 'default';
-const SUPPORTED_PUSH_LOCALES = ['en', 'es'];
-const DEFAULT_PUSH_LOCALE = 'en';
 
 let registeredToken = null;
 
-const toPushLocale = (language) => {
-  const languageCode = language?.split('-')[0];
-  return SUPPORTED_PUSH_LOCALES.includes(languageCode) ? languageCode : DEFAULT_PUSH_LOCALE;
-};
 
 const ensureAndroidChannel = async () => {
   if (Platform.OS !== 'android') return;
@@ -47,7 +41,7 @@ export const registerForPushNotifications = async (language) => {
 
     const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId;
     const { data: token } = await Notifications.getExpoPushTokenAsync({ projectId });
-    await registerPushToken({ token, platform: Platform.OS, locale: toPushLocale(language) });
+    await registerPushToken({ token, platform: Platform.OS, locale: toAppLanguage(language) });
     registeredToken = token;
     return token;
   } catch {

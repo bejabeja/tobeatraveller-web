@@ -14,6 +14,7 @@ jest.mock('@tobeatraveller/shared', () => {
   const { PASSPORT_SHARE_COUNTRIES, PASSPORT_SHARE_MOMENT, PASSPORT_SHARE_WITH_ACHIEVEMENTS } = jest.requireActual('../../../../shared/src/utils/constants/badges.js');
   return {
     ...jest.requireActual('../../../../shared/src/utils/analyticsEvents.js'),
+    ...jest.requireActual('../../../../shared/src/utils/constants/languages.js'),
     PASSPORT_SHARE_COUNTRIES,
     PASSPORT_SHARE_MOMENT,
     PASSPORT_SHARE_WITH_ACHIEVEMENTS,
@@ -50,8 +51,14 @@ describe('registerForPushNotifications', () => {
     expect(registerPushToken).toHaveBeenCalledWith({ token: TOKEN, platform: 'android', locale: 'es' });
   });
 
-  it('sends English for a language the server has no push texts for', async () => {
+  it('sends the language without its region', async () => {
     await registerForPushNotifications('fr-FR');
+
+    expect(registerPushToken).toHaveBeenCalledWith(expect.objectContaining({ locale: 'fr' }));
+  });
+
+  it('sends English for a language the server has no push texts for', async () => {
+    await registerForPushNotifications('pt-BR');
 
     expect(registerPushToken).toHaveBeenCalledWith(expect.objectContaining({ locale: 'en' }));
   });

@@ -21,19 +21,13 @@ import {
 import { useSelector } from "react-redux";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { selectUnreadCount } from "@tobeatraveller/shared";
+import { APP_LANGUAGES, selectUnreadCount, toAppLanguage } from "@tobeatraveller/shared";
 import { selectIsAuthenticated } from "../../store/auth/authSelectors";
 import { selectMe } from "../../store/user/userInfoSelectors";
 import { generateAvatar } from "../../utils/constants/constants";
 import { optimizedCloudinaryUrl } from "../../utils/cloudinaryUrl";
 import "./Navbar.scss";
 
-// A dropdown (instead of a fixed ES/EN toggle) so adding a language later is
-// just one more entry here, not a UI redesign.
-const LANGUAGES = [
-  { code: "es", flag: "🇪🇸", label: "Español" },
-  { code: "en", flag: "🇬🇧", label: "English" },
-];
 
 // The four tools the subscription page itself sells as the reason to go
 // Premium (see PREMIUM_FEATURES in @tobeatraveller/shared); showing them here too
@@ -57,7 +51,7 @@ const LanguageSwitcher = () => {
   const { t, i18n } = useTranslation();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
-  const currentLanguage = LANGUAGES.find((lang) => i18n.language?.startsWith(lang.code)) ?? LANGUAGES[0];
+  const currentLanguage = APP_LANGUAGES.find((lang) => lang.code === toAppLanguage(i18n.language));
 
   useEffect(() => setIsOpen(false), [location]);
 
@@ -79,7 +73,7 @@ const LanguageSwitcher = () => {
         <>
           <div className="lang-switcher__backdrop" onClick={() => setIsOpen(false)} />
           <ul className="lang-switcher__menu" role="listbox">
-            {LANGUAGES.map((lang) => (
+            {APP_LANGUAGES.map((lang) => (
               <li key={lang.code}>
                 <button
                   type="button"
@@ -89,7 +83,7 @@ const LanguageSwitcher = () => {
                   onClick={() => { i18n.changeLanguage(lang.code); setIsOpen(false); }}
                 >
                   <span aria-hidden="true">{lang.flag}</span>
-                  <span>{lang.label}</span>
+                  <span>{lang.name}</span>
                 </button>
               </li>
             ))}

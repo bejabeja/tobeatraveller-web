@@ -1,5 +1,5 @@
 import { createRoot } from "react-dom/client";
-import "./i18n";
+import { i18nReady } from "./i18n";
 import "./index.scss";
 
 import { Provider } from "react-redux";
@@ -21,10 +21,10 @@ setTokenStorage({
   removeItem: (key)        => Promise.resolve(localStorage.removeItem(key)),
 });
 
-createRoot(document.getElementById("root")).render(
+i18nReady.then(() => createRoot(document.getElementById("root")).render(
   <Provider store={store}>
     <BrowserRouter>
       <App />
     </BrowserRouter>
   </Provider>
-);
+));

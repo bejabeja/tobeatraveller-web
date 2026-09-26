@@ -1,6 +1,9 @@
 import Groq from 'groq-sdk';
 import { extractJsonObject } from '../utils/extractJson.js';
 
+// The model writes in English unless told otherwise.
+const GENERATED_LANGUAGE_NAMES = { es: 'Spanish', fr: 'French', it: 'Italian', de: 'German' };
+
 // Keep in sync with shared/src/utils/constants/constants.js#aiPaceOptions (api/ has no
 // dependency on shared/, so this mapping is duplicated by necessity, not oversight).
 const PLACES_PER_DAY_BY_PACE = {
@@ -49,8 +52,9 @@ You MUST:
 3. Never substitute or ignore what the traveler explicitly asked for.
 ` : '';
 
-    const languageInstruction = language === 'es'
-      ? '\nGenerate ALL text fields (title, description, label) in Spanish.'
+    const languageName = GENERATED_LANGUAGE_NAMES[language];
+    const languageInstruction = languageName
+      ? `\nGenerate ALL text fields (title, description, label) in ${languageName}.`
       : '';
 
     const systemPrompt = `You are an expert travel planner creating highly personalized itineraries.

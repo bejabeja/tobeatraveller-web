@@ -11,8 +11,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../i18n';
 import {
-  changePassword, deleteMyAccount, exportMyData, fetchNotificationPreferences,
-  logoutUser, selectAuthUser, selectMe, updateNotificationPreferences,
+  APP_LANGUAGES, changePassword, deleteMyAccount, exportMyData, fetchNotificationPreferences,
+  logoutUser, selectAuthUser, selectMe, toAppLanguage, updateNotificationPreferences,
 } from '@tobeatraveller/shared';
 import { shadow } from '../../utils/styles';
 import { RichText } from '../../components/RichText';
@@ -39,7 +39,7 @@ const SettingsScreen = ({ navigation }) => {
   const authUser = useSelector(selectAuthUser);
   const user = meDetail ?? authUser;
 
-  const currentLang = i18n.language?.startsWith('en') ? 'en' : 'es';
+  const currentLang = toAppLanguage(i18n.language);
 
   const [deleting, setDeleting] = useState(false);
   const [deleteInput, setDeleteInput] = useState('');
@@ -236,22 +236,19 @@ const SettingsScreen = ({ navigation }) => {
           <View style={styles.card}>
             <Text style={styles.cardTitle}>{t('settings.language').toUpperCase()}</Text>
             <View style={styles.langToggle}>
-              <TouchableOpacity
-                style={[styles.langBtn, currentLang === 'es' && styles.langBtnActive]}
-                onPress={() => i18n.changeLanguage('es')}
-              >
-                <Text style={[styles.langBtnText, currentLang === 'es' && styles.langBtnTextActive]}>
-                  🇪🇸 Español
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.langBtn, currentLang === 'en' && styles.langBtnActive]}
-                onPress={() => i18n.changeLanguage('en')}
-              >
-                <Text style={[styles.langBtnText, currentLang === 'en' && styles.langBtnTextActive]}>
-                  🇬🇧 English
-                </Text>
-              </TouchableOpacity>
+              {APP_LANGUAGES.map(({ code, flag, name }) => (
+                <TouchableOpacity
+                  key={code}
+                  style={[styles.langBtn, currentLang === code && styles.langBtnActive]}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: currentLang === code }}
+                  onPress={() => i18n.changeLanguage(code)}
+                >
+                  <Text style={[styles.langBtnText, currentLang === code && styles.langBtnTextActive]}>
+                    {flag} {name}
+                  </Text>
+                </TouchableOpacity>
+              ))}
             </View>
           </View>
 
@@ -423,9 +420,10 @@ const styles = StyleSheet.create({
     fontSize: 15, color: '#111827',
   },
 
-  langToggle: { flexDirection: 'row', gap: 10 },
+  // Two per row, so every language fits on a narrow phone.
+  langToggle: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   langBtn: {
-    flex: 1, borderRadius: 10, paddingVertical: 11,
+    flexBasis: '47%', flexGrow: 1, borderRadius: 10, paddingVertical: 11,
     borderWidth: 1.5, borderColor: '#e5e7eb',
     alignItems: 'center', backgroundColor: '#f9fafb',
   },

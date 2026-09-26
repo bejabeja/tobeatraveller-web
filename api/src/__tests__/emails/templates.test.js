@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { de } from '../../emails/locales/de.js';
 import { en } from '../../emails/locales/en.js';
 import { es } from '../../emails/locales/es.js';
+import { fr } from '../../emails/locales/fr.js';
+import { it as italian } from '../../emails/locales/it.js';
 import { accountDeletedTemplate } from '../../emails/templates/accountDeleted.js';
 import { contactConfirmationTemplate } from '../../emails/templates/contactConfirmation.js';
 import { passwordChangedTemplate } from '../../emails/templates/passwordChanged.js';
@@ -25,11 +28,11 @@ const keysOf = (value, prefix = '') => (
 );
 
 describe('user emails', () => {
-    it.each([['es', es]])('have the same copy in %s as in English', (_, copy) => {
+    it.each([['es', es], ['fr', fr], ['it', italian], ['de', de]])('have the same copy in %s as in English', (_, copy) => {
         expect(keysOf(copy)).toEqual(keysOf(en));
     });
 
-    const LANGUAGES = [['es', es]];
+    const LANGUAGES = [['es', es], ['fr', fr], ['it', italian], ['de', de]];
     it.each(Object.keys(USER_EMAILS).flatMap(name => LANGUAGES.map(([language, copy]) => [name, language, copy])))(
         'writes the %s email in %s, as a page in that language',
         (name, language, copy) => {

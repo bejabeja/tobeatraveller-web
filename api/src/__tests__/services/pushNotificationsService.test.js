@@ -115,8 +115,22 @@ describe('PushNotificationsService.sendNotificationPush()', () => {
         expect(sentMessages()[0].data).toMatchObject({ type: 'badge_earned', badgeId: 'countries_5' });
     });
 
+    it('writes to French, Italian and German devices in their language, country names included', async () => {
+        pushTokensRepository.findByUserId.mockResolvedValue([
+            device('ExponentPushToken[fr]', 'fr'), device('ExponentPushToken[it]', 'it'), device('ExponentPushToken[de]', 'de'),
+        ]);
+
+        await service.sendNotificationPush({ userId: 'u1', actorId: 'u1', type: 'country_stamp', countryCode: 'DE' });
+
+        expect(sentMessages().map(message => message.body)).toEqual([
+            expect.stringContaining('Allemagne'),
+            expect.stringContaining('Germania'),
+            expect.stringContaining('Deutschland'),
+        ]);
+    });
+
     it('falls back to English for a locale without translations', async () => {
-        pushTokensRepository.findByUserId.mockResolvedValue([device('ExponentPushToken[a]', 'fr')]);
+        pushTokensRepository.findByUserId.mockResolvedValue([device('ExponentPushToken[a]', 'pt')]);
 
         await service.sendNotificationPush({ userId: 'u1', actorId: 'u2', type: 'follow' });
 

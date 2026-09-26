@@ -134,6 +134,36 @@ export const defaultPackingItems = {
     first_aid: ["Tiritas", "Gasas y vendas", "Alcohol / antiséptico", "Ibuprofeno / paracetamol", "Termómetro", "Pinzas", "Tijeras", "Repelente de insectos", "Protector solar", "Medicación personal"],
     cleaning: ["Jabón lavavajillas", "Estropajo / bayeta", "Bolsas de basura", "Escoba y recogedor pequeños", "Producto multiusos", "Guantes de goma", "Líquido para el váter químico"],
   },
+  fr: {
+    clothing: ["Veste imperméable", "Polaire / veste chaude", "T-shirts", "Pantalons longs", "Shorts", "Sous-vêtements", "Chaussettes", "Pyjama", "Maillot de bain", "Chaussures de randonnée", "Tongs", "Casquette ou chapeau"],
+    accessories: ["Lunettes de soleil", "Ceinture", "Petit sac à dos", "Couteau multifonction", "Lampe frontale", "Parapluie"],
+    textiles: ["Draps / housse de couette", "Oreillers", "Couvertures", "Serviettes de bain", "Serviettes de plage", "Sac de couchage"],
+    electronics: ["Téléphone et chargeur", "Batterie externe", "Chargeur allume-cigare / adaptateur 12 V", "Routeur 4G / WiFi portable", "Panneau solaire portable", "Multiprise", "Adaptateurs de prise", "Appareil photo"],
+    documents: ["Carte d'identité / passeport", "Permis de conduire", "Carte grise", "Assurance du véhicule", "Contrôle technique", "Carte Vitale / assurance santé", "Espèces", "Cartes bancaires"],
+    toiletries: ["Brosse à dents et dentifrice", "Shampooing et gel douche", "Déodorant", "Papier toilette", "Lingettes", "Rasoir", "Coupe-ongles", "Sèche-cheveux"],
+    first_aid: ["Pansements", "Compresses et bandages", "Antiseptique / alcool", "Ibuprofène / paracétamol", "Thermomètre", "Pince à épiler", "Ciseaux", "Répulsif anti-insectes", "Crème solaire", "Médicaments personnels"],
+    cleaning: ["Liquide vaisselle", "Éponge / chiffon", "Sacs poubelle", "Petite balayette et pelle", "Nettoyant multi-usage", "Gants en caoutchouc", "Produit pour toilettes chimiques"],
+  },
+  it: {
+    clothing: ["Giacca impermeabile", "Pile / giacca calda", "Magliette", "Pantaloni lunghi", "Pantaloncini", "Biancheria intima", "Calzini", "Pigiama", "Costume da bagno", "Scarpe da trekking", "Infradito", "Cappellino o cappello"],
+    accessories: ["Occhiali da sole", "Cintura", "Zainetto", "Coltellino multiuso", "Torcia frontale", "Ombrello"],
+    textiles: ["Lenzuola / copripiumino", "Cuscini", "Coperte", "Asciugamani da bagno", "Teli da mare", "Sacco a pelo"],
+    electronics: ["Telefono e caricatore", "Power bank", "Caricatore da auto / adattatore 12 V", "Router 4G / WiFi portatile", "Pannello solare portatile", "Ciabatta elettrica", "Adattatori per prese", "Fotocamera"],
+    documents: ["Carta d'identità / passaporto", "Patente di guida", "Libretto di circolazione", "Assicurazione del veicolo", "Revisione del veicolo", "Tessera sanitaria / assicurazione sanitaria", "Contanti", "Carte bancarie"],
+    toiletries: ["Spazzolino e dentifricio", "Shampoo e bagnoschiuma", "Deodorante", "Carta igienica", "Salviette umidificate", "Rasoio", "Tagliaunghie", "Asciugacapelli"],
+    first_aid: ["Cerotti", "Garze e bende", "Disinfettante / alcol", "Ibuprofene / paracetamolo", "Termometro", "Pinzette", "Forbici", "Repellente per insetti", "Crema solare", "Farmaci personali"],
+    cleaning: ["Detersivo per piatti", "Spugna / panno", "Sacchi della spazzatura", "Scopa e paletta piccole", "Detergente multiuso", "Guanti di gomma", "Liquido per WC chimico"],
+  },
+  de: {
+    clothing: ["Regenjacke", "Fleece / warme Jacke", "T-Shirts", "Lange Hosen", "Shorts", "Unterwäsche", "Socken", "Schlafanzug", "Badesachen", "Wanderschuhe", "Flip-Flops", "Kappe oder Hut"],
+    accessories: ["Sonnenbrille", "Gürtel", "Kleiner Rucksack", "Multitool / Taschenmesser", "Stirnlampe", "Regenschirm"],
+    textiles: ["Bettlaken / Bettbezug", "Kissen", "Decken", "Badetücher", "Strandtücher", "Schlafsack"],
+    electronics: ["Handy und Ladegerät", "Powerbank", "12-V-Autoladegerät / Adapter", "4G-Router / mobiles WLAN", "Mobiles Solarpanel", "Mehrfachsteckdose", "Reisestecker-Adapter", "Kamera"],
+    documents: ["Personalausweis / Reisepass", "Führerschein", "Fahrzeugschein", "Kfz-Versicherung", "TÜV-Bescheinigung", "Krankenversicherungskarte", "Bargeld", "Bankkarten"],
+    toiletries: ["Zahnbürste und Zahnpasta", "Shampoo und Duschgel", "Deo", "Toilettenpapier", "Feuchttücher", "Rasierer", "Nagelknipser", "Föhn"],
+    first_aid: ["Pflaster", "Mullbinden und Verbände", "Desinfektionsmittel / Alkohol", "Ibuprofen / Paracetamol", "Fieberthermometer", "Pinzette", "Schere", "Insektenschutz", "Sonnencreme", "Persönliche Medikamente"],
+    cleaning: ["Spülmittel", "Schwamm / Lappen", "Müllbeutel", "Handfeger und Kehrblech", "Allzweckreiniger", "Gummihandschuhe", "Chemietoiletten-Zusatz"],
+  },
 };
 
 export const DEFAULT_AI_PACE = "normal";

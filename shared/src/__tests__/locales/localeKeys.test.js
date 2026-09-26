@@ -4,6 +4,9 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import en from '../../locales/en.json';
 import es from '../../locales/es.json';
+import fr from '../../locales/fr.json';
+import it_ from '../../locales/it.json';
+import de from '../../locales/de.json';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../../..');
 const SOURCE_ROOTS = ['client/src', 'mobile/src'];
@@ -41,14 +44,26 @@ const staticKeysInUse = () => {
   return usages;
 };
 
+const TRANSLATIONS = [['es', es], ['fr', fr], ['it', it_], ['de', de]];
+
+// English's keys, plus a "_many" form of each plural where the language has
+// one (Spanish, French and Italian, for a million and up; not German): without it
+// i18next shows the raw key.
+const expectedKeys = (language) => {
+  const keys = flattenKeys(en);
+  const hasMany = new Intl.PluralRules(language).resolvedOptions().pluralCategories.includes('many');
+  const manyForms = hasMany ? keys.filter(key => key.endsWith('_other')).map(key => key.replace(/_other$/, '_many')) : [];
+  return [...keys, ...manyForms].sort();
+};
+
 describe('locales', () => {
-  it('has the same keys in Spanish and English', () => {
-    expect(flattenKeys(es).sort()).toEqual(flattenKeys(en).sort());
+  it.each(TRANSLATIONS)('has the same keys in %s as in English', (language, locale) => {
+    expect(flattenKeys(locale).sort()).toEqual(expectedKeys(language));
   });
 
   // Regression: vanLog.viewBreakdown and nav.settings were used by the apps
   // but missing from both locales, so the raw key showed up on screen.
-  it.each([['es', es], ['en', en]])('defines every static key the web and mobile apps use (%s)', (_, locale) => {
+  it.each([['en', en], ...TRANSLATIONS])('defines every static key the web and mobile apps use (%s)', (_, locale) => {
     const missing = [...staticKeysInUse()]
       .filter(([key]) => !hasKey(locale, key))
       .map(([key, file]) => `${key} (${file})`);

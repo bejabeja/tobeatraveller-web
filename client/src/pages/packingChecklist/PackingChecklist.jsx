@@ -5,7 +5,7 @@ import {
   IoAddOutline, IoCartOutline, IoCloseOutline, IoRefreshOutline,
   IoRepeatOutline, IoSearchOutline, IoTrashOutline,
 } from "react-icons/io5";
-import { defaultPackingItems, isPremiumRequiredError, normalizeSearchText, packingCategories } from "@tobeatraveller/shared";
+import { defaultPackingItems, isPremiumRequiredError, normalizeSearchText, packingCategories, toAppLanguage } from "@tobeatraveller/shared";
 import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState";
 import { addShoppingListItem } from "../../services/supplies";
 import {
@@ -22,8 +22,7 @@ const PACKING_TO_SUPPLY_CATEGORY = { cleaning: "cleaning", toiletries: "hygiene"
 const UNDO_DELETE_WINDOW_MS = 5000;
 
 const localizedDefaultItems = (i18n) => {
-  const locale = i18n.language?.startsWith("es") ? "es" : "en";
-  return Object.entries(defaultPackingItems[locale]).flatMap(([category, names]) =>
+  return Object.entries(defaultPackingItems[toAppLanguage(i18n.language)]).flatMap(([category, names]) =>
     names.map(name => ({ category, name }))
   );
 };

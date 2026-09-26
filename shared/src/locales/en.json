@@ -115,7 +115,7 @@
     "myTrips": "My trips",
     "savedTrips": "Saved trips",
     "yourTools": "Your tools",
-    "vanLog": "Van log",
+    "vanLog": "Expenses",
     "supplies": "Shopping list",
     "packingChecklist": "Packing checklist",
     "lifeDiary": "Life diary",
@@ -278,7 +278,7 @@
     "annualBadge": "Save 58%",
     "featuresTitle": "Everything you unlock",
     "featuresFreeNote": "Free includes manual itineraries and exploring & following travelers. Everything below is Premium.",
-    "featureVanLogTitle": "Van log",
+    "featureVanLogTitle": "Expenses",
     "featureVanLogDesc": "Track fuel, repairs, and every expense of life on the road.",
     "featureSuppliesTitle": "Shopping list",
     "featureSuppliesDesc": "Keep your inventory and shopping list in sync as you go.",
@@ -312,7 +312,7 @@
     "resumeErrorToast": "Couldn't resume the subscription. Please try again.",
     "trialCanceledTitle": "Are you sure you want to go?",
     "trialCanceledDesc": "You canceled your free trial, but don't worry: you haven't been charged anything, and you'll keep access until {{date}} if you do nothing.",
-    "trialCanceledReminder": "After that date you'll lose the van log, the shopping list, the life diary, and AI-generated itineraries.",
+    "trialCanceledReminder": "After that date you'll lose Expenses, the shopping list, the life diary, and AI-generated itineraries.",
     "ctaResumeTrial": "Resume my free trial",
     "paymentFailedTitle": "There's a problem with your last payment",
     "paymentFailedDesc": "We couldn't charge your card. Update your payment method to keep your Premium access."
@@ -565,7 +565,7 @@
     "noSavedTripsDesc": "Tap the bookmark icon on any itinerary to save it here."
   },
   "vanLog": {
-    "title": "Van log",
+    "title": "Expenses",
     "addEntry": "Add entry",
     "editEntry": "Edit entry",
     "quickAdd": "Add expense",
@@ -615,7 +615,7 @@
     "saveError": "Could not save the entry. Please try again.",
     "freeTierUsage": "{{used}} of {{limit}} free entries used",
     "capReachedTitle": "You've used your 10 free entries",
-    "capReachedDesc": "Free accounts can save up to 10 van log entries. Subscribe to Premium for unlimited entries, plus every other tool.",
+    "capReachedDesc": "Free accounts can save up to 10 expenses. Subscribe to Premium for unlimited entries, plus every other tool.",
     "deleteError": "Could not delete the entry. Please try again.",
     "deleteConfirmTitle": "Delete this entry?",
     "deleteConfirmDesc": "This can't be undone.",
@@ -1199,7 +1199,7 @@
     "s2Items": [
       "<strong>Account data:</strong> email address, username, and password (stored as a secure hash; we never store your password in plain text).",
       "<strong>Profile data:</strong> display name, biography, location, profile photo, and \"about\" text that you optionally provide.",
-      "<strong>Content you create:</strong> travel itineraries (title, destination, dates, places, budget, photos), comments, likes, saved trips, van log expenses and diary entries.",
+      "<strong>Content you create:</strong> travel itineraries (title, destination, dates, places, budget, photos), comments, likes, saved trips, van expenses and diary entries.",
       "<strong>Social data:</strong> who you follow and who follows you.",
       "<strong>Passport data:</strong> the stamps you earn and the countries you have been to, worked out from your trips (once started, leaving out ones cloned from someone else with their dates unchanged), expenses and diary entries, plus any countries you mark yourself. Countries from your published trips and the ones you mark yourself are public on your passport; those from your private trips, expenses or diary are visible to you alone. People who follow you may get a notice when you earn a country or stamp they can see on your passport, never a private one. You can edit the countries you marked at any time.",
       "<strong>Technical data:</strong> session tokens used to keep you logged in.",
@@ -1331,7 +1331,7 @@
     "logoutLosesChanges_one": "You have {{count}} unsynced change. If you log out now, it will be lost.",
     "logoutLosesChanges_other": "You have {{count}} unsynced changes. If you log out now, they will be lost.",
     "collection": {
-      "vanLog": "Van log",
+      "vanLog": "Expenses",
       "lifeDiary": "Life diary",
       "packingChecklist": "Packing checklist",
       "shoppingList": "Shopping list",

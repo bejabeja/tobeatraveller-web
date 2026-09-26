@@ -228,8 +228,10 @@
   }
 
   // Language
+  // Two per row, so every language fits on a narrow screen.
   &__lang-toggle {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 0.5rem;
   }
 
@@ -246,6 +248,11 @@
     font-weight: 500;
     transition: border-color 0.15s, background 0.15s, color 0.15s;
     text-align: center;
+
+    // An odd one out takes the whole last row, as on mobile.
+    &:last-child:nth-child(odd) {
+      grid-column: 1 / -1;
+    }
 
     &--active {
       border-color: var(--primary-color);

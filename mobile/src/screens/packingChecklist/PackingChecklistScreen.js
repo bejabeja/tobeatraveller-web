@@ -9,7 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
-  defaultPackingItems, getPackingChecklist, isNetworkError, isPremiumRequiredError, normalizeSearchText,
+  defaultPackingItems, toAppLanguage, getPackingChecklist, isNetworkError, isPremiumRequiredError, normalizeSearchText,
   packingCategories, seedPackingChecklistDefaults, selectAuthUser,
 } from '@tobeatraveller/shared';
 import FeatureLoadState from '../../components/FeatureLoadState';
@@ -26,8 +26,7 @@ const PACKING_TO_SUPPLY_CATEGORY = { cleaning: 'cleaning', toiletries: 'hygiene'
 const UNDO_DELETE_WINDOW_MS = 5000;
 
 const localizedDefaultItems = (i18n) => {
-  const locale = i18n.language?.startsWith('es') ? 'es' : 'en';
-  return Object.entries(defaultPackingItems[locale]).flatMap(([category, names]) =>
+  return Object.entries(defaultPackingItems[toAppLanguage(i18n.language)]).flatMap(([category, names]) =>
     names.map(name => ({ category, name }))
   );
 };

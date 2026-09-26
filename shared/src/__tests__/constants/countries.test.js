@@ -7,7 +7,7 @@ import {
 describe('country display helpers', () => {
     // The API may return any of its ISO codes; each needs a name in the apps.
     it('has a Spanish and an English name for every country code the API can return', () => {
-        const missing = ISO_COUNTRY_CODES.filter(code => !COUNTRY_NAMES[code]?.es || !COUNTRY_NAMES[code]?.en);
+        const missing = ISO_COUNTRY_CODES.filter(code => ['en', 'es', 'fr', 'it', 'de'].some(language => !COUNTRY_NAMES[code]?.[language]));
 
         expect(missing).toEqual([]);
     });
@@ -16,6 +16,13 @@ describe('country display helpers', () => {
         expect(countryName('ES', 'es')).toBe('España');
         expect(countryName('ES', 'en')).toBe('Spain');
         expect(countryName('ES', 'es-ES')).toBe('España');
+        expect(countryName('DE', 'fr')).toBe('Allemagne');
+        expect(countryName('DE', 'it-IT')).toBe('Germania');
+        expect(countryName('ES', 'de')).toBe('Spanien');
+    });
+
+    it('names a country in English for a language the apps do not have', () => {
+        expect(countryName('DE', 'pt')).toBe('Germany');
     });
 
     it('falls back to the code for an unknown country', () => {
