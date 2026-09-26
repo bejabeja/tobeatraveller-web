@@ -45,7 +45,7 @@ const Profile = () => {
   const authUser = useSelector(selectAuthUser);
   const {
     user, itineraries, loadingUser, error,
-    isMyProfile, loadingItineraries, isAuthenticated,
+    isMyProfile, loadingItineraries, itinerariesLoaded, isAuthenticated,
   } = useProfileData(id);
   const { isFollowing, toggleFollow, isLoadingFollow } = useFollow(id);
   const [showUnfollowModal, setShowUnfollowModal] = useState(false);
@@ -99,16 +99,14 @@ const Profile = () => {
       .catch(() => toast.error(t("itinerary.couldntCopyLink")));
   };
 
-  const aboutContent = user?.about ? (
-    <AboutSection about={user.about} t={t} />
-  ) : isMyProfile ? (
-    <div className="profile__about profile__about--empty">
-      <h2 className="profile__about-title">{t("profile.about")}</h2>
-      <Link to={`/profile/edit/${user?.id}`} className="profile__about-prompt">
-        {t("profile.tellCommunity")}
-      </Link>
-    </div>
-  ) : null;
+  // Nothing to fill in here: what's missing is listed once, in the
+  // completeness card.
+  const aboutContent = user?.about ? <AboutSection about={user.about} t={t} /> : null;
+
+  const showMyTrips = () => {
+    setTripsTab(TRIPS_TABS.MINE);
+    document.getElementById("profile-trips")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   return (
     <section className="profile section__container">
@@ -133,12 +131,15 @@ const Profile = () => {
               isAuthenticated={isAuthenticated}
               isLoadingFollow={isLoadingFollow}
               onOpenFollows={setFollowsModal}
+              // Your own: the tab's trips, once loaded (a "0" first would flash to the real count).
+              tripsCount={isMyProfile ? (itinerariesLoaded ? itineraries.length : null) : user?.totalItineraries}
+              onShowTrips={showMyTrips}
               t={t}
             />
             {isMyProfile && <ProfileCompleteness user={user} t={t} />}
             {aboutContent}
             {isMyProfile && (
-              <div className="profile__trips-tabs" role="tablist">
+              <div id="profile-trips" className="profile__trips-tabs" role="tablist">
                 <button
                   type="button"
                   role="tab"
@@ -247,7 +248,7 @@ export default Profile;
 // ─── Header card ──────────────────────────────────────────────────────────────
 const HeaderSection = ({
   user, isMyProfile, isFollowing, followsYou, onFollowToggle,
-  onCopyLink, isAuthenticated, isLoadingFollow, onOpenFollows, t,
+  onCopyLink, isAuthenticated, isLoadingFollow, onOpenFollows, tripsCount, onShowTrips, t,
 }) => {
   const { i18n } = useTranslation();
   const followBtnRef = useRef(null);
@@ -277,14 +278,7 @@ const HeaderSection = ({
         <div className="profile__headline">
           <div className="profile__headline-row">
             <div className="profile__identity">
-              {user?.name
-                ? <h1 className="profile__name">{user.name}</h1>
-                : isMyProfile && (
-                  <Link to={`/profile/edit/${user?.id}`} className="profile__empty-name">
-                    {t("profile.addYourName")}
-                  </Link>
-                )
-              }
+              {user?.name && <h1 className="profile__name">{user.name}</h1>}
               <p className="profile__username">
                 @{user?.username}
                 {user?.role === "official" && <OfficialBadge size={18} />}
@@ -332,15 +326,17 @@ const HeaderSection = ({
             </div>
           </div>
           <div className="profile__stats">
+            {/* On your own profile, the same trips as the tab below (private
+                ones too), and a tap takes you there; others see the public ones. */}
             {isMyProfile ? (
-              <Link to="/my-itineraries" className="profile__stat">
-                <StatNumber value={user?.totalItineraries} />
-                <span>{t("profile.tripsStat", { count: user?.totalItineraries ?? 0 })}</span>
-              </Link>
+              <button type="button" className="profile__stat profile__stat--btn" onClick={onShowTrips}>
+                <StatNumber value={tripsCount} pending={tripsCount == null} />
+                <span>{t("profile.tripsStat", { count: tripsCount ?? 0 })}</span>
+              </button>
             ) : (
               <span className="profile__stat">
-                <StatNumber value={user?.totalItineraries} />
-                <span>{t("profile.tripsStat", { count: user?.totalItineraries ?? 0 })}</span>
+                <StatNumber value={tripsCount} />
+                <span>{t("profile.tripsStat", { count: tripsCount ?? 0 })}</span>
               </span>
             )}
             {isAuthenticated ? (
@@ -376,26 +372,15 @@ const HeaderSection = ({
           </Link>
         )}
 
-        {user?.bio ? (
-          <p className="profile__bio">{user.bio}</p>
-        ) : isMyProfile ? (
-          <Link to={`/profile/edit/${user?.id}`} className="profile__empty-bio">
-            {t("profile.addBio")}
-          </Link>
-        ) : null}
+        {user?.bio && <p className="profile__bio">{user.bio}</p>}
 
-        {(user?.location || user?.createdAt || isMyProfile) && (
+        {(user?.location || user?.createdAt) && (
           <div className="profile__meta">
-            {user?.location ? (
+            {user?.location && (
               <span className="profile__meta-item">
                 <IoLocationOutline aria-hidden="true" />
                 <span className="profile__meta-text">{user.location}</span>
               </span>
-            ) : isMyProfile && (
-              <Link to={`/profile/edit/${user?.id}`} className="profile__meta-item profile__meta-item--prompt">
-                <IoLocationOutline aria-hidden="true" />
-                <span className="profile__meta-text">{t("profile.addLocation")}</span>
-              </Link>
             )}
             {user?.createdAt && (
               <span className="profile__meta-item">
@@ -524,7 +509,7 @@ const ProfileCompleteness = ({ user, t }) => {
   const percent = Math.round((done / COMPLETENESS_TIP_KEYS.length) * 100);
   if (percent === 100) return null;
 
-  const nextTipKey = COMPLETENESS_TIP_KEYS.find((f) => !user?.[f.key])?.tipKey;
+  const missing = COMPLETENESS_TIP_KEYS.filter((f) => !user?.[f.key]);
 
   return (
     <div className="profile__completeness">
@@ -535,17 +520,21 @@ const ProfileCompleteness = ({ user, t }) => {
       <div className="profile__completeness-track">
         <div className="profile__completeness-fill" style={{ width: `${percent}%` }} />
       </div>
-      {nextTipKey && (
-        <p className="profile__completeness-tip">
-          <Link to={`/profile/edit/${user?.id}`}>→ {t(nextTipKey)}</Link>
-        </p>
-      )}
+      {/* Everything still missing, once: the header no longer repeats it. */}
+      <ul className="profile__completeness-tips">
+        {missing.map(({ key, tipKey }) => (
+          <li key={key}>
+            <Link to={`/profile/edit/${user?.id}`} className="profile__completeness-tip">+ {t(tipKey)}</Link>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
 
 // ─── Stat numbers
-const StatNumber = ({ value }) => {
+// `pending` shows a dash instead of a 0 that isn't known yet.
+const StatNumber = ({ value, pending = false }) => {
   const [flash, setFlash] = useState(false);
   const isFirstValue = useRef(true);
 
@@ -559,7 +548,7 @@ const StatNumber = ({ value }) => {
 
   return (
     <strong className={flash ? "profile__stat-number--flash" : undefined}>
-      {value ?? 0}
+      {pending ? "–" : value ?? 0}
     </strong>
   );
 };

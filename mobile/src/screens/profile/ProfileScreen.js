@@ -12,7 +12,7 @@ import {
   BADGE_EMOJI, countryFlag, filterItineraries, summarizePassport,
   followUser, getItinerariesByUserId, getUserById, getUserFavorites, logoutUser,
   selectAuthUser, selectIsAuthenticated, selectMe, selectMyItineraries,
-  PASSPORT_SHARE_SOURCES, RECAP_SOURCES, setUserInfo, unfollowUser, formatDate,
+  PASSPORT_SHARE_SOURCES, RECAP_SOURCES, setUserInfo, unfollowUser, formatDate, selectMyItinerariesLoaded,
 } from '@tobeatraveller/shared';
 import ItineraryCard from '../../components/ItineraryCard';
 import { ItineraryCardSkeleton, ProfileSkeleton } from '../../components/Skeleton';
@@ -42,6 +42,7 @@ const ProfileScreen = ({ route, navigation }) => {
   const authUser = useSelector(selectAuthUser);
   const me = meDetail ?? authUser;
   const myItineraries = useSelector(selectMyItineraries);
+  const myItinerariesLoaded = useSelector(selectMyItinerariesLoaded);
 
   const { changes: unsyncedChanges } = useOutbox();
 
@@ -167,7 +168,10 @@ const ProfileScreen = ({ route, navigation }) => {
 
   const completenessCount = COMPLETENESS_FIELDS.filter(f => !!user?.[f.key]).length;
   const completenessPct = Math.round((completenessCount / COMPLETENESS_FIELDS.length) * 100);
-  const nextTipKey = COMPLETENESS_FIELDS.find(f => !user?.[f.key])?.tipKey;
+  const missingFields = COMPLETENESS_FIELDS.filter(f => !user?.[f.key]);
+  // Your own: every trip of your trips section below, private ones too,
+  // whatever its visibility filter shows; a dash until they've loaded.
+  const tripsCount = isOwnProfile ? (myItinerariesLoaded ? rawItineraries.length : null) : (user?.totalItineraries ?? 0);
 
   return (
     <ScrollView
@@ -253,14 +257,7 @@ const ProfileScreen = ({ route, navigation }) => {
         </View>
 
         <View style={styles.userInfo}>
-          {user?.name
-            ? <Text style={styles.displayName}>{user.name}</Text>
-            : isOwnProfile && (
-              <TouchableOpacity onPress={() => navigation.navigate('EditProfile')}>
-                <Text style={styles.emptyPrompt}>{t('profile.addYourName')}</Text>
-              </TouchableOpacity>
-            )
-          }
+          {!!user?.name && <Text style={styles.displayName}>{user.name}</Text>}
 
           <View style={styles.usernameRow}>
             <Text style={styles.username}>@{user?.username}</Text>
@@ -281,8 +278,8 @@ const ProfileScreen = ({ route, navigation }) => {
               style={styles.stat}
               onPress={() => isOwnProfile && navigation.navigate('MyItineraries')}
             >
-              <Text style={styles.statNumber}>{user?.totalItineraries ?? 0}</Text>
-              <Text style={styles.statLabel}>{t('profile.tripsStat', { count: user?.totalItineraries ?? 0 })}</Text>
+              <Text style={styles.statNumber}>{tripsCount ?? '–'}</Text>
+              <Text style={styles.statLabel}>{t('profile.tripsStat', { count: tripsCount ?? 0 })}</Text>
             </TouchableOpacity>
             <View style={styles.statDivider} />
             <TouchableOpacity
@@ -302,22 +299,11 @@ const ProfileScreen = ({ route, navigation }) => {
             </TouchableOpacity>
           </View>
 
-          {user?.bio ? (
-            <Text style={styles.bio}>{user.bio}</Text>
-          ) : isOwnProfile && (
-            <TouchableOpacity onPress={() => navigation.navigate('EditProfile')}>
-              <Text style={styles.emptyPrompt}>{t('profile.addBio')}</Text>
-            </TouchableOpacity>
-          )}
+          {/* What's missing is listed once, in the completeness card below. */}
+          {!!user?.bio && <Text style={styles.bio}>{user.bio}</Text>}
 
           <View style={styles.meta}>
-            {user?.location ? (
-              <Text style={styles.metaItem}>📍 {user.location}</Text>
-            ) : isOwnProfile && (
-              <TouchableOpacity onPress={() => navigation.navigate('EditProfile')}>
-                <Text style={[styles.metaItem, styles.emptyPrompt]}>📍 {t('profile.addLocation')}</Text>
-              </TouchableOpacity>
-            )}
+            {!!user?.location && <Text style={styles.metaItem}>📍 {user.location}</Text>}
             {user?.createdAt && (
               <Text style={styles.metaItem}>
                 📅 {t('profile.joinedOn', { date: formatDate(user.createdAt, i18n.language, { year: 'numeric', month: 'long' }) })}
@@ -387,11 +373,13 @@ const ProfileScreen = ({ route, navigation }) => {
             <View style={styles.completenessTrack}>
               <View style={[styles.completenessFill, { width: `${completenessPct}%` }]} />
             </View>
-            {nextTipKey && (
-              <TouchableOpacity onPress={() => navigation.navigate('EditProfile')}>
-                <Text style={styles.completenessTip}>→ {t(nextTipKey)}</Text>
-              </TouchableOpacity>
-            )}
+            <View style={styles.completenessTips}>
+              {missingFields.map(({ key, tipKey }) => (
+                <TouchableOpacity key={key} style={styles.completenessTipChip} onPress={() => navigation.navigate('EditProfile')}>
+                  <Text style={styles.completenessTip}>+ {t(tipKey)}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
         )}
 
@@ -690,7 +678,6 @@ const styles = StyleSheet.create({
   },
   officialText: { color: '#fff', fontSize: 10, fontWeight: '700' },
   bio: { fontSize: 14, color: '#374151', marginTop: 8, lineHeight: 20 },
-  emptyPrompt: { fontSize: 14, color: '#E8743B', marginTop: 6 },
 
   passportCard: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
@@ -731,7 +718,12 @@ const styles = StyleSheet.create({
     height: 6, backgroundColor: '#e5e7eb', borderRadius: 3, overflow: 'hidden',
   },
   completenessFill: { height: '100%', backgroundColor: '#E8743B', borderRadius: 3 },
-  completenessTip: { fontSize: 12, color: '#E8743B', marginTop: 6 },
+  completenessTips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 },
+  completenessTipChip: {
+    paddingVertical: 5, paddingHorizontal: 10, borderRadius: 999,
+    borderWidth: 1, borderStyle: 'dashed', borderColor: '#F3B08E',
+  },
+  completenessTip: { fontSize: 12, color: '#E8743B', fontWeight: '500' },
 
   createBtn: {
     marginHorizontal: 16, marginTop: 14,

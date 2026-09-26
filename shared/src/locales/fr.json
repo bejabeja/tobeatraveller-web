@@ -294,6 +294,18 @@
     "featureAiItinerariesDesc": "Génère en quelques secondes un plan complet jour par jour pour ta destination.",
     "featureNoAdsTitle": "Sans pub",
     "featureNoAdsDesc": "Profite de l'appli sans interruption, jamais.",
+    "compareTitle": "Gratuit ou Premium",
+    "compareSubtitle": "Commence gratuitement et passe à Premium quand tu en as besoin.",
+    "compareFeature": "Ce qui est inclus",
+    "compareFree": "Gratuit",
+    "comparePremium": "Premium",
+    "compareCore": "Voyages, passeport et communauté",
+    "compareCoreDesc": "Crée et partage des voyages, tamponne ton passeport et suis d'autres voyageurs.",
+    "compareUpTo": "Jusqu'à {{count}}",
+    "compareUnlimited": "Illimité",
+    "compareIncluded": "Inclus",
+    "compareNotIncluded": "Non inclus",
+    "ctaStartTrial": "Commence 7 jours gratuits",
     "ctaSubscribe": "S'abonner",
     "ctaCreateAccount": "Créer un compte gratuit",
     "ctaFreeTrial": "Essaie Premium gratuitement pendant 7 jours",
@@ -384,12 +396,8 @@
     "followsYou": "Te suit",
     "editProfile": "Modifier le profil",
     "copyLink": "Copier le lien du profil",
-    "addYourName": "+ Ajoute ton nom",
-    "addBio": "+ Ajoute une bio",
-    "addLocation": "Ajoute ta localisation",
     "joinedOn": "Membre depuis le {{date}}",
     "about": "À propos",
-    "tellCommunity": "+ Parle de toi à la communauté",
     "aboutReadMore": "Lire la suite",
     "aboutReadLess": "Réduire",
     "profileStrength": "Complétude du profil",
@@ -1694,5 +1702,8 @@
     "yearsAgo_one": "il y a {{count}} an",
     "yearsAgo_other": "il y a {{count}} ans",
     "yearsAgo_many": "il y a {{count}} ans"
+  },
+  "tools": {
+    "unlockMore": "Passe à Premium pour en ajouter"
   }
 }

@@ -1,0 +1,95 @@
+.tool-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  width: auto;
+  margin-bottom: 1.5rem;
+
+  &__titles {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    width: auto;
+    min-width: 0;
+  }
+
+  &__title {
+    width: auto;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text-color);
+  }
+
+  &__usage {
+    width: fit-content;
+    padding: 0.3rem 0.65rem;
+    border-radius: 999px;
+    background: var(--primary-light, rgba(232, 116, 59, 0.1));
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    text-decoration: none;
+
+    &:hover { text-decoration: underline; }
+
+    &--full {
+      background: color-mix(in srgb, var(--error-color) 10%, transparent);
+      color: var(--error-color);
+    }
+  }
+
+  &__action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    width: fit-content;
+
+    // A whole row on a phone: a long label (German) can't run off the edge.
+    @media (max-width: 480px) {
+      width: 100%;
+      white-space: normal;
+    }
+  }
+}
+
+.tool-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  width: auto;
+  padding: 3rem 1rem;
+  text-align: center;
+
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--primary-light, rgba(232, 116, 59, 0.1));
+    color: var(--primary-color);
+    font-size: 1.75rem;
+
+    svg {
+      width: 1em;
+      height: 1em;
+    }
+  }
+
+  &__text {
+    max-width: 360px;
+    margin: 0;
+    color: var(--text-secondary-color);
+    line-height: 1.5;
+  }
+
+  &__action {
+    width: fit-content;
+  }
+}

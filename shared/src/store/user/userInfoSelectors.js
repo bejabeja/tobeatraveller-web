@@ -6,6 +6,7 @@ export const selectMeError = (state) => state.myInfo.me.error;
 
 export const selectMyItineraries = (state) => state.myInfo.myItineraries.data;
 export const selectMyItinerariesLoading = (state) => state.myInfo.myItineraries.loading;
+export const selectMyItinerariesLoaded = (state) => state.myInfo.myItineraries.loaded;
 export const selectMyItinerariesError = (state) => state.myInfo.myItineraries.error;
 
 export const selectMyFollowing = (state) => state.myInfo.myFollowing.data;

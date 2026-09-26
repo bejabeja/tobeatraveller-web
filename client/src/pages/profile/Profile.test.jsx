@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { Link, MemoryRouter, Route, Routes } from "react-router-dom";
 
 let mockIsMyProfile = true;
+let mockTripsLoaded = true;
 
 jest.mock("react-redux", () => ({ useSelector: () => ({ id: "user-1" }) }));
 jest.mock("react-i18next", () => ({
@@ -12,7 +13,7 @@ jest.mock("../../hooks/useProfileData", () => ({
   useProfileData: () => ({
     user: { id: "user-1", username: "jane", followingListIds: [], followersListIds: [] },
     itineraries: [{ id: "trip-1", title: "Norway", isPublic: true }],
-    loadingUser: false, error: null, isMyProfile: mockIsMyProfile, loadingItineraries: false, isAuthenticated: true,
+    loadingUser: false, error: null, isMyProfile: mockIsMyProfile, loadingItineraries: false, itinerariesLoaded: mockTripsLoaded, isAuthenticated: true,
   }),
 }));
 jest.mock("../../hooks/useFollow", () => ({ useFollow: () => ({ isFollowing: false, toggleFollow: jest.fn(), isLoadingFollow: false }) }));
@@ -41,6 +42,7 @@ const renderProfile = () => render(<MemoryRouter><Profile /></MemoryRouter>);
 describe("Profile trips", () => {
   beforeEach(() => {
     mockIsMyProfile = true;
+    mockTripsLoaded = true;
     useSavedTrips.mockReturnValue({ trips: [{ id: "saved-1", title: "Lofoten" }], loading: false, error: false });
   });
 
@@ -99,6 +101,31 @@ describe("Profile trips", () => {
     renderProfile();
 
     expect(screen.getByRole("tab", { name: /profile.savedTrips/ })).not.toHaveTextContent("(0)");
+  });
+
+  // Regression: name and bio were offered twice, in the header and again in
+  // the completeness card.
+  it("lists what's missing once, in the completeness card", () => {
+    renderProfile();
+
+    expect(screen.getAllByText(/profile.completenessTipName/)).toHaveLength(1);
+    expect(screen.getByText(/profile.completenessTipBio/)).toBeInTheDocument();
+    expect(screen.getByText(/profile.completenessTipAbout/)).toBeInTheDocument();
+  });
+
+  // Regression: the header counted public trips while the tab counted them all.
+  it("counts the owner's trips as the tab does", () => {
+    renderProfile();
+
+    expect(screen.getByRole("button", { name: /profile.tripsStat/ })).toHaveTextContent("1");
+  });
+
+  // A "0" that then jumps to the real count would read as a bug.
+  it("shows a dash for the owner's trips until they have loaded", () => {
+    mockTripsLoaded = false;
+    renderProfile();
+
+    expect(screen.getByRole("button", { name: /profile.tripsStat/ })).toHaveTextContent("–");
   });
 
   // Saved trips are private: a visitor gets neither the tab nor the fetch.

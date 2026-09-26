@@ -11,6 +11,13 @@
 
   &__filters-sticky {
     z-index: 10;
+
+    // The page's own gap already separates it from the results: its bottom
+    // margin doubled the space on top of that.
+    .filters {
+      margin-bottom: 0;
+    }
+
     // Without this, Filters' internal scrollable category row (min-width:0
     // there too) still leaks its intrinsic width through this flex-column
     // chain up to .main-content once the sidebar is collapsed. Every
@@ -64,6 +71,22 @@
     display: flex;
     gap: 0.4rem;
     flex-wrap: wrap;
+
+    // One scrollable row on a phone instead of two lines of chips.
+    @media (max-width: 480px) {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      min-width: 0;
+      scrollbar-width: none;
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
+
+      .explore__sort-chip {
+        flex-shrink: 0;
+      }
+    }
   }
 
   &__sort-chip {

@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
-import { IoAddOutline, IoBagCheckOutline, IoCartOutline, IoCloseOutline, IoPencilOutline, IoRefreshOutline, IoSearchOutline, IoTrashOutline } from "react-icons/io5";
-import { Link } from "react-router-dom";
+import {
+  IoAddOutline, IoBagCheckOutline, IoCartOutline, IoCloseOutline, IoCubeOutline, IoPencilOutline, IoRefreshOutline, IoSearchOutline, IoTrashOutline,
+} from "react-icons/io5";
 import { isPremiumRequiredError, normalizeSearchText, supplyCategories, supplyUnits } from "@tobeatraveller/shared";
 import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState";
 import Modal from "../../components/modal/Modal";
@@ -11,6 +12,8 @@ import {
   getSuppliesUsage, markInventoryItemUsedUp, markShoppingListItemPurchased, updateInventoryItem, updateShoppingListItem,
 } from "../../services/supplies";
 import SupplyFormModal from "./SupplyFormModal";
+import ToolHeader from "../../components/toolPage/ToolHeader";
+import ToolEmptyState from "../../components/toolPage/ToolEmptyState";
 import "./Supplies.scss";
 
 const Supplies = () => {
@@ -48,6 +51,8 @@ const Supplies = () => {
   };
 
   useEffect(() => { loadData(); loadUsage(); }, []);
+
+  const openAddItem = () => setFormTarget({ mode: tab === "shopping" ? "add-shopping" : "add-inventory" });
 
   // The active tab's own usage, since each list has its own independent cap.
   const currentListUsage = tab === "shopping" ? freeTierUsage?.shoppingList : freeTierUsage?.inventory;
@@ -153,19 +158,14 @@ const Supplies = () => {
 
   return (
     <section className="supplies section__container">
-      <div className="supplies__header">
-        <div className="supplies__header-titles">
-          <h1 className="supplies__title">{s("title")}</h1>
-          {currentListUsage?.limited && (
-            <Link to="/subscription" className="supplies__free-tier-pill">
-              {s("freeTierUsage", { used: currentListUsage.used, limit: currentListUsage.limit })}
-            </Link>
-          )}
-        </div>
-        <button type="button" className="btn btn--primary" onClick={() => setFormTarget({ mode: tab === "shopping" ? "add-shopping" : "add-inventory" })}>
-          <IoAddOutline /> {s("addItem")}
-        </button>
-      </div>
+      <ToolHeader
+        title={s("title")}
+        usage={currentListUsage}
+        usageLabel={currentListUsage && s("freeTierUsage", { used: currentListUsage.used, limit: currentListUsage.limit })}
+        actionLabel={s("addItem")}
+        ActionIcon={IoAddOutline}
+        onAction={openAddItem}
+      />
 
       <div className="supplies__tabs">
         <button
@@ -210,14 +210,17 @@ const Supplies = () => {
             <div key={i} className="skeleton supplies__item-skeleton" />
           ))}
         </div>
-      ) : items.length === 0 ? (
+      ) : items.length === 0 && query ? (
         <div className="supplies__empty">
-          <p>
-            {query
-              ? s("noSearchResults", { query: search.trim() })
-              : (tab === "shopping" ? s("noShoppingItems") : s("noInventoryItems"))}
-          </p>
+          <p>{s("noSearchResults", { query: search.trim() })}</p>
         </div>
+      ) : items.length === 0 ? (
+        <ToolEmptyState
+          Icon={tab === "shopping" ? IoCartOutline : IoCubeOutline}
+          text={tab === "shopping" ? s("noShoppingItems") : s("noInventoryItems")}
+          actionLabel={s("addItem")}
+          onAction={openAddItem}
+        />
       ) : (
         <div className="supplies__list">
           {items.map((item) => (

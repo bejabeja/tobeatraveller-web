@@ -2,8 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import {
-  IoAddOutline, IoCartOutline, IoCloseOutline, IoRefreshOutline,
-  IoRepeatOutline, IoSearchOutline, IoTrashOutline,
+  IoAddOutline, IoCartOutline, IoCloseOutline, IoRefreshOutline, IoRepeatOutline, IoSearchOutline, IoTrashOutline,
 } from "react-icons/io5";
 import { defaultPackingItems, isPremiumRequiredError, normalizeSearchText, packingCategories, toAppLanguage } from "@tobeatraveller/shared";
 import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState";
@@ -12,6 +11,7 @@ import {
   addPackingChecklistItem, deletePackingChecklistItem, getPackingChecklist,
   resetPackingChecklistTrip, seedPackingChecklistDefaults, updatePackingChecklistItem,
 } from "../../services/packingChecklist";
+import ToolHeader from "../../components/toolPage/ToolHeader";
 import "./PackingChecklist.scss";
 
 // No supply category maps cleanly onto every packing category (there's no
@@ -192,14 +192,13 @@ const PackingChecklist = () => {
 
   return (
     <section className="packing-checklist section__container">
-      <div className="packing-checklist__header">
-        <h1 className="packing-checklist__title">{p("title")}</h1>
+      <ToolHeader title={p("title")}>
         {totalCount > 0 && (
           <span className={`packing-checklist__progress ${checkedCount === totalCount ? "packing-checklist__progress--complete" : ""}`}>
             {p("progress", { checked: checkedCount, total: totalCount })}
           </span>
         )}
-      </div>
+      </ToolHeader>
 
       {totalCount > 0 && (
         <div className="packing-checklist__toolbar">

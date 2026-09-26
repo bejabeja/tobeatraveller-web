@@ -63,6 +63,12 @@
   // A single scrollable row (like Airbnb/Pinterest/Booking category strips)
   // instead of wrapping keeps this bar from growing into a second row no
   // matter how many categories exist.
+  // On a phone the card is tighter, so the search box keeps most of the row.
+  @media (max-width: 480px) {
+    gap: 1rem;
+    padding: 1rem;
+  }
+
   &__categories {
     display: flex;
     flex-wrap: nowrap;
@@ -86,6 +92,14 @@
 
     .filter-chip {
       flex-shrink: 0;
+    }
+
+    // On a phone the strip runs to the card's edges and fades out on the
+    // right, so the chips cut off there read as "more to scroll".
+    @media (max-width: 480px) {
+      margin: 0 -1rem;
+      padding: 0 1rem;
+      mask-image: linear-gradient(to right, #000 85%, transparent);
     }
   }
 
@@ -218,6 +232,30 @@
     width: 1em;
     height: 1em;
     flex-shrink: 0;
+  }
+
+  // Only the icon on a phone (aria-label names it): the label and chevron
+  // took almost half the row, and the search placeholder got cut off.
+  @media (max-width: 480px) {
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--border-color, #e8ecf0);
+    border-radius: 10px;
+    background: var(--white-color, #fff);
+
+    position: relative;
+
+    &__label,
+    &__chevron {
+      display: none;
+    }
+
+    .filters__badge {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+    }
   }
 
   // Flips to point up while the advanced-filters panel is expanded, the

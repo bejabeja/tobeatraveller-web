@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
-  createCheckoutSession, createPortalSession, getMySubscription, PREMIUM_FEATURES, resumeSubscription,
+  createCheckoutSession, createPortalSession, getMySubscription, PLAN_COMPARISON, resumeSubscription,
   selectAuthUser, selectIsAuthenticated, selectMe, setUserInfo, formatDate,
 } from '@tobeatraveller/shared';
 import { shadow } from '../../utils/styles';
@@ -27,6 +27,18 @@ const PLANS = [
     highlighted: true,
   },
 ];
+
+// One cell of the free/Premium comparison: included, not included, a free
+// limit ("Up to 10") or unlimited.
+const PlanValue = ({ value, t }) => {
+  if (value === true) return <Ionicons name="checkmark" size={20} color="#16a34a" accessibilityLabel={t('subscription.compareIncluded')} />;
+  if (value === false) return <Ionicons name="remove" size={20} color="#9ca3af" accessibilityLabel={t('subscription.compareNotIncluded')} />;
+  return (
+    <Text style={styles.compareCell}>
+      {value === 'unlimited' ? t('subscription.compareUnlimited') : t('subscription.compareUpTo', { count: value })}
+    </Text>
+  );
+};
 
 const SubscriptionScreen = ({ navigation }) => {
   const { t, i18n } = useTranslation();
@@ -216,21 +228,6 @@ const SubscriptionScreen = ({ navigation }) => {
           </View>
         ) : (
           <>
-            <Text style={styles.featuresTitle}>{t('subscription.featuresTitle')}</Text>
-            <View style={styles.features}>
-              {PREMIUM_FEATURES.map(({ id, titleKey, descriptionKey, emoji, color }) => (
-                <View key={id} style={styles.feature}>
-                  <View style={[styles.featureIconBadge, { backgroundColor: `${color}1A` }]}>
-                    <Text style={styles.featureEmoji}>{emoji}</Text>
-                  </View>
-                  <View style={styles.featureText}>
-                    <Text style={styles.featureTitle}>{t(titleKey)}</Text>
-                    <Text style={styles.featureDesc}>{t(descriptionKey)}</Text>
-                  </View>
-                </View>
-              ))}
-            </View>
-
             <View style={styles.plans}>
               {PLANS.map((plan) => (
                 <View
@@ -255,7 +252,10 @@ const SubscriptionScreen = ({ navigation }) => {
                       onPress={() => handleSubscribeClick(plan.id)}
                     >
                       <Text style={styles.planCtaText}>
-                        {loadingPlanId === plan.id ? t('subscription.ctaLoading') : t('subscription.ctaSubscribe')}
+                        {loadingPlanId === plan.id
+                          ? t('subscription.ctaLoading')
+                          // A first subscription starts with the free trial on either plan.
+                          : t(user?.isTrialEligible ? 'subscription.ctaStartTrial' : 'subscription.ctaSubscribe')}
                       </Text>
                     </TouchableOpacity>
                   ) : (
@@ -268,6 +268,31 @@ const SubscriptionScreen = ({ navigation }) => {
             </View>
 
             <Text style={styles.disclaimer}>{t('subscription.disclaimer')}</Text>
+
+            <Text style={styles.featuresTitle}>{t('subscription.compareTitle')}</Text>
+            <Text style={styles.compareSubtitle}>{t('subscription.compareSubtitle')}</Text>
+            <View style={styles.compare}>
+              <View style={[styles.compareRow, styles.compareHeader]}>
+                <Text style={[styles.compareName, styles.compareHeaderText]}>{t('subscription.compareFeature')}</Text>
+                <Text style={[styles.compareValue, styles.compareHeaderText]}>{t('subscription.compareFree')}</Text>
+                <Text style={[styles.compareValue, styles.comparePremium, styles.compareHeaderText, styles.comparePremiumHeader]}>{t('subscription.comparePremium')}</Text>
+              </View>
+              {PLAN_COMPARISON.map(({ id, titleKey, descriptionKey, free }) => (
+                <View key={id} style={styles.compareRow}>
+                  <View style={styles.compareName}>
+                    <Text style={styles.compareTitle}>{t(titleKey)}</Text>
+                    <Text style={styles.compareDesc}>{t(descriptionKey)}</Text>
+                  </View>
+                  <View style={styles.compareValue}>
+                    <PlanValue value={free} t={t} />
+                  </View>
+                  <View style={[styles.compareValue, styles.comparePremium]}>
+                    <PlanValue value={typeof free === 'number' ? 'unlimited' : true} t={t} />
+                  </View>
+                </View>
+              ))}
+            </View>
+
           </>
         )}
       </ScrollView>
@@ -366,20 +391,22 @@ const styles = StyleSheet.create({
     fontSize: 15, fontWeight: '700', color: '#111827',
     textAlign: 'center', marginTop: 12,
   },
-  features: { gap: 14, marginTop: 4 },
-  feature: {
-    flexDirection: 'row', alignItems: 'flex-start', gap: 12,
-    backgroundColor: '#fff', borderRadius: 14, padding: 14,
-    ...shadow(2, 0.05, 6, 2),
+  compareSubtitle: { fontSize: 13, color: '#6b7280', textAlign: 'center', marginTop: 4, marginBottom: 10, lineHeight: 18 },
+  // Free against Premium: the Premium column tinted, as the highlighted plan.
+  compare: { backgroundColor: '#fff', borderRadius: 14, overflow: 'hidden', ...shadow(2, 0.05, 6, 2) },
+  compareRow: {
+    flexDirection: 'row', alignItems: 'stretch',
+    borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: '#e5e7eb',
   },
-  featureIconBadge: {
-    width: 48, height: 48, borderRadius: 12,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  featureEmoji: { fontSize: 24 },
-  featureText: { flex: 1, gap: 2 },
-  featureTitle: { fontSize: 14, fontWeight: '700', color: '#111827' },
-  featureDesc: { fontSize: 12.5, color: '#6b7280', lineHeight: 17 },
+  compareHeader: { borderTopWidth: 0 },
+  compareHeaderText: { fontSize: 11, fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: 0.4 },
+  compareName: { flex: 1, paddingVertical: 12, paddingHorizontal: 12, gap: 2 },
+  compareValue: { width: 76, alignItems: 'center', justifyContent: 'center', paddingVertical: 12, textAlign: 'center' },
+  comparePremium: { backgroundColor: '#FFF0E8' },
+  comparePremiumHeader: { color: '#E8743B' },
+  compareTitle: { fontSize: 14, fontWeight: '700', color: '#111827' },
+  compareDesc: { fontSize: 12, color: '#6b7280', lineHeight: 16 },
+  compareCell: { fontSize: 13, fontWeight: '600', color: '#111827', textAlign: 'center' },
 
   plans: { gap: 12, marginTop: 16 },
   plan: {

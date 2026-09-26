@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { FaCity } from "react-icons/fa";
-import { IoAlertCircleOutline, IoCheckmarkCircle, IoHourglassOutline, IoSparkles } from "react-icons/io5";
+import { IoAlertCircleOutline, IoCheckmark, IoCheckmarkCircle, IoHourglassOutline, IoRemove, IoSparkles } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { selectAuthUser, selectIsAuthenticated } from "../../store/auth/authSelectors";
 import { selectMe } from "../../store/user/userInfoSelectors";
 import { setUserInfo } from "../../store/user/userInfoActions";
-import { formatDate, PREMIUM_FEATURES } from "@tobeatraveller/shared";
+import { formatDate, PLAN_COMPARISON } from "@tobeatraveller/shared";
 import { createCheckoutSession, createPortalSession, getMySubscription, resumeSubscription } from "../../services/subscription";
 import { getCategoryIcon } from "../../assets/icons";
 import { preloadImg } from "../../utils/preloadImg";
@@ -179,11 +179,9 @@ const Subscription = () => {
 
   return (
     <div className="subscription">
-      {/* Same full-viewport photo hero as Home's guest hero (Hero.jsx/scss):
-          real destination photo instead of a plain white band, at the cost
-          of the price now sitting below one scroll again. That's a
-          deliberate trade the user asked for over the shorter, no-scroll
-          version this page had before. */}
+      {/* A van-life photo for the mood, kept short so the plans peek below
+          it: people come here to see the prices. Each plan has its own
+          trial button, so the hero doesn't repeat one. */}
       <header className={`subscription__hero${imageHeroLoaded ? " loaded" : ""}`}>
         <div className="subscription__hero-overlay" />
         <div className="subscription__hero-content">
@@ -192,25 +190,6 @@ const Subscription = () => {
             {t("subscription.title")}
           </h1>
           <p className="subscription__subtitle">{t("subscription.subtitle")}</p>
-
-          {!isPremium && (
-            <>
-              {isAuthenticated ? (
-                <a href="#subscription-plans" className="btn btn--primary subscription__trial-cta">
-                  {t("subscription.ctaFreeTrial")}
-                </a>
-              ) : (
-                <Link
-                  to="/register"
-                  state={{ redirectTo: "/subscription#subscription-plans" }}
-                  className="btn btn--primary subscription__trial-cta"
-                >
-                  {t("subscription.ctaFreeTrial")}
-                </Link>
-              )}
-              <p className="subscription__trial-note">{t("subscription.trialNoCard")}</p>
-            </>
-          )}
         </div>
       </header>
 
@@ -305,6 +284,7 @@ const Subscription = () => {
                   key={plan.id}
                   plan={plan}
                   isAuthenticated={isAuthenticated}
+                  isTrialEligible={!!userMe?.isTrialEligible}
                   loadingPlanId={loadingPlanId}
                   onSubscribe={handleSubscribeClick}
                   t={t}
@@ -312,6 +292,9 @@ const Subscription = () => {
               ))}
             </div>
 
+            {(!isAuthenticated || userMe?.isTrialEligible) && (
+              <p className="subscription__trial-note">{t("subscription.trialNoCard")}</p>
+            )}
             <p className="subscription__disclaimer">{t("subscription.disclaimer")}</p>
           </section>
 
@@ -343,22 +326,10 @@ const Subscription = () => {
           </div>
           </div>
 
-          <section className="subscription__features-section section__container">
-            <p className="subscription__features-title">{t("subscription.featuresTitle")}</p>
-            <p className="subscription__features-subtitle">{t("subscription.featuresFreeNote")}</p>
-            <ul className="subscription__features">
-              {PREMIUM_FEATURES.map(({ id, titleKey, descriptionKey, emoji, color }) => (
-                <li key={id} className="subscription__feature">
-                  <span className="subscription__feature-icon-badge" style={{ background: `${color}1A` }} aria-hidden="true">
-                    {emoji}
-                  </span>
-                  <span className="subscription__feature-text">
-                    <strong>{t(titleKey)}</strong>
-                    <span>{t(descriptionKey)}</span>
-                  </span>
-                </li>
-              ))}
-            </ul>
+          <section className="subscription__compare-section section__container">
+            <h2 className="subscription__features-title">{t("subscription.compareTitle")}</h2>
+            <p className="subscription__features-subtitle">{t("subscription.compareSubtitle")}</p>
+            <PlanComparison t={t} />
           </section>
         </>
       )}
@@ -368,7 +339,9 @@ const Subscription = () => {
 
 // Its own component (not inlined in PLANS.map) because a hook, useScrollReveal,
 // can't be called from inside a .map() callback per React's Rules of Hooks.
-const PlanCard = ({ plan, isAuthenticated, loadingPlanId, onSubscribe, t }) => {
+// A first subscription starts with the free trial on either plan, so the
+// button says so instead of "Subscribe".
+const PlanCard = ({ plan, isAuthenticated, isTrialEligible, loadingPlanId, onSubscribe, t }) => {
   const cardRef = useScrollReveal("subscription__plan");
 
   return (
@@ -390,14 +363,56 @@ const PlanCard = ({ plan, isAuthenticated, loadingPlanId, onSubscribe, t }) => {
           disabled={loadingPlanId === plan.id}
           onClick={() => onSubscribe(plan.id)}
         >
-          {loadingPlanId === plan.id ? t("subscription.ctaLoading") : t("subscription.ctaSubscribe")}
+          {loadingPlanId === plan.id
+            ? t("subscription.ctaLoading")
+            : t(isTrialEligible ? "subscription.ctaStartTrial" : "subscription.ctaSubscribe")}
         </button>
       ) : (
-        <Link to="/register" className="btn btn--primary subscription__cta">
+        // Back to the plans once signed up, to start the trial.
+        <Link to="/register" state={{ redirectTo: "/subscription#subscription-plans" }} className="btn btn--primary subscription__cta">
           {t("subscription.ctaCreateAccount")}
         </Link>
       )}
     </div>
+  );
+};
+
+// Free against Premium, feature by feature, with the free limits: the page
+// used to list everything as Premium, when most of it is also free up to a
+// limit.
+const PlanComparison = ({ t }) => {
+  const freeValue = (free) => {
+    if (free === true) return <IoCheckmark className="subscription__compare-yes" aria-label={t("subscription.compareIncluded")} />;
+    if (free === false) return <IoRemove className="subscription__compare-no" aria-label={t("subscription.compareNotIncluded")} />;
+    return t("subscription.compareUpTo", { count: free });
+  };
+
+  return (
+    <table className="subscription__compare">
+      <thead>
+        <tr>
+          <th scope="col">{t("subscription.compareFeature")}</th>
+          <th scope="col">{t("subscription.compareFree")}</th>
+          <th scope="col" className="subscription__compare-premium">{t("subscription.comparePremium")}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {PLAN_COMPARISON.map(({ id, titleKey, descriptionKey, free }) => (
+          <tr key={id}>
+            <th scope="row">
+              <strong>{t(titleKey)}</strong>
+              <span>{t(descriptionKey)}</span>
+            </th>
+            <td>{freeValue(free)}</td>
+            <td className="subscription__compare-premium">
+              {typeof free === "number"
+                ? t("subscription.compareUnlimited")
+                : <IoCheckmark className="subscription__compare-yes" aria-label={t("subscription.compareIncluded")} />}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 };
 

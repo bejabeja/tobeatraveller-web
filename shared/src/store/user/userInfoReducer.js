@@ -10,6 +10,8 @@ const initialState = {
         data: [],
         loading: false,
         error: null,
+        // Tells "not fetched yet" apart from "no trips": data starts empty too.
+        loaded: false,
     },
     myFollowing: {
         data: [],
@@ -72,6 +74,7 @@ export const userInfoReducer = (state = initialState, action) => {
                     data: action.payload,
                     loading: false,
                     error: null,
+                    loaded: true,
                 },
             };
 

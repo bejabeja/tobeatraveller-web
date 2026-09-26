@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
-import { IoCloseOutline, IoEllipsisVertical, IoFlashOutline, IoFunnelOutline, IoSearchOutline } from "react-icons/io5";
-import { Link } from "react-router-dom";
+import {
+  IoCloseOutline, IoEllipsisVertical, IoFlashOutline, IoFunnelOutline, IoSearchOutline, IoWalletOutline,
+} from "react-icons/io5";
 import {
   formatAmount, formatCalendarDay, formatNumber, getVanLogFuelPriceTrend, groupVanLogEntriesByMonth, isPremiumRequiredError,
   normalizeSearchText, vanLogCategories, vanLogCategoryEmoji,
@@ -12,6 +13,8 @@ import Modal from "../../components/modal/Modal";
 import { deleteVanLogEntry, getVanLogEntries, getVanLogStats } from "../../services/vanLogs";
 import VanLogFormModal from "./VanLogFormModal";
 import VanLogQuickAddModal from "./VanLogQuickAddModal";
+import ToolHeader from "../../components/toolPage/ToolHeader";
+import ToolEmptyState from "../../components/toolPage/ToolEmptyState";
 import "./VanLog.scss";
 
 const EMPTY_FILTERS = { category: "", country: "", currency: "", dateFrom: "", dateTo: "" };
@@ -225,19 +228,14 @@ const VanLog = () => {
 
   return (
     <section className="van-log section__container">
-      <div className="van-log__header">
-        <div className="van-log__header-titles">
-          <h1 className="van-log__title">{t("vanLog.title")}</h1>
-          {freeTierUsage?.limited && (
-            <Link to="/subscription" className="van-log__free-tier-pill">
-              {t("vanLog.freeTierUsage", { used: freeTierUsage.used, limit: freeTierUsage.limit })}
-            </Link>
-          )}
-        </div>
-        <button type="button" className="btn btn--primary" onClick={() => setQuickAddOpen(true)}>
-          <IoFlashOutline /> {t("vanLog.quickAdd")}
-        </button>
-      </div>
+      <ToolHeader
+        title={t("vanLog.title")}
+        usage={freeTierUsage}
+        usageLabel={freeTierUsage && t("vanLog.freeTierUsage", { used: freeTierUsage.used, limit: freeTierUsage.limit })}
+        actionLabel={t("vanLog.quickAdd")}
+        ActionIcon={IoFlashOutline}
+        onAction={() => setQuickAddOpen(true)}
+      />
 
       {stats && hasBreakdown && (
         <div className="van-log__total-banner">
@@ -393,10 +391,12 @@ const VanLog = () => {
                 <div key={i} className="skeleton van-log__entry-skeleton" />
               ))}
             </div>
-          ) : entries.length === 0 ? (
+          ) : entries.length === 0 && hasActiveFilters ? (
             <div className="van-log__empty">
-              <p>{hasActiveFilters ? t("vanLog.noEntriesFiltered") : t("vanLog.noEntries")}</p>
+              <p>{t("vanLog.noEntriesFiltered")}</p>
             </div>
+          ) : entries.length === 0 ? (
+            <ToolEmptyState Icon={IoWalletOutline} text={t("vanLog.noEntries")} actionLabel={t("vanLog.quickAdd")} onAction={() => setQuickAddOpen(true)} />
           ) : searchedEntries.length === 0 ? (
             <div className="van-log__empty">
               <p>{t("vanLog.noSearchResults", { query: search.trim() })}</p>

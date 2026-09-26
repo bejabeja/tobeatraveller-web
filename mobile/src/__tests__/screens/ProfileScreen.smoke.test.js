@@ -58,11 +58,12 @@ jest.mock('@tobeatraveller/shared', () => {
     selectIsAuthenticated: jest.fn(),
     selectMe: jest.fn(),
     selectMyItineraries: jest.fn(),
+    selectMyItinerariesLoaded: jest.fn(),
   };
 });
 
 import {
-  getUserPassport, selectAuthUser, selectIsAuthenticated, selectMe, selectMyItineraries,
+  checkIsLiked, getUserPassport, selectAuthUser, selectIsAuthenticated, selectMe, selectMyItineraries, selectMyItinerariesLoaded,
 } from '@tobeatraveller/shared';
 import { Share } from 'react-native';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
@@ -81,6 +82,7 @@ beforeEach(() => {
   selectMe.mockReturnValue(ME);
   selectAuthUser.mockReturnValue(ME);
   selectMyItineraries.mockReturnValue([]);
+  selectMyItinerariesLoaded.mockReturnValue(true);
 });
 
 // Guards the header markup (moved around more than once), which no other
@@ -125,4 +127,24 @@ it('shares the profile with a link to it', async () => {
     message: 'profile.shareText:jane https://tobeatraveller.test/profile/user-1',
     url: 'https://tobeatraveller.test/profile/user-1',
   }));
+});
+
+// Regression: the counter followed the visibility filter of the trips below,
+// and showed a 0 before the trips had loaded.
+it("counts all of the owner's trips, and shows a dash until they've loaded", async () => {
+  getUserPassport.mockResolvedValue({ owner: { id: 'user-1', username: 'jane', avatarUrl: null }, achievements: [], countries: [], declaredCountries: [] });
+  const trip = (id, isPublic) => ({
+    id, isPublic, title: `Trip ${id}`, location: { name: 'Lisbon' }, tripTotalDays: 3, category: 'relax',
+    photoUrl: null, images: [], likesCount: 0, commentsCount: 0, user: { id: 'user-1', username: 'jane' },
+  });
+  selectMyItineraries.mockReturnValue([trip('t1', true), trip('t2', false), trip('t3', false)]);
+  checkIsLiked.mockResolvedValue({ isLiked: false, likesCount: 0 });
+  const { rerender } = render(<SafeAreaProvider initialMetrics={INITIAL_METRICS}><ProfileScreen navigation={{ navigate: jest.fn(), canGoBack: () => false, addListener: () => jest.fn() }} route={{ params: {} }} /></SafeAreaProvider>);
+
+  expect(await screen.findByText('3')).toBeTruthy();
+
+  selectMyItinerariesLoaded.mockReturnValue(false);
+  rerender(<SafeAreaProvider initialMetrics={INITIAL_METRICS}><ProfileScreen navigation={{ navigate: jest.fn(), canGoBack: () => false, addListener: () => jest.fn() }} route={{ params: {} }} /></SafeAreaProvider>);
+
+  expect(screen.getByText('–')).toBeTruthy();
 });

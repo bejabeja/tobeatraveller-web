@@ -7,7 +7,9 @@
   &__hero {
     position: relative;
     width: 100%;
-    height: var(--container-whitout-navbar);
+    // Short enough for the plans to peek in the first screen: people reach
+    // this page to see the prices, the photo only sets the mood.
+    height: 45vh;
     background-image: url("/images/subscription-hero.jpg");
     background-size: cover;
     background-position: center;
@@ -26,7 +28,7 @@
     }
 
     @media (min-width: 480px) {
-      height: 100vh;
+      height: 55vh;
     }
   }
 
@@ -73,17 +75,12 @@
     filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.25));
   }
 
-  &__trial-cta {
-    width: fit-content;
-    display: inline-flex;
-    margin: 20px auto 0;
-    padding: 0.85rem 1.75rem;
-  }
-
   &__trial-note {
-    margin: 8px auto 0;
-    color: rgba(255, 255, 255, 0.75);
+    margin: 0 0 6px;
+    text-align: center;
     font-size: 13px;
+    font-weight: 600;
+    color: var(--text-color);
   }
 
   // Full-bleed wrapper (see Subscription.jsx): the ambient blobs below need
@@ -134,14 +131,13 @@
   &__content {
     position: relative;
     z-index: 1;
-    padding-top: 56px;
+    padding-top: 40px;
     padding-bottom: 24px;
   }
 
-  // Own section now (see Subscription.jsx), sitting after the tinted
-  // preview band, so it needs its own top/bottom breathing room instead of
-  // relying on &__content's.
-  &__features-section {
+  // Own section (see Subscription.jsx), after the tinted preview band, so it
+  // needs its own top/bottom breathing room instead of relying on &__content's.
+  &__compare-section {
     padding-top: 56px;
     padding-bottom: 88px;
   }
@@ -151,6 +147,14 @@
     flex-wrap: wrap;
     gap: 32px;
     justify-content: center;
+
+    // Stacked on a phone, the recommended plan goes first: it's the one in
+    // the first screen.
+    @media (max-width: 480px) {
+      .subscription__plan--highlighted {
+        order: -1;
+      }
+    }
     // Right below the hero now (see the reorder note in Subscription.jsx),
     // which already leaves room via &__hero's bottom padding and
     // &__content's top padding, so this doesn't need its own big top gap
@@ -427,60 +431,96 @@
     margin-left: 6px;
   }
 
-  &__features {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 24px;
+  // Free against Premium: the Premium column tinted, as the plan cards.
+  &__compare {
+    width: 100%;
+    max-width: 760px;
+    margin: 0 auto;
+    border-collapse: collapse;
+    font-size: 14px;
 
-    @media (min-width: 480px) {
-      grid-template-columns: 1fr 1fr;
+    th,
+    td {
+      padding: 14px 12px;
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: middle;
     }
 
-    @media (min-width: 800px) {
-      grid-template-columns: repeat(3, 1fr);
-    }
-  }
-
-  &__feature {
-    display: flex;
-    align-items: flex-start;
-    gap: 16px;
-    text-align: left;
-    padding: 24px;
-  }
-
-  &__feature-icon-badge {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 76px;
-    height: 76px;
-    flex-shrink: 0;
-    border-radius: 20px;
-    font-size: 40px;
-    line-height: 1;
-  }
-
-  &__feature-text {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    flex: 1;
-    min-width: 0;
-
-    strong {
-      font-size: 15px;
-      color: var(--text-color);
-    }
-
-    span {
-      font-size: 13.5px;
+    thead th {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
       color: var(--text-secondary-color);
-      line-height: 1.5;
+      text-align: center;
+
+      &:first-child {
+        text-align: left;
+      }
     }
+
+    tbody th {
+      text-align: left;
+      font-weight: 400;
+
+      strong {
+        display: block;
+        font-size: 15px;
+        color: var(--text-color);
+      }
+
+      span {
+        display: block;
+        margin-top: 2px;
+        font-size: 13px;
+        line-height: 1.45;
+        color: var(--text-secondary-color);
+      }
+    }
+
+    td {
+      width: 22%;
+      text-align: center;
+      font-weight: 600;
+      color: var(--text-color);
+      white-space: nowrap;
+    }
+
+    svg {
+      width: 20px;
+      height: 20px;
+      vertical-align: middle;
+    }
+
+    @media (max-width: 480px) {
+      font-size: 13px;
+
+      th,
+      td {
+        padding: 12px 6px;
+      }
+
+      tbody th span {
+        font-size: 12px;
+      }
+    }
+  }
+
+  &__compare-premium {
+    background: color-mix(in srgb, var(--primary-color) 7%, transparent);
+  }
+
+  thead &__compare-premium {
+    color: var(--primary-color);
+  }
+
+  &__compare-yes {
+    color: #16a34a;
+  }
+
+  &__compare-no {
+    color: var(--text-secondary-color);
+    opacity: 0.6;
   }
 
   &__disclaimer {

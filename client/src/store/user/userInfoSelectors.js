@@ -5,6 +5,7 @@ export {
     selectMeError,
     selectMyItineraries,
     selectMyItinerariesLoading,
+    selectMyItinerariesLoaded,
     selectMyItinerariesError,
     selectMyFollowing,
     selectMyFollowingLoading,

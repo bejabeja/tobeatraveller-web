@@ -1,20 +1,4 @@
 .packing-checklist {
-  &__header {
-    width: auto;
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.6rem 0.85rem;
-    margin-bottom: 1rem;
-  }
-
-  &__title {
-    width: auto;
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: var(--text-color);
-  }
-
   &__toolbar {
     width: auto;
     display: flex;

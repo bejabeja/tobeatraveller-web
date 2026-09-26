@@ -197,13 +197,6 @@ $avatar-size-tablet: 112px;
         width: auto;
         flex-shrink: 0;
       }
-
-      &--prompt {
-        color: var(--primary-color);
-        opacity: 0.75;
-
-        &:hover { opacity: 1; }
-      }
     }
 
     &-text {
@@ -303,41 +296,6 @@ $avatar-size-tablet: 112px;
       &:hover {
         text-decoration: underline;
       }
-    }
-  }
-
-  // ── Empty states ─────────────────────────────────────────────
-  &__empty-name {
-    display: inline-block;
-    font-size: 0.8rem;
-    color: var(--primary-color);
-    text-decoration: none;
-
-    &:hover { text-decoration: underline; }
-  }
-
-  &__empty-bio {
-    display: inline-block;
-    font-size: 0.875rem;
-    color: var(--primary-color);
-    text-decoration: none;
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-
-  &__about--empty {
-    cursor: default;
-  }
-
-  &__about-prompt {
-    font-size: 0.9375rem;
-    color: var(--primary-color);
-    text-decoration: none;
-
-    &:hover {
-      text-decoration: underline;
     }
   }
 
@@ -484,13 +442,17 @@ $avatar-size-tablet: 112px;
       align-items: center;
     }
 
+    // Sized by their text, not the global `width: 100%`, or the percentage
+    // ends up in the middle of the row.
     &-label {
+      width: auto;
       font-size: 0.875rem;
       font-weight: 600;
       color: var(--text-color);
     }
 
     &-pct {
+      width: auto;
       font-size: 0.875rem;
       color: var(--primary-color);
     }
@@ -510,19 +472,32 @@ $avatar-size-tablet: 112px;
       transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
+    &-tips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin: 0.2rem 0 0;
+      padding: 0;
+      list-style: none;
+
+      li {
+        width: auto;
+      }
+    }
+
     &-tip {
+      display: inline-block;
+      width: auto;
+      padding: 0.3rem 0.7rem;
+      border: 1px dashed color-mix(in srgb, var(--primary-color) 45%, transparent);
+      border-radius: 999px;
       font-size: 0.8rem;
-      color: var(--text-secondary-color);
+      font-weight: 500;
+      color: var(--primary-color);
+      text-decoration: none;
 
-      a {
-        color: var(--primary-color);
-        text-decoration: none;
-        font-weight: 500;
-        width: fit-content;
-
-        &:hover {
-          text-decoration: underline;
-        }
+      &:hover {
+        background: color-mix(in srgb, var(--primary-color) 8%, transparent);
       }
     }
   }
@@ -645,6 +620,8 @@ $avatar-size-tablet: 112px;
 .profile {
   // Your trips / saved trips, on your own profile.
   &__trips-tabs {
+    // Tapping the trips counter scrolls here: clear of the sticky top bar.
+    scroll-margin-top: 5rem;
     display: flex;
     gap: 1.5rem;
     margin-top: 1.5rem;

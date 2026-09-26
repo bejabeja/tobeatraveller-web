@@ -292,6 +292,18 @@
     "featureAiItinerariesDesc": "Erstelle in Sekunden einen kompletten Tagesplan für dein Reiseziel.",
     "featureNoAdsTitle": "Keine Werbung",
     "featureNoAdsDesc": "Nutze die App ohne Unterbrechungen, für immer.",
+    "compareTitle": "Kostenlos oder Premium",
+    "compareSubtitle": "Starte kostenlos und wechsle zu Premium, wenn du es brauchst.",
+    "compareFeature": "Enthalten",
+    "compareFree": "Kostenlos",
+    "comparePremium": "Premium",
+    "compareCore": "Reisen, Pass und Community",
+    "compareCoreDesc": "Erstelle und teile Reisen, sammle Stempel im Pass und folge anderen Reisenden.",
+    "compareUpTo": "Bis zu {{count}}",
+    "compareUnlimited": "Unbegrenzt",
+    "compareIncluded": "Enthalten",
+    "compareNotIncluded": "Nicht enthalten",
+    "ctaStartTrial": "7 Tage kostenlos starten",
     "ctaSubscribe": "Abonnieren",
     "ctaCreateAccount": "Kostenloses Konto erstellen",
     "ctaFreeTrial": "Premium 7 Tage gratis testen",
@@ -382,12 +394,8 @@
     "followsYou": "Folgt dir",
     "editProfile": "Profil bearbeiten",
     "copyLink": "Profil-Link kopieren",
-    "addYourName": "+ Namen hinzufügen",
-    "addBio": "+ Bio hinzufügen",
-    "addLocation": "Standort hinzufügen",
     "joinedOn": "Dabei seit {{date}}",
     "about": "Über mich",
-    "tellCommunity": "+ Erzähl der Community von dir",
     "aboutReadMore": "Mehr lesen",
     "aboutReadLess": "Weniger anzeigen",
     "profileStrength": "Profilstärke",
@@ -1649,5 +1657,8 @@
     "monthsAgo_other": "vor {{count}} Monaten",
     "yearsAgo_one": "vor {{count}} Jahr",
     "yearsAgo_other": "vor {{count}} Jahren"
+  },
+  "tools": {
+    "unlockMore": "Mit Premium mehr hinzufügen"
   }
 }

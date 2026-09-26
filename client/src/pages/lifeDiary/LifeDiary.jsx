@@ -1,13 +1,16 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
-import { IoAddOutline, IoLocationOutline, IoPencilOutline, IoTrashOutline } from "react-icons/io5";
-import { Link } from "react-router-dom";
+import {
+  IoAddOutline, IoJournalOutline, IoLocationOutline, IoPencilOutline, IoTrashOutline,
+} from "react-icons/io5";
 import { isPremiumRequiredError } from "@tobeatraveller/shared";
 import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState";
 import Modal from "../../components/modal/Modal";
 import { deleteLifeDiaryEntry, getLifeDiaryEntries, getLifeDiaryUsage } from "../../services/lifeDiary";
 import LifeDiaryFormModal from "./LifeDiaryFormModal";
+import ToolHeader from "../../components/toolPage/ToolHeader";
+import ToolEmptyState from "../../components/toolPage/ToolEmptyState";
 import "./LifeDiary.scss";
 
 const LifeDiary = () => {
@@ -76,19 +79,14 @@ const LifeDiary = () => {
 
   return (
     <section className="life-diary section__container">
-      <div className="life-diary__header">
-        <div className="life-diary__header-titles">
-          <h1 className="life-diary__title">{d("title")}</h1>
-          {freeTierUsage?.limited && (
-            <Link to="/subscription" className="life-diary__free-tier-pill">
-              {d("freeTierUsage", { used: freeTierUsage.used, limit: freeTierUsage.limit })}
-            </Link>
-          )}
-        </div>
-        <button type="button" className="btn btn--primary" onClick={openCreate}>
-          <IoAddOutline /> {d("addEntry")}
-        </button>
-      </div>
+      <ToolHeader
+        title={d("title")}
+        usage={freeTierUsage}
+        usageLabel={freeTierUsage && d("freeTierUsage", { used: freeTierUsage.used, limit: freeTierUsage.limit })}
+        actionLabel={d("addEntry")}
+        ActionIcon={IoAddOutline}
+        onAction={openCreate}
+      />
 
       {loading ? (
         <div className="life-diary__entries">
@@ -97,9 +95,7 @@ const LifeDiary = () => {
           ))}
         </div>
       ) : entries.length === 0 ? (
-        <div className="life-diary__empty">
-          <p>{d("noEntries")}</p>
-        </div>
+        <ToolEmptyState Icon={IoJournalOutline} text={d("noEntries")} actionLabel={d("addEntry")} onAction={openCreate} />
       ) : (
         <div className="life-diary__entries">
           {entries.map((entry) => {

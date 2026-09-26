@@ -71,9 +71,10 @@ const Filters = ({ onChange, defaultValues = {} }) => {
           className={`btn-toggle-filters${showMore ? " btn-toggle-filters--open" : ""}`}
           onClick={() => setShowMore((s) => !s)}
           aria-expanded={showMore}
+          aria-label={t("explore.filters")}
         >
           <IoFilterOutline className="btn-toggle-filters__icon" />
-          {t("explore.filters")}
+          <span className="btn-toggle-filters__label">{t("explore.filters")}</span>
           {advancedCount > 0 && <span className="filters__badge">{advancedCount}</span>}
           {showMore ? (
             <IoChevronUp className="btn-toggle-filters__chevron" />
