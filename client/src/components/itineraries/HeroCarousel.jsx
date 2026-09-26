@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { MdChevronLeft, MdChevronRight } from "react-icons/md";
 import "./HeroCarousel.scss";
 
 const HeroCarousel = ({ images }) => {
+  const { t } = useTranslation();
   const [index, setIndex] = useState(0);
   const slides = images.length > 0 ? images : ["/images/hero.jpg"];
 
@@ -26,10 +28,10 @@ const HeroCarousel = ({ images }) => {
 
       {slides.length > 1 && (
         <>
-          <button type="button" className="hero-carousel__nav hero-carousel__nav--prev" onClick={prev} aria-label="Previous photo">
+          <button type="button" className="hero-carousel__nav hero-carousel__nav--prev" onClick={prev} aria-label={t("itinerary.previousPhoto")}>
             <MdChevronLeft />
           </button>
-          <button type="button" className="hero-carousel__nav hero-carousel__nav--next" onClick={next} aria-label="Next photo">
+          <button type="button" className="hero-carousel__nav hero-carousel__nav--next" onClick={next} aria-label={t("itinerary.nextPhoto")}>
             <MdChevronRight />
           </button>
           <div className="hero-carousel__dots">

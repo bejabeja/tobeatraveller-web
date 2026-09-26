@@ -262,11 +262,10 @@ export class UserService {
         await this.userRepository.updateLanguage(id, language);
     }
 
-    async getFeaturedUsers() {
-        const users = await this.userRepository.getFeaturedUsers();
-        if (!users || users.length === 0) {
-            throw new NotFoundError("No featured users found");
-        }
+    // Signed in, someone they already follow (or themselves) is no suggestion.
+    // None left is a normal answer, not an error: they may follow everyone.
+    async getFeaturedUsers(viewerId = null) {
+        const users = await this.userRepository.getFeaturedUsers(viewerId);
 
         await Promise.all(users.map(async (user) => {
             const [total, lastItinerary] = await Promise.all([

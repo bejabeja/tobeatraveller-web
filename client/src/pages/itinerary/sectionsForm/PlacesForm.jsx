@@ -293,10 +293,10 @@ const PlaceField = ({
     <div className="form__place-card">
       <div className="form__place-card-top">
         <div className="form__place-move-btns">
-          <button type="button" className="form__place-move-btn" onClick={onMoveUp} disabled={isFirst} aria-label="Move place up">
+          <button type="button" className="form__place-move-btn" onClick={onMoveUp} disabled={isFirst} aria-label={f("movePlaceUp")}>
             <MdKeyboardArrowUp />
           </button>
-          <button type="button" className="form__place-move-btn" onClick={onMoveDown} disabled={isLast} aria-label="Move place down">
+          <button type="button" className="form__place-move-btn" onClick={onMoveDown} disabled={isLast} aria-label={f("movePlaceDown")}>
             <MdKeyboardArrowDown />
           </button>
         </div>
@@ -338,7 +338,7 @@ const PlaceField = ({
           )}
         </div>
 
-        <button type="button" className="form__place-delete-btn" onClick={() => remove(index)} aria-label="Delete place">
+        <button type="button" className="form__place-delete-btn" onClick={() => remove(index)} aria-label={f("deletePlace")}>
           <MdClose />
         </button>
       </div>

@@ -14,9 +14,10 @@ import {
   isPremiumRequiredError, itineraryCategories, NEW_ITINERARY_DEFAULT_VISIBILITY, placeCategories,
   reverseGeocode, searchDestinations, selectAuthUser, selectMe,
   setUserInfo, setUserInfoItineraries,
+  stepNameHintKey,
 } from '@tobeatraveller/shared';
 import { COLORS, shadow } from '../../utils/styles';
-import { getStepConfig, STEP_NAME_HINT } from '../../utils/stepConfig';
+import { getStepConfig } from '../../utils/stepConfig';
 import { GEOAPIFY_KEY } from '../../utils/config';
 import { PhotoPickerCard } from '../../components/PhotoPickerCard';
 import { useCurrentLocation } from '../../hooks/useCurrentLocation';
@@ -652,7 +653,7 @@ const PlanExperienceScreen = ({ navigation }) => {
               style={ls.editInput}
               value={editDraft?.name ?? ''}
               onChangeText={v => setEditDraft(d => ({ ...d, name: v }))}
-              placeholder={STEP_NAME_HINT[editDraft?.category] ?? ce('nameMomentHint')}
+              placeholder={t(stepNameHintKey(editDraft?.category) ?? 'createExperience.nameMomentHint')}
               placeholderTextColor="#9ca3af"
               maxLength={100}
             />

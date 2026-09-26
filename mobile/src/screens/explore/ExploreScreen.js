@@ -240,7 +240,7 @@ const ExploreScreen = ({ navigation, route }) => {
             : hasMore
               ? (
                 <TouchableOpacity style={styles.loadMoreBtn} onPress={handleLoadMore}>
-                  <Text style={styles.loadMoreText}>{t('explore.loadMore')}</Text>
+                  <Text style={styles.loadMoreText}>{t('common.loadMore')}</Text>
                 </TouchableOpacity>
               )
               : null

@@ -65,6 +65,13 @@
   width: 100%;
 }
 
+// Home suggests three people: on a wide screen they share the row evenly.
+@media (min-width: 1024px) {
+  .home__users .user-section__grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 .home__section-header {
   margin-bottom: 1.5rem;
   width: 100%;

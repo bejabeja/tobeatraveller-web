@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import LoadingButton from "../../components/LoadingButton.jsx";
+import SearchInput from "../../components/searchInput/SearchInput.jsx";
 import UsersSection from "../../components/users/UsersSection.jsx";
 import useDebouncedEffect from "../../hooks/useDebounced.js";
 import { usePageMeta } from "../../hooks/usePageMeta.js";
@@ -51,9 +52,6 @@ const Community = () => {
     }
   };
 
-  const handleRetry = () => dispatch(initAllUsers({ searchName, sortBy: SORT_BY, page: 1 }));
-  const handleFilterChange = (e) => setSearchName(e.target.value);
-  const handleReset = () => setSearchName("");
 
   useDebouncedEffect(
     () => {
@@ -103,31 +101,29 @@ const Community = () => {
   return (
     <div className="community">
       <div className="community__content section__container">
-        <Filters
-          searchName={searchName}
-          handleFilterChange={handleFilterChange}
-          handleReset={handleReset}
-          t={t}
-        />
+        {/* The same search box as Explore's, in the same kind of panel. */}
+        <div className="community__search">
+          <SearchInput
+            name="searchName"
+            value={searchName}
+            onChange={setSearchName}
+            placeholder={t("community.searchPlaceholder")}
+            label={t("community.search")}
+          />
+        </div>
 
         <h1 className="community__results-title">{t("community.travellers")}</h1>
 
         <div className="community__results">
-          {searchName && (
-            <p className="community__results-label">
-              {t("community.resultsFor", { query: searchName })}
-            </p>
-          )}
-
           {!users?.length && !loading && (
             <div className="community__no-results">
+              {/* The search box already says what was searched and clears it:
+                  what's left to offer is inviting whoever isn't here yet. */}
               {searchName ? (
                 <>
-                  <p>{t("community.noTravelers")}</p>
-                  <p>{t("community.tryAdjusting")}</p>
-                  <button type="button" className="community__clear-search" onClick={handleReset}>
-                    {t("community.clearSearch")}
-                  </button>
+                  <p className="community__no-results-title">{t("community.noTravelersFor", { query: searchName })}</p>
+                  <p className="community__no-results-text">{t("community.noTravelersHint")}</p>
+                  <Link to="/invite" className="btn btn--primary">{t("community.inviteButton")}</Link>
                 </>
               ) : (
                 <p>{t("community.noTravellersFound")}</p>
@@ -135,12 +131,21 @@ const Community = () => {
             </div>
           )}
 
-          <UsersSection users={users} isLoading={loading && !users?.length} />
+          {(loading || users?.length > 0) && <UsersSection users={users} isLoading={loading && !users?.length} />}
+
+          {/* The end of the list, however short: a way to bring more people in. */}
+          {!hasMore && !loading && !searchName && users?.length > 0 && <InviteCard t={t} />}
+          {/* Searching, the person may not be among those found. */}
+          {!hasMore && !loading && searchName && users?.length > 0 && (
+            <p className="community__search-invite">
+              {t("community.searchInvite")} <Link to="/invite">{t("community.inviteButton")}</Link>
+            </p>
+          )}
 
           {hasMore && (
             <div ref={loadMoreRef} className="community__results-ctas">
               <LoadingButton onClick={handleLoadMore} isLoading={loadingMore}>
-                {t("community.loadMore")}
+                {t("common.loadMore")}
               </LoadingButton>
             </div>
           )}
@@ -152,21 +157,10 @@ const Community = () => {
 
 export default Community;
 
-const Filters = ({ searchName, handleFilterChange, handleReset, t }) => (
-  <div className="community__filters">
-    <label>
-      {t("community.search")}
-      <input
-        type="text"
-        name="searchName"
-        value={searchName}
-        placeholder={t("community.searchPlaceholder")}
-        onChange={handleFilterChange}
-      />
-    </label>
-
-    <button onClick={handleReset} className="btn btn--ghost">
-      {t("community.reset")}
-    </button>
-  </div>
+const InviteCard = ({ t }) => (
+  <aside className="community__invite">
+    <strong className="community__invite-title">{t("community.inviteTitle")}</strong>
+    <p className="community__invite-text">{t("community.inviteText")}</p>
+    <Link to="/invite" className="btn btn--primary community__invite-button">{t("community.inviteButton")}</Link>
+  </aside>
 );

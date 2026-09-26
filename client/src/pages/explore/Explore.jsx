@@ -212,7 +212,7 @@ const Explore = () => {
             <div className="explore__results-ctas" ref={loadMoreRef}>
               {hasMore && (
                 <LoadingButton onClick={loadMore} isLoading={loadingMore}>
-                  {t("common.showMore")}
+                  {t("common.loadMore")}
                 </LoadingButton>
               )}
             </div>

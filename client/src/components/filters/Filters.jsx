@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { IoChevronDown, IoChevronUp, IoFilterOutline, IoSearchOutline } from "react-icons/io5";
+import { IoChevronDown, IoChevronUp, IoFilterOutline } from "react-icons/io5";
 import { useTranslation } from "react-i18next";
 import { itineraryCategories } from "../../utils/constants/constants";
+import SearchInput from "../searchInput/SearchInput";
 import "./Filters.scss";
 
 const categoryEmojis = {
@@ -47,24 +48,12 @@ const Filters = ({ onChange, defaultValues = {} }) => {
   return (
     <div className="filters">
       <div className="filters__main">
-        <div className="filters__search">
-          <IoSearchOutline className="filters__search-icon" />
-          <input
-            type="text"
-            name="query"
-            placeholder={t("explore.searchPlaceholder")}
-            value={filters.query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-          {filters.query && (
-            <button
-              type="button"
-              className="filters__search-clear"
-              onClick={() => setQuery("")}
-              aria-label="Clear"
-            >✕</button>
-          )}
-        </div>
+        <SearchInput
+          name="query"
+          value={filters.query}
+          onChange={setQuery}
+          placeholder={t("explore.searchPlaceholder")}
+        />
 
         <button
           type="button"

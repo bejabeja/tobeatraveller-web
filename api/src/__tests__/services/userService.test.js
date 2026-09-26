@@ -672,3 +672,26 @@ describe('UserService.deleteUser() email', () => {
         expect(emailService.sendAccountDeleted).toHaveBeenCalledWith({ username: 'jane', email: 'jane@example.com', language: 'es' });
     });
 });
+
+describe('UserService.getFeaturedUsers()', () => {
+    const makeService = (users) => {
+        const userRepository = { getFeaturedUsers: vi.fn().mockResolvedValue(users) };
+        const itinerariesRepository = { getTotalByUserId: vi.fn().mockResolvedValue(2), findLastByUserId: vi.fn().mockResolvedValue(null) };
+        return { service: new UserService(userRepository, itinerariesRepository, {}), userRepository };
+    };
+
+    it('asks for suggestions for the signed-in viewer', async () => {
+        const { service, userRepository } = makeService([makeUser({ id: 'user-2' })]);
+
+        await service.getFeaturedUsers('viewer-1');
+
+        expect(userRepository.getFeaturedUsers).toHaveBeenCalledWith('viewer-1');
+    });
+
+    // Following everyone suggested is a normal state, not a missing resource.
+    it('returns an empty list, not an error, when nobody is left to suggest', async () => {
+        const { service } = makeService([]);
+
+        await expect(service.getFeaturedUsers('viewer-1')).resolves.toEqual([]);
+    });
+});

@@ -256,7 +256,7 @@ const EditProfileScreen = ({ navigation }) => {
           <View style={styles.card}>
             <Text style={styles.cardTitle}>{t('editProfile.basicInfo')}</Text>
 
-            <Field label="Name" error={errors.name}>
+            <Field label={t('editProfile.nameLabel')} error={errors.name}>
               <TextInput
                 style={styles.input}
                 value={fields.name}
@@ -267,7 +267,7 @@ const EditProfileScreen = ({ navigation }) => {
               />
             </Field>
 
-            <Field label="Username" error={errors.username}>
+            <Field label={t('editProfile.usernameLabel')} error={errors.username}>
               <TextInput
                 style={styles.input}
                 value={fields.username}
@@ -289,7 +289,7 @@ const EditProfileScreen = ({ navigation }) => {
               )}
             </Field>
 
-            <Field label="Bio" error={errors.bio} hint={`${fields.bio.length}/160`} hintWarn={fields.bio.length > 140}>
+            <Field label={t('editProfile.bioLabel')} error={errors.bio} hint={`${fields.bio.length}/160`} hintWarn={fields.bio.length > 140}>
               <TextInput
                 style={[styles.input, styles.textarea]}
                 value={fields.bio}
@@ -306,7 +306,7 @@ const EditProfileScreen = ({ navigation }) => {
           <View style={styles.card}>
             <Text style={styles.cardTitle}>{t('editProfile.locationAbout')}</Text>
 
-            <Field label="Location" error={errors.location}>
+            <Field label={t('editProfile.locationLabel')} error={errors.location}>
               <TextInput
                 style={styles.input}
                 value={fields.location}
@@ -318,7 +318,7 @@ const EditProfileScreen = ({ navigation }) => {
               <UseCurrentLocationButton onPress={handleUseCurrentLocation} loading={locating} />
             </Field>
 
-            <Field label="About" error={errors.about} hint={`${fields.about.length}/1000`} hintWarn={fields.about.length > 900}>
+            <Field label={t('editProfile.aboutLabel')} error={errors.about} hint={`${fields.about.length}/1000`} hintWarn={fields.about.length > 900}>
               <TextInput
                 style={[styles.input, styles.textareaLarge]}
                 value={fields.about}

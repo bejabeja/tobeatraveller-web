@@ -170,10 +170,10 @@ const EditProfile = () => {
           <section className="ep__section">
             <p className="ep__section-label">{t("editProfile.basicInfo").toUpperCase()}</p>
             <div className="ep__fields">
-              <InputForm name="name" label="Name" control={control} type="text"
+              <InputForm name="name" label={t("editProfile.nameLabel")} control={control} type="text"
                 placeholder={t("editProfile.namePlaceholder")} error={errors.name} maxLength={50} />
               <div className="ep__username-wrap">
-                <InputForm name="username" label="Username" control={control} type="text"
+                <InputForm name="username" label={t("editProfile.usernameLabel")} control={control} type="text"
                   placeholder={t("editProfile.usernamePlaceholder")} error={errors.username} maxLength={50} />
                 {usernameStatus && (
                   <span className={`ep__username-status ep__username-status--${usernameStatus}`} aria-live="polite">
@@ -183,7 +183,7 @@ const EditProfile = () => {
                   </span>
                 )}
               </div>
-              <TextAreaForm name="bio" label="Bio" control={control}
+              <TextAreaForm name="bio" label={t("editProfile.bioLabel")} control={control}
                 placeholder={t("editProfile.bioPlaceholder")} error={errors.bio} maxLength={160} />
             </div>
           </section>
@@ -193,11 +193,11 @@ const EditProfile = () => {
             <p className="ep__section-label">{t("editProfile.locationAbout").toUpperCase()}</p>
             <div className="ep__fields">
               <div>
-                <InputForm name="location" label="Location" control={control} type="text"
+                <InputForm name="location" label={t("editProfile.locationLabel")} control={control} type="text"
                   placeholder={t("editProfile.locationPlaceholder")} error={errors.location} maxLength={50} showCounter={false} />
                 <UseCurrentLocationButton onClick={handleUseCurrentLocation} loading={locating} />
               </div>
-              <TextAreaForm name="about" label="About" control={control}
+              <TextAreaForm name="about" label={t("editProfile.aboutLabel")} control={control}
                 placeholder={t("editProfile.aboutPlaceholder")} error={errors.about} maxLength={1000} />
             </div>
           </section>

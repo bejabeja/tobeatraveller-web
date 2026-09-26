@@ -115,7 +115,7 @@ export class UserController {
 
     async getFeaturedUsers(req, res, next) {
         try {
-            const users = await this.userService.getFeaturedUsers();
+            const users = await this.userService.getFeaturedUsers(req.user?.id);
             res.status(200).json(users);
         } catch (error) {
             next(error);

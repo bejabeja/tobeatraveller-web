@@ -62,7 +62,7 @@ const FollowsModal = ({ userId, initialTab, followersCount, followingCount, onCl
           >
             {t("profile.following")} <span className="follows-modal__count">{followingCount ?? 0}</span>
           </button>
-          <button className="follows-modal__close" onClick={onClose} aria-label="Close">✕</button>
+          <button className="follows-modal__close" onClick={onClose} aria-label={t("common.close")}>✕</button>
         </div>
 
         <div className="follows-modal__list">

@@ -43,9 +43,10 @@ const Home = () => {
   useEffect(() => {
     if (!featuredItineraries?.length) dispatch(initFeaturedItineraries());
   }, [dispatch]);
+  // Asked again on signing in or out: signed in, it leaves out who they follow.
   useEffect(() => {
-    if (!featuredUsers?.length) dispatch(initFeaturedUsers());
-  }, [dispatch]);
+    dispatch(initFeaturedUsers());
+  }, [isAuthenticated, dispatch]);
   useEffect(() => {
     if (isAuthenticated && tab === "following") dispatch(initFeed(1));
   }, [isAuthenticated, tab, dispatch]);
@@ -139,6 +140,7 @@ const Home = () => {
                 isLoading={featuredItinerariesLoading}
               />
             </div>
+            {(featuredUsersLoading || featuredUsers?.length > 0) && (
             <div className="home__users">
               <div className="home__section-header">
                 <h2>{t("home.peopleYouMayLike")}</h2>
@@ -147,6 +149,7 @@ const Home = () => {
               </div>
               <UsersSection users={featuredUsers} isLoading={featuredUsersLoading} />
             </div>
+            )}
             <div className="home__destinations">
               <div className="home__section-header">
                 <h2>{t("home.exploreTheWorld")}</h2>

@@ -1,6 +1,8 @@
 import db from '../db/clientPostgres.js';
 import { User } from '../models/user.js';
 
+const FEATURED_USERS_LIMIT = 3;
+
 export class UserRepository {
     async save(user) {
         const {
@@ -93,7 +95,7 @@ export class UserRepository {
         return User.fromDb(result.rows[0]);
     }
 
-    async getFeaturedUsers() {
+    async getFeaturedUsers(viewerId = null) {
         const result = await db.query(`
             SELECT users.*
             FROM users
@@ -101,9 +103,16 @@ export class UserRepository {
             AND EXISTS (
                 SELECT 1 FROM itineraries WHERE itineraries.user_id = users.id
             )
+            AND ($1::uuid IS NULL OR (
+                users.id != $1
+                AND NOT EXISTS (
+                    SELECT 1 FROM user_followers
+                    WHERE follower_id = $1 AND followed_id = users.id
+                )
+            ))
             ORDER BY RANDOM()
-            LIMIT 3
-        `);
+            LIMIT $2
+        `, [viewerId, FEATURED_USERS_LIMIT]);
 
         return result.rows.map(row => User.fromDb(row));
     }

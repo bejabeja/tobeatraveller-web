@@ -1,6 +1,7 @@
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useCallback, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { MdOutlineFilterCenterFocus } from "react-icons/md";
 import { MapContainer, Marker, Polyline, Popup, TileLayer, useMap } from "react-leaflet";
 import "./Map.scss";
@@ -53,6 +54,7 @@ const MapController = ({ coords, coordsByIndex, resetRef, panToRef }) => {
 };
 
 const Map = ({ location, places = [], hoveredPlaceIndex = null, panToRef = null }) => {
+  const { t } = useTranslation();
   const resetRef = useRef(null);
 
   if (!location?.lat || !location?.lon) {
@@ -119,7 +121,8 @@ const Map = ({ location, places = [], hoveredPlaceIndex = null, panToRef = null 
       <button
         className="map__reset-btn"
         onClick={() => resetRef.current?.()}
-        title="Reset view"
+        title={t("itinerary.resetMapView")}
+        aria-label={t("itinerary.resetMapView")}
       >
         <MdOutlineFilterCenterFocus />
       </button>

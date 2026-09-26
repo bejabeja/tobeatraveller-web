@@ -229,3 +229,29 @@ describe('UserRepository.findByFilters() sort options', () => {
         expect(listQuery).toMatch(/AS total_itineraries/);
     });
 });
+
+describe('UserRepository.getFeaturedUsers()', () => {
+    const repo = new UserRepository();
+
+    beforeEach(() => {
+        db.query.mockReset();
+        db.query.mockResolvedValue({ rows: [] });
+    });
+
+    // Regression: "People you may like" offered people the viewer already
+    // followed, and the viewer themselves.
+    it('leaves out the viewer and who they follow when signed in', async () => {
+        await repo.getFeaturedUsers('viewer-1');
+
+        const [query, params] = db.query.mock.calls[0];
+        expect(query).toMatch(/users\.id != \$1/);
+        expect(query).toMatch(/NOT EXISTS \(\s*SELECT 1 FROM user_followers\s*WHERE follower_id = \$1 AND followed_id = users\.id/);
+        expect(params[0]).toBe('viewer-1');
+    });
+
+    it('asks for no viewer when signed out', async () => {
+        await repo.getFeaturedUsers();
+
+        expect(db.query.mock.calls[0][1][0]).toBeNull();
+    });
+});

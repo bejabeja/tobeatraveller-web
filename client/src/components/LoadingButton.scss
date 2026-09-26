@@ -1,22 +1,6 @@
-.loading-dots::after {
-  content: "";
-  display: inline-block;
-  animation: dots 1s steps(3, end) infinite;
-  width: 1em;
-  text-align: left;
-}
-
-@keyframes dots {
-  0% {
-    content: "";
-  }
-  33% {
-    content: ".";
-  }
-  66% {
-    content: "..";
-  }
-  100% {
-    content: "...";
-  }
+// "Load more" sits alone under a list: a hover you can see, not only a
+// slightly darker border.
+.loading-button:hover:not(:disabled) {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
 }

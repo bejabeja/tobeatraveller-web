@@ -1,12 +1,15 @@
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { optimizedCloudinaryUrl } from "../../../utils/cloudinaryUrl";
+import { generateAvatar } from "../../../utils/constants/constants";
 import OfficialBadge from "../OfficialBadge";
 
-// Mirrors ItineraryCard's visual language (cover photo, author overlay,
-// white info panel below) on purpose: this used to be a plain "avatar +
-// follow button" directory card, which read as an admin user list next to
-// every other card in the app being a real trip photo.
+const AVATAR_WIDTH = 160;
+const BANNER_WIDTH = 480;
+
+// A person, not a trip: the face and name lead, their last trip is only a
+// thin banner, and following them is a full-width button instead of a chip
+// on a photo.
 const UserCard = ({
   id,
   username,
@@ -16,77 +19,56 @@ const UserCard = ({
   avatarUrl,
   lastItinerary,
   isAuthenticated,
+  isMe,
   isFollowing,
+  isLoadingFollow,
   onFollowToggle,
   role,
 }) => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const handleFollow = async () => {
-    if (!isAuthenticated) {
-      navigate("/login");
-      return;
-    }
-    onFollowToggle(id, isFollowing);
-  };
-
-  const handleProfile = async () => {
-    if (!isAuthenticated) {
-      navigate("/login");
-      return;
-    }
-    navigate(`/friend-profile/${id}`);
-  };
-
-  const hasCoverPhoto = !!lastItinerary?.photoUrl;
+  // Signed out, a profile and following both need an account first.
+  const profilePath = isAuthenticated ? `/friend-profile/${id}` : "/login";
+  const tagline = bio || (lastItinerary?.title ? `${t("community.lastTripPrefix")} ${lastItinerary.title}` : t("community.noTripsYet"));
 
   return (
-    <div className="user-card" onClick={handleProfile}>
-      <div className="user-card__image-wrapper">
-        {hasCoverPhoto ? (
-          <img
-            src={optimizedCloudinaryUrl(lastItinerary.photoUrl, { width: 480 })}
-            alt={lastItinerary.title ? `Cover photo of @${username}'s trip: ${lastItinerary.title}` : `@${username}'s trip`}
-            loading="lazy"
-            className="user-card__image"
-          />
-        ) : (
-          <div className="user-card__image-placeholder" aria-hidden="true">
-            <img src="/logo-white.svg" alt="" className="user-card__image-placeholder-logo" />
-          </div>
+    <article className="user-card">
+      <div className="user-card__banner" aria-hidden="true">
+        {lastItinerary?.photoUrl && (
+          <img src={optimizedCloudinaryUrl(lastItinerary.photoUrl, { width: BANNER_WIDTH })} alt="" loading="lazy" />
         )}
-
-        <button
-          type="button"
-          className={`user-card__follow-btn ${isFollowing ? "following" : ""}`}
-          onClick={(e) => { e.stopPropagation(); handleFollow(); }}
-        >
-          {isFollowing ? t("community.following") : t("community.follow")}
-        </button>
-
-        <div className="user-card__author">
-          <img
-            src={optimizedCloudinaryUrl(avatarUrl, { width: 96 })}
-            alt={username}
-            loading="lazy"
-            className="user-card__avatar"
-          />
-          <span className="user-card__username">
-            @{username}{role === "official" && <OfficialBadge size={13} />}
-          </span>
-        </div>
       </div>
 
-      <div className="user-card__info">
-        <p className="user-card__tagline">
-          {bio || (lastItinerary?.title ? `${t("community.lastTripPrefix")} ${lastItinerary.title}` : t("community.noTripsYet"))}
-        </p>
-        <div className="user-card__meta">
-          {location && <span className="user-card__location">📍 {location}</span>}
-          <span className="user-card__trips">{t("community.trips", { count: totalItineraries })}</span>
-        </div>
-      </div>
-    </div>
+      <Link to={profilePath} className="user-card__link">
+        <img
+          src={optimizedCloudinaryUrl(avatarUrl, { width: AVATAR_WIDTH }) || generateAvatar(username)}
+          alt=""
+          loading="lazy"
+          className="user-card__avatar"
+        />
+        <span className="user-card__username">
+          @{username}{role === "official" && <OfficialBadge size={13} />}
+        </span>
+        {location && <span className="user-card__location">📍 {location}</span>}
+        <p className="user-card__tagline">{tagline}</p>
+        <span className="user-card__trips">{t("community.trips", { count: totalItineraries })}</span>
+      </Link>
+
+      {!isMe && (
+        isAuthenticated ? (
+          <button
+            type="button"
+            className={`btn user-card__follow ${isFollowing ? "btn--secondary" : "btn--primary"}`}
+            onClick={() => onFollowToggle(id, isFollowing)}
+            aria-pressed={isFollowing}
+            disabled={isLoadingFollow}
+          >
+            {isFollowing ? t("community.following") : t("community.follow")}
+          </button>
+        ) : (
+          <Link to="/login" className="btn btn--primary user-card__follow">{t("community.follow")}</Link>
+        )
+      )}
+    </article>
   );
 };
 

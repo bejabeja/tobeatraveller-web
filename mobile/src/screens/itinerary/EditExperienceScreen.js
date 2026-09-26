@@ -15,9 +15,10 @@ import {
   itineraryCategories, placeCategories,
   reverseGeocode, searchDestinations, selectAuthUser, selectMe,
   setUserInfo, setUserInfoItineraries,
+  stepNameHintKey,
 } from '@tobeatraveller/shared';
 import { COLORS, shadow } from '../../utils/styles';
-import { getStepConfig, STEP_NAME_HINT } from '../../utils/stepConfig';
+import { getStepConfig } from '../../utils/stepConfig';
 import { GEOAPIFY_KEY } from '../../utils/config';
 import { PhotoPickerCard } from '../../components/PhotoPickerCard';
 import { useCurrentLocation } from '../../hooks/useCurrentLocation';
@@ -504,7 +505,7 @@ const EditExperienceScreen = ({ navigation, route }) => {
               })}
             </ScrollView>
 
-            <TextInput style={ls.editInput} value={editDraft?.name ?? ''} onChangeText={v => setEditDraft(d => ({ ...d, name: v }))} placeholder={STEP_NAME_HINT[editDraft?.category] ?? ce('nameMomentHint')} placeholderTextColor="#9ca3af" maxLength={100} />
+            <TextInput style={ls.editInput} value={editDraft?.name ?? ''} onChangeText={v => setEditDraft(d => ({ ...d, name: v }))} placeholder={t(stepNameHintKey(editDraft?.category) ?? 'createExperience.nameMomentHint')} placeholderTextColor="#9ca3af" maxLength={100} />
             <TextInput style={[ls.editInput, ls.editTextarea]} value={editDraft?.description ?? ''} onChangeText={v => setEditDraft(d => ({ ...d, description: v }))} placeholder={ce('detailsHint')} placeholderTextColor="#9ca3af" multiline maxLength={500} />
 
             <Text style={ls.modalSectionLabel}>{ce('theFeeling')}</Text>

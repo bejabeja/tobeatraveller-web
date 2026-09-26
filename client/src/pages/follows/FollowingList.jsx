@@ -45,17 +45,17 @@ const UserCard = ({ user }) => {
   };
 
   return (
-    <div className="user-card">
-      <Link to={`/profile/${user.id}`} className="user-card__link">
+    <div className="follow-card">
+      <Link to={`/profile/${user.id}`} className="follow-card__link">
         <img
           src={user.avatarUrl || generateAvatar(user.username)}
           alt={user.name || user.username}
-          className="user-card__avatar"
+          className="follow-card__avatar"
           onError={(e) => { e.currentTarget.src = generateAvatar(user.username); }}
         />
-        <div className="user-card__info">
-          <h3 className="user-card__name">{user.name}</h3>
-          <p className="user-card__username">@{user.username}</p>
+        <div className="follow-card__info">
+          <h3 className="follow-card__name">{user.name}</h3>
+          <p className="follow-card__username">@{user.username}</p>
         </div>
       </Link>
       {!isMyUser &&

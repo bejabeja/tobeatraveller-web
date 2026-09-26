@@ -1,197 +1,146 @@
 .user-section {
-  padding: 2rem 0;
+  padding: 0.5rem 0 2rem;
 }
 
 .user-section__grid {
   display: grid;
   gap: 2rem;
-  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+  // auto-fill, not auto-fit: a single result keeps a card's width instead
+  // of stretching across the whole row.
+  grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr));
 
   // Same breakpoint as .itineraries-section__grid: two cards per row on
   // phones instead of one tall strip.
   @media (max-width: 599px) {
     gap: 0.75rem;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   }
 }
 
-// Mirrors .itinerary-card on purpose (see UserCard.jsx): a real trip photo
-// leads the card, with the person's identity overlaid on it, instead of a
-// generic avatar-circle-and-follow-button directory row.
+// A person, not a trip (see UserCard.jsx): face and name lead, the last
+// trip is a thin banner, and the follow button spans the card.
 .user-card {
   display: flex;
   flex-direction: column;
-  background-color: var(--white-color);
-  border-radius: 16px;
+  align-items: center;
   overflow: hidden;
+  border-radius: 16px;
+  background-color: var(--white-color);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
-  cursor: pointer;
   transition: box-shadow 0.3s ease, transform 0.3s ease;
 
   &:hover {
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
-    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
   }
 
-  &__image-wrapper {
-    position: relative;
-    width: 100%;
-    height: 200px;
-    overflow: hidden;
+  // No trip photo yet: the brand gradient instead of a blank strip.
+  &__banner {
+    height: 72px;
     flex-shrink: 0;
-  }
-
-  &__image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-
-  &:hover &__image {
-    transform: scale(1.05);
-    transition: transform 0.4s ease;
-  }
-
-  // No trips yet: a branded gradient instead of a blank grey box.
-  &__image-placeholder {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     background: linear-gradient(135deg, #1A535C 0%, #E8743B 100%);
-  }
 
-  &__image-placeholder-logo {
-    width: 55%;
-    max-width: 140px;
-    opacity: 0.9;
-  }
-
-  &__follow-btn {
-    position: absolute;
-    top: 0.6rem;
-    right: 0.6rem;
-    z-index: 1;
-    width: fit-content;
-    font-size: 0.7rem;
-    font-weight: 700;
-    color: white;
-    background-color: rgba(0, 0, 0, 0.45);
-    border: 1px solid rgba(255, 255, 255, 0.7);
-    padding: 0.25rem 0.65rem;
-    border-radius: 999px;
-    backdrop-filter: blur(4px);
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-
-    &:hover {
-      background-color: rgba(0, 0, 0, 0.65);
-    }
-
-    &.following {
-      background-color: var(--primary-color);
-      border-color: var(--primary-color);
+    img {
+      height: 100%;
+      object-fit: cover;
+      display: block;
     }
   }
 
-  &__author {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
+  &__link {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
-    padding: 1.5rem 0.75rem 0.6rem;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
+    flex: 1;
+    gap: 0.3rem;
+    padding: 0 1rem 0.75rem;
+    color: inherit;
+    text-align: center;
+    text-decoration: none;
+
+    &:focus-visible {
+      outline: 2px solid var(--primary-color);
+      outline-offset: -2px;
+      border-radius: 12px;
+    }
   }
 
   &__avatar {
-    width: 32px;
-    height: 32px;
+    width: 72px;
+    height: 72px;
+    margin-top: -36px;
+    margin-bottom: 0.25rem;
+    border: 3px solid var(--white-color);
     border-radius: 50%;
     object-fit: cover;
-    border: 1.5px solid rgba(255, 255, 255, 0.8);
-    flex-shrink: 0;
+    background: var(--white-color);
   }
 
+  // A block, not a flex row: only then does a long name end in "…".
   &__username {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    font-size: 0.85rem;
+    display: block;
+    max-width: 100%;
+    font-size: 0.95rem;
     font-weight: 700;
-    color: white;
+    color: var(--text-color);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  &__info {
-    padding: 0.75rem 1rem 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-    flex: 1;
-  }
-
   &__tagline {
-    font-size: 0.85rem;
-    color: var(--text-color);
-    line-height: 1.4;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-  }
-
-  &__meta {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    margin-top: auto;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: var(--text-color);
   }
 
   &__location,
   &__trips {
-    font-size: 0.75rem;
+    max-width: 100%;
+    font-size: 0.78rem;
     color: var(--text-secondary-color);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+
+  &__trips {
+    margin-top: auto;
+    font-weight: 600;
+  }
+
+  // Full width, so it's easy to hit on a phone.
+  & &__follow {
+    width: calc(100% - 2rem);
+    margin: 0 1rem 1rem;
+    padding: 0.6em 1em;
+    font-size: 0.85rem;
+  }
 }
 
 @media (max-width: 599px) {
   .user-card {
-    &__image-wrapper {
-      height: 120px;
+    &__banner {
+      height: 52px;
     }
 
-    &__author {
-      padding: 1rem 0.5rem 0.4rem;
-      gap: 0.35rem;
+    &__link {
+      padding: 0 0.6rem 0.6rem;
+      gap: 0.2rem;
     }
 
     &__avatar {
-      width: 22px;
-      height: 22px;
+      width: 56px;
+      height: 56px;
+      margin-top: -28px;
     }
 
     &__username {
-      font-size: 0.7rem;
-    }
-
-    &__follow-btn {
-      font-size: 0.62rem;
-      padding: 0.2rem 0.5rem;
-    }
-
-    &__info {
-      padding: 0.55rem 0.65rem 0.65rem;
-      gap: 0.2rem;
+      font-size: 0.82rem;
     }
 
     &__tagline {
@@ -200,7 +149,13 @@
 
     &__location,
     &__trips {
-      font-size: 0.65rem;
+      font-size: 0.7rem;
+    }
+
+    & &__follow {
+      width: calc(100% - 1.2rem);
+      margin: 0 0.6rem 0.6rem;
+      font-size: 0.78rem;
     }
   }
 }
@@ -208,17 +163,5 @@
 @media (min-width: 1024px) {
   .user-section {
     padding-top: 0.5rem;
-  }
-
-  .user-section__grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  .user-card__image-wrapper {
-    height: 220px;
-  }
-
-  .user-card__info {
-    padding: 1.25rem;
   }
 }

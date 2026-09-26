@@ -282,7 +282,7 @@ const CreateItineraryScreen = ({ navigation }) => {
 
           {/* Basic Info */}
           <Card title={t('createItinerary.basicInfo')} badge={isBasicComplete}>
-            <Field label="Title" error={errors.title} hint={`${title.length}/50`} hintWarn={title.length > 45}>
+            <Field label={t('itineraryForm.titleLabel')} error={errors.title} hint={`${title.length}/50`} hintWarn={title.length > 45}>
               <TextInput
                 style={[s.input, errors.title && s.inputError]}
                 value={title}
@@ -293,7 +293,7 @@ const CreateItineraryScreen = ({ navigation }) => {
               />
             </Field>
 
-            <Field label="Destination" error={errors.destination}>
+            <Field label={t('itineraryForm.destinationLabel')} error={errors.destination}>
               <View style={{ gap: 0 }}>
                 <View style={ls.destInputRow}>
                   <TextInput
@@ -325,7 +325,7 @@ const CreateItineraryScreen = ({ navigation }) => {
               </View>
             </Field>
 
-            <Field label="Description" error={errors.description} hint={`${description.length}/500`} hintWarn={description.length > 450}>
+            <Field label={t('itineraryForm.descriptionLabel')} error={errors.description} hint={`${description.length}/500`} hintWarn={description.length > 450}>
               <TextInput
                 style={[s.input, s.textarea, errors.description && s.inputError]}
                 value={description}

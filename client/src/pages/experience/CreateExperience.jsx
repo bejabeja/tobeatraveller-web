@@ -26,7 +26,7 @@ import {
 } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { aiPaceOptions, DEFAULT_AI_PACE, isPremiumRequiredError } from "@tobeatraveller/shared";
+import { aiPaceOptions, DEFAULT_AI_PACE, isPremiumRequiredError, stepNameHintKey } from "@tobeatraveller/shared";
 import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState";
 import Modal from "../../components/modal/Modal";
 import ImageUpload from "../itinerary/sectionsForm/ImageUpload";
@@ -65,14 +65,6 @@ const ALL_STEP_TYPES = [
   "transport","flight","accommodation","activity","local_tip",
   "nature","beach","city","monument","park","camping","island","sport","vineyard","other",
 ];
-
-const STEP_NAME_HINT = {
-  transport:     "e.g. Santa Claus Express, Platform 6, 17:28",
-  flight:        "e.g. Finnair AY 123, Helsinki → Rovaniemi",
-  accommodation: "e.g. Arctic TreeHouse Hotel",
-  activity:      "e.g. Husky Safari (2 h, outdoor)",
-  local_tip:     "e.g. Send a postcard from Santa's Post Office",
-};
 
 const CATEGORY_EMOJI = {
   adventure:"🧗", relax:"🧘", culture:"🏛", romantic:"💕",
@@ -688,7 +680,7 @@ const CreateExperience = () => {
               className="cexp__modal-input"
               value={editDraft?.name ?? ""}
               onChange={e => setEditDraft(d => ({ ...d, name: e.target.value }))}
-              placeholder={STEP_NAME_HINT[editDraft?.category] ?? ce("nameMomentHint")}
+              placeholder={t(stepNameHintKey(editDraft?.category) ?? "createExperience.nameMomentHint")}
               maxLength={100}
               autoFocus
             />

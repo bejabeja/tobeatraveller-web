@@ -21,9 +21,11 @@ export const getUserForAuth = async () => {
     if (!response.ok) return null;
     return response.json();
 }
+// authFetch, not fetch: signed in, the API leaves out who they already
+// follow (and themselves); signed out it still answers.
 export const getFeaturedUsers = async () => {
     try {
-        const response = await fetch(`${baseUrl()}/featured`, {
+        const response = await authFetch(`${baseUrl()}/featured`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json'

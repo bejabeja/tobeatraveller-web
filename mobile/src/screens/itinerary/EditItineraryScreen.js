@@ -216,7 +216,7 @@ const EditItineraryScreen = ({ route, navigation }) => {
 
           {/* Basic Info */}
           <Card title={t('createItinerary.basicInfo')}>
-            <Field label="Title" error={errors.title} hint={`${title.length}/50`} hintWarn={title.length > 45}>
+            <Field label={t('itineraryForm.titleLabel')} error={errors.title} hint={`${title.length}/50`} hintWarn={title.length > 45}>
               <TextInput
                 style={[s.input, errors.title && s.inputError]}
                 value={title}
@@ -226,13 +226,13 @@ const EditItineraryScreen = ({ route, navigation }) => {
                 maxLength={50}
               />
             </Field>
-            <Field label="Destination">
+            <Field label={t('itineraryForm.destinationLabel')}>
               <View style={[s.input, ls.inputDisabled]}>
                 <Text style={ls.inputDisabledText}>{itinerary?.location?.name || '-'}</Text>
               </View>
               <Text style={ls.fieldNote}>{t('editItinerary.destinationLocked')}</Text>
             </Field>
-            <Field label="Description" error={errors.description} hint={`${description.length}/500`} hintWarn={description.length > 450}>
+            <Field label={t('itineraryForm.descriptionLabel')} error={errors.description} hint={`${description.length}/500`} hintWarn={description.length > 450}>
               <TextInput
                 style={[s.input, s.textarea, errors.description && s.inputError]}
                 value={description}

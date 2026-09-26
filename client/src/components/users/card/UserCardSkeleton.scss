@@ -2,4 +2,15 @@
 
 .user-card--skeleton {
   pointer-events: none;
+
+  .user-card__avatar {
+    border-color: var(--white-color);
+  }
+
+  .user-card__follow {
+    width: calc(100% - 2rem);
+    height: 34px;
+    margin: 0 1rem 1rem;
+    border-radius: 999px;
+  }
 }

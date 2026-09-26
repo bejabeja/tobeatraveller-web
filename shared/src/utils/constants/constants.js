@@ -191,3 +191,9 @@ export const MAX_COMMENT_LENGTH = 500;
 export const COMMENT_HIGHLIGHT_DURATION_MS = 2500;
 
 
+
+// Step types whose name field shows a worked example, in the user's language.
+const STEP_TYPES_WITH_NAME_HINT = ["transport", "flight", "accommodation", "activity", "local_tip"];
+
+export const stepNameHintKey = (stepType) =>
+  STEP_TYPES_WITH_NAME_HINT.includes(stepType) ? `createExperience.stepNameHint.${stepType}` : null;

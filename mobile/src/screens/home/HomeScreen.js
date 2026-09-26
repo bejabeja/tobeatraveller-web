@@ -76,9 +76,13 @@ const HomeScreen = ({ navigation }) => {
 
   useEffect(() => {
     if (!itineraries?.length) dispatch(initFeaturedItineraries());
-    if (!users?.length) dispatch(initFeaturedUsers());
     getDestinations().then(setDestinations).catch(() => {});
   }, [dispatch]);
+
+  // Asked again on signing in or out: signed in, it leaves out who they follow.
+  useEffect(() => {
+    dispatch(initFeaturedUsers());
+  }, [isAuthenticated, dispatch]);
 
   useEffect(() => {
     if (isAuthenticated && tab === 'following') dispatch(initFeed(1));
@@ -218,6 +222,7 @@ const HomeScreen = ({ navigation }) => {
       </View>
 
       {/* People you may like */}
+      {(usersLoading || users?.length > 0) && (
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <View>
@@ -264,6 +269,7 @@ const HomeScreen = ({ navigation }) => {
           }
         </ScrollView>
       </View>
+      )}
 
       </> )} {/* end discover tab */}
 

@@ -18,7 +18,7 @@ const Footer = () => {
           <p className="footer__tagline">{t("footer.tagline")}</p>
         </div>
 
-        <nav className="footer__nav" aria-label="Footer navigation">
+        <nav className="footer__nav" aria-label={t("footer.navigation")}>
           <div className="footer__nav-group">
             <span className="footer__nav-label">{t("footer.discover")}</span>
             <Link to="/explore">{t("footer.exploreTrips")}</Link>

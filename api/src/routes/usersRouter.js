@@ -64,7 +64,7 @@ export const createUsersRouter = () => {
     router.get("/me/passport/leaderboard", authenticate, badgeController.getMyLeaderboard.bind(badgeController));
     router.delete("/me", authenticate, userController.deleteUserMe.bind(userController));
     router.delete("/:id", authenticate, staffOnly, userController.deleteUserById.bind(userController));
-    router.get("/featured", userController.getFeaturedUsers.bind(userController));
+    router.get("/featured", optionalAuthenticate, userController.getFeaturedUsers.bind(userController));
     router.get("/all", userController.getAllUsersFiltered.bind(userController));
     router.get("/admin", authenticate, staffOnly, userController.getAllUsersForAdmin.bind(userController));
     router.get("/suggested", authenticate, userController.getSuggestedUsers.bind(userController));

@@ -9,9 +9,10 @@ import { useTranslation } from 'react-i18next';
 import {
   aiPaceOptions, currencyOptions, DEFAULT_AI_PACE, GENERATE_TIMEOUT_MESSAGE, generateSmartItinerary,
   getCurrencySymbol, isPremiumRequiredError, itineraryCategories, placeCategories, formatNumber,
+  stepNameHintKey,
 } from '@tobeatraveller/shared';
 import { COLORS, shadow } from '../../utils/styles';
-import { STEP_NAME_HINT, getStepConfig } from '../../utils/stepConfig';
+import { getStepConfig } from '../../utils/stepConfig';
 
 export const CATEGORY_EMOJI = {
   adventure:'🧗', relax:'🧘', culture:'🏛', romantic:'💕',
@@ -176,7 +177,7 @@ export const PlaceCard = ({
           style={[s.input, s.placeDescInput]}
           value={place.description}
           onChangeText={v => onUpdate('description', v)}
-          placeholder={STEP_NAME_HINT[place.category] || t('itineraryForm.descriptionOptional')}
+          placeholder={t(stepNameHintKey(place.category) ?? 'itineraryForm.descriptionOptional')}
           placeholderTextColor="#9ca3af"
           multiline maxLength={500}
         />

@@ -141,11 +141,20 @@ const CommunityScreen = ({ navigation }) => {
           !loading ? (
             <View style={styles.emptyState}>
               <Text style={styles.emptyEmoji}>👥</Text>
-              <Text style={styles.emptyText}>{t('community.noTravellersFound')}</Text>
-              {search.length > 0 && (
-                <TouchableOpacity onPress={() => setSearch('')}>
-                  <Text style={styles.emptyLink}>{t('community.clearSearch')}</Text>
-                </TouchableOpacity>
+              {/* The search box already shows what was searched and clears it:
+                  what's left to offer is inviting whoever isn't here yet. */}
+              {search.length > 0 ? (
+                <>
+                  <Text style={styles.emptyTitle}>{t('community.noTravelersFor', { query: search })}</Text>
+                  <Text style={styles.emptyHint}>{t('community.noTravelersHint')}</Text>
+                  {isAuthenticated && (
+                    <TouchableOpacity style={styles.inviteButton} onPress={() => navigation.navigate('Referral')} accessibilityRole="button">
+                      <Text style={styles.inviteButtonText}>{t('community.inviteButton')}</Text>
+                    </TouchableOpacity>
+                  )}
+                </>
+              ) : (
+                <Text style={styles.emptyText}>{t('community.noTravellersFound')}</Text>
               )}
             </View>
           ) : null
@@ -153,7 +162,18 @@ const CommunityScreen = ({ navigation }) => {
         ListFooterComponent={
           loadingMore
             ? <ActivityIndicator color="#E8743B" style={{ marginVertical: 16 }} />
-            : null
+            // The end of the list, however short: a way to bring more people in.
+            : isAuthenticated && !hasMore && !loading && (users ?? []).length > 0
+              ? search
+                // Searching, the person may not be among those found.
+                ? (
+                  <TouchableOpacity style={styles.searchInvite} onPress={() => navigation.navigate('Referral')} accessibilityRole="button">
+                    <Text style={styles.emptyHint}>{t('community.searchInvite')}</Text>
+                    <Text style={styles.searchInviteLink}>{t('community.inviteButton')}</Text>
+                  </TouchableOpacity>
+                )
+                : <InviteCard onPress={() => navigation.navigate('Referral')} t={t} />
+              : null
         }
         renderItem={({ item }) => (
           <View style={styles.cardWrapper}>
@@ -175,6 +195,16 @@ const CommunityScreen = ({ navigation }) => {
     </View>
   );
 };
+
+const InviteCard = ({ onPress, t }) => (
+  <View style={styles.invite}>
+    <Text style={styles.inviteTitle}>{t('community.inviteTitle')}</Text>
+    <Text style={styles.inviteText}>{t('community.inviteText')}</Text>
+    <TouchableOpacity style={styles.inviteButton} onPress={onPress} accessibilityRole="button">
+      <Text style={styles.inviteButtonText}>{t('community.inviteButton')}</Text>
+    </TouchableOpacity>
+  </View>
+);
 
 const UserCard = ({ user, me, isAuthenticated, onPress }) => {
   const { t } = useTranslation();
@@ -298,7 +328,19 @@ const styles = StyleSheet.create({
   emptyState: { alignItems: 'center', paddingTop: 48, paddingHorizontal: 32 },
   emptyEmoji: { fontSize: 40, marginBottom: 12 },
   emptyText: { fontSize: 15, color: '#6b7280', marginBottom: 8 },
-  emptyLink: { fontSize: 14, color: '#E8743B', fontWeight: '600' },
+  emptyTitle: { fontSize: 16, fontWeight: '700', color: '#1f2937', textAlign: 'center', marginBottom: 6 },
+  emptyHint: { fontSize: 13, lineHeight: 19, color: '#6b7280', textAlign: 'center', marginBottom: 14 },
+  searchInvite: { alignItems: 'center', marginTop: 12 },
+  searchInviteLink: { fontSize: 14, fontWeight: '700', color: '#E8743B', marginTop: -8 },
+  invite: {
+    alignItems: 'center', gap: 8, marginTop: 8, padding: 20,
+    borderWidth: 1.5, borderStyle: 'dashed', borderColor: '#E8743B', borderRadius: 16,
+    backgroundColor: '#fff7f2',
+  },
+  inviteTitle: { fontSize: 16, fontWeight: '700', color: '#1f2937', textAlign: 'center' },
+  inviteText: { fontSize: 13, lineHeight: 19, color: '#6b7280', textAlign: 'center' },
+  inviteButton: { marginTop: 4, paddingVertical: 10, paddingHorizontal: 20, borderRadius: 999, backgroundColor: '#E8743B' },
+  inviteButtonText: { fontSize: 14, fontWeight: '700', color: '#fff' },
 
   // Guest CTA
   guestCta: {

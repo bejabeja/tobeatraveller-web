@@ -1,12 +1,13 @@
 import { useSelector } from "react-redux";
 import { useFollow } from "../../hooks/useFollow";
-import { selectIsAuthenticated } from "../../store/auth/authSelectors";
+import { selectAuthUser, selectIsAuthenticated } from "../../store/auth/authSelectors";
 import "./UsersSection.scss";
 import UserCard from "./card/UserCard";
 import UserCardSkeleton from "./card/UserCardSkeleton";
 
 const UsersSection = ({ users, isLoading }) => {
   const isAuthenticated = useSelector(selectIsAuthenticated);
+  const authUser = useSelector(selectAuthUser);
   const skeletonCount = 8;
 
   return (
@@ -21,6 +22,7 @@ const UsersSection = ({ users, isLoading }) => {
                 key={user.id}
                 user={user}
                 isAuthenticated={isAuthenticated}
+                isMe={authUser?.id === user.id}
               />
             ))}
       </div>
@@ -30,14 +32,16 @@ const UsersSection = ({ users, isLoading }) => {
 
 export default UsersSection;
 
-const UserCardWithFollow = ({ user, isAuthenticated }) => {
-  const { isFollowing, toggleFollow } = useFollow(user.id);
+const UserCardWithFollow = ({ user, isAuthenticated, isMe }) => {
+  const { isFollowing, toggleFollow, isLoadingFollow } = useFollow(user.id);
 
   return (
     <UserCard
       {...user}
       isAuthenticated={isAuthenticated}
+      isMe={isMe}
       isFollowing={isFollowing}
+      isLoadingFollow={isLoadingFollow}
       onFollowToggle={toggleFollow}
     />
   );

@@ -2,16 +2,15 @@ import "./UserCardSkeleton.scss";
 
 const UserCardSkeleton = () => {
   return (
-    <div className="user-card user-card--skeleton">
-      <div className="user-card__image-wrapper skeleton" />
-      <div className="user-card__info">
+    <div className="user-card user-card--skeleton" aria-hidden="true">
+      <div className="user-card__banner skeleton" />
+      <div className="user-card__link">
+        <div className="user-card__avatar skeleton" />
+        <div className="skeleton skeleton--text username" />
         <div className="skeleton skeleton--text tagline" />
         <div className="skeleton skeleton--text tagline-short" />
-        <div className="user-card__meta">
-          <div className="skeleton skeleton--text location" />
-          <div className="skeleton skeleton--text trips" />
-        </div>
       </div>
+      <div className="skeleton user-card__follow" />
     </div>
   );
 };

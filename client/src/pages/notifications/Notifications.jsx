@@ -81,7 +81,7 @@ const Notifications = () => {
               onClick={handleLoadMore}
               disabled={loadingMore}
             >
-              {loadingMore ? t("common.loading") : t("community.loadMore")}
+              {loadingMore ? t("common.loading") : t("common.loadMore")}
             </button>
           )}
         </>

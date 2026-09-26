@@ -1,0 +1,65 @@
+.search-input {
+  position: relative;
+  flex: 1;
+  width: auto;
+  min-width: 0;
+
+  &__icon {
+    position: absolute;
+    left: 0.875rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: auto;
+    font-size: 1rem;
+    color: var(--text-secondary-color);
+    pointer-events: none;
+  }
+
+  // A class of its own, so the form styles of whoever holds it (e.g.
+  // `.filters input`) don't override the room left for the icons.
+  & &__field {
+    width: 100%;
+    padding: 0.65rem 2rem 0.65rem 2.5rem;
+    border: 1px solid var(--border-color, #e8ecf0);
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    background-color: var(--white-color, #fff);
+    color: var(--text-color);
+    transition: all 0.25s;
+
+    &::placeholder {
+      color: #9ca3af;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(0, 119, 182, 0.15);
+    }
+
+    // The clear button below replaces the browser's own.
+    &::-webkit-search-cancel-button {
+      appearance: none;
+    }
+  }
+
+  &__clear {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: fit-content;
+    padding: 0;
+    border: none;
+    background: none;
+    font-size: 0.85rem;
+    line-height: 1;
+    color: var(--text-secondary-color);
+    cursor: pointer;
+
+    &:hover {
+      color: var(--text-color);
+    }
+  }
+}
