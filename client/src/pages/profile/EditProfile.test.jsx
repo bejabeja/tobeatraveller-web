@@ -8,7 +8,7 @@ jest.mock("react-redux", () => ({
   useSelector: () => mockMe,
 }));
 jest.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (key, vars) => (vars?.date ? `${key}:${vars.date}` : key), i18n: { language: "en" } }),
+  useTranslation: () => ({ t: (key, vars) => (vars?.date ? `${key}:${vars.date}` : vars?.address ? `${key}:${vars.address}` : key), i18n: { language: "en" } }),
 }));
 jest.mock("react-hot-toast", () => ({ __esModule: true, default: { success: jest.fn(), error: jest.fn() } }));
 jest.mock("../../hooks/useAvatarUpload", () => ({ useAvatarUpload: () => ({}) }));
@@ -64,5 +64,25 @@ describe("EditProfile username changes", () => {
     renderEditProfile();
 
     expect(screen.getByRole("button", { name: "editProfile.addPhoto" })).toBeInTheDocument();
+  });
+
+  // The name is the profile's address (and invite code): shown as it will be.
+  it("shows the profile address the username gives", () => {
+    mockMe = ME;
+    renderEditProfile();
+
+    fireEvent.change(screen.getByLabelText("editProfile.usernameLabel"), { target: { value: "jane_vanlife" } });
+
+    expect(screen.getByText(`editProfile.usernameAddress:${window.location.host}/@jane_vanlife`)).toBeInTheDocument();
+  });
+
+  // Regression: every field had a counter ("4/50"), however short.
+  it("shows a field's counter only near its limit", () => {
+    mockMe = { ...ME, bio: "a".repeat(150) };
+
+    renderEditProfile();
+
+    expect(screen.queryByText("4/50")).not.toBeInTheDocument();
+    expect(screen.getByText("150/160")).toBeInTheDocument();
   });
 });

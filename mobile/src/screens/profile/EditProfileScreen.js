@@ -5,22 +5,26 @@ import {
   ScrollView, StyleSheet, Text, TextInput,
   TouchableOpacity, View,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
   checkUsernameAvailable, initAuthUser, reverseGeocode,
   selectMe, selectAuthUser,
-  setUserInfo, updateUser, formatDate,
+  setUserInfo, updateUser, formatDate, profilePath,
 } from '@tobeatraveller/shared';
 import { shadow } from '../../utils/styles';
-import { GEOAPIFY_KEY } from '../../utils/config';
+import { GEOAPIFY_KEY, WEB_URL } from '../../utils/config';
 import { useCurrentLocation } from '../../hooks/useCurrentLocation';
 import { UseCurrentLocationButton } from '../../components/UseCurrentLocationButton';
 
 // The API's answer when the name changed less than 30 days ago (e.g. on
 // another device, where the field wasn't locked yet).
 const USERNAME_COOLDOWN_ERROR = 'The username can only be changed';
+
+// "tobeatraveller.com", as the profile's address is written for people.
+const WEB_HOST = WEB_URL.replace(/^https?:\/\//, '');
 
 const EditProfileScreen = ({ navigation }) => {
   const { t, i18n } = useTranslation();
@@ -149,14 +153,18 @@ const EditProfileScreen = ({ navigation }) => {
     }
   };
 
+  const hasPhoto = Boolean(avatarUri) || Boolean(user?.avatarUrl?.includes('res.cloudinary.com'));
   // Changed less than 30 days ago: locked until then (the API refuses it too).
   const usernameLockedUntil = meDetail?.usernameChangeAvailableAt;
   const usernameEdited = !usernameLockedUntil && fields.username
     && fields.username.toLowerCase() !== user?.username?.toLowerCase();
-  const usernameHint = usernameLockedUntil
-    ? t('editProfile.usernameLockedUntil', { date: formatDate(usernameLockedUntil, i18n.language, { day: 'numeric', month: 'long', year: 'numeric' }) })
+  // The name is the profile's address (and invite code): shown as it will be.
+  const usernameNotes = [
+    t('editProfile.usernameAddress', { address: `${WEB_HOST}${profilePath(fields.username || user?.username || '')}` }),
+    usernameLockedUntil && t('editProfile.usernameLockedUntil', { date: formatDate(usernameLockedUntil, i18n.language, { day: 'numeric', month: 'long', year: 'numeric' }) }),
     // Before saving, not after: the old address stops working.
-    : usernameEdited ? t('editProfile.usernameChangeLimit') : undefined;
+    usernameEdited && t('editProfile.usernameChangeLimit'),
+  ].filter(Boolean);
 
   const handleSave = async () => {
     if (!validate() || usernameStatus === 'taken' || usernameStatus === 'checking') return;
@@ -237,41 +245,52 @@ const EditProfileScreen = ({ navigation }) => {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Avatar */}
-          <View style={styles.avatarSection}>
-            <TouchableOpacity
-              style={[styles.avatarWrapper, removeAvatar && styles.avatarWrapperRemove]}
-              onPress={removeAvatar ? undefined : handlePickAvatar}
-              activeOpacity={removeAvatar ? 1 : 0.75}
-            >
-              {avatarSource ? (
-                <Image source={avatarSource} style={styles.avatar} resizeMode="cover" />
-              ) : (
-                <View style={styles.avatarFallback}>
-                  <Text style={styles.avatarInitial}>{initial}</Text>
-                </View>
-              )}
-              <View style={[styles.avatarOverlay, removeAvatar && styles.avatarOverlayRemove]}>
-                <Text style={styles.avatarOverlayIcon}>{removeAvatar ? '🗑' : '📷'}</Text>
-              </View>
-            </TouchableOpacity>
-
-            {removeAvatar ? (
-              <TouchableOpacity onPress={handleUndoRemove} style={styles.avatarAction}>
-                <Text style={styles.avatarActionText}>{t('editProfile.undoRemove')}</Text>
-              </TouchableOpacity>
-            ) : (user?.avatarUrl || avatarUri) ? (
-              <TouchableOpacity onPress={handleRemoveAvatar} style={styles.avatarAction}>
-                <Text style={[styles.avatarActionText, { color: '#ef4444' }]}>{t('editProfile.removePhoto')}</Text>
-              </TouchableOpacity>
-            ) : null}
-          </View>
-
-          {/* Basic info card */}
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>{t('editProfile.basicInfo')}</Text>
+            <Text style={styles.cardTitle}>{t('editProfile.sectionProfile')}</Text>
 
-            <Field label={t('editProfile.nameLabel')} error={errors.name}>
+            {/* Avatar: the photo beside its actions */}
+            <View style={styles.avatarRow}>
+              <TouchableOpacity
+                style={[styles.avatarWrapper, removeAvatar && styles.avatarWrapperRemove]}
+                onPress={removeAvatar ? undefined : handlePickAvatar}
+                activeOpacity={removeAvatar ? 1 : 0.75}
+                accessibilityElementsHidden
+                importantForAccessibility="no-hide-descendants"
+              >
+                {avatarSource ? (
+                  <Image source={avatarSource} style={styles.avatar} resizeMode="cover" />
+                ) : (
+                  <View style={styles.avatarFallback}>
+                    <Text style={styles.avatarInitial}>{initial}</Text>
+                  </View>
+                )}
+                <View style={[styles.avatarBadge, removeAvatar && styles.avatarBadgeRemove]}>
+                  <Ionicons name={removeAvatar ? 'trash-outline' : 'camera-outline'} size={15} color="#fff" />
+                </View>
+              </TouchableOpacity>
+
+              <View style={styles.avatarActions}>
+                {removeAvatar ? (
+                  <TouchableOpacity onPress={handleUndoRemove} style={styles.avatarButton} accessibilityRole="button">
+                    <Text style={styles.avatarButtonText}>{t('editProfile.undoRemove')}</Text>
+                  </TouchableOpacity>
+                ) : (
+                  <>
+                    <TouchableOpacity onPress={handlePickAvatar} style={styles.avatarButton} accessibilityRole="button">
+                      <Text style={styles.avatarButtonText}>{hasPhoto ? t('editProfile.changePhoto') : t('editProfile.addPhoto')}</Text>
+                    </TouchableOpacity>
+                    {hasPhoto && (
+                      <TouchableOpacity onPress={handleRemoveAvatar} accessibilityRole="button">
+                        <Text style={styles.avatarRemoveText}>{t('editProfile.removePhoto')}</Text>
+                      </TouchableOpacity>
+                    )}
+                  </>
+                )}
+              </View>
+            </View>
+
+
+            <Field label={t('editProfile.nameLabel')} error={errors.name} hint={counterHint(fields.name, 50)}>
               <TextInput
                 style={styles.input}
                 value={fields.name}
@@ -282,7 +301,7 @@ const EditProfileScreen = ({ navigation }) => {
               />
             </Field>
 
-            <Field label={t('editProfile.usernameLabel')} error={errors.username} hint={usernameHint}>
+            <Field label={t('editProfile.usernameLabel')} error={errors.username} hint={counterHint(fields.username, 50)} notes={usernameNotes}>
               <TextInput
                 style={[styles.input, usernameLockedUntil && styles.inputLocked]}
                 editable={!usernameLockedUntil}
@@ -305,22 +324,6 @@ const EditProfileScreen = ({ navigation }) => {
               )}
             </Field>
 
-            <Field label={t('editProfile.bioLabel')} error={errors.bio} hint={`${fields.bio.length}/160`} hintWarn={fields.bio.length > 140}>
-              <TextInput
-                style={[styles.input, styles.textarea]}
-                value={fields.bio}
-                onChangeText={v => setField('bio', v)}
-                placeholder={t('editProfile.bioPlaceholder')}
-                placeholderTextColor="#9ca3af"
-                multiline
-                maxLength={160}
-              />
-            </Field>
-          </View>
-
-          {/* Location & About card */}
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>{t('editProfile.locationAbout')}</Text>
 
             <Field label={t('editProfile.locationLabel')} error={errors.location}>
               <TextInput
@@ -333,8 +336,25 @@ const EditProfileScreen = ({ navigation }) => {
               />
               <UseCurrentLocationButton onPress={handleUseCurrentLocation} loading={locating} />
             </Field>
+          </View>
 
-            <Field label={t('editProfile.aboutLabel')} error={errors.about} hint={`${fields.about.length}/1000`} hintWarn={fields.about.length > 900}>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>{t('editProfile.sectionAbout')}</Text>
+
+            <Field label={t('editProfile.bioLabel')} error={errors.bio} hint={counterHint(fields.bio, 160)} notes={[t('editProfile.bioHint')]}>
+              <TextInput
+                style={[styles.input, styles.textarea]}
+                value={fields.bio}
+                onChangeText={v => setField('bio', v)}
+                placeholder={t('editProfile.bioPlaceholder')}
+                placeholderTextColor="#9ca3af"
+                multiline
+                maxLength={160}
+              />
+            </Field>
+
+
+            <Field label={t('editProfile.aboutLabel')} error={errors.about} hint={counterHint(fields.about, 1000)} notes={[t('editProfile.aboutHint')]}>
               <TextInput
                 style={[styles.input, styles.textareaLarge]}
                 value={fields.about}
@@ -358,14 +378,20 @@ const EditProfileScreen = ({ navigation }) => {
   );
 };
 
-const Field = ({ label, error, hint, hintWarn, children }) => (
+// Counters show once a field is this full, not on every short field.
+const COUNTER_FROM = 0.85;
+const counterHint = (value, max) => (value.length >= max * COUNTER_FROM ? `${value.length}/${max}` : undefined);
+
+// `hint`: short, beside the label (a counter). `notes`: sentences under the field.
+const Field = ({ label, error, hint, notes = [], children }) => (
   <View style={fieldStyles.wrapper}>
     <View style={fieldStyles.labelRow}>
       <Text style={fieldStyles.label}>{label}</Text>
-      {hint && <Text style={[fieldStyles.hint, hintWarn && fieldStyles.hintWarn]}>{hint}</Text>}
+      {hint && <Text style={[fieldStyles.hint, fieldStyles.hintWarn]}>{hint}</Text>}
     </View>
     {children}
     {error && <Text style={fieldStyles.error}>{error}</Text>}
+    {notes.map(note => <Text key={note} style={fieldStyles.note}>{note}</Text>)}
   </View>
 );
 
@@ -390,34 +416,35 @@ const styles = StyleSheet.create({
 
   scroll: { padding: 16, gap: 14 },
 
-  avatarSection: { alignItems: 'center', paddingVertical: 8 },
-  avatarWrapper: {
-    width: 96, height: 96, borderRadius: 48,
-    overflow: 'hidden', position: 'relative',
-    borderWidth: 3, borderColor: '#e5e7eb',
-  },
-  avatarWrapperRemove: { borderColor: '#fecaca', opacity: 0.7 },
-  avatar: { width: '100%', height: '100%' },
+  avatarRow: { flexDirection: 'row', alignItems: 'center', gap: 16, marginBottom: 16 },
+  avatarWrapper: { width: 88, height: 88, position: 'relative' },
+  avatarWrapperRemove: { opacity: 0.7 },
+  avatar: { width: '100%', height: '100%', borderRadius: 44 },
   avatarFallback: {
-    width: '100%', height: '100%',
+    width: '100%', height: '100%', borderRadius: 44,
     backgroundColor: '#E8743B', alignItems: 'center', justifyContent: 'center',
   },
   avatarInitial: { color: '#fff', fontSize: 36, fontWeight: '700' },
-  avatarOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    alignItems: 'center', justifyContent: 'center',
+  // Always visible, not only on press: it says the photo can change.
+  avatarBadge: {
+    position: 'absolute', right: -2, bottom: -2,
+    width: 30, height: 30, borderRadius: 15, borderWidth: 2, borderColor: '#fff',
+    backgroundColor: '#E8743B', alignItems: 'center', justifyContent: 'center',
   },
-  avatarOverlayRemove: { backgroundColor: 'rgba(239,68,68,0.35)' },
-  avatarOverlayIcon: { fontSize: 24 },
-  avatarAction: { marginTop: 8 },
-  avatarActionText: { fontSize: 13, color: '#E8743B', fontWeight: '600' },
+  avatarBadgeRemove: { backgroundColor: '#ef4444' },
+  avatarActions: { alignItems: 'flex-start', gap: 8 },
+  avatarButton: {
+    paddingVertical: 8, paddingHorizontal: 14, borderRadius: 999,
+    borderWidth: 1.5, borderColor: '#e5e7eb', backgroundColor: '#fff',
+  },
+  avatarButtonText: { fontSize: 13, fontWeight: '700', color: '#374151' },
+  avatarRemoveText: { fontSize: 13, fontWeight: '600', color: '#ef4444' },
 
   card: {
     backgroundColor: '#fff', borderRadius: 14, padding: 16,
     ...shadow(2, 0.06, 8, 2),
   },
-  cardTitle: { fontSize: 13, fontWeight: '700', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 14 },
+  cardTitle: { fontSize: 16, fontWeight: '700', color: '#111827', marginBottom: 14 },
 
   input: {
     borderWidth: 1.5, borderColor: '#dde3ec', borderRadius: 10,
@@ -455,6 +482,7 @@ const fieldStyles = StyleSheet.create({
   hint: { fontSize: 12, color: '#9ca3af' },
   hintWarn: { color: '#f59e0b' },
   error: { fontSize: 12, color: '#dc2626', marginTop: 4 },
+  note: { fontSize: 12, lineHeight: 17, color: '#6b7280', marginTop: 5 },
 });
 
 export default EditProfileScreen;

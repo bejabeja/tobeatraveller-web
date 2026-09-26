@@ -6,7 +6,7 @@ import { IoCameraOutline, IoTrashOutline, IoArrowBackOutline } from "react-icons
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { formatDate } from "@tobeatraveller/shared";
+import { formatDate, profilePath } from "@tobeatraveller/shared";
 import { InputForm, TextAreaForm } from "../../components/form/InputForm";
 import UseCurrentLocationButton from "../../components/form/UseCurrentLocationButton";
 import Modal from "../../components/modal/Modal";
@@ -25,6 +25,9 @@ import "./EditProfile.scss";
 // The API's answer when the name changed less than 30 days ago (e.g. from
 // another tab, where the field wasn't locked yet).
 const USERNAME_COOLDOWN_ERROR = "The username can only be changed";
+
+// Counters show once a field is this full, not on every short field.
+const COUNTER_FROM = 0.85;
 
 const EditProfile = () => {
   const { t, i18n } = useTranslation();
@@ -142,27 +145,25 @@ const EditProfile = () => {
     else navigate(-1);
   };
 
+  const saveDisabled = isSubmitting || usernameStatus === "taken" || usernameStatus === "checking" || !hasChanges;
+  const saveLabel = isSubmitting ? t("common.saving") : t("editProfile.saveProfile");
+  const profileAddress = `${window.location.host}${profilePath(usernameValue || userMe.username)}`;
+
   return (
     <div className="ep">
-      {/* Sticky header */}
       <header className="ep__header">
         <button type="button" className="ep__back" onClick={handleCancel} aria-label={t("common.back")}>
           <IoArrowBackOutline />
         </button>
         <h1 className="ep__title">{t("editProfile.title")}</h1>
-        <button
-          type="button"
-          className={`ep__save${hasChanges ? " ep__save--active" : ""}`}
-          onClick={handleSubmit(saveUser)}
-          disabled={isSubmitting || usernameStatus === "taken" || usernameStatus === "checking" || !hasChanges}
-        >
-          {isSubmitting ? t("common.saving") : t("editProfile.saveProfile")}
+        <button type="button" className="btn btn--primary ep__save" onClick={handleSubmit(saveUser)} disabled={saveDisabled}>
+          {saveLabel}
         </button>
       </header>
 
-      <div className="ep__body">
-        {/* Avatar */}
-        <div className="ep__avatar-section">
+      <form className="ep__body" onSubmit={handleSubmit(saveUser)}>
+        <section className="ep__section" aria-labelledby="ep-profile">
+          <h2 id="ep-profile" className="ep__section-title">{t("editProfile.sectionProfile")}</h2>
           <AvatarEditor
             userMe={userMe}
             avatarPreview={avatarPreview}
@@ -172,58 +173,59 @@ const EditProfile = () => {
             onUndoRemove={handleUndoRemove}
             t={t}
           />
+          <InputForm name="name" label={t("editProfile.nameLabel")} control={control} type="text"
+            placeholder={t("editProfile.namePlaceholder")} error={errors.name} maxLength={50} counterFrom={COUNTER_FROM} />
+          <div className="ep__username">
+            <InputForm name="username" label={t("editProfile.usernameLabel")} control={control} type="text"
+              placeholder={t("editProfile.usernamePlaceholder")} error={errors.username} maxLength={50} counterFrom={COUNTER_FROM}
+              inputProps={{ disabled: Boolean(usernameLockedUntil), autoCapitalize: "none", spellCheck: false }}
+              right={usernameStatus && (
+                <span className={`ep__username-status ep__username-status--${usernameStatus}`} aria-live="polite">
+                  {usernameStatus === "checking"  && t("common.checking")}
+                  {usernameStatus === "available" && t("common.available")}
+                  {usernameStatus === "taken"     && t("editProfile.alreadyTaken")}
+                </span>
+              )} />
+            {/* The name is the profile's address (and invite code): shown as it will be. */}
+            <p className="ep__field-hint">{t("editProfile.usernameAddress", { address: profileAddress })}</p>
+            {usernameLockedUntil && (
+              <p className="ep__field-hint">
+                {t("editProfile.usernameLockedUntil", { date: formatDate(usernameLockedUntil, i18n.language, { day: "numeric", month: "long", year: "numeric" }) })}
+              </p>
+            )}
+            {/* Before saving, not after: the old address stops working. */}
+            {usernameEdited && <p className="ep__field-hint ep__field-hint--warning">{t("editProfile.usernameChangeLimit")}</p>}
+          </div>
+          <div>
+            <InputForm name="location" label={t("editProfile.locationLabel")} control={control} type="text"
+              placeholder={t("editProfile.locationPlaceholder")} error={errors.location} maxLength={50} showCounter={false} />
+            <UseCurrentLocationButton onClick={handleUseCurrentLocation} loading={locating} />
+          </div>
+        </section>
+
+        <section className="ep__section" aria-labelledby="ep-about">
+          <h2 id="ep-about" className="ep__section-title">{t("editProfile.sectionAbout")}</h2>
+          <div>
+            <TextAreaForm name="bio" label={t("editProfile.bioLabel")} control={control}
+              placeholder={t("editProfile.bioPlaceholder")} error={errors.bio} maxLength={160} counterFrom={COUNTER_FROM} />
+            <p className="ep__field-hint">{t("editProfile.bioHint")}</p>
+          </div>
+          <div>
+            <TextAreaForm name="about" label={t("editProfile.aboutLabel")} control={control}
+              placeholder={t("editProfile.aboutPlaceholder")} error={errors.about} maxLength={1000} counterFrom={COUNTER_FROM} />
+            <p className="ep__field-hint">{t("editProfile.aboutHint")}</p>
+          </div>
+        </section>
+
+        {errorSubmit && <p className="ep__error" role="alert">{errorSubmit}</p>}
+
+        {/* Also at the end, where you finish: the header one is far on a laptop. */}
+        <div className="ep__actions">
+          <button type="button" className="btn btn--secondary" onClick={handleCancel}>{t("editProfile.cancel")}</button>
+          <button type="submit" className="btn btn--primary" disabled={saveDisabled}>{saveLabel}</button>
         </div>
+      </form>
 
-        <form onSubmit={handleSubmit(saveUser)}>
-          {/* Basic info */}
-          <section className="ep__section">
-            <p className="ep__section-label">{t("editProfile.basicInfo").toUpperCase()}</p>
-            <div className="ep__fields">
-              <InputForm name="name" label={t("editProfile.nameLabel")} control={control} type="text"
-                placeholder={t("editProfile.namePlaceholder")} error={errors.name} maxLength={50} />
-              <div className="ep__username-wrap">
-                <InputForm name="username" label={t("editProfile.usernameLabel")} control={control} type="text"
-                  placeholder={t("editProfile.usernamePlaceholder")} error={errors.username} maxLength={50}
-                  inputProps={{ disabled: Boolean(usernameLockedUntil) }} />
-                {usernameStatus && (
-                  <span className={`ep__username-status ep__username-status--${usernameStatus}`} aria-live="polite">
-                    {usernameStatus === "checking"  && t("common.checking")}
-                    {usernameStatus === "available" && t("common.available")}
-                    {usernameStatus === "taken"     && t("editProfile.alreadyTaken")}
-                  </span>
-                )}
-                {usernameLockedUntil && (
-                  <p className="ep__field-hint">
-                    {t("editProfile.usernameLockedUntil", { date: formatDate(usernameLockedUntil, i18n.language, { day: "numeric", month: "long", year: "numeric" }) })}
-                  </p>
-                )}
-                {/* Before saving, not after: the old address stops working. */}
-                {usernameEdited && <p className="ep__field-hint">{t("editProfile.usernameChangeLimit")}</p>}
-              </div>
-              <TextAreaForm name="bio" label={t("editProfile.bioLabel")} control={control}
-                placeholder={t("editProfile.bioPlaceholder")} error={errors.bio} maxLength={160} />
-            </div>
-          </section>
-
-          {/* Location & About */}
-          <section className="ep__section">
-            <p className="ep__section-label">{t("editProfile.locationAbout").toUpperCase()}</p>
-            <div className="ep__fields">
-              <div>
-                <InputForm name="location" label={t("editProfile.locationLabel")} control={control} type="text"
-                  placeholder={t("editProfile.locationPlaceholder")} error={errors.location} maxLength={50} showCounter={false} />
-                <UseCurrentLocationButton onClick={handleUseCurrentLocation} loading={locating} />
-              </div>
-              <TextAreaForm name="about" label={t("editProfile.aboutLabel")} control={control}
-                placeholder={t("editProfile.aboutPlaceholder")} error={errors.about} maxLength={1000} />
-            </div>
-          </section>
-
-          {errorSubmit && <p className="ep__error" role="alert">{errorSubmit}</p>}
-        </form>
-      </div>
-
-      {/* Modals */}
       <Modal
         isOpen={showCancelModal}
         onClose={() => setShowCancelModal(false)}
@@ -244,37 +246,43 @@ export default EditProfile;
 
 const AvatarEditor = ({ userMe, avatarPreview, removeAvatar, onAvatarChange, onRemoveAvatar, onUndoRemove, t }) => {
   const inputRef = useRef(null);
-  const hasCloudinaryAvatar = userMe?.avatarUrl?.includes("res.cloudinary.com");
+  const hasPhoto = Boolean(avatarPreview) || Boolean(userMe?.avatarUrl?.includes("res.cloudinary.com"));
   const preview = avatarPreview || userMe?.avatarUrl || generateAvatar(userMe?.username);
+  const pickPhoto = () => inputRef.current?.click();
 
   return (
     <div className="ep__avatar-editor">
-      <div className={`ep__avatar-wrap${removeAvatar ? " ep__avatar-wrap--remove" : ""}`}
-        onClick={() => !removeAvatar && inputRef.current?.click()}
-        role={removeAvatar ? undefined : "button"} tabIndex={removeAvatar ? -1 : 0}
-        onKeyDown={(e) => !removeAvatar && e.key === "Enter" && inputRef.current?.click()}>
-        <img className="ep__avatar-img" src={preview} alt="Avatar"
+      {/* A shortcut for the pointer; the button beside it is the one for the
+          keyboard and screen readers, so they don't meet the same action twice. */}
+      <button type="button" className={`ep__avatar-wrap${removeAvatar ? " ep__avatar-wrap--remove" : ""}`}
+        onClick={pickPhoto} disabled={removeAvatar} tabIndex={-1} aria-hidden="true">
+        <img className="ep__avatar-img" src={preview} alt=""
           onError={(e) => { e.currentTarget.src = generateAvatar(userMe?.username); }} />
-        <div className="ep__avatar-overlay" aria-hidden="true">
+        <span className="ep__avatar-badge" aria-hidden="true">
           {removeAvatar ? <IoTrashOutline /> : <IoCameraOutline />}
-        </div>
-        <input ref={inputRef} type="file" accept="image/*" className="ep__avatar-input"
-          onChange={(e) => { const f = e.target.files?.[0]; if (f) onAvatarChange(f); }} tabIndex={-1} />
-      </div>
+        </span>
+      </button>
+      <input ref={inputRef} type="file" accept="image/*" className="ep__avatar-input"
+        onChange={(e) => { const f = e.target.files?.[0]; if (f) onAvatarChange(f); }} tabIndex={-1} />
 
-      {removeAvatar ? (
-        <button type="button" className="ep__avatar-action" onClick={onUndoRemove}>
-          {t("editProfile.undoRemove")}
-        </button>
-      ) : (hasCloudinaryAvatar || avatarPreview) ? (
-        <button type="button" className="ep__avatar-action ep__avatar-action--remove" onClick={onRemoveAvatar}>
-          {t("editProfile.removePhoto")}
-        </button>
-      ) : (
-        <button type="button" className="ep__avatar-action" onClick={() => inputRef.current?.click()}>
-          {t("editProfile.addPhoto")}
-        </button>
-      )}
+      <div className="ep__avatar-actions">
+        {removeAvatar ? (
+          <button type="button" className="btn btn--secondary ep__avatar-action" onClick={onUndoRemove}>
+            {t("editProfile.undoRemove")}
+          </button>
+        ) : (
+          <>
+            <button type="button" className="btn btn--secondary ep__avatar-action" onClick={pickPhoto}>
+              {hasPhoto ? t("editProfile.changePhoto") : t("editProfile.addPhoto")}
+            </button>
+            {hasPhoto && (
+              <button type="button" className="ep__avatar-remove" onClick={onRemoveAvatar}>
+                {t("editProfile.removePhoto")}
+              </button>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 };
@@ -284,17 +292,16 @@ const EditProfileSkeleton = () => (
     <header className="ep__header">
       <div className="skeleton" style={{ width: 32, height: 32, borderRadius: "50%" }} />
       <div className="skeleton" style={{ width: 120, height: 20, borderRadius: 6 }} />
-      <div className="skeleton" style={{ width: 60, height: 32, borderRadius: 999 }} />
+      <div className="skeleton" style={{ width: 90, height: 34, borderRadius: 999 }} />
     </header>
     <div className="ep__body">
-      <div className="ep__avatar-section" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.5rem" }}>
-        <div className="skeleton" style={{ width: 88, height: 88, borderRadius: "50%" }} />
-      </div>
       <section className="ep__section">
-        <div className="skeleton" style={{ width: 80, height: 12, borderRadius: 4, marginBottom: "0.75rem" }} />
-        <div className="ep__fields">
-          {[1,2,3].map(i => <div key={i} className="skeleton" style={{ height: 52, borderRadius: 10 }} />)}
+        <div className="skeleton" style={{ width: 80, height: 16, borderRadius: 4 }} />
+        <div className="ep__avatar-editor">
+          <div className="skeleton" style={{ width: 88, height: 88, borderRadius: "50%" }} />
+          <div className="skeleton" style={{ width: 120, height: 34, borderRadius: 999 }} />
         </div>
+        {[1, 2].map(i => <div key={i} className="skeleton" style={{ height: 52, borderRadius: 10 }} />)}
       </section>
     </div>
   </div>

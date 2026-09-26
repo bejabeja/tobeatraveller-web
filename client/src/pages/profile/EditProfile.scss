@@ -7,6 +7,8 @@ $ep-column-width: 600px;
   min-height: 100vh;
   background: var(--surface-color, #f8fafc);
 
+  // As wide as the cards below, on the page's own background: a bar across
+  // the whole screen framed only the middle of it.
   &__header {
     position: sticky;
     top: 0;
@@ -14,11 +16,11 @@ $ep-column-width: 600px;
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    // Its content lines up with the body's column below it.
-    padding: 0.875rem max(1.25rem, calc((100% - #{$ep-column-width}) / 2));
-    background: var(--white-color);
-    border-bottom: 1px solid var(--border-color);
-    box-shadow: 0 1px 0 var(--border-color);
+    max-width: calc(#{$ep-column-width} + 2rem);
+    width: 100%;
+    margin: 0 auto;
+    padding: 0.875rem 1rem;
+    background: var(--surface-color, #f8fafc);
   }
 
   &__back {
@@ -47,28 +49,15 @@ $ep-column-width: 600px;
     width: auto;
   }
 
-  &__save {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--text-secondary-color);
-    padding: 0.4rem 0.75rem;
-    border-radius: 8px;
-    transition: color 0.15s, background 0.15s;
-    white-space: nowrap;
-    width: fit-content;
-    pointer-events: none;
-    font-family: inherit;
+  & &__save {
+    padding: 0.55em 1.1em;
+    font-size: 0.875rem;
+  }
 
-    &--active {
-      color: var(--primary-color);
-      pointer-events: auto;
-      &:hover { background: rgba(0, 119, 182, 0.08); }
-    }
-
-    &:disabled { opacity: 0.4; }
+  // A disabled button should look it, not just a faint primary one.
+  .btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
   }
 
   &__body {
@@ -78,41 +67,29 @@ $ep-column-width: 600px;
     padding: 0 1rem 3rem;
     display: flex;
     flex-direction: column;
+    gap: 1rem;
   }
 
-  // Avatar
-  &__avatar-section {
-    display: flex;
-    justify-content: center;
-    padding: 2rem 0 1.5rem;
-    background: var(--white-color);
-    border-bottom: 1px solid var(--border-color);
-
-    // Edge to edge where the body's gutter reaches the screen's edges, as it
-    // was before the gutter; as wide as the cards everywhere else.
-    @media (max-width: calc(#{$ep-column-width} + 2rem)) {
-      width: auto;
-      margin: 0 -1rem;
-    }
-  }
-
+  // Avatar: the photo beside its actions, at the top of the Profile card
   &__avatar-editor {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 0.6rem;
+    gap: 1.25rem;
   }
 
   &__avatar-wrap {
     position: relative;
+    flex-shrink: 0;
     width: 88px;
     height: 88px;
+    padding: 0;
+    border: none;
     border-radius: 50%;
+    background: none;
     cursor: pointer;
-    overflow: hidden;
 
-    &--remove { cursor: default; }
-    &:hover .ep__avatar-overlay { opacity: 1; }
+    &:disabled { cursor: default; }
+    &:focus-visible { outline: 2px solid var(--primary-color); outline-offset: 3px; }
   }
 
   &__avatar-img {
@@ -123,36 +100,49 @@ $ep-column-width: 600px;
     display: block;
   }
 
-  &__avatar-overlay {
+  // Always visible, not only on hover: a phone has no hover.
+  &__avatar-badge {
     position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.45);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    font-size: 1.3rem;
-    opacity: 0;
-    transition: opacity 0.2s;
+    right: -2px;
+    bottom: -2px;
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border: 2px solid var(--white-color);
     border-radius: 50%;
+    background: var(--primary-color);
+    color: #fff;
+    font-size: 0.95rem;
 
-    .ep__avatar-wrap:hover & { opacity: 1; }
-    .ep__avatar-wrap--remove & { opacity: 1; background: rgba(220, 38, 38, 0.5); }
+    .ep__avatar-wrap--remove & { background: var(--error-color); }
   }
 
   &__avatar-input { display: none; }
 
-  &__avatar-action {
-    background: none;
+  &__avatar-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.4rem;
+  }
+
+  & &__avatar-action {
+    padding: 0.5em 1em;
+    font-size: 0.85rem;
+  }
+
+  &__avatar-remove {
+    width: fit-content;
+    padding: 0.2rem 0;
     border: none;
-    cursor: pointer;
+    background: none;
+    font-family: inherit;
     font-size: 0.8rem;
     font-weight: 600;
-    color: var(--primary-color);
-    padding: 0.2rem 0;
-    font-family: inherit;
-    width: fit-content;
-    &--remove { color: var(--error-color); }
+    color: var(--error-color);
+    cursor: pointer;
+
     &:hover { text-decoration: underline; }
   }
 
@@ -165,8 +155,19 @@ $ep-column-width: 600px;
     padding: 1.25rem 1.5rem;
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    margin-top: 1rem;
+    gap: 1rem;
+
+    .input { margin-bottom: 0; }
+
+    @media (max-width: 480px) {
+      padding: 1.1rem 1rem;
+    }
+  }
+
+  &__section-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-color);
   }
 
   // Icon + label row used as a section's heading
@@ -206,27 +207,28 @@ $ep-column-width: 600px;
     width: auto;
   }
 
-  &__fields {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-
-    .input { margin-bottom: 0; }
-  }
-
-  &__username-wrap { position: relative; }
-
   &__field-hint {
     margin-top: 0.35rem;
     font-size: 0.8rem;
+    line-height: 1.4;
     color: var(--text-secondary-color);
+    overflow-wrap: anywhere;
+
+    &--warning { color: #b45309; }
+  }
+
+  // Cancel and save, at the end of the form
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+
+    @media (max-width: 480px) {
+      .btn { flex: 1; }
+    }
   }
 
   &__username-status {
-    position: absolute;
-    right: 0.75rem;
-    top: 50%;
-    transform: translateY(-50%);
     font-size: 0.72rem;
     font-weight: 600;
     padding: 2px 8px;

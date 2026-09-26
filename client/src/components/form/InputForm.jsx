@@ -1,8 +1,11 @@
 import { Controller } from "react-hook-form";
 import "./InputForm.scss";
 
-const InputFooter = ({ error, errorId, field, maxLength, showCounter }) => {
-  if (!error && !(maxLength && showCounter)) return null;
+// `counterFrom` (0 to 1): how full the field must be before the counter
+// shows, so a form of short fields isn't a column of "4/50"s.
+const InputFooter = ({ error, errorId, field, maxLength, showCounter, counterFrom = 0 }) => {
+  const counterShown = Boolean(maxLength && showCounter) && (field.value?.length || 0) >= maxLength * counterFrom;
+  if (!error && !counterShown) return null;
   return (
     <div className="input__footer">
       {error && (
@@ -10,7 +13,7 @@ const InputFooter = ({ error, errorId, field, maxLength, showCounter }) => {
           {error.message}
         </div>
       )}
-      {maxLength && showCounter && (
+      {counterShown && (
         <span className={`input__counter${
           (field.value?.length || 0) >= maxLength ? " input__counter--at-limit" :
           (field.value?.length || 0) >= maxLength * 0.85 ? " input__counter--near-limit" : ""
@@ -36,6 +39,7 @@ export const InputForm = ({
   right,
   autoComplete,
   placeholder,
+  counterFrom,
 }) => {
   const errorId = `${name}-error`;
 
@@ -95,7 +99,7 @@ export const InputForm = ({
                 aria-describedby={error ? errorId : undefined}
               />
             )}
-            <InputFooter error={error} errorId={errorId} field={field} maxLength={maxLength} showCounter={showCounter} />
+            <InputFooter error={error} errorId={errorId} field={field} maxLength={maxLength} showCounter={showCounter} counterFrom={counterFrom} />
           </>
         )}
       />
@@ -112,6 +116,7 @@ export const TextAreaForm = ({
   required = false,
   maxLength,
   placeholder,
+  counterFrom,
 }) => {
   const errorId = `${name}-error`;
 
@@ -135,7 +140,7 @@ export const TextAreaForm = ({
               aria-invalid={!!error}
               aria-describedby={error ? errorId : undefined}
             />
-            <InputFooter error={error} errorId={errorId} field={field} maxLength={maxLength} showCounter />
+            <InputFooter error={error} errorId={errorId} field={field} maxLength={maxLength} showCounter counterFrom={counterFrom} />
           </>
         )}
       />

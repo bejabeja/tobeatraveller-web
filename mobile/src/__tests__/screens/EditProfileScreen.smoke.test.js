@@ -6,11 +6,12 @@ jest.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key, vars) => (vars?.date ? `${key}:${vars.date}` : key), i18n: { language: 'en' } }),
 }));
 jest.mock('expo-image-picker', () => ({}));
-jest.mock('../../utils/config', () => ({ GEOAPIFY_KEY: 'test' }));
+jest.mock('../../utils/config', () => ({ GEOAPIFY_KEY: 'test', WEB_URL: 'https://tobeatraveller.test' }));
 jest.mock('../../hooks/useCurrentLocation', () => ({ useCurrentLocation: () => ({ getCurrentLocation: jest.fn(), loading: false }) }));
 jest.mock('../../components/UseCurrentLocationButton', () => ({ UseCurrentLocationButton: () => null }));
 jest.mock('@tobeatraveller/shared', () => ({
   ...jest.requireActual('../../../../shared/src/utils/formatLocale.js'),
+  ...jest.requireActual('../../../../shared/src/utils/profileLinks.js'),
   checkUsernameAvailable: jest.fn().mockResolvedValue(true),
   initAuthUser: jest.fn(),
   reverseGeocode: jest.fn(),
@@ -57,4 +58,14 @@ it("warns, before saving, that a new name can't be changed again for 30 days", a
   fireEvent.changeText(screen.getByDisplayValue('jane'), 'jane_vanlife');
 
   expect(screen.getByText('editProfile.usernameChangeLimit')).toBeTruthy();
+});
+
+// The name is the profile's address: shown as it will be.
+it('shows the profile address the username gives', async () => {
+  selectMe.mockReturnValue(ME);
+  await renderScreen();
+
+  fireEvent.changeText(screen.getByDisplayValue('jane'), 'jane_vanlife');
+
+  expect(screen.getByText(/editProfile.usernameAddress/)).toBeTruthy();
 });
