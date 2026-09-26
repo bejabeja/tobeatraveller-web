@@ -372,7 +372,7 @@ const EditExperienceScreen = ({ navigation, route }) => {
                     activeOpacity={0.75}
                   >
                     <Text style={ls.catCardEmoji}>{CATEGORY_EMOJI[cat.value]}</Text>
-                    <Text style={[ls.catCardName, category === cat.value && ls.catCardNameOn]}>{cat.label}</Text>
+                    <Text style={[ls.catCardName, category === cat.value && ls.catCardNameOn]}>{t(`tripCategories.${cat.value}`)}</Text>
                     <Text style={ls.catCardDesc} numberOfLines={2}>{ce(`catDetails.${cat.value}`)}</Text>
                   </TouchableOpacity>
                 ))}
@@ -498,7 +498,7 @@ const EditExperienceScreen = ({ navigation, route }) => {
                 return (
                   <TouchableOpacity key={cat.value} style={[ls.typeChip, on && { backgroundColor: cfg.color, borderColor: cfg.color }]} onPress={() => setEditDraft(d => ({ ...d, category: cat.value }))}>
                     <Ionicons name={cfg.icon} size={13} color={on ? '#fff' : cfg.color} />
-                    <Text style={[ls.typeChipLabel, on && { color: '#fff', fontWeight: '600' }]}>{cat.label}</Text>
+                    <Text style={[ls.typeChipLabel, on && { color: '#fff', fontWeight: '600' }]}>{t(`placeCategories.${cat.value}`)}</Text>
                   </TouchableOpacity>
                 );
               })}
@@ -554,7 +554,7 @@ const EditableStep = ({ step, isLast, onEdit }) => {
       <View style={[etl.content, isLast && etl.contentLast]}>
         <View style={etl.metaRow}>
           <View style={[etl.badge, { backgroundColor: cfg.color + '22' }]}>
-            <Text style={[etl.badgeText, { color: cfg.color }]}>{cfg.label.toUpperCase()}</Text>
+            <Text style={[etl.badgeText, { color: cfg.color }]}>{t(`placeCategories.${cfg.key}`).toUpperCase()}</Text>
           </View>
           {mood && (
             <View style={etl.moodTag}>

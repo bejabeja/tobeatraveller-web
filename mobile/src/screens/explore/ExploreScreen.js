@@ -10,7 +10,7 @@ import {
   initExploreItineraries, itineraryCategories,
   loadMoreExploreItineraries, selectExploreItineraries,
   selectExploreItinerariesLoading, selectExploreItinerariesLoadingMore,
-  selectExplorePage, selectExploreTotalItems, selectExploreTotalPages,
+  selectExplorePage, selectExploreTotalItems, selectExploreTotalPages, formatNumber,
 } from '@tobeatraveller/shared';
 import { Ionicons } from '@expo/vector-icons';
 import ItineraryCard from '../../components/ItineraryCard';
@@ -25,7 +25,7 @@ const CATEGORY_EMOJI = {
 };
 
 const ExploreScreen = ({ navigation, route }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const dispatch = useDispatch();
   const insets = useSafeAreaInsets();
 
@@ -124,7 +124,7 @@ const ExploreScreen = ({ navigation, route }) => {
         <View style={styles.titleRow}>
           <Text style={styles.title}>{t('explore.title')}</Text>
           {!loading && totalItems > 0 && (
-            <Text style={styles.count}>{totalItems.toLocaleString()} {t('home.trips')}</Text>
+            <Text style={styles.count}>{formatNumber(totalItems, i18n.language)} {t('home.trips')}</Text>
           )}
           <TouchableOpacity onPress={openFilters} style={styles.filterBtn}>
             <Ionicons name="filter-outline" size={14} color="#374151" />
@@ -172,11 +172,11 @@ const ExploreScreen = ({ navigation, route }) => {
               key={cat.value}
               style={[styles.catChip, category === cat.value && styles.catChipSelected]}
               onPress={() => setCategory(prev => prev === cat.value ? '' : cat.value)}
-              onLongPress={() => Alert.alert(cat.label, t(`createExperience.catDetails.${cat.value}`))}
+              onLongPress={() => Alert.alert(t(`tripCategories.${cat.value}`), t(`createExperience.catDetails.${cat.value}`))}
             >
               <Text style={styles.catEmoji}>{CATEGORY_EMOJI[cat.value]}</Text>
               <Text style={[styles.catLabel, category === cat.value && styles.catLabelSelected]}>
-                {cat.label}
+                {t(`tripCategories.${cat.value}`)}
               </Text>
             </TouchableOpacity>
           ))}

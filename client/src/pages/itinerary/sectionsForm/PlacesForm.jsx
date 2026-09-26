@@ -346,31 +346,34 @@ const PlaceField = ({
   );
 };
 
-const PlaceCategoryForm = ({ control, index }) => (
-  <div className="form__icon-group form__icon-group--compact">
-    <Controller
-      name={`places.${index}.category`}
-      control={control}
-      render={({ field }) => (
-        <>
-          {placeCategories.map((type) => {
-            const Icon = getCategoryIcon(type.value);
-            return (
-              <button
-                type="button"
-                key={type.value}
-                title={type.label}
-                className={`form__icon-group-button only-icon ${field.value === type.value ? "selected" : ""}`}
-                onClick={() => field.onChange(type.value)}
-              >
-                <Icon />
-              </button>
-            );
-          })}
-        </>
-      )}
-    />
-  </div>
-);
+const PlaceCategoryForm = ({ control, index }) => {
+  const { t } = useTranslation();
+  return (
+    <div className="form__icon-group form__icon-group--compact">
+      <Controller
+        name={`places.${index}.category`}
+        control={control}
+        render={({ field }) => (
+          <>
+            {placeCategories.map((type) => {
+              const Icon = getCategoryIcon(type.value);
+              return (
+                <button
+                  type="button"
+                  key={type.value}
+                  title={t(`placeCategories.${type.value}`)}
+                  className={`form__icon-group-button only-icon ${field.value === type.value ? "selected" : ""}`}
+                  onClick={() => field.onChange(type.value)}
+                >
+                  <Icon />
+                </button>
+              );
+            })}
+          </>
+        )}
+      />
+    </div>
+  );
+};
 
 export default PlacesForm;

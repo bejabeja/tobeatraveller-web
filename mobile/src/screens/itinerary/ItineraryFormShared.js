@@ -8,10 +8,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import {
   aiPaceOptions, currencyOptions, DEFAULT_AI_PACE, GENERATE_TIMEOUT_MESSAGE, generateSmartItinerary,
-  getCurrencySymbol, isPremiumRequiredError, itineraryCategories, placeCategories,
+  getCurrencySymbol, isPremiumRequiredError, itineraryCategories, placeCategories, formatNumber,
 } from '@tobeatraveller/shared';
 import { COLORS, shadow } from '../../utils/styles';
-import { STEP_CONFIG, STEP_NAME_HINT, getStepConfig } from '../../utils/stepConfig';
+import { STEP_NAME_HINT, getStepConfig } from '../../utils/stepConfig';
 
 export const CATEGORY_EMOJI = {
   adventure:'🧗', relax:'🧘', culture:'🏛', romantic:'💕',
@@ -164,7 +164,7 @@ export const PlaceCard = ({
               onPress={() => onUpdate('category', cat.value)}
             >
               <Ionicons name={cfg.icon} size={13} color={selected ? '#fff' : cfg.color} />
-              <Text style={[s.typeChipLabel, selected && s.typeChipLabelSelected]}>{cat.label}</Text>
+              <Text style={[s.typeChipLabel, selected && s.typeChipLabelSelected]}>{t(`placeCategories.${cat.value}`)}</Text>
             </TouchableOpacity>
           );
         })}
@@ -218,7 +218,7 @@ export const CategorySection = ({ value, onChange, complete }) => {
             onPress={() => onChange(cat.value)}
           >
             <Text style={s.chipEmoji}>{CATEGORY_EMOJI[cat.value] || '📍'}</Text>
-            <Text style={[s.chipLabel, value === cat.value && s.chipLabelSelected]}>{cat.label}</Text>
+            <Text style={[s.chipLabel, value === cat.value && s.chipLabelSelected]}>{t(`tripCategories.${cat.value}`)}</Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -287,13 +287,13 @@ export const DatesSection = ({ startDate, endDate, onStartChange, onEndChange, e
 
 // ─── BudgetSection ───────────────────────────────────────────────────────────
 export const BudgetSection = ({ budget, setBudget, currency, setCurrency, travellers, tripDays, errors, complete }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [showPicker, setShowPicker] = useState(false);
   const symbol = getCurrencySymbol(currency);
   const perPerson = (() => {
     const b = parseFloat(budget);
     if (!b || travellers <= 1) return null;
-    return (b / travellers).toLocaleString(undefined, { maximumFractionDigits: 2 });
+    return formatNumber(b / travellers, i18n.language, { maximumFractionDigits: 2 });
   })();
 
   const BUDGET_PRESETS = [

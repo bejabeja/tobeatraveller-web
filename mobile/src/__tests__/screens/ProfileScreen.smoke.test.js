@@ -38,6 +38,7 @@ jest.mock('@tobeatraveller/shared', () => {
   const { COLORS } = jest.requireActual('../../../../shared/src/utils/constants/colors.js');
   return {
     ...jest.requireActual('../../../../shared/src/utils/analyticsEvents.js'),
+    ...jest.requireActual('../../../../shared/src/utils/formatLocale.js'),
     COLORS,
     ...badges,
     ...countries,
@@ -102,7 +103,7 @@ it('renders the own profile header with counters and the passport card', async (
   await act(async () => {});
 
   expect(screen.getByText('Jane')).toBeTruthy();
-  expect(screen.getByText('profile.trips')).toBeTruthy();
+  expect(screen.getByText('profile.tripsStat')).toBeTruthy();
   expect(screen.getByText('passport.title')).toBeTruthy();
   expect(screen.getByText(/badges\.nextTip\.trips/)).toBeTruthy();
 });

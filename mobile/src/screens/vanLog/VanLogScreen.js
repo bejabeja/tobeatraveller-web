@@ -10,7 +10,7 @@ import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
   getVanLogEntries, getVanLogFuelPriceTrend, getVanLogStats,
-  groupVanLogEntriesByMonth, isNetworkError, isPremiumRequiredError, selectAuthUser,
+  formatAmount, formatCalendarDay, formatNumber, groupVanLogEntriesByMonth, isNetworkError, isPremiumRequiredError, selectAuthUser,
   vanLogCategories, vanLogCategoryEmoji as CATEGORY_EMOJI,
 } from '@tobeatraveller/shared';
 import FeatureLoadState from '../../components/FeatureLoadState';
@@ -28,7 +28,7 @@ const EMPTY_FILTERS = { category: '', country: '', currency: '', dateFrom: '', d
 
 // groupVanLogEntriesByMonth (shared) returns `entries`/`label`; SectionList
 // expects `data`/`title`, so the shared groups are remapped to that shape.
-const groupEntriesByMonth = (entries) => groupVanLogEntriesByMonth(entries).map(
+const groupEntriesByMonth = (entries, language) => groupVanLogEntriesByMonth(entries, language).map(
   ({ key, label, total, currency, entries: data }) => ({ key, title: label, total, currency, data })
 );
 
@@ -41,13 +41,12 @@ const daysSince = (dateStr) => {
   return Math.round((today - then) / 86400000);
 };
 
-const shortDate = (dateStr) => {
-  const [year, month, day] = dateStr.split('-').map(Number);
-  return new Date(year, month - 1, day).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-};
+const SHORT_DAY = { month: 'short', day: 'numeric' };
+const TWO_DECIMALS = { minimumFractionDigits: 2, maximumFractionDigits: 2 };
 
 const VanLogScreen = ({ navigation }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const language = i18n.language;
   const insets = useSafeAreaInsets();
   // The session user rather than the full profile: it is restored even when
   // the app opens offline, so the cached data can still be found.
@@ -201,7 +200,7 @@ const VanLogScreen = ({ navigation }) => {
     .filter((c) => !filters.country || c.country.toLowerCase() === filters.country.toLowerCase())
     .sort((a, b) => b.total - a.total);
   const maxCountryTotal = sortedCountryTotals[0]?.total ?? 0;
-  const sections = groupEntriesByMonth(entries);
+  const sections = groupEntriesByMonth(entries, language);
   const fuelTrend = getVanLogFuelPriceTrend(entries);
   const hasBreakdown = sortedCategoryTotals.length > 0 || sortedCountryTotals.length > 0 || Boolean(fuelTrend);
 
@@ -348,7 +347,7 @@ const VanLogScreen = ({ navigation }) => {
               <Text style={styles.statsTotalLabel}>{t('vanLog.totalSpent')}</Text>
               <Text style={styles.statsTotalValue}>
                 {totalsByCurrency.length > 0
-                  ? totalsByCurrency.map((ct) => `${ct.total.toFixed(2)} ${ct.currency}`).join(' + ')
+                  ? totalsByCurrency.map((ct) => formatAmount(ct.total, ct.currency, language)).join(' + ')
                   : '0.00'}
               </Text>
             </View>
@@ -380,7 +379,7 @@ const VanLogScreen = ({ navigation }) => {
                         <View style={styles.barRowTrack}>
                           <View style={[styles.barRowFill, { width: `${pct}%` }]} />
                         </View>
-                        <Text style={styles.barRowValue}>{c.total.toFixed(2)}</Text>
+                        <Text style={styles.barRowValue}>{formatNumber(c.total, language, TWO_DECIMALS)}</Text>
                       </View>
                     );
                   })}
@@ -400,7 +399,7 @@ const VanLogScreen = ({ navigation }) => {
                         <View style={styles.barRowTrack}>
                           <View style={[styles.barRowFill, styles.barRowFillCountry, { width: `${pct}%` }]} />
                         </View>
-                        <Text style={styles.barRowValue}>{c.total.toFixed(2)}</Text>
+                        <Text style={styles.barRowValue}>{formatNumber(c.total, language, TWO_DECIMALS)}</Text>
                       </View>
                     );
                   })}
@@ -419,11 +418,11 @@ const VanLogScreen = ({ navigation }) => {
                       const pct = fuelTrend.maxPrice > 0 ? (p.pricePerLiter / fuelTrend.maxPrice) * 100 : 0;
                       return (
                         <View key={p.id} style={styles.fuelTrendCol}>
-                          <Text style={styles.fuelTrendValue}>{p.pricePerLiter.toFixed(2)}</Text>
+                          <Text style={styles.fuelTrendValue}>{formatNumber(p.pricePerLiter, language, TWO_DECIMALS)}</Text>
                           <View style={styles.fuelTrendBarTrack}>
                             <View style={[styles.fuelTrendBar, { height: `${pct}%` }]} />
                           </View>
-                          <Text style={styles.fuelTrendDate}>{shortDate(p.entryDate)}</Text>
+                          <Text style={styles.fuelTrendDate}>{formatCalendarDay(p.entryDate, language, SHORT_DAY)}</Text>
                         </View>
                       );
                     })}
@@ -459,7 +458,7 @@ const VanLogScreen = ({ navigation }) => {
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionHeaderLabel}>{section.title}</Text>
             {section.total != null && (
-              <Text style={styles.sectionHeaderTotal}>{section.total.toFixed(2)} {section.currency}</Text>
+              <Text style={styles.sectionHeaderTotal}>{formatAmount(section.total, section.currency, language)}</Text>
             )}
           </View>
         ) : null}
@@ -486,7 +485,7 @@ const VanLogScreen = ({ navigation }) => {
           if (item._skeleton) return <View style={[styles.entry, styles.entrySkeleton]} />;
 
           const priceLine = item.category === 'fuel' && item.pricePerLiter != null
-            ? `${item.pricePerLiter.toFixed(3)} ${item.currency || ''}/L`
+            ? `${formatNumber(item.pricePerLiter, language, { minimumFractionDigits: 3, maximumFractionDigits: 3 })} ${item.currency || ''}/L`
             : null;
 
           return (
@@ -497,13 +496,13 @@ const VanLogScreen = ({ navigation }) => {
                     {CATEGORY_EMOJI[item.category] ?? '📍'} {categoryLabel(item.category)}
                   </Text>
                   <Text style={styles.entryDate}>
-                    {item.entryDate}
+                    {item.entryDate && formatCalendarDay(item.entryDate, language, SHORT_DAY)}
                     {item.entryDate && daysSinceLabel(item.entryDate) ? ` · ${daysSinceLabel(item.entryDate)}` : ''}
                   </Text>
                 </View>
                 <View style={styles.entryTopRight}>
                   {item.amount != null && (
-                    <Text style={styles.entryAmount}>{item.amount.toFixed(2)} {item.currency || ''}</Text>
+                    <Text style={styles.entryAmount}>{formatAmount(item.amount, item.currency, language)}</Text>
                   )}
                   <TouchableOpacity style={styles.entryMenuBtn} onPress={() => handleEntryMenu(item)}>
                     <Ionicons name="ellipsis-vertical" size={16} color="#6b7280" />

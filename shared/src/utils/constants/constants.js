@@ -8,40 +8,50 @@ export const generateAvatar = (name = "User") =>
 export const heroImage = "/images/hero.jpg";
 export const authImage = "/images/auth.webp";
 
+// Named in the apps through placeCategories.* in the locales.
 export const placeCategories = [
   // Experience types (narrative steps)
-  { value: "transport", label: "Transport" },
-  { value: "flight", label: "Flight" },
-  { value: "accommodation", label: "Stay" },
-  { value: "activity", label: "Activity" },
-  { value: "local_tip", label: "Local tip" },
+  { value: "transport" },
+  { value: "flight" },
+  { value: "accommodation" },
+  { value: "activity" },
+  { value: "local_tip" },
   // POI types
-  { value: "nature", label: "Nature" },
-  { value: "beach", label: "Beach" },
-  { value: "city", label: "City" },
-  { value: "park", label: "Park" },
-  { value: "monument", label: "Monument" },
-  { value: "camping", label: "Camping" },
-  { value: "island", label: "Island" },
-  { value: "sport", label: "Sport" },
-  { value: "vineyard", label: "Vineyard" },
-  { value: "other", label: "Other" },
+  { value: "nature" },
+  { value: "beach" },
+  { value: "city" },
+  { value: "park" },
+  { value: "monument" },
+  { value: "camping" },
+  { value: "island" },
+  { value: "sport" },
+  { value: "vineyard" },
+  { value: "other" },
 ];
 
+// Named in the apps through tripCategories.* in the locales.
 export const itineraryCategories = [
-  { value: "adventure", label: "Adventure" },
-  { value: "relax", label: "Relax" },
-  { value: "culture", label: "Culture" },
-  { value: "romantic", label: "Romantic" },
-  { value: "roadtrip", label: "Roadtrip" },
-  { value: "family", label: "Family" },
-  { value: "backpacking", label: "Backpacking" },
-  { value: "wellness", label: "Wellness" },
-  { value: "gastronomic", label: "Gastronomic" },
-  { value: "party", label: "Party" },
-  { value: "sport", label: "Sport" },
-  { value: "other", label: "Other" },
+  { value: "adventure" },
+  { value: "relax" },
+  { value: "culture" },
+  { value: "romantic" },
+  { value: "roadtrip" },
+  { value: "family" },
+  { value: "backpacking" },
+  { value: "wellness" },
+  { value: "gastronomic" },
+  { value: "party" },
+  { value: "sport" },
+  { value: "other" },
 ];
+
+// A trip's category as the apps name it (tripCategories.* in the locales).
+// Older trips may hold another case or several categories ("Adventure,relax"):
+// the first one counts. Null for one the apps don't know.
+export const tripCategoryLabelKey = (category) => {
+  const value = category?.split(",")[0].trim().toLowerCase();
+  return itineraryCategories.some(option => option.value === value) ? `tripCategories.${value}` : null;
+};
 
 // Keep values in sync with api/src/models/vanLogEntry.js#VAN_LOG_CATEGORIES
 // (api/ doesn't depend on shared/, so this list is duplicated by necessity).

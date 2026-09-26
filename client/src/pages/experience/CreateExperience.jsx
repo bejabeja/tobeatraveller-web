@@ -43,21 +43,21 @@ import "./CreateExperience.scss";
 
 // ─── Step config (icons + colors) ────────────────────────────────────────────
 const STEP_CONFIG = {
-  transport:     { Icon: IoTrainOutline,    color: "#1A535C", label: "Transport"  },
-  flight:        { Icon: IoAirplaneOutline, color: "#1A535C", label: "Flight"     },
-  accommodation: { Icon: IoHomeOutline,     color: "#7C3AED", label: "Stay"       },
-  activity:      { Icon: IoFlashOutline,    color: "#E8743B", label: "Activity"   },
-  local_tip:     { Icon: IoBulbOutline,     color: "#D97706", label: "Local tip"  },
-  nature:        { Icon: IoLeafOutline,     color: "#16A34A", label: "Nature"     },
-  beach:         { Icon: IoSunnyOutline,    color: "#0EA5E9", label: "Beach"      },
-  city:          { Icon: IoBusinessOutline, color: "#64748B", label: "City"       },
-  monument:      { Icon: IoLibraryOutline,  color: "#64748B", label: "Monument"   },
-  park:          { Icon: IoLeafOutline,     color: "#16A34A", label: "Park"       },
-  camping:       { Icon: IoBonfireOutline,  color: "#B45309", label: "Camping"    },
-  island:        { Icon: IoWaterOutline,    color: "#0EA5E9", label: "Island"     },
-  sport:         { Icon: IoFitnessOutline,  color: "#E8743B", label: "Sport"      },
-  vineyard:      { Icon: IoWineOutline,     color: "#7C3AED", label: "Vineyard"   },
-  other:         { Icon: IoLocationOutline, color: "#94A3B8", label: "Other"      },
+  transport:     { Icon: IoTrainOutline,    color: "#1A535C" },
+  flight:        { Icon: IoAirplaneOutline, color: "#1A535C" },
+  accommodation: { Icon: IoHomeOutline,     color: "#7C3AED" },
+  activity:      { Icon: IoFlashOutline,    color: "#E8743B" },
+  local_tip:     { Icon: IoBulbOutline,     color: "#D97706" },
+  nature:        { Icon: IoLeafOutline,     color: "#16A34A" },
+  beach:         { Icon: IoSunnyOutline,    color: "#0EA5E9" },
+  city:          { Icon: IoBusinessOutline, color: "#64748B" },
+  monument:      { Icon: IoLibraryOutline,  color: "#64748B" },
+  park:          { Icon: IoLeafOutline,     color: "#16A34A" },
+  camping:       { Icon: IoBonfireOutline,  color: "#B45309" },
+  island:        { Icon: IoWaterOutline,    color: "#0EA5E9" },
+  sport:         { Icon: IoFitnessOutline,  color: "#E8743B" },
+  vineyard:      { Icon: IoWineOutline,     color: "#7C3AED" },
+  other:         { Icon: IoLocationOutline, color: "#94A3B8" },
 };
 
 const ALL_STEP_TYPES = [
@@ -88,10 +88,15 @@ const MOOD_DEFS = [
   { key: "indulgent", emoji: "🍷" },
 ];
 
-const getStepCfg = (cat) => STEP_CONFIG[cat] ?? STEP_CONFIG.other;
+// Named through placeCategories.<key> in the locales; an unknown type is "other".
+const getStepCfg = (cat) => {
+  const key = STEP_CONFIG[cat] ? cat : "other";
+  return { ...STEP_CONFIG[key], key };
+};
 
 // ─── EditableStep ─────────────────────────────────────────────────────────────
 const EditableStep = ({ step, isLast, onEdit }) => {
+  const { t } = useTranslation();
   const cfg  = getStepCfg(step.category);
   const mood = MOOD_DEFS.find(m => m.key === step.mood);
   return (
@@ -105,7 +110,7 @@ const EditableStep = ({ step, isLast, onEdit }) => {
       <button type="button" className="cexp-step__body" onClick={onEdit}>
         <div className="cexp-step__meta">
           <span className="cexp-step__badge" style={{ background: cfg.color + "22", color: cfg.color }}>
-            {cfg.label.toUpperCase()}
+            {t(`placeCategories.${cfg.key}`).toUpperCase()}
           </span>
           {mood && (
             <span className="cexp-step__mood-tag">
@@ -471,7 +476,7 @@ const CreateExperience = () => {
                   onClick={() => setCategory(cat.value)}
                 >
                   <span className="cexp__cat-card-emoji">{CATEGORY_EMOJI[cat.value]}</span>
-                  <span className="cexp__cat-card-name">{cat.label}</span>
+                  <span className="cexp__cat-card-name">{t(`tripCategories.${cat.value}`)}</span>
                   <span className="cexp__cat-card-desc">{ce(`catDetails.${cat.value}`)}</span>
                 </button>
               ))}
@@ -671,7 +676,7 @@ const CreateExperience = () => {
                     onClick={() => setEditDraft(d => ({ ...d, category: type }))}
                   >
                     <tc.Icon size={12} color={on ? "#fff" : tc.color} />
-                    <span style={{ color: on ? "#fff" : tc.color }}>{tc.label}</span>
+                    <span style={{ color: on ? "#fff" : tc.color }}>{t(`placeCategories.${tc.key}`)}</span>
                   </button>
                 );
               })}

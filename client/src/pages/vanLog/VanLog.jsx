@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { IoCloseOutline, IoEllipsisVertical, IoFlashOutline, IoFunnelOutline, IoSearchOutline } from "react-icons/io5";
 import { Link } from "react-router-dom";
 import {
-  getVanLogFuelPriceTrend, groupVanLogEntriesByMonth, isPremiumRequiredError,
+  formatAmount, formatCalendarDay, formatNumber, getVanLogFuelPriceTrend, groupVanLogEntriesByMonth, isPremiumRequiredError,
   normalizeSearchText, vanLogCategories, vanLogCategoryEmoji,
 } from "@tobeatraveller/shared";
 import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState";
@@ -33,13 +33,12 @@ const daysSinceLabel = (dateStr, t) => {
   return t("vanLog.daysAgo", { count: days });
 };
 
-const shortDate = (dateStr) => {
-  const [year, month, day] = dateStr.split("-").map(Number);
-  return new Date(year, month - 1, day).toLocaleDateString(undefined, { month: "short", day: "numeric" });
-};
+const SHORT_DAY = { month: "short", day: "numeric" };
+const TWO_DECIMALS = { minimumFractionDigits: 2, maximumFractionDigits: 2 };
 
 const VanLog = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const language = i18n.language;
   const [entries, setEntries] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -182,7 +181,7 @@ const VanLog = () => {
         return haystack.includes(searchQuery);
       })
     : entries;
-  const groupedEntries = groupVanLogEntriesByMonth(searchedEntries);
+  const groupedEntries = groupVanLogEntriesByMonth(searchedEntries, language);
   const fuelTrend = getVanLogFuelPriceTrend(entries);
   const hasBreakdown = sortedCategoryTotals.length > 0 || sortedCountryTotals.length > 0 || Boolean(fuelTrend);
 
@@ -207,19 +206,19 @@ const VanLog = () => {
   if (filters.dateFrom && filters.dateTo) {
     filterChips.push({
       key: "dateRange",
-      label: t("vanLog.dateRangeChip", { from: filters.dateFrom, to: filters.dateTo }),
+      label: t("vanLog.dateRangeChip", { from: formatCalendarDay(filters.dateFrom, language, SHORT_DAY), to: formatCalendarDay(filters.dateTo, language, SHORT_DAY) }),
       onRemove: () => setFilters((prev) => ({ ...prev, dateFrom: "", dateTo: "" })),
     });
   } else if (filters.dateFrom) {
     filterChips.push({
       key: "dateFrom",
-      label: t("vanLog.dateFromChip", { date: filters.dateFrom }),
+      label: t("vanLog.dateFromChip", { date: formatCalendarDay(filters.dateFrom, language, SHORT_DAY) }),
       onRemove: () => updateFilter("dateFrom", ""),
     });
   } else if (filters.dateTo) {
     filterChips.push({
       key: "dateTo",
-      label: t("vanLog.dateToChip", { date: filters.dateTo }),
+      label: t("vanLog.dateToChip", { date: formatCalendarDay(filters.dateTo, language, SHORT_DAY) }),
       onRemove: () => updateFilter("dateTo", ""),
     });
   }
@@ -247,9 +246,9 @@ const VanLog = () => {
             <div className="van-log__stats-total-value">
               {totalsByCurrency.length > 0
                 ? totalsByCurrency.map((ct) => (
-                    <strong key={ct.currency}>{ct.total.toFixed(2)} {ct.currency}</strong>
+                    <strong key={ct.currency}>{formatAmount(ct.total, ct.currency, language)}</strong>
                   ))
-                : <strong>0.00</strong>}
+                : <strong>{formatNumber(0, language, TWO_DECIMALS)}</strong>}
             </div>
           </div>
         </div>
@@ -410,13 +409,13 @@ const VanLog = () => {
                     <span className="van-log__group-label">{group.label}</span>
                     {group.total != null && (
                       <span className="van-log__group-total">
-                        {group.total.toFixed(2)} {group.currency}
+                        {formatAmount(group.total, group.currency, language)}
                       </span>
                     )}
                   </div>
                   {group.entries.map((entry) => {
                     const priceLine = entry.category === "fuel" && entry.pricePerLiter != null
-                      ? `${entry.pricePerLiter.toFixed(3)} ${entry.currency || ""}/L`
+                      ? `${formatNumber(entry.pricePerLiter, language, { minimumFractionDigits: 3, maximumFractionDigits: 3 })} ${entry.currency || ""}/L`
                       : null;
                     return (
                       <div key={entry.id} className="van-log__entry">
@@ -427,13 +426,13 @@ const VanLog = () => {
                                 {vanLogCategoryEmoji[entry.category] ?? "📍"} {categoryLabel(entry.category)}
                               </span>
                               <span className="van-log__entry-date">
-                                {entry.entryDate}
+                                {entry.entryDate && formatCalendarDay(entry.entryDate, language, SHORT_DAY)}
                                 {entry.entryDate && <span className="van-log__entry-date-relative"> · {daysSinceLabel(entry.entryDate, t)}</span>}
                               </span>
                             </div>
                             {entry.amount != null && (
                               <strong className="van-log__entry-amount">
-                                {entry.amount.toFixed(2)} {entry.currency || ""}
+                                {formatAmount(entry.amount, entry.currency, language)}
                               </strong>
                             )}
                           </div>
@@ -503,7 +502,7 @@ const VanLog = () => {
                         <div className="van-log__bar-row-track">
                           <div className="van-log__bar-row-fill" style={{ width: `${pct}%` }} />
                         </div>
-                        <span className="van-log__bar-row-value">{c.total.toFixed(2)}</span>
+                        <span className="van-log__bar-row-value">{formatNumber(c.total, language, TWO_DECIMALS)}</span>
                       </div>
                     );
                   })}
@@ -523,7 +522,7 @@ const VanLog = () => {
                         <div className="van-log__bar-row-track">
                           <div className="van-log__bar-row-fill" style={{ width: `${pct}%` }} />
                         </div>
-                        <span className="van-log__bar-row-value">{c.total.toFixed(2)}</span>
+                        <span className="van-log__bar-row-value">{formatNumber(c.total, language, TWO_DECIMALS)}</span>
                       </div>
                     );
                   })}
@@ -543,13 +542,13 @@ const VanLog = () => {
                       <div
                         key={p.id}
                         className="van-log__fuel-trend-col"
-                        title={`${p.entryDate} · ${p.pricePerLiter.toFixed(3)} ${fuelTrend.currency}/L`}
+                        title={`${formatCalendarDay(p.entryDate, language, SHORT_DAY)} · ${formatNumber(p.pricePerLiter, language, { minimumFractionDigits: 3, maximumFractionDigits: 3 })} ${fuelTrend.currency}/L`}
                       >
-                        <span className="van-log__fuel-trend-value">{p.pricePerLiter.toFixed(2)}</span>
+                        <span className="van-log__fuel-trend-value">{formatNumber(p.pricePerLiter, language, TWO_DECIMALS)}</span>
                         <div className="van-log__fuel-trend-bar-track">
                           <div className="van-log__fuel-trend-bar" style={{ height: `${pct}%` }} />
                         </div>
-                        <span className="van-log__fuel-trend-date">{shortDate(p.entryDate)}</span>
+                        <span className="van-log__fuel-trend-date">{formatCalendarDay(p.entryDate, language, SHORT_DAY)}</span>
                       </div>
                     );
                   })}

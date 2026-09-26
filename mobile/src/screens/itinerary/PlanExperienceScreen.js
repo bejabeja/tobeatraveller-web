@@ -30,12 +30,12 @@ const CATEGORY_EMOJI = {
 
 
 const MOODS = [
-  { key: 'peaceful',  emoji: '🌅', label: 'Peaceful'  },
-  { key: 'thrilling', emoji: '⚡', label: 'Thrilling' },
-  { key: 'social',    emoji: '🤝', label: 'Social'    },
-  { key: 'curious',   emoji: '🔍', label: 'Curious'   },
-  { key: 'grounding', emoji: '🌿', label: 'Grounding' },
-  { key: 'indulgent', emoji: '🍷', label: 'Indulgent' },
+  { key: 'peaceful',  emoji: '🌅' },
+  { key: 'thrilling', emoji: '⚡' },
+  { key: 'social',    emoji: '🤝' },
+  { key: 'curious',   emoji: '🔍' },
+  { key: 'grounding', emoji: '🌿' },
+  { key: 'indulgent', emoji: '🍷' },
 ];
 
 const PlanExperienceScreen = ({ navigation }) => {
@@ -395,7 +395,7 @@ const PlanExperienceScreen = ({ navigation }) => {
                   </TouchableOpacity>
                   <View style={ls.stepperMid}>
                     <Text style={ls.stepperNum}>{days}</Text>
-                    <Text style={ls.stepperUnit}>{days === 1 ? 'day' : 'days'}</Text>
+                    <Text style={ls.stepperUnit}>{days === 1 ? ce('day') : ce('days')}</Text>
                   </View>
                   <TouchableOpacity
                     style={[ls.stepperBtn, days >= 30 && ls.stepperBtnOff]}
@@ -445,7 +445,7 @@ const PlanExperienceScreen = ({ navigation }) => {
                   >
                     <Text style={ls.catCardEmoji}>{CATEGORY_EMOJI[cat.value]}</Text>
                     <Text style={[ls.catCardName, category === cat.value && ls.catCardNameOn]}>
-                      {cat.label}
+                      {t(`tripCategories.${cat.value}`)}
                     </Text>
                     <Text style={ls.catCardDesc} numberOfLines={2}>
                       {ce(`catDetails.${cat.value}`)}
@@ -642,7 +642,7 @@ const PlanExperienceScreen = ({ navigation }) => {
                     onPress={() => setEditDraft(d => ({ ...d, category: cat.value }))}
                   >
                     <Ionicons name={cfg.icon} size={13} color={on ? '#fff' : cfg.color} />
-                    <Text style={[ls.typeChipLabel, on && { color: '#fff', fontWeight: '600' }]}>{cat.label}</Text>
+                    <Text style={[ls.typeChipLabel, on && { color: '#fff', fontWeight: '600' }]}>{t(`placeCategories.${cat.value}`)}</Text>
                   </TouchableOpacity>
                 );
               })}
@@ -762,7 +762,7 @@ const EditableStep = ({ step, isLast, onEdit }) => {
       <View style={[etl.content, isLast && etl.contentLast]}>
         <View style={etl.metaRow}>
           <View style={[etl.badge, { backgroundColor: cfg.color + '22' }]}>
-            <Text style={[etl.badgeText, { color: cfg.color }]}>{cfg.label.toUpperCase()}</Text>
+            <Text style={[etl.badgeText, { color: cfg.color }]}>{t(`placeCategories.${cfg.key}`).toUpperCase()}</Text>
           </View>
           {mood && (
             <View style={etl.moodTag}>

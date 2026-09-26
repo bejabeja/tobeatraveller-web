@@ -17,7 +17,7 @@ import { selectAuthUser } from "../../store/auth/authSelectors";
 import { optimizedCloudinaryUrl } from "../../utils/cloudinaryUrl";
 import { generateAvatar } from "../../utils/constants/constants";
 import { buildProfileJsonLd } from "../../utils/jsonLd";
-import { BADGE_EMOJI, countryFlag, filterItineraries, summarizePassport } from "@tobeatraveller/shared";
+import { BADGE_EMOJI, countryFlag, filterItineraries, formatDate, summarizePassport } from "@tobeatraveller/shared";
 import FollowsModal from "../../components/follows/FollowsModal";
 import PassportShareDialog from "../../components/passport/PassportShareDialog";
 import RecapBanner, { RECAP_SOURCES } from "../../components/recap/RecapBanner";
@@ -249,6 +249,7 @@ const HeaderSection = ({
   user, isMyProfile, isFollowing, followsYou, onFollowToggle,
   onCopyLink, isAuthenticated, isLoadingFollow, onOpenFollows, t,
 }) => {
+  const { i18n } = useTranslation();
   const followBtnRef = useRef(null);
   const wasLoadingRef = useRef(false);
 
@@ -334,23 +335,23 @@ const HeaderSection = ({
             {isMyProfile ? (
               <Link to="/my-itineraries" className="profile__stat">
                 <StatNumber value={user?.totalItineraries} />
-                <span>{t("profile.trips")}</span>
+                <span>{t("profile.tripsStat", { count: user?.totalItineraries ?? 0 })}</span>
               </Link>
             ) : (
               <span className="profile__stat">
                 <StatNumber value={user?.totalItineraries} />
-                <span>{t("profile.trips")}</span>
+                <span>{t("profile.tripsStat", { count: user?.totalItineraries ?? 0 })}</span>
               </span>
             )}
             {isAuthenticated ? (
               <button className="profile__stat profile__stat--btn" onClick={() => onOpenFollows("followers")}>
                 <StatNumber value={user?.followers} />
-                <span>{t("profile.followers")}</span>
+                <span>{t("profile.followersStat", { count: user?.followers ?? 0 })}</span>
               </button>
             ) : (
               <Link to="/login" className="profile__stat">
                 <StatNumber value={user?.followers} />
-                <span>{t("profile.followers")}</span>
+                <span>{t("profile.followersStat", { count: user?.followers ?? 0 })}</span>
               </Link>
             )}
             {isAuthenticated ? (
@@ -400,7 +401,7 @@ const HeaderSection = ({
               <span className="profile__meta-item">
                 <MdOutlineCalendarMonth aria-hidden="true" />
                 <span className="profile__meta-text">
-                  {t("profile.joinedOn", { date: new Date(user.createdAt).toLocaleDateString(undefined, { year: "numeric", month: "long" }) })}
+                  {t("profile.joinedOn", { date: formatDate(user.createdAt, i18n.language, { year: "numeric", month: "long" }) })}
                 </span>
               </span>
             )}

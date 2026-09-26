@@ -94,6 +94,8 @@ export class NotificationsRepository {
             id: row.id,
             type: row.type,
             isRead: row.is_read,
+            lastActivityAt: row.last_activity_at,
+            // English only: kept for app versions from before lastActivityAt.
             postedAgo: timeAgo(row.last_activity_at),
             count: row.actor_ids?.length || 1,
             commentId: row.comment_id,

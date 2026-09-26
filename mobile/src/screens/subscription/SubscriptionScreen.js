@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
   createCheckoutSession, createPortalSession, getMySubscription, PREMIUM_FEATURES, resumeSubscription,
-  selectAuthUser, selectIsAuthenticated, selectMe, setUserInfo,
+  selectAuthUser, selectIsAuthenticated, selectMe, setUserInfo, formatDate,
 } from '@tobeatraveller/shared';
 import { shadow } from '../../utils/styles';
 
@@ -29,7 +29,7 @@ const PLANS = [
 ];
 
 const SubscriptionScreen = ({ navigation }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const dispatch = useDispatch();
   const insets = useSafeAreaInsets();
   const isAuthenticated = useSelector(selectIsAuthenticated);
@@ -148,7 +148,7 @@ const SubscriptionScreen = ({ navigation }) => {
             <Ionicons name="hourglass-outline" size={36} color="#E8743B" style={styles.winBackIcon} />
             <Text style={styles.winBackTitle}>{t('subscription.trialCanceledTitle')}</Text>
             <Text style={styles.winBackDesc}>
-              {t('subscription.trialCanceledDesc', { date: new Date(subscription.currentPeriodEnd).toLocaleDateString() })}
+              {t('subscription.trialCanceledDesc', { date: formatDate(subscription.currentPeriodEnd, i18n.language) })}
             </Text>
             <Text style={styles.winBackReminder}>{t('subscription.trialCanceledReminder')}</Text>
 
@@ -184,9 +184,9 @@ const SubscriptionScreen = ({ navigation }) => {
             <Text style={styles.alreadyPremiumTitle}>{t('subscription.alreadyPremiumTitle')}</Text>
             <Text style={styles.alreadyPremiumDesc}>
               {subscription?.cancelAtPeriodEnd
-                ? t('subscription.canceledDesc', { date: new Date(subscription.currentPeriodEnd).toLocaleDateString() })
+                ? t('subscription.canceledDesc', { date: formatDate(subscription.currentPeriodEnd, i18n.language) })
                 : subscription?.status === 'trialing'
-                  ? t('subscription.trialActiveDesc', { date: new Date(subscription.currentPeriodEnd).toLocaleDateString() })
+                  ? t('subscription.trialActiveDesc', { date: formatDate(subscription.currentPeriodEnd, i18n.language) })
                   : t('subscription.alreadyPremiumDesc')}
             </Text>
 

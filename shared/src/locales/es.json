@@ -400,6 +400,12 @@
     "noPublicTrips": "Todavía no hay viajes públicos.",
     "filterTrips": "Buscar y filtrar →",
     "savedOnlyYou": "Solo los ves tú.",
+    "tripsStat_one": "Viaje",
+    "tripsStat_other": "Viajes",
+    "tripsStat_many": "Viajes",
+    "followersStat_one": "Seguidor",
+    "followersStat_other": "Seguidores",
+    "followersStat_many": "Seguidores",
     "noSavedTrips": "Todavía no hay viajes guardados. ¡Guarda los itinerarios que te gusten!",
     "seeAll": "Ver todos →",
     "unfollowModal": "¿Dejar de seguir?",
@@ -763,7 +769,7 @@
     "referralRewardPrefix": "Tú y",
     "referralRewardMiddle": "y tú",
     "referralRewardSuffix": "habéis ganado 1 mes de Premium",
-    "badgeEarned": "Has conseguido el badge ",
+    "badgeEarned": "Has conseguido el logro ",
     "friendAddedCountry": " ha añadido a su pasaporte ",
     "friendAddedCountryPlural": " han añadido a su pasaporte ",
     "friendEarnedBadge": " ha conseguido el sello ",
@@ -1365,17 +1371,17 @@
   },
   "badges": {
     "explorer": {
-      "name": "Explorer",
+      "name": "Primera ruta",
       "desc": "Publicó su primer viaje",
       "goal": "Publica tu primer viaje"
     },
     "adventurer": {
-      "name": "Adventurer",
+      "name": "Espíritu aventurero",
       "desc": "Ha publicado 5 viajes",
       "goal": "Publica 5 viajes"
     },
     "globetrotter": {
-      "name": "Globetrotter",
+      "name": "Trotamundos",
       "desc": "Ha publicado 10 viajes",
       "goal": "Publica 10 viajes"
     },
@@ -1395,7 +1401,7 @@
       "goal": "Visita 10 países"
     },
     "countries_25": {
-      "name": "Ciudadano del mundo",
+      "name": "Sin fronteras",
       "desc": "25 países en su pasaporte",
       "goal": "Visita 25 países"
     },
@@ -1410,12 +1416,12 @@
       "goal": "Registra tu primer gasto"
     },
     "van_log_50": {
-      "name": "Contable de ruta",
+      "name": "Cuentas de ruta",
       "desc": "Ha registrado 50 gastos",
       "goal": "Registra 50 gastos"
     },
     "van_log_200": {
-      "name": "Maestro de la furgo",
+      "name": "Leyenda de la furgo",
       "desc": "Ha registrado 200 gastos",
       "goal": "Registra 200 gastos"
     },
@@ -1640,5 +1646,53 @@
     "empty": "No registraste actividad en {{year}}. ¡A por el año que viene!",
     "notAvailable": "El resumen del año estará disponible en diciembre.",
     "loadError": "No se pudo cargar tu resumen del año."
+  },
+  "tripCategories": {
+    "adventure": "Aventura",
+    "relax": "Relax",
+    "culture": "Cultura",
+    "romantic": "Romántico",
+    "roadtrip": "Road trip",
+    "family": "Familia",
+    "backpacking": "Mochilero",
+    "wellness": "Bienestar",
+    "gastronomic": "Gastronomía",
+    "party": "Fiesta",
+    "sport": "Deporte",
+    "other": "Otro"
+  },
+  "placeCategories": {
+    "transport": "Transporte",
+    "flight": "Vuelo",
+    "accommodation": "Alojamiento",
+    "activity": "Actividad",
+    "local_tip": "Consejo local",
+    "nature": "Naturaleza",
+    "beach": "Playa",
+    "city": "Ciudad",
+    "park": "Parque",
+    "monument": "Monumento",
+    "camping": "Camping",
+    "island": "Isla",
+    "sport": "Deporte",
+    "vineyard": "Viñedo",
+    "restaurant": "Restaurante",
+    "cafe": "Cafetería",
+    "hotel": "Hotel",
+    "other": "Otro"
+  },
+  "time": {
+    "justNow": "ahora mismo",
+    "minutesAgo": "hace {{count}} min",
+    "hoursAgo": "hace {{count}} h",
+    "daysAgo_one": "hace {{count}} día",
+    "daysAgo_other": "hace {{count}} días",
+    "daysAgo_many": "hace {{count}} días",
+    "monthsAgo_one": "hace {{count}} mes",
+    "monthsAgo_other": "hace {{count}} meses",
+    "monthsAgo_many": "hace {{count}} meses",
+    "yearsAgo_one": "hace {{count}} año",
+    "yearsAgo_other": "hace {{count}} años",
+    "yearsAgo_many": "hace {{count}} años"
   }
 }

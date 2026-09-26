@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { BADGE_EMOJI, countryFlag, countryName, passportSharePath } from "@tobeatraveller/shared";
+import { BADGE_EMOJI, countryFlag, countryName, formatTimeAgo, passportSharePath } from "@tobeatraveller/shared";
 import { recapPath, RECAP_SOURCES } from "../recap/RecapBanner";
 import { optimizedCloudinaryUrl } from "../../utils/cloudinaryUrl";
 import "./NotificationItem.scss";
@@ -59,7 +59,7 @@ const NotificationItem = ({ notification: n, onClick }) => {
       />
       <div className="notif-item__body">
         <p className="notif-item__text">{label}</p>
-        <span className="notif-item__time">{n.postedAgo}</span>
+        <span className="notif-item__time">{n.lastActivityAt ? formatTimeAgo(t, n.lastActivityAt) : n.postedAgo}</span>
       </div>
       {!n.isRead && <span className="notif-item__dot" aria-hidden="true" />}
     </Link>

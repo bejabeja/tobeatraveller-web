@@ -1,24 +1,29 @@
-// Visual config for each place/experience type used in timeline and form
-export const STEP_CONFIG = {
-  transport:     { icon: 'train-outline',      color: '#1A535C', label: 'Transport'    },
-  flight:        { icon: 'airplane-outline',   color: '#1A535C', label: 'Flight'       },
-  accommodation: { icon: 'bed-outline',        color: '#7C3AED', label: 'Stay'         },
-  activity:      { icon: 'flash-outline',      color: '#E8743B', label: 'Activity'     },
-  local_tip:     { icon: 'bulb-outline',       color: '#F59E0B', label: 'Local tip'    },
-  nature:        { icon: 'leaf-outline',       color: '#16A34A', label: 'Nature'       },
-  beach:         { icon: 'umbrella-outline',   color: '#0EA5E9', label: 'Beach'        },
-  city:          { icon: 'business-outline',   color: '#6B7280', label: 'City'         },
-  monument:      { icon: 'library-outline',    color: '#6B7280', label: 'Monument'     },
-  park:          { icon: 'leaf-outline',       color: '#16A34A', label: 'Park'         },
-  camping:       { icon: 'bonfire-outline',    color: '#B45309', label: 'Camping'      },
-  island:        { icon: 'water-outline',      color: '#0EA5E9', label: 'Island'       },
-  sport:         { icon: 'football-outline',   color: '#E8743B', label: 'Sport'        },
-  vineyard:      { icon: 'wine-outline',       color: '#7C3AED', label: 'Vineyard'     },
-  restaurant:    { icon: 'restaurant-outline', color: '#E8743B', label: 'Food'         },
-  cafe:          { icon: 'cafe-outline',       color: '#B45309', label: 'Café'         },
-  hotel:         { icon: 'bed-outline',        color: '#7C3AED', label: 'Hotel'        },
-  other:         { icon: 'location-outline',   color: '#9CA3AF', label: 'Other'        },
+// Visual config for each place/experience type used in timeline and form,
+// named through placeCategories.<key> in the locales.
+const STEP_TYPES = {
+  transport:     { icon: 'train-outline',      color: '#1A535C' },
+  flight:        { icon: 'airplane-outline',   color: '#1A535C' },
+  accommodation: { icon: 'bed-outline',        color: '#7C3AED' },
+  activity:      { icon: 'flash-outline',      color: '#E8743B' },
+  local_tip:     { icon: 'bulb-outline',       color: '#F59E0B' },
+  nature:        { icon: 'leaf-outline',       color: '#16A34A' },
+  beach:         { icon: 'umbrella-outline',   color: '#0EA5E9' },
+  city:          { icon: 'business-outline',   color: '#6B7280' },
+  monument:      { icon: 'library-outline',    color: '#6B7280' },
+  park:          { icon: 'leaf-outline',       color: '#16A34A' },
+  camping:       { icon: 'bonfire-outline',    color: '#B45309' },
+  island:        { icon: 'water-outline',      color: '#0EA5E9' },
+  sport:         { icon: 'football-outline',   color: '#E8743B' },
+  vineyard:      { icon: 'wine-outline',       color: '#7C3AED' },
+  restaurant:    { icon: 'restaurant-outline', color: '#E8743B' },
+  cafe:          { icon: 'cafe-outline',       color: '#B45309' },
+  hotel:         { icon: 'bed-outline',        color: '#7C3AED' },
+  other:         { icon: 'location-outline',   color: '#9CA3AF' },
 };
+
+export const STEP_CONFIG = Object.fromEntries(
+  Object.entries(STEP_TYPES).map(([key, config]) => [key, { ...config, key }]),
+);
 
 export const getStepConfig = (category) =>
   STEP_CONFIG[category] ?? STEP_CONFIG.other;

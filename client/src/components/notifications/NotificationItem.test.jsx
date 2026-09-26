@@ -22,6 +22,15 @@ describe("NotificationItem", () => {
     expect(screen.getByRole("link")).toHaveAttribute("href", "/profile/user-1/passport?share=moment&country=IT");
   });
 
+  // Regression: the API wrote "19 hours ago" in English for everyone.
+  it("says how long ago it was in the app's language, from the moment the API sends", () => {
+    const threeHoursAgo = new Date(Date.now() - 3 * 3600 * 1000).toISOString();
+    renderItem(notification({ type: "follow", lastActivityAt: threeHoursAgo, postedAgo: "3 hours ago" }));
+
+    expect(screen.getByText("time.hoursAgo")).toBeInTheDocument();
+    expect(screen.queryByText("3 hours ago")).not.toBeInTheDocument();
+  });
+
   // Regression: the prefix ran into the name ("You and@jane").
   it("keeps a space between the start of the referral reward and the friend's name", () => {
     const { container } = renderItem(notification({ type: "referral_reward" }));

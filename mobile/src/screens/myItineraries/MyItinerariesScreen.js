@@ -122,7 +122,7 @@ const MyItinerariesScreen = ({ navigation }) => {
             >
               <Text style={styles.chipEmoji}>{CATEGORY_EMOJI[cat.value] || '📍'}</Text>
               <Text style={[styles.chipLabel, category === cat.value && styles.chipLabelActive]}>
-                {cat.label}
+                {t(`tripCategories.${cat.value}`)}
               </Text>
             </TouchableOpacity>
           ))}

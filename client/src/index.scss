@@ -35,8 +35,14 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  width: 100%;
   /* outline: 1px solid rgba(255, 0, 0, 0.2); */
+}
+
+// Everything but the shapes inside an SVG: there `width` is the shape's own
+// geometry (a <rect>'s width), so 100% stretched every icon's rectangles to
+// the whole icon. :where() keeps this as weak as the `*` rule it came from.
+:where(:not(svg *)) {
+  width: 100%;
 }
 
 html {

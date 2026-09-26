@@ -2,6 +2,7 @@ import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { FaRegComment } from "react-icons/fa6";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { tripCategoryLabelKey } from "@tobeatraveller/shared";
 import { useLike } from "../../../hooks/useLike";
 import { useScrollReveal } from "../../../hooks/useScrollReveal";
 import { optimizedCloudinaryUrl } from "../../../utils/cloudinaryUrl";
@@ -26,6 +27,7 @@ const ItineraryCard = ({ itinerary, user: userProp }) => {
   const { username = "Anonymous", avatarUrl = "", role } = user;
 
   const { isLiked, likesCount, handleToggleLike } = useLike(id, initialLikesCount);
+  const categoryKey = tripCategoryLabelKey(category);
   const cardRef = useScrollReveal("itinerary-card");
 
   return (
@@ -35,8 +37,8 @@ const ItineraryCard = ({ itinerary, user: userProp }) => {
           {isPublic === false && (
             <span className="itinerary-card__visibility">🔒 {t("myItineraries.private")}</span>
           )}
-          {category && (
-            <span className="itinerary-card__category">{category}</span>
+          {categoryKey && (
+            <span className="itinerary-card__category">{t(categoryKey)}</span>
           )}
           <img
             src={optimizedCloudinaryUrl(photoUrl, { width: 480 })}
@@ -60,7 +62,7 @@ const ItineraryCard = ({ itinerary, user: userProp }) => {
         <div className="itinerary-card__info">
           {title && <h3 className="itinerary-card__title">{title}</h3>}
           <p className="itinerary-card__location">{location?.name}</p>
-          <span className="itinerary-card__days">{tripTotalDays} days</span>
+          <span className="itinerary-card__days">{t("itineraryForm.dayCount", { count: tripTotalDays })}</span>
         </div>
       </Link>
 

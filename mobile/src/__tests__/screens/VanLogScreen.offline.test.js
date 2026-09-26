@@ -16,7 +16,7 @@ jest.mock('react-redux', () => ({
 }));
 
 jest.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (key) => key }),
+  useTranslation: () => ({ t: (key) => key, i18n: { language: 'es' } }),
 }));
 
 // Importing the real named pieces from their own source files (rather than
@@ -28,6 +28,7 @@ jest.mock('@tobeatraveller/shared', () => {
   const constants = jest.requireActual('../../../../shared/src/utils/constants/constants.js');
   const parseError = jest.requireActual('../../../../shared/src/utils/parseError.js');
   return {
+    ...jest.requireActual('../../../../shared/src/utils/formatLocale.js'),
     groupVanLogEntriesByMonth: vanLogStats.groupVanLogEntriesByMonth,
     getVanLogFuelPriceTrend: vanLogStats.getVanLogFuelPriceTrend,
     vanLogCategories: constants.vanLogCategories,

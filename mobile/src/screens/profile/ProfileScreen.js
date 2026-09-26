@@ -12,7 +12,7 @@ import {
   BADGE_EMOJI, countryFlag, filterItineraries, summarizePassport,
   followUser, getItinerariesByUserId, getUserById, getUserFavorites, logoutUser,
   selectAuthUser, selectIsAuthenticated, selectMe, selectMyItineraries,
-  PASSPORT_SHARE_SOURCES, RECAP_SOURCES, setUserInfo, unfollowUser,
+  PASSPORT_SHARE_SOURCES, RECAP_SOURCES, setUserInfo, unfollowUser, formatDate,
 } from '@tobeatraveller/shared';
 import ItineraryCard from '../../components/ItineraryCard';
 import { ItineraryCardSkeleton, ProfileSkeleton } from '../../components/Skeleton';
@@ -34,7 +34,7 @@ const COMPLETENESS_FIELDS = [
 ];
 
 const ProfileScreen = ({ route, navigation }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const insets = useSafeAreaInsets();
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(selectIsAuthenticated);
@@ -282,7 +282,7 @@ const ProfileScreen = ({ route, navigation }) => {
               onPress={() => isOwnProfile && navigation.navigate('MyItineraries')}
             >
               <Text style={styles.statNumber}>{user?.totalItineraries ?? 0}</Text>
-              <Text style={styles.statLabel}>{t('profile.trips')}</Text>
+              <Text style={styles.statLabel}>{t('profile.tripsStat', { count: user?.totalItineraries ?? 0 })}</Text>
             </TouchableOpacity>
             <View style={styles.statDivider} />
             <TouchableOpacity
@@ -290,7 +290,7 @@ const ProfileScreen = ({ route, navigation }) => {
               onPress={() => navigation.navigate('Follows', { userId: user?.id, type: 'followers' })}
             >
               <Text style={styles.statNumber}>{user?.followers ?? 0}</Text>
-              <Text style={styles.statLabel}>{t('profile.followers')}</Text>
+              <Text style={styles.statLabel}>{t('profile.followersStat', { count: user?.followers ?? 0 })}</Text>
             </TouchableOpacity>
             <View style={styles.statDivider} />
             <TouchableOpacity
@@ -320,7 +320,7 @@ const ProfileScreen = ({ route, navigation }) => {
             )}
             {user?.createdAt && (
               <Text style={styles.metaItem}>
-                📅 {t('profile.joinedOn', { date: new Date(user.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long' }) })}
+                📅 {t('profile.joinedOn', { date: formatDate(user.createdAt, i18n.language, { year: 'numeric', month: 'long' }) })}
               </Text>
             )}
           </View>

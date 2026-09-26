@@ -29,6 +29,8 @@ export class Comment {
             content: this.content,
             user: this.user,
             itineraryId: this.itineraryId,
+            createdAt: this.createdAt,
+            // English only: kept for app versions from before createdAt.
             postedAgo: timeAgo(this.createdAt)
         };
     }

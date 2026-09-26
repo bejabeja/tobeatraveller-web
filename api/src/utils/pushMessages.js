@@ -59,8 +59,8 @@ const PUSH_MESSAGES = {
             body: `${actorUsername} y tú habéis ganado 1 mes de Premium`,
         }),
         badge_earned: () => ({
-            title: 'Nuevo badge',
-            body: 'Has conseguido un badge nuevo. Tócalo para verlo y compartirlo.',
+            title: 'Nuevo logro',
+            body: 'Has conseguido un logro nuevo. Tócalo para verlo y compartirlo.',
         }),
         recap_ready: () => ({
             title: 'Tu año en ruta ya está listo',

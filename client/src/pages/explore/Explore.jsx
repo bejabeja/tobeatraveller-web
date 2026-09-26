@@ -21,12 +21,13 @@ import {
   selectExplorePage,
   selectExploreTotalItems,
   selectExploreTotalPages,
+  formatNumber,
 } from "@tobeatraveller/shared";
 
 import "./Explore.scss";
 
 const Explore = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const loadMoreRef = useRef(null);
@@ -110,7 +111,7 @@ const Explore = () => {
             <div className="explore__results-title-row">
               <h1 className="explore__results-title">{t("explore.itineraries")}</h1>
               {!loading && totalItems > 0 && (
-                <span className="explore__results-count">{totalItems.toLocaleString()} {t("explore.found")}</span>
+                <span className="explore__results-count">{formatNumber(totalItems, i18n.language)} {t("explore.found")}</span>
               )}
             </div>
             <div className="explore__sort">
@@ -134,7 +135,7 @@ const Explore = () => {
               )}
               {filters.category && (
                 <span className="explore__filter-tag explore__filter-tag--category">
-                  {filters.category}
+                  {t(`tripCategories.${filters.category}`)}
                 </span>
               )}
               {(filters.budgetMin || filters.budgetMax) && (

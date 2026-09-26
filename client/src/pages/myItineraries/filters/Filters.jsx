@@ -99,7 +99,7 @@ const Filters = ({ onChange, defaultValues = {} }) => {
             onClick={() => toggleCategory(cat.value)}
             title={t(`createExperience.catDetails.${cat.value}`)}
           >
-            {categoryEmojis[cat.value]} {cat.label}
+            {categoryEmojis[cat.value]} {t(`tripCategories.${cat.value}`)}
           </button>
         ))}
       </div>

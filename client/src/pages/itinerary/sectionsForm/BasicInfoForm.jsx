@@ -77,7 +77,7 @@ const TripCategoryForm = ({ control }) => {
                     onClick={() => field.onChange(type.value)}
                   >
                     <Icon />
-                    <span>{type.label}</span>
+                    <span>{t(`tripCategories.${type.value}`)}</span>
                   </button>
                 );
               })}

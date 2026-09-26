@@ -10,7 +10,7 @@ import {
   BADGE_EMOJI, PASSPORT_SHARE_MOMENT, countryFlag, countryName,
   initNotifications, loadMoreNotifications, markAllNotificationsRead,
   selectNotifications, selectNotificationsError, selectNotificationsLoading,
-  RECAP_SOURCES, selectNotificationsLoadingMore, selectNotificationsPage, selectNotificationsTotalPages, selectUnreadCount,
+  RECAP_SOURCES, selectNotificationsLoadingMore, selectNotificationsPage, selectNotificationsTotalPages, selectUnreadCount, formatTimeAgo,
 } from '@tobeatraveller/shared';
 import { UserRowSkeleton } from '../../components/Skeleton';
 import { shadow } from '../../utils/styles';
@@ -142,7 +142,7 @@ const NotificationsScreen = ({ navigation }) => {
                     </>
                   )}
                 </Text>
-                <Text style={styles.time}>{n.postedAgo}</Text>
+                <Text style={styles.time}>{n.lastActivityAt ? formatTimeAgo(t, n.lastActivityAt) : n.postedAgo}</Text>
               </View>
               {!n.isRead && <View style={styles.dot} />}
             </TouchableOpacity>

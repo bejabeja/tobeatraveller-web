@@ -1,6 +1,8 @@
+import { formatCalendarDay } from './formatLocale.js';
+
 // Entries come back newest-first from the API, so grouping preserves that
-// order both across months and within a month.
-export const groupVanLogEntriesByMonth = (entries) => {
+// order both across months and within a month. Month names are in `language`.
+export const groupVanLogEntriesByMonth = (entries, language) => {
     const groups = [];
     const byKey = new Map();
 
@@ -11,8 +13,7 @@ export const groupVanLogEntriesByMonth = (entries) => {
         if (!group) {
             group = {
                 key,
-                label: new Date(Number(year), Number(month) - 1, 1)
-                    .toLocaleDateString(undefined, { year: 'numeric', month: 'long' }),
+                label: formatCalendarDay(`${year}-${month}-01`, language, { year: 'numeric', month: 'long' }),
                 total: 0,
                 currency: undefined,
                 entries: [],

@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next";
 import { selectAuthUser, selectIsAuthenticated } from "../../store/auth/authSelectors";
 import { selectMe } from "../../store/user/userInfoSelectors";
 import { setUserInfo } from "../../store/user/userInfoActions";
-import { PREMIUM_FEATURES } from "@tobeatraveller/shared";
+import { formatDate, PREMIUM_FEATURES } from "@tobeatraveller/shared";
 import { createCheckoutSession, createPortalSession, getMySubscription, resumeSubscription } from "../../services/subscription";
 import { getCategoryIcon } from "../../assets/icons";
 import { preloadImg } from "../../utils/preloadImg";
@@ -61,7 +61,7 @@ const PLANS = [
 ];
 
 const Subscription = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const authUser = useSelector(selectAuthUser);
@@ -221,7 +221,7 @@ const Subscription = () => {
         <div className="subscription__win-back">
           <IoHourglassOutline className="subscription__win-back-icon" aria-hidden="true" />
           <h2>{t("subscription.trialCanceledTitle")}</h2>
-          <p>{t("subscription.trialCanceledDesc", { date: new Date(subscription.currentPeriodEnd).toLocaleDateString() })}</p>
+          <p>{t("subscription.trialCanceledDesc", { date: formatDate(subscription.currentPeriodEnd, i18n.language) })}</p>
           <p className="subscription__win-back-reminder">{t("subscription.trialCanceledReminder")}</p>
 
           <button
@@ -254,9 +254,9 @@ const Subscription = () => {
           <h2>{t("subscription.alreadyPremiumTitle")}</h2>
 
           {subscription?.cancelAtPeriodEnd ? (
-            <p>{t("subscription.canceledDesc", { date: new Date(subscription.currentPeriodEnd).toLocaleDateString() })}</p>
+            <p>{t("subscription.canceledDesc", { date: formatDate(subscription.currentPeriodEnd, i18n.language) })}</p>
           ) : subscription?.status === "trialing" ? (
-            <p>{t("subscription.trialActiveDesc", { date: new Date(subscription.currentPeriodEnd).toLocaleDateString() })}</p>
+            <p>{t("subscription.trialActiveDesc", { date: formatDate(subscription.currentPeriodEnd, i18n.language) })}</p>
           ) : (
             <p>{t("subscription.alreadyPremiumDesc")}</p>
           )}

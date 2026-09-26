@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "react-router-dom";
-import { COMMENT_HIGHLIGHT_DURATION_MS, MAX_COMMENT_LENGTH, updateCommentsCount } from "@tobeatraveller/shared";
+import { COMMENT_HIGHLIGHT_DURATION_MS, formatTimeAgo, MAX_COMMENT_LENGTH, updateCommentsCount } from "@tobeatraveller/shared";
 import {
   addComment,
   deleteComment,
@@ -105,7 +105,9 @@ const Comments = ({ itineraryId, isAuthenticated }) => {
               <div className="comment__body">
                 <strong>@{comment.user?.username}</strong>
                 <p>{comment.content}</p>
-                {comment.postedAgo && <span className="comment__timestamp">{comment.postedAgo}</span>}
+                {(comment.createdAt || comment.postedAgo) && (
+                  <span className="comment__timestamp">{comment.createdAt ? formatTimeAgo(t, comment.createdAt) : comment.postedAgo}</span>
+                )}
                 {isAuthenticated && comment.user?.id === userMe?.id && (
                   <div>
                     <button

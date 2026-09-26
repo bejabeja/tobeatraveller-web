@@ -41,8 +41,12 @@ import { selectMe } from "../../store/user/userInfoSelectors.js";
 import { optimizedCloudinaryUrl } from "../../utils/cloudinaryUrl.js";
 import { getCurrencySymbol } from "../../utils/constants/currencies.js";
 import { buildItineraryJsonLd } from "../../utils/jsonLd.js";
+import { formatNumber, tripCategoryLabelKey } from "@tobeatraveller/shared";
 import "./Itinerary.scss";
 import Error from "../error/Error.jsx";
+
+// "Other" says nothing about the trip, so it gets no badge.
+const OTHER_CATEGORY_KEY = "tripCategories.other";
 
 const Itinerary = () => {
   const { t } = useTranslation();
@@ -257,6 +261,8 @@ const Hero = ({
     }
   };
 
+  const categoryKey = tripCategoryLabelKey(itinerary?.category);
+
   return (
     <div className="itinerary__hero">
       <HeroCarousel
@@ -274,8 +280,8 @@ const Hero = ({
       </div>
 
       <div className="itinerary__hero-content">
-        {itinerary.category !== "other" && (
-          <span className="itinerary__badge">{itinerary.category}</span>
+        {categoryKey && categoryKey !== OTHER_CATEGORY_KEY && (
+          <span className="itinerary__badge">{t(categoryKey)}</span>
         )}
         {isMyItinerary && itinerary.isPublic === false && (
           <span className="itinerary__badge itinerary__badge--private">🔒 {t("itinerary.privateOwnerBadge")}</span>
@@ -347,21 +353,20 @@ const Hero = ({
   );
 };
 
-const formatBudget = (budget) => {
+const formatBudget = (budget, language) => {
   const n = parseFloat(budget);
   if (isNaN(n)) return budget;
-  return n % 1 === 0
-    ? n.toLocaleString()
-    : n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+  return formatNumber(n, language, { maximumFractionDigits: 2 });
 };
 
 const Stats = ({ itinerary, hasDescription, t }) => {
+  const { i18n } = useTranslation();
   const currencySymbol = getCurrencySymbol(itinerary.currency);
   const hasBudget = itinerary.budget !== null && itinerary.budget !== undefined && itinerary.budget !== "";
   const budget = parseFloat(itinerary.budget);
   const perPerson =
     hasBudget && itinerary.numberOfPeople > 1 && !isNaN(budget)
-      ? formatBudget(budget / itinerary.numberOfPeople)
+      ? formatBudget(budget / itinerary.numberOfPeople, i18n.language)
       : null;
   return (
     <div className={`itinerary__stats${hasDescription ? " itinerary__stats--separated" : ""}`}>
@@ -385,7 +390,7 @@ const Stats = ({ itinerary, hasDescription, t }) => {
         <span className="itinerary__stat-value">
           {hasBudget ? (
             <>
-              {formatBudget(itinerary.budget)}{currencySymbol ? "" : ` ${itinerary.currency}`}
+              {formatBudget(itinerary.budget, i18n.language)}{currencySymbol ? "" : ` ${itinerary.currency}`}
               {perPerson && (
                 <span className="itinerary__stat-subvalue">
                   {` · ${currencySymbol || ""}${perPerson}${t("itinerary.perPerson")}`}

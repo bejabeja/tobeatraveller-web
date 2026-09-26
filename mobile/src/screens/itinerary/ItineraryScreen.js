@@ -21,18 +21,21 @@ import {
   deleteItinerary, getCommentsByItineraryId, getCurrencySymbol,
   getItineraryById, getUserById, removeFavorite, toggleLike,
   selectIsAuthenticated, selectMe, MAX_COMMENT_LENGTH, updateCommentsCount,
-  COMMENT_HIGHLIGHT_DURATION_MS,
+  COMMENT_HIGHLIGHT_DURATION_MS, formatNumber, formatTimeAgo, tripCategoryLabelKey,
 } from '@tobeatraveller/shared';
 
-const formatBudget = (budget) => {
+const formatBudget = (budget, language) => {
   const n = parseFloat(budget);
   if (isNaN(n)) return budget;
-  return n % 1 === 0 ? n.toLocaleString() : n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+  return formatNumber(n, language, { maximumFractionDigits: 2 });
 };
+
+// "Other" says nothing about the trip, so it gets no badge.
+const OTHER_CATEGORY_KEY = 'tripCategories.other';
 
 const ItineraryScreen = ({ route, navigation }) => {
   const { id, commentId: targetCommentId } = route.params;
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const me = useSelector(selectMe);
@@ -113,7 +116,7 @@ const ItineraryScreen = ({ route, navigation }) => {
   const hasBudget = itinerary.budget !== null && itinerary.budget !== undefined && itinerary.budget !== '';
   const budget = parseFloat(itinerary.budget);
   const perPerson = hasBudget && itinerary.numberOfPeople > 1 && !isNaN(budget)
-    ? formatBudget(budget / itinerary.numberOfPeople)
+    ? formatBudget(budget / itinerary.numberOfPeople, i18n.language)
     : null;
 
   const handleShare = async () => {
@@ -214,6 +217,8 @@ const ItineraryScreen = ({ route, navigation }) => {
     ]);
   };
 
+  const categoryKey = tripCategoryLabelKey(itinerary?.category);
+
   return (
     <ScrollView ref={scrollViewRef} style={styles.container} showsVerticalScrollIndicator={false}>
       {/* Hero */}
@@ -265,9 +270,9 @@ const ItineraryScreen = ({ route, navigation }) => {
         </View>
 
         <View style={styles.heroContent}>
-          {itinerary.category && itinerary.category !== 'other' && (
+          {categoryKey && categoryKey !== OTHER_CATEGORY_KEY && (
             <View style={styles.badge}>
-              <Text style={styles.badgeText}>{itinerary.category}</Text>
+              <Text style={styles.badgeText}>{t(categoryKey)}</Text>
             </View>
           )}
           {isMyItinerary && itinerary.isPublic === false && (
@@ -319,7 +324,7 @@ const ItineraryScreen = ({ route, navigation }) => {
           <StatCard
             icon="💰"
             label={t('itinerary.budget')}
-            value={hasBudget ? `${formatBudget(itinerary.budget)} ${currencySymbol || itinerary.currency}` : t('itinerary.budgetNotSpecified')}
+            value={hasBudget ? `${formatBudget(itinerary.budget, i18n.language)} ${currencySymbol || itinerary.currency}` : t('itinerary.budgetNotSpecified')}
             subvalue={perPerson ? `${currencySymbol || ''}${perPerson}${t('itinerary.perPerson')}` : null}
           />
           <StatCard
@@ -444,7 +449,9 @@ const ItineraryScreen = ({ route, navigation }) => {
               <View style={styles.commentBody}>
                 <View style={styles.commentHeader}>
                   <Text style={styles.commentAuthor}>@{comment.user?.username}</Text>
-                  {comment.postedAgo && <Text style={styles.commentTime}>{comment.postedAgo}</Text>}
+                  {(comment.createdAt || comment.postedAgo) && (
+                    <Text style={styles.commentTime}>{comment.createdAt ? formatTimeAgo(t, comment.createdAt) : comment.postedAgo}</Text>
+                  )}
                   {me?.id === comment.user?.id && (
                     <TouchableOpacity onPress={() => handleDeleteComment(comment.id)} style={styles.commentDeleteBtn}>
                       <Text style={styles.commentDeleteText}>✕</Text>
@@ -463,6 +470,7 @@ const ItineraryScreen = ({ route, navigation }) => {
 
 // ─── Timeline step ────────────────────────────────────────────────────────────
 const TimelineStep = ({ place, isLast }) => {
+  const { t } = useTranslation();
   const cfg = getStepConfig(place.category);
   const dimColor = cfg.color + '25';
   return (
@@ -475,7 +483,7 @@ const TimelineStep = ({ place, isLast }) => {
       </View>
       <View style={[tl.content, isLast && tl.contentLast]}>
         <View style={[tl.badge, { backgroundColor: dimColor }]}>
-          <Text style={[tl.badgeText, { color: cfg.color }]}>{cfg.label.toUpperCase()}</Text>
+          <Text style={[tl.badgeText, { color: cfg.color }]}>{t(`placeCategories.${cfg.key}`).toUpperCase()}</Text>
         </View>
         <Text style={tl.name}>{place.name}</Text>
         {place.description ? <Text style={tl.desc}>{place.description}</Text> : null}
