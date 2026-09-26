@@ -45,32 +45,41 @@ const MomentShareDialog = ({ moment, owner, isOpen, onClose, onShareWholePasspor
           <button className="modal__close" onClick={onClose} aria-label={t("common.cancel")}>✕</button>
         </div>
 
-        <div className="passport-share__body">
-          {loading && !previewUrl && <div className="passport-share__skeleton" />}
-          {error && <p className="error-message">{t("passport.shareError")}</p>}
-          {previewUrl && <img className="passport-share__preview" src={previewUrl} alt={t("passport.momentShareTitle")} />}
-          {moment.isPrivate && (
-            <p className="passport-share__private" role="status">
-              <span aria-hidden="true">🔒</span>
-              {moment.kind === MOMENT_KINDS.COUNTRY ? t("passport.momentPrivateCountry") : t("passport.momentPrivateBadge")}
-            </p>
-          )}
-          {/* Only when the link really carries their code: otherwise the promise would be false. */}
-          {referralCode && <p className="passport-share__reward">{t("passport.shareReward")}</p>}
-          <button type="button" className="passport-share__switch" onClick={onShareWholePassport}>
-            {t("passport.momentFullPassport")}
-          </button>
+        <div className="passport-share__layout">
+          <div className="passport-share__media">
+            {loading && !previewUrl && <div className="passport-share__skeleton" />}
+            {error && <p className="error-message">{t("passport.shareError")}</p>}
+            {previewUrl && <img className="passport-share__preview" src={previewUrl} alt={t("passport.momentShareTitle")} />}
+          </div>
+          <div className="passport-share__side">
+            <div className="passport-share__section">
+              {moment.isPrivate && (
+                <p className="passport-share__private" role="status">
+                  <span aria-hidden="true">🔒</span>
+                  {moment.kind === MOMENT_KINDS.COUNTRY ? t("passport.momentPrivateCountry") : t("passport.momentPrivateBadge")}
+                </p>
+              )}
+              <button type="button" className="passport-share__switch" onClick={onShareWholePassport}>
+                {t("passport.momentFullPassport")}
+              </button>
+            </div>
+            {/* Only when the link really carries their code: otherwise the promise would be false. */}
+            {referralCode && (
+              <div className="passport-share__section passport-share__sharing">
+                <p className="passport-share__reward">{t("passport.shareReward")}</p>
+              </div>
+            )}
+            <ShareImageActions
+              blob={blob}
+              previewUrl={previewUrl}
+              url={url}
+              fileName={SHARE_FILE_NAME}
+              shareText={shareText}
+              loading={loading}
+              onShared={(method) => trackEvent(ANALYTICS_EVENTS.PASSPORT_SHARED, { method, ...trackingProps })}
+            />
+          </div>
         </div>
-
-        <ShareImageActions
-          blob={blob}
-          previewUrl={previewUrl}
-          url={url}
-          fileName={SHARE_FILE_NAME}
-          shareText={shareText}
-          loading={loading}
-          onShared={(method) => trackEvent(ANALYTICS_EVENTS.PASSPORT_SHARED, { method, ...trackingProps })}
-        />
       </div>
     </div>
   );

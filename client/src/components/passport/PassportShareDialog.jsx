@@ -21,7 +21,7 @@ const PassportShareDialog = ({
   const { t } = useTranslation();
   const [includeAchievements, setIncludeAchievements] = useState(false);
   const [includePrivate, setIncludePrivate] = useState(false);
-  const { blob, previewUrl, summary, url, referralCode, loading, error } = usePassportShareImage(
+  const { blob, previewUrl, summary, updating, url, referralCode, loading, error } = usePassportShareImage(
     userId, isOpen, { includePrivate, includeAchievements },
   );
 
@@ -63,48 +63,66 @@ const PassportShareDialog = ({
           <button className="modal__close" onClick={onClose} aria-label={t("common.cancel")}>✕</button>
         </div>
 
-        <div className="passport-share__body">
-          {loading && !previewUrl && <div className="passport-share__skeleton" />}
-          {error && <p className="error-message">{t("passport.shareError")}</p>}
-          {previewUrl && <img className="passport-share__preview" src={previewUrl} alt={t("passport.shareTitle")} />}
-          <label className="passport-share__toggle">
-            <input
-              type="checkbox"
-              checked={summary?.showAchievements ?? includeAchievements}
-              disabled={Boolean(summary?.achievementsForced)}
-              onChange={(event) => setIncludeAchievements(event.target.checked)}
+        <div className="passport-share__layout">
+          <div className="passport-share__media" aria-busy={updating}>
+            {loading && !previewUrl && <div className="passport-share__skeleton" />}
+            {error && <p className="error-message">{t("passport.shareError")}</p>}
+            {previewUrl && (
+              <img
+                className={`passport-share__preview${updating ? " passport-share__preview--updating" : ""}`}
+                src={previewUrl}
+                alt={t("passport.shareTitle")}
+              />
+            )}
+          </div>
+          <div className="passport-share__side">
+            <section className="passport-share__section" aria-labelledby="passport-share-contents">
+              <h3 id="passport-share-contents" className="passport-share__section-title">{t("passport.shareContentsTitle")}</h3>
+              {/* Without any achievement it would only add an empty panel. */}
+              {summary?.earnedCount > 0 && (
+                <label className="passport-share__toggle">
+                  <input
+                    type="checkbox"
+                    checked={includeAchievements || summary.achievementsForced}
+                    disabled={summary.achievementsForced}
+                    onChange={(event) => setIncludeAchievements(event.target.checked)}
+                  />
+                  {t("passport.shareIncludeAchievements")}
+                </label>
+              )}
+              <label className="passport-share__toggle">
+                <input
+                  type="checkbox"
+                  checked={includePrivate}
+                  onChange={(event) => setIncludePrivate(event.target.checked)}
+                />
+                {t("passport.shareIncludePrivate")}
+              </label>
+              {includePrivate ? (
+                <p className="passport-share__private" role="status">
+                  <span aria-hidden="true">🔒</span>
+                  {t("passport.shareIncludesPrivate")}
+                </p>
+              ) : (
+                <p className="passport-share__hint">{t("passport.sharePublicOnly")}</p>
+              )}
+            </section>
+            <section className="passport-share__section passport-share__sharing" aria-labelledby="passport-share-how">
+              <h3 id="passport-share-how" className="passport-share__section-title">{t("passport.shareHowTitle")}</h3>
+              {/* Only when the link really carries their code: otherwise the promise would be false. */}
+              {referralCode && <p className="passport-share__reward">{t("passport.shareReward")}</p>}
+            </section>
+            <ShareImageActions
+              blob={blob}
+              previewUrl={previewUrl}
+              url={url}
+              fileName={SHARE_FILE_NAME}
+              shareText={t("passport.shareText")}
+              loading={loading}
+              onShared={trackShared}
             />
-            {t("passport.shareIncludeAchievements")}
-          </label>
-          <label className="passport-share__toggle">
-            <input
-              type="checkbox"
-              checked={includePrivate}
-              onChange={(event) => setIncludePrivate(event.target.checked)}
-            />
-            {t("passport.shareIncludePrivate")}
-          </label>
-          {includePrivate ? (
-            <p className="passport-share__private" role="status">
-              <span aria-hidden="true">🔒</span>
-              {t("passport.shareIncludesPrivate")}
-            </p>
-          ) : (
-            <p className="passport-share__hint">{t("passport.sharePublicOnly")}</p>
-          )}
-          {/* Only when the link really carries their code: otherwise the promise would be false. */}
-          {referralCode && <p className="passport-share__reward">{t("passport.shareReward")}</p>}
+          </div>
         </div>
-
-        <ShareImageActions
-          blob={blob}
-          previewUrl={previewUrl}
-          url={url}
-          fileName={SHARE_FILE_NAME}
-          shareText={t("passport.shareText")}
-          loading={loading}
-          onShared={trackShared}
-        />
       </div>
     </div>
   );

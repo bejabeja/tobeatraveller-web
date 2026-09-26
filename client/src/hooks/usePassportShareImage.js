@@ -11,11 +11,15 @@ const EMPTY_IMAGE = { blob: null, previewUrl: null, summary: null };
 // the app and can't be taken back. Toggling the achievements only redraws
 // the image; the passport is fetched again only when privacy changes. The
 // link carries the owner's referral code, so sign-ups from it count as theirs.
+// While a new image is drawn the last one stays as the preview, marked as
+// `updating`, but without its blob: only the image that matches the chosen
+// options can go out.
 export const usePassportShareImage = (userId, enabled, { includePrivate = false, includeAchievements = false } = {}) => {
   const { t, i18n } = useTranslation();
   const [passportState, setPassportState] = useState({ passport: null, loading: false, error: false });
   const referral = useReferralCode(enabled);
   const [image, setImage] = useState(EMPTY_IMAGE);
+  const [imageFresh, setImageFresh] = useState(false);
   const [imageError, setImageError] = useState(false);
   const { passport } = passportState;
   const url = passportUrl(window.location.origin, userId, referral.code);
@@ -31,11 +35,20 @@ export const usePassportShareImage = (userId, enabled, { includePrivate = false,
   }, [userId, enabled, includePrivate]);
 
   useEffect(() => {
-    setImage(EMPTY_IMAGE);
+    if (!enabled) setImage(EMPTY_IMAGE);
+  }, [enabled]);
+
+  // Revoked once a newer preview has replaced it, not before: it is still
+  // on screen while the next one is drawn.
+  useEffect(() => () => {
+    if (image.previewUrl) URL.revokeObjectURL(image.previewUrl);
+  }, [image.previewUrl]);
+
+  useEffect(() => {
+    setImageFresh(false);
     setImageError(false);
     if (!enabled || !passport) return undefined;
     let cancelled = false;
-    let previewUrl = null;
 
     const summary = summarizePassportForSharing(passport, { includeAchievements });
     const labels = {
@@ -58,22 +71,27 @@ export const usePassportShareImage = (userId, enabled, { includePrivate = false,
       }))
       .then((blob) => {
         if (cancelled) return;
-        previewUrl = URL.createObjectURL(blob);
-        setImage({ blob, previewUrl, summary });
+        setImage({ blob, previewUrl: URL.createObjectURL(blob), summary });
+        setImageFresh(true);
       })
       .catch(() => { if (!cancelled) setImageError(true); });
 
-    return () => {
-      cancelled = true;
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-    };
+    return () => { cancelled = true; };
   }, [enabled, passport, includeAchievements, t, i18n.language]);
 
+  const drawing = passportState.loading || (Boolean(passport) && !imageFresh && !imageError);
+  const error = passportState.error || imageError;
+  // After a failure the last image no longer matches the chosen options, so
+  // it is neither shown nor downloadable.
+  const shownImage = error ? EMPTY_IMAGE : image;
+
   return {
-    ...image,
+    ...shownImage,
+    blob: imageFresh ? shownImage.blob : null,
+    updating: drawing && Boolean(shownImage.previewUrl),
     url,
     referralCode: referral.code,
-    loading: passportState.loading || (Boolean(passport) && !image.blob && !imageError) || (enabled && !referral.settled),
-    error: passportState.error || imageError,
+    loading: drawing || (enabled && !referral.settled),
+    error,
   };
 };

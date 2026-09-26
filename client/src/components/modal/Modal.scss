@@ -10,6 +10,12 @@
   animation: backdropIn 0.15s ease;
 }
 
+// The page behind an open modal stays put, so a scroll moves the modal
+// instead (on mobile it otherwise scrolls the page under it).
+html:has(.modal__backdrop) {
+  overflow: hidden;
+}
+
 @keyframes backdropIn {
   from { opacity: 0; }
   to   { opacity: 1; }

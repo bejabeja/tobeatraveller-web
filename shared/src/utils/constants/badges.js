@@ -64,7 +64,8 @@ export const summarizePassportForSharing = (passport, { includeAchievements }) =
     const countryCount = passport.countries.length;
     // Countries alone would leave an empty card, so the stamps show anyway.
     const achievementsForced = countryCount === 0 && earned.length > 0;
-    const showAchievements = includeAchievements || achievementsForced;
+    // Without an earned stamp the panel would be empty, whatever was chosen.
+    const showAchievements = (includeAchievements && earned.length > 0) || achievementsForced;
     const maxFlags = showAchievements ? PASSPORT_SHARE_LIMITS.flagsWithAchievements : PASSPORT_SHARE_LIMITS.flagsOnly;
 
     return {

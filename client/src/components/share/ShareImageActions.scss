@@ -8,7 +8,7 @@
   }
 
   &__in-app {
-    margin: 0 1.5rem 0.75rem;
+    margin: 0;
     padding: 0.6rem 0.75rem;
     border-radius: 10px;
     background: color-mix(in srgb, var(--primary-color) 10%, transparent);
@@ -18,19 +18,17 @@
   }
 
   &__hint {
+    flex: 1;
     margin: 0;
-    padding: 0 1.5rem 1.25rem;
     font-size: 0.75rem;
-    text-align: center;
     color: var(--text-secondary-color);
   }
 
   &__link {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
     padding: 0 1.5rem 1.25rem;
-
-    .share-actions__hint {
-      padding: 0 0 0.5rem;
-    }
   }
 
   &__link-row {
@@ -50,6 +48,20 @@
   }
 
   &__copy {
+    flex-shrink: 0;
+    width: auto;
+    white-space: nowrap;
+  }
+
+  &__story {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-color);
+  }
+
+  &__download {
     flex-shrink: 0;
     width: auto;
     white-space: nowrap;

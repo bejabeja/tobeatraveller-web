@@ -137,6 +137,15 @@ describe('summarizePassportForSharing', () => {
         expect(summary.flagCodes).toHaveLength(PASSPORT_SHARE_LIMITS.flagsWithAchievements);
     });
 
+    // As when the owner's only stamps are private and they go back to the
+    // public passport with the achievements still on.
+    it('leaves the achievements out, even when included, if there is no earned stamp to show', () => {
+        const summary = summarizePassportForSharing(passport({ countries: codes(30), achievements: [] }), { includeAchievements: true });
+
+        expect(summary.showAchievements).toBe(false);
+        expect(summary.flagCodes).toHaveLength(PASSPORT_SHARE_LIMITS.flagsOnly);
+    });
+
     // Countries alone would leave nothing on the card.
     it('shows the achievements anyway when there are no countries but there are stamps', () => {
         const summary = summarizePassportForSharing(

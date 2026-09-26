@@ -89,6 +89,44 @@ describe("PassportShareDialog", () => {
     expect(toggle).toBeDisabled();
   });
 
+  // It would only add an empty achievements panel to the image.
+  it("does not offer the achievements when the owner has none", async () => {
+    getUserPassport.mockResolvedValue({ ...PUBLIC_PASSPORT, achievements: [] });
+    renderDialog();
+    await screen.findByRole("img");
+
+    expect(screen.queryByLabelText("passport.shareIncludeAchievements")).toBeNull();
+    expect(screen.getByLabelText("passport.shareIncludePrivate")).toBeInTheDocument();
+  });
+
+  it("keeps the last image on screen while the new one is drawn, but lets out only the new one", async () => {
+    renderDialog();
+    await screen.findByRole("img");
+    await waitFor(() => expect(screen.getByRole("button", { name: "passport.downloadImage" })).toBeEnabled());
+    createPassportShareImage.mockReturnValueOnce(new Promise(() => {}));
+
+    fireEvent.click(screen.getByLabelText("passport.shareIncludeAchievements"));
+
+    await waitFor(() => expect(createPassportShareImage).toHaveBeenCalledTimes(2));
+    expect(screen.getByRole("img")).toHaveAttribute("src", "blob:passport");
+    expect(screen.getByLabelText("passport.shareIncludeAchievements")).toBeChecked();
+    expect(screen.getByRole("button", { name: "passport.downloadImage" })).toBeDisabled();
+  });
+
+  // The last image no longer matches what was chosen, and could still
+  // carry the private countries the owner has just taken out.
+  it("neither shows nor lets out the last image when the new one fails", async () => {
+    renderDialog();
+    await screen.findByRole("img");
+    createPassportShareImage.mockRejectedValueOnce(new Error("canvas"));
+
+    fireEvent.click(screen.getByLabelText("passport.shareIncludeAchievements"));
+
+    expect(await screen.findByText("passport.shareError")).toBeInTheDocument();
+    expect(screen.queryByRole("img")).toBeNull();
+    expect(screen.getByRole("button", { name: "passport.downloadImage" })).toBeDisabled();
+  });
+
   it("rebuilds the image from the full passport, with a warning, when the owner includes private ones", async () => {
     renderDialog();
     await screen.findByRole("img");
@@ -109,7 +147,7 @@ describe("PassportShareDialog", () => {
     rerender(<PassportShareDialog userId="user-1" isOpen onClose={jest.fn()} />);
 
     expect(await screen.findByLabelText("passport.shareIncludePrivate")).not.toBeChecked();
-    expect(screen.getByLabelText("passport.shareIncludeAchievements")).not.toBeChecked();
+    expect(await screen.findByLabelText("passport.shareIncludeAchievements")).not.toBeChecked();
     await waitFor(() => expect(getUserPassport).toHaveBeenLastCalledWith("user-1", { publicView: true }));
   });
 
@@ -161,7 +199,7 @@ describe("PassportShareDialog", () => {
     navigator.canShare = jest.fn(() => true);
     renderDialog();
 
-    expect(await screen.findByText("passport.linkHint")).toBeInTheDocument();
+    expect(await screen.findByText("passport.shareImage")).toBeInTheDocument();
     expect(screen.queryByLabelText("passport.linkLabel")).not.toBeInTheDocument();
   });
 
@@ -218,7 +256,23 @@ describe("PassportShareDialog", () => {
 
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith("passport.linkCopiedPlain"));
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith(expect.stringContaining("?ref=jane"));
-    expect(screen.queryByText("passport.linkHint")).not.toBeInTheDocument();
+  });
+
+  it("suggests posting the image from the phone on a computer", async () => {
+    window.matchMedia = jest.fn(() => ({ matches: true }));
+    try {
+      renderDialog();
+
+      expect(await screen.findByText("passport.downloadImageHintDesktop")).toBeInTheDocument();
+    } finally {
+      delete window.matchMedia;
+    }
+  });
+
+  it("only suggests the download on a phone that cannot share the image", async () => {
+    renderDialog();
+
+    expect(await screen.findByText("passport.downloadImageHint")).toBeInTheDocument();
   });
 
   it("tells the owner to open the page in the phone's browser when inside Instagram's", async () => {
@@ -240,12 +294,12 @@ describe("PassportShareDialog", () => {
     expect(screen.queryByRole("note")).not.toBeInTheDocument();
   });
 
-  it("explains the link sticker instead where the image can be shared", async () => {
+  // The share sheet already offers every app, and says the link was copied.
+  it("offers only the share sheet and the download where the image can be shared", async () => {
     navigator.canShare = jest.fn(() => true);
     renderDialog();
 
     await screen.findByText("passport.shareImage");
-    expect(screen.getByText("passport.linkHint")).toBeInTheDocument();
     expect(screen.queryByLabelText("passport.linkLabel")).not.toBeInTheDocument();
   });
 

@@ -1,22 +1,64 @@
 .passport-share {
   max-width: 380px;
+  // Taller than a phone or a laptop screen with every option on: it scrolls
+  // itself instead of being cut off.
+  max-height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 
-  &__body {
+  // One column on a phone: the wrappers step aside so every block is a
+  // direct child of the scrolling dialog, which is what lets the buttons
+  // stick to its bottom however far down they come.
+  &__layout,
+  &__side {
+    display: contents;
+  }
+
+  &__media {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 0.75rem;
-    padding: 1.25rem 1.5rem 0.5rem;
+    padding: 1.25rem 1.5rem 0;
+  }
+
+  &__section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem 0.5rem;
+  }
+
+  &__sharing {
+    padding-bottom: 1rem;
+  }
+
+  // Share and download always in reach, even with the options still below.
+  .share-actions__buttons {
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
+    background: var(--white-color);
   }
 
   // Same 9:16 shape as the image, so the dialog doesn't jump when it loads.
+  // Under half the screen high, so the options show without scrolling.
   &__preview,
   &__skeleton {
-    width: 100%;
-    max-width: 240px;
+    width: auto;
+    height: min(427px, 45dvh);
     aspect-ratio: 9 / 16;
     border-radius: 12px;
     box-shadow: 0 8px 24px rgba(27, 42, 65, 0.25);
+  }
+
+  &__preview {
+    transition: opacity 0.2s;
+
+    &--updating {
+      opacity: 0.5;
+    }
   }
 
   &__skeleton {
@@ -43,6 +85,15 @@
       opacity: 0.6;
       cursor: default;
     }
+  }
+
+  &__section-title {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-secondary-color);
   }
 
   &__reward {
@@ -72,7 +123,6 @@
   &__hint {
     margin: 0;
     font-size: 0.8rem;
-    text-align: center;
     color: var(--text-secondary-color);
   }
 
@@ -93,6 +143,58 @@
     span {
       width: auto;
       flex-shrink: 0;
+    }
+  }
+
+  // Side by side on a wide screen, where one column is too tall to fit.
+  // Last, so it overrides the rules above.
+  @media (min-width: 768px) {
+    max-width: 760px;
+
+    &__layout {
+      display: flex;
+    }
+
+    // Sized by their content, not by the global `width: 100%`, which would
+    // give each column the whole dialog.
+    &__media,
+    &__side {
+      width: auto;
+    }
+
+    &__media {
+      flex-shrink: 0;
+      justify-content: center;
+      padding: 1.5rem;
+      border-right: 1px solid var(--border-color);
+    }
+
+    &__side {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-width: 0;
+    }
+
+    &__section {
+      padding: 1.5rem 1.5rem 1rem;
+    }
+
+    // What the image shows at the top, how to share it at the bottom.
+    &__sharing {
+      margin-top: auto;
+      border-top: 1px solid var(--border-color);
+    }
+
+    &__sharing + .share-actions__buttons {
+      padding-top: 0;
+      border-top: none;
+    }
+
+    &__preview,
+    &__skeleton {
+      width: 240px;
+      height: auto;
     }
   }
 }

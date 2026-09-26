@@ -8,6 +8,10 @@ export const canShareImages = (fileName) => {
   return navigator.canShare({ files: [new File([], fileName, { type: "image/png" })] });
 };
 
+// A mouse or trackpad: a computer, where the image is better posted from
+// the phone, rather than a phone without a share sheet.
+export const isDesktop = () => window.matchMedia?.("(pointer: fine)").matches ?? false;
+
 // Best effort: some browsers only allow it right after a click, others not at all.
 export const copyLink = (url) => navigator.clipboard?.writeText(url).then(() => true, () => false) ?? Promise.resolve(false);
 
