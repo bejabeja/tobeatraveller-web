@@ -89,6 +89,36 @@ it('shows earned and locked stamps with progress, and a stamp per visited countr
   expect(screen.getByText('ESPAÑA')).toBeTruthy();
 });
 
+// Regression: a stamp still to get showed a lock, the same icon as what
+// only the owner sees, so a private stamp and a locked one looked alike.
+it('shows a stamp still to get with its own icon, and explains the lock only for private stamps', async () => {
+  getUserPassport.mockResolvedValue({
+    owner: { id: 'user-1', username: 'jane', avatarUrl: null },
+    achievements: [
+      { id: 'life_diary_1', family: 'lifeDiary', threshold: 1, isPrivate: true, earnedAt: '2026-09-01', current: 1 },
+      { id: 'adventurer', family: 'trips', threshold: 5, isPrivate: false, earnedAt: null, current: 3 },
+    ],
+    countries: [],
+  });
+
+  await renderScreen();
+
+  expect(screen.getByLabelText('passport.locked')).toHaveTextContent('🎒');
+  expect(screen.getByText('passport.privateStampsLegend')).toBeTruthy();
+});
+
+it('gives no lock legend when every stamp is public', async () => {
+  getUserPassport.mockResolvedValue({
+    owner: { id: 'user-1', username: 'jane', avatarUrl: null },
+    achievements: [{ id: 'explorer', family: 'trips', threshold: 1, isPrivate: false, earnedAt: '2026-09-01', current: 1 }],
+    countries: [],
+  });
+
+  await renderScreen();
+
+  expect(screen.queryByText('passport.privateStampsLegend')).toBeNull();
+});
+
 // A new user's passport shows them how to get their first stamp.
 describe('before the first stamp', () => {
   const UNSTARTED = {

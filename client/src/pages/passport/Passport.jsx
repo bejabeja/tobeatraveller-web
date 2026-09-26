@@ -43,8 +43,10 @@ const AchievementStamp = ({ achievement, language, t }) => {
 
   return (
     <li className={`passport__stamp${earned ? "" : " passport__stamp--locked"}`}>
-      <div className="passport__stamp-seal" aria-hidden="true">
-        <span className="passport__stamp-emoji">{earned ? BADGE_EMOJI[id] : "🔒"}</span>
+      {/* A stamp still to get shows its own icon, faded: the lock is kept
+          for what only the owner sees. */}
+      <div className="passport__stamp-seal" {...(earned ? { "aria-hidden": true } : { role: "img", "aria-label": t("passport.locked") })}>
+        <span className="passport__stamp-emoji" aria-hidden="true">{BADGE_EMOJI[id]}</span>
       </div>
       <strong className="passport__stamp-name">{t(`badges.${id}.name`)}</strong>
       <span className="passport__stamp-detail">
@@ -88,9 +90,6 @@ const CountryStamp = ({ country, language, t }) => {
   );
 };
 
-// Where a shared passport turns visitors into users: someone without an
-// account is invited to create their own (keeping the referral code the
-// link came with); a member is pointed to their own passport.
 // A country the user marked themselves: an outline stamp, apart from the
 // inked ones their activity earned.
 const DeclaredCountryStamp = ({ code, language, t }) => (
@@ -99,6 +98,27 @@ const DeclaredCountryStamp = ({ code, language, t }) => (
     <strong className="passport__country-name" aria-hidden="true">{countryName(code, language)}</strong>
   </li>
 );
+
+// About two rows on a phone, one on a laptop: the rest of the passport
+// stays close however many countries there are.
+const VISIBLE_COUNTRIES = 12;
+
+const CountryList = ({ items, renderItem, t }) => {
+  const [expanded, setExpanded] = useState(false);
+  const hiddenCount = items.length - VISIBLE_COUNTRIES;
+  const shown = expanded || hiddenCount <= 0 ? items : items.slice(0, VISIBLE_COUNTRIES);
+
+  return (
+    <>
+      <ul className="passport__countries">{shown.map(renderItem)}</ul>
+      {hiddenCount > 0 && (
+        <button type="button" className="passport__more" onClick={() => setExpanded((open) => !open)} aria-expanded={expanded}>
+          {expanded ? t("passport.showFewerCountries") : t("passport.showAllCountries", { total: items.length })}
+        </button>
+      )}
+    </>
+  );
+};
 
 const DeclaredCountriesSection = ({ codes, isOwner, onEdit, language, t }) => {
   if (!isOwner && codes.length === 0) return null;
@@ -116,9 +136,11 @@ const DeclaredCountriesSection = ({ codes, isOwner, onEdit, language, t }) => {
       </div>
       {isOwner && <p className="passport__section-hint">{codes.length > 0 ? t("passport.declaredHint") : t("passport.declaredEmptyOwn")}</p>}
       {codes.length > 0 && (
-        <ul className="passport__countries">
-          {codes.map(code => <DeclaredCountryStamp key={code} code={code} language={language} t={t} />)}
-        </ul>
+        <CountryList
+          items={codes}
+          renderItem={code => <DeclaredCountryStamp key={code} code={code} language={language} t={t} />}
+          t={t}
+        />
       )}
     </section>
   );
@@ -247,6 +269,9 @@ const PassportStart = ({ onDeclare, t }) => {
   );
 };
 
+// Where a shared passport turns visitors into users: someone without an
+// account is invited to create their own (keeping the referral code the
+// link came with); a member is pointed to their own passport.
 const PassportInvite = ({ authUserId, referralCode, t }) => {
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [markedCodes, setMarkedCodes] = useState(getPendingDeclaredCountries);
@@ -419,6 +444,7 @@ const Passport = () => {
 
   const earnedCount = passport.achievements.filter(achievement => achievement.earnedAt).length;
   const declaredCodes = (passport.declaredCountries ?? []).map(country => country.code);
+  const hasPrivateStamps = passport.achievements.some(({ earnedAt, isPrivate, visibleToOthers }) => earnedAt && (isPrivate || visibleToOthers === false));
   const families = BADGE_FAMILY_ORDER
     .map(family => ({ family, stamps: passport.achievements.filter(achievement => achievement.family === family) }))
     .filter(({ stamps }) => stamps.length > 0);
@@ -457,11 +483,11 @@ const Passport = () => {
         {isOwner && <p className="passport__section-hint">{t("passport.countriesHowTo")}</p>}
         <PassportMap passport={passport} />
         {passport.countries.length > 0 ? (
-          <ul className="passport__countries">
-            {passport.countries.map(country => (
-              <CountryStamp key={country.code} country={country} language={language} t={t} />
-            ))}
-          </ul>
+          <CountryList
+            items={passport.countries}
+            renderItem={country => <CountryStamp key={country.code} country={country} language={language} t={t} />}
+            t={t}
+          />
         ) : (
           <p className="passport__empty">{isOwner ? t("passport.emptyCountriesOwn") : t("passport.emptyCountriesOther")}</p>
         )}
@@ -479,16 +505,20 @@ const Passport = () => {
 
       <section className="passport__section" aria-labelledby="passport-achievements">
         <h2 id="passport-achievements" className="passport__section-title">{t("passport.achievements")}</h2>
-        {families.map(({ family, stamps }) => (
-          <div key={family} className="passport__family">
-            <h3 className="passport__family-title">{t(`passport.family.${family}`)}</h3>
-            <ul className="passport__stamps">
-              {stamps.map(achievement => (
-                <AchievementStamp key={achievement.id} achievement={achievement} language={language} t={t} />
-              ))}
-            </ul>
-          </div>
-        ))}
+        {hasPrivateStamps && <p className="passport__section-hint">🔒 {t("passport.privateStampsLegend")}</p>}
+        <div className="passport__families">
+          {families.map(({ family, stamps }) => (
+            // Each family asks for room for its stamps, so small ones share a row.
+            <div key={family} className="passport__family" style={{ "--stamp-count": stamps.length }}>
+              <h3 className="passport__family-title">{t(`passport.family.${family}`)}</h3>
+              <ul className="passport__stamps">
+                {stamps.map(achievement => (
+                  <AchievementStamp key={achievement.id} achievement={achievement} language={language} t={t} />
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
       </section>
 
       {isOwner && (

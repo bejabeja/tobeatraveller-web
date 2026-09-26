@@ -440,6 +440,63 @@ describe("Passport page", () => {
     expect(screen.getByLabelText("badges.onlyYou")).toBeInTheDocument();
   });
 
+  // Regression: a stamp still to get showed a lock, the same icon as what
+  // only the owner sees, so a private stamp and a locked one looked alike.
+  it("shows a stamp still to get with its own icon, not a lock", async () => {
+    getUserPassport.mockResolvedValue(PASSPORT);
+
+    renderPassport();
+
+    const locked = await screen.findByRole("img", { name: "passport.locked" });
+    expect(locked).toHaveTextContent("🎒");
+    expect(locked).not.toHaveTextContent("🔒");
+  });
+
+  it("explains the lock only when some stamp is seen by the owner alone", async () => {
+    getUserPassport.mockResolvedValue({
+      ...PASSPORT,
+      achievements: [{ id: "life_diary_1", family: "lifeDiary", threshold: 1, isPrivate: true, earnedAt: "2026-09-01", current: 1 }],
+    });
+
+    renderPassport();
+
+    expect(await screen.findByText("🔒 passport.privateStampsLegend")).toBeInTheDocument();
+  });
+
+  it("gives no lock legend when every stamp is public", async () => {
+    getUserPassport.mockResolvedValue(PASSPORT);
+
+    renderPassport();
+
+    await screen.findByText("badges.explorer.name");
+    expect(screen.queryByText("🔒 passport.privateStampsLegend")).not.toBeInTheDocument();
+  });
+
+  it("folds a long list of countries, with a button to see them all", async () => {
+    const codes = ["ES", "FR", "PT", "IT", "DE", "NL", "BE", "CH", "AT", "NO", "SE", "FI", "DK"];
+    getUserPassport.mockResolvedValue({
+      ...PASSPORT,
+      countries: codes.map(code => ({ code, firstVisitedOn: "2026-06-10", isPrivate: false })),
+    });
+    renderPassport();
+    await screen.findByText("España");
+    expect(screen.queryByText("Dinamarca")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "passport.showAllCountries" }));
+
+    expect(screen.getByText("Dinamarca")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "passport.showFewerCountries" })).toHaveAttribute("aria-expanded", "true");
+  });
+
+  it("shows a short list of countries whole, with no button", async () => {
+    getUserPassport.mockResolvedValue(PASSPORT);
+
+    renderPassport();
+
+    await screen.findByText("Francia");
+    expect(screen.queryByRole("button", { name: "passport.showAllCountries" })).not.toBeInTheDocument();
+  });
+
   it("shows an error message when the passport cannot be loaded", async () => {
     getUserPassport.mockRejectedValue(new Error("boom"));
 

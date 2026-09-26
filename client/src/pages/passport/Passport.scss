@@ -2,6 +2,7 @@ $passport-navy: #1b2a41;
 $passport-gold: #d9a441;
 $passport-paper: #fbf6ec;
 $passport-ink-muted: #8a8172;
+$stamp-min-width: 120px;
 
 .passport {
   padding-top: 1.5rem;
@@ -359,12 +360,21 @@ $passport-ink-muted: #8a8172;
     color: $passport-ink-muted;
   }
 
-  &__family + &__family {
-    margin-top: 1.5rem;
+  // Stamp families side by side while they fit, so a wide screen isn't
+  // left with three stamps and an empty row.
+  &__families {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem 2rem;
+  }
+
+  &__family {
+    flex: 1 1 calc(var(--stamp-count, 1) * #{$stamp-min-width + 16px});
+    min-width: 0;
   }
 
   &__family-title {
-    margin: 1rem 0 0.75rem;
+    margin: 0.5rem 0 0.5rem;
     font-size: 0.78rem;
     font-weight: 700;
     letter-spacing: 0.12em;
@@ -382,12 +392,31 @@ $passport-ink-muted: #8a8172;
   }
 
   &__stamps {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax($stamp-min-width, 1fr));
   }
 
   &__countries {
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     padding: 0.5rem 0.25rem;
+  }
+
+  &__more {
+    display: block;
+    width: auto;
+    margin: 1rem auto 0;
+    padding: 0.4rem 1rem;
+    border: 1.5px solid $passport-gold;
+    border-radius: 999px;
+    background: #fff;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: $passport-navy;
+    cursor: pointer;
+
+    &:hover {
+      background: rgba($passport-gold, 0.12);
+    }
   }
 
   // ─── Achievement stamps ──────────────────────────────────────────────
@@ -465,10 +494,9 @@ $passport-ink-muted: #8a8172;
     }
 
     .passport__stamp-emoji {
-      font-size: 1.5rem;
       transform: none;
       filter: grayscale(1);
-      opacity: 0.45;
+      opacity: 0.35;
     }
 
     .passport__stamp-name {
@@ -573,6 +601,83 @@ $passport-ink-muted: #8a8172;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     opacity: 0.85;
+  }
+}
+
+// A phone fits three stamps a row instead of two: the page is a third as
+// long and the stamps still read as seals.
+@media (max-width: 767px) {
+  .passport {
+    padding-top: 1rem;
+
+    &__cover {
+      padding: 1.5rem 1.25rem;
+    }
+
+    &__section,
+    &__start {
+      margin-top: 1.25rem;
+      padding: 1rem;
+    }
+
+    &__stamps,
+    &__countries {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.5rem;
+    }
+
+    &__stamp {
+      gap: 0.25rem;
+      padding: 0.5rem 0.15rem;
+    }
+
+    &__stamp-seal {
+      width: 64px;
+      height: 64px;
+
+      &::before {
+        inset: 4px;
+      }
+    }
+
+    &__stamp-emoji {
+      font-size: 1.7rem;
+    }
+
+    &__stamp-name {
+      font-size: 0.8rem;
+    }
+
+    &__stamp-detail {
+      font-size: 0.7rem;
+    }
+
+    &__private--seal {
+      top: 0.4rem;
+      right: calc(50% - 40px);
+    }
+
+    &__countries {
+      gap: 0.75rem 0.5rem;
+    }
+
+    &__country {
+      padding: 0.6rem 0.3rem;
+    }
+
+    &__country-flag {
+      font-size: 1.6rem;
+    }
+
+    &__country-name {
+      font-size: 0.7rem;
+      letter-spacing: 0.03em;
+      overflow-wrap: anywhere;
+    }
+
+    &__country-date {
+      font-size: 0.65rem;
+    }
   }
 }
 

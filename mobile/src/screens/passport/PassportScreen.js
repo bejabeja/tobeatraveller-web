@@ -41,11 +41,14 @@ const AchievementStamp = ({ achievement, language, t }) => {
 
   return (
     <View style={styles.stamp}>
-      <View style={[styles.seal, !earned && styles.sealLocked]}>
+      {/* A stamp still to get shows its own icon, faded: the lock is kept
+          for what only the owner sees. */}
+      <View
+        style={[styles.seal, !earned && styles.sealLocked]}
+        {...(earned ? {} : { accessible: true, accessibilityRole: 'image', accessibilityLabel: t('passport.locked') })}
+      >
         {earned && <View style={styles.sealInnerRing} pointerEvents="none" />}
-        {earned
-          ? <Text style={styles.sealEmoji}>{BADGE_EMOJI[id]}</Text>
-          : <Ionicons name="lock-closed-outline" size={22} color="#b3a996" />}
+        <Text style={[styles.sealEmoji, !earned && styles.sealEmojiLocked]}>{BADGE_EMOJI[id]}</Text>
       </View>
       <Text style={[styles.stampName, !earned && styles.stampNameLocked]} numberOfLines={2}>
         {t(`badges.${id}.name`)}
@@ -283,6 +286,7 @@ const PassportScreen = ({ navigation, route }) => {
 
   const earnedCount = passport?.achievements.filter(achievement => achievement.earnedAt).length ?? 0;
   const declaredCodes = (passport?.declaredCountries ?? []).map(country => country.code);
+  const hasPrivateStamps = (passport?.achievements ?? []).some(({ earnedAt, isPrivate, visibleToOthers }) => earnedAt && (isPrivate || visibleToOthers === false));
   const families = BADGE_FAMILY_ORDER
     .map(family => ({ family, stamps: passport?.achievements.filter(achievement => achievement.family === family) ?? [] }))
     .filter(({ stamps }) => stamps.length > 0);
@@ -384,6 +388,12 @@ const PassportScreen = ({ navigation, route }) => {
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{t('passport.achievements')}</Text>
+            {hasPrivateStamps && (
+              <View style={styles.privateLegend}>
+                <Ionicons name="lock-closed-outline" size={12} color={PASSPORT_INK_MUTED} />
+                <Text style={[styles.sectionHint, styles.privateLegendText]}>{t('passport.privateStampsLegend')}</Text>
+              </View>
+            )}
             {families.map(({ family, stamps }) => (
               <View key={family}>
                 <Text style={styles.familyTitle}>{t(`passport.family.${family}`).toUpperCase()}</Text>
@@ -519,6 +529,8 @@ const styles = StyleSheet.create({
   },
   declaredCountryName: { color: '#8a8172' },
   sectionHint: { marginTop: 4, fontSize: 12, color: PASSPORT_INK_MUTED },
+  privateLegend: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
+  privateLegendText: { marginTop: 0 },
   familyTitle: { marginTop: 16, marginBottom: 8, fontSize: 11, fontWeight: '700', letterSpacing: 1.2, color: PASSPORT_INK_MUTED },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginTop: 12 },
 
@@ -540,6 +552,7 @@ const styles = StyleSheet.create({
   },
   // Counter-rotated so the icon stays upright inside the tilted seal.
   sealEmoji: { fontSize: 32, textAlign: 'center', transform: [{ rotate: '6deg' }] },
+  sealEmojiLocked: { fontSize: 26, opacity: 0.3, transform: [] },
   // Stamps in a row stretch to its height; with the name always taking two
   // lines and the progress bar at the bottom, every stamp's parts line up.
   stampName: {
