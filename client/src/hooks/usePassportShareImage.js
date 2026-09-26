@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import { passportUrl, summarizePassportForSharing } from "@tobeatraveller/shared";
 import { getUserPassport } from "../services/passport";
 import { useReferralCode } from "./useReferralCode";
-import { createPassportShareImage } from "../utils/passportShareImage";
 
 const EMPTY_IMAGE = { blob: null, previewUrl: null, summary: null };
 
@@ -39,23 +38,24 @@ export const usePassportShareImage = (userId, enabled, { includePrivate = false,
     let previewUrl = null;
 
     const summary = summarizePassportForSharing(passport, { includeAchievements });
-    createPassportShareImage({
-      summary,
-      language: i18n.language,
-      displayUrl: window.location.host,
-      labels: {
-        kicker: `${t("passport.title")} · ToBeATraveller`,
-        stats: summary.showAchievements
-          ? `${t("passport.countriesCount", { count: summary.countryCount })} · ${t("passport.stampsCount", { count: summary.earnedCount })}`
-          : t("passport.countriesCount", { count: summary.countryCount }),
-        countries: t("passport.countries"),
-        achievements: t("passport.achievements"),
-        moreCountries: t("passport.moreCountries", { count: summary.hiddenCountries }),
-        moreStamps: t("passport.moreStamps", { count: summary.hiddenStamps }),
-        noCountries: t("passport.noCountriesYet"),
-        noStamps: t("passport.noStampsYet"),
-      },
-    })
+    const labels = {
+      kicker: `${t("passport.title")} · ToBeATraveller`,
+      stats: summary.showAchievements
+        ? `${t("passport.countriesCount", { count: summary.countryCount })} · ${t("passport.stampsCount", { count: summary.earnedCount })}`
+        : t("passport.countriesCount", { count: summary.countryCount }),
+      countries: t("passport.countries"),
+      achievements: t("passport.achievements"),
+      moreCountries: t("passport.moreCountries", { count: summary.hiddenCountries }),
+      moreStamps: t("passport.moreStamps", { count: summary.hiddenStamps }),
+      noCountries: t("passport.noCountriesYet"),
+      noStamps: t("passport.noStampsYet"),
+    };
+    // Loaded on first use: it carries the world map's outlines, too heavy
+    // for pages that only offer the dialog, such as a profile.
+    import("../utils/passportShareImage")
+      .then(({ createPassportShareImage }) => createPassportShareImage({
+        summary, labels, language: i18n.language, displayUrl: window.location.host,
+      }))
       .then((blob) => {
         if (cancelled) return;
         previewUrl = URL.createObjectURL(blob);

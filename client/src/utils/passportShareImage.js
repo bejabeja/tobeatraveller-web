@@ -1,4 +1,6 @@
-import { BADGE_EMOJI, countryFlag, countryName, PASSPORT_SHARE_STAMP_LAYOUT, passportShareFlagLayout } from "@tobeatraveller/shared";
+import {
+  BADGE_EMOJI, countryFlag, countryName, PASSPORT_SHARE_STAMP_LAYOUT, passportShareFlagLayout, passportShareMap, passportShareMapLayout,
+} from "@tobeatraveller/shared";
 import { canvasToPngBlob, drawInkSeal, roundedRect, spacedText } from "./canvasDrawing";
 
 // Instagram/WhatsApp story size, so the image fills the screen as a story.
@@ -13,11 +15,17 @@ const PANEL_TITLE_HEIGHT = 110;
 const MORE_LABEL_HEIGHT = 80;
 const STAMPS_PANEL_HEIGHT = 480;
 
-
 const NAVY = "#1b2a41";
 const GOLD = "#d9a441";
 const PAPER = "#fbf6ec";
 const INK_MUTED = "#8a8172";
+// As on the passport page's map (client/src/components/passport/PassportMap.scss).
+const MAP_LAND = "#e7ddc8";
+// In map units, so they grow with the map; thicker than on the page, where
+// the map is seen bigger than on a story.
+const MAP_BORDER_WIDTH = 0.8;
+const MAP_DOT_RADIUS = 6;
+const MAP_DOT_BORDER_WIDTH = 1.5;
 
 const NAME_PADDING = 10;
 
@@ -54,9 +62,38 @@ const drawCountrySeal = (language) => (context, code, x, y, layout) => {
   context.restore();
 };
 
+// The world with the shared countries painted in, `layout.width` wide and
+// centred, its top at `top`.
+const drawWorldMap = (context, map, layout, top) => {
+  const scale = layout.width / map.width;
+  context.save();
+  context.translate((SHARE_IMAGE_WIDTH - layout.width) / 2, top);
+  context.scale(scale, scale);
+  context.strokeStyle = PAPER;
+  context.lineWidth = MAP_BORDER_WIDTH;
+  map.countries.forEach(({ d, state }) => {
+    if (!d) return;
+    const outline = new Path2D(d);
+    context.fillStyle = state ? GOLD : MAP_LAND;
+    context.fill(outline);
+    context.stroke(outline);
+  });
+  context.strokeStyle = NAVY;
+  context.lineWidth = MAP_DOT_BORDER_WIDTH;
+  map.countries.filter(country => country.dot).forEach(({ dot }) => {
+    context.beginPath();
+    context.arc(dot[0], dot[1], MAP_DOT_RADIUS, 0, Math.PI * 2);
+    context.fillStyle = GOLD;
+    context.fill();
+    context.stroke();
+  });
+  context.restore();
+};
+
 // A paper panel with its title, and its items in a grid centred in the rest
-// of the panel (a last, incomplete row centred too, as on the mobile card).
-const drawPanel = (context, { top, height, title, items, drawItem, layout, more, empty }) => {
+// of the panel (a last, incomplete row centred too, as on the mobile card),
+// under the world map when there is one.
+const drawPanel = (context, { top, height, title, items, drawItem, layout, more, empty, map }) => {
   roundedRect(context, PADDING, top, SHARE_IMAGE_WIDTH - PADDING * 2, height, 36);
   context.fillStyle = PAPER;
   context.fill();
@@ -76,8 +113,11 @@ const drawPanel = (context, { top, height, title, items, drawItem, layout, more,
 
   const { perRow, cellHeight } = layout;
   const rows = Math.ceil(items.length / perRow);
-  const gridHeight = rows * cellHeight + (more ? MORE_LABEL_HEIGHT : 0);
-  const gridTop = contentTop + (contentHeight - gridHeight) / 2;
+  const mapHeight = map ? map.layout.height + map.layout.gap : 0;
+  const blockHeight = mapHeight + rows * cellHeight + (more ? MORE_LABEL_HEIGHT : 0);
+  const blockTop = contentTop + (contentHeight - blockHeight) / 2;
+  if (map) drawWorldMap(context, map.world, map.layout, blockTop);
+  const gridTop = blockTop + mapHeight;
   const cellWidth = (SHARE_IMAGE_WIDTH - PADDING * 2) / perRow;
 
   context.textBaseline = "middle";
@@ -137,6 +177,7 @@ export const createPassportShareImage = ({ summary, labels, language, displayUrl
     layout: passportShareFlagLayout(summary.flagCodes.length, summary.showAchievements),
     more: summary.hiddenCountries > 0 ? labels.moreCountries : null,
     empty: labels.noCountries,
+    map: { world: passportShareMap(summary.mapCodes), layout: passportShareMapLayout(summary.showAchievements) },
   });
 
   if (summary.showAchievements) {

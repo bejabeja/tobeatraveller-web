@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MAP_COUNTRY_STATES, passportMap } from '../../utils/passportMap.js';
+import { MAP_COUNTRY_STATES, passportMap, passportShareMap } from '../../utils/passportMap.js';
 import { WORLD_MAP } from '../../utils/constants/worldMap.js';
 
 const passport = (overrides) => ({ countries: [], declaredCountries: [], ...overrides });
@@ -52,5 +52,15 @@ describe('passportMap', () => {
         const missing = Object.keys(COUNTRY_NAMES).filter(code => !WORLD_MAP.countries[code]);
 
         expect(missing).toEqual(['AQ']);
+    });
+});
+
+describe('passportShareMap', () => {
+    it('paints every shared country alike and leaves the rest unpainted', () => {
+        const map = passportShareMap(['ES', 'FR']);
+
+        expect(stateOf(map, 'ES')).toBe(MAP_COUNTRY_STATES.VISITED);
+        expect(stateOf(map, 'FR')).toBe(MAP_COUNTRY_STATES.VISITED);
+        expect(stateOf(map, 'IT')).toBeNull();
     });
 });

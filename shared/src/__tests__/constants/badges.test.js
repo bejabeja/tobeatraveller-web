@@ -2,10 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { BADGES as API_BADGES } from '../../../../api/src/utils/badges.js';
 import { ISO_COUNTRY_CODES } from '../../../../api/src/utils/countryCodes.js';
 import {
-    BADGE_EMOJI, BADGE_FAMILY_ORDER, PASSPORT_SHARE_LIMITS, PASSPORT_SHARE_STAMP_LAYOUT, passportShareFlagLayout, passportUrl, summarizePassport,
+    BADGE_EMOJI, BADGE_FAMILY_ORDER, PASSPORT_SHARE_LIMITS, PASSPORT_SHARE_STAMP_LAYOUT, passportShareFlagLayout, passportShareMapLayout,
+    passportUrl, summarizePassport,
     describePassportMoment, findPassportMoment, isPassportUnstarted, passportSharePath, signupUrlFromPassport, summarizePassportForSharing,
 } from '../../utils/constants/badges.js';
 import en from '../../locales/en.json';
+import { WORLD_MAP } from '../../utils/constants/worldMap.js';
 import es from '../../locales/es.json';
 
 // The API decides which badges exist; the apps only know how to show them.
@@ -118,6 +120,13 @@ describe('summarizePassportForSharing', () => {
         expect(summary).toMatchObject({ username: 'jane', countryCount: 30 });
     });
 
+    // The map has room for them all, unlike the seals under it.
+    it('paints every shared country on the map, not only the ones that fit as seals', () => {
+        const summary = summarizePassportForSharing(passport({ countries: codes(30) }), { includeAchievements: false });
+
+        expect(summary.mapCodes).toEqual(codes(30));
+    });
+
     it('makes room for the achievements when they are included', () => {
         const summary = summarizePassportForSharing(
             passport({ countries: codes(30), achievements: [stamp('explorer', 'trips')] }),
@@ -184,37 +193,41 @@ describe('summarizePassportForSharing', () => {
 
 describe('passportShareFlagLayout', () => {
     // The countries panel alone is 1250px tall, 1140px under its title; next
-    // to the achievements it is 720px, 610px under its title. A "+N" line
-    // takes 80px more. The grid is 900px wide.
+    // to the achievements it is 720px, 610px under its title. The world map
+    // goes first, then the seals; a "+N" line takes 80px more. 900px wide.
     const COUNTRIES_ALONE_CONTENT_HEIGHT = 1140;
     const COUNTRIES_WITH_ACHIEVEMENTS_CONTENT_HEIGHT = 610;
     const MORE_LABEL_HEIGHT = 80;
     const CONTENT_WIDTH = 900;
+    const mapSpace = (withAchievements) => {
+        const map = passportShareMapLayout(withAchievements);
+        return map.height + map.gap;
+    };
 
     it('gives a few countries fewer, bigger seals per row', () => {
         const few = passportShareFlagLayout(3, false);
-        const many = passportShareFlagLayout(25, false);
+        const many = passportShareFlagLayout(PASSPORT_SHARE_LIMITS.flagsOnly, false);
 
         expect(few.perRow).toBeLessThan(many.perRow);
         expect(few.fontSize).toBeGreaterThan(many.fontSize);
         expect(few.sealDiameter).toBeGreaterThan(many.sealDiameter);
     });
 
-    it.each([1, 4, 5, 9, 10, 16, 17, 25])('fits %i stamps, plus the "+N" line, in the countries panel alone', (count) => {
+    it.each([1, 4, 5, 8, 9, 12, 15])('fits the map, %i seals and the "+N" line in the countries panel alone', (count) => {
         const { perRow, cellHeight } = passportShareFlagLayout(count, false);
         const rows = Math.ceil(count / perRow);
 
-        expect(rows * cellHeight + MORE_LABEL_HEIGHT).toBeLessThanOrEqual(COUNTRIES_ALONE_CONTENT_HEIGHT);
+        expect(mapSpace(false) + rows * cellHeight + MORE_LABEL_HEIGHT).toBeLessThanOrEqual(COUNTRIES_ALONE_CONTENT_HEIGHT);
     });
 
-    it('fits the most countries shown next to the achievements, plus the "+N" line', () => {
+    it('fits the map, the most seals and the "+N" line next to the achievements', () => {
         const count = PASSPORT_SHARE_LIMITS.flagsWithAchievements;
         const { perRow, cellHeight } = passportShareFlagLayout(count, true);
 
-        expect(Math.ceil(count / perRow) * cellHeight + MORE_LABEL_HEIGHT).toBeLessThanOrEqual(COUNTRIES_WITH_ACHIEVEMENTS_CONTENT_HEIGHT);
+        expect(mapSpace(true) + Math.ceil(count / perRow) * cellHeight + MORE_LABEL_HEIGHT).toBeLessThanOrEqual(COUNTRIES_WITH_ACHIEVEMENTS_CONTENT_HEIGHT);
     });
 
-    it.each([[3, false], [9, false], [25, false], [15, true]])('leaves room around each seal and its name (%i countries, achievements: %s)', (count, withAchievements) => {
+    it.each([[3, false], [9, false], [15, false], [5, true]])('leaves room around each seal and its name (%i countries, achievements: %s)', (count, withAchievements) => {
         const { perRow, sealDiameter, nameFontSize, nameLineHeight, cellHeight } = passportShareFlagLayout(count, withAchievements);
 
         expect(sealDiameter).toBeLessThan(CONTENT_WIDTH / perRow);
@@ -223,10 +236,25 @@ describe('passportShareFlagLayout', () => {
     });
 
     it('fits the flag inside the seal, and keeps it bigger than the name under it', () => {
-        const { fontSize, nameFontSize, sealDiameter } = passportShareFlagLayout(25, false);
+        const { fontSize, nameFontSize, sealDiameter } = passportShareFlagLayout(PASSPORT_SHARE_LIMITS.flagsOnly, false);
 
         expect(fontSize).toBeLessThan(sealDiameter);
         expect(fontSize).toBeGreaterThan(nameFontSize);
+    });
+});
+
+describe('passportShareMapLayout', () => {
+    it('keeps the world map in proportion, within the panel', () => {
+        for (const withAchievements of [false, true]) {
+            const { width, height } = passportShareMapLayout(withAchievements);
+
+            expect(width).toBeLessThanOrEqual(900);
+            expect(width / height).toBeCloseTo(WORLD_MAP.width / WORLD_MAP.height, 1);
+        }
+    });
+
+    it('makes the map smaller when the achievements share the card', () => {
+        expect(passportShareMapLayout(true).width).toBeLessThan(passportShareMapLayout(false).width);
     });
 });
 

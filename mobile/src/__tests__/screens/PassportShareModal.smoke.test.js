@@ -9,7 +9,8 @@ jest.mock('@tobeatraveller/shared', () => {
   const badges = jest.requireActual('../../../../shared/src/utils/constants/badges.js');
   const countries = jest.requireActual('../../../../shared/src/utils/constants/countries.js');
   const analyticsEvents = jest.requireActual('../../../../shared/src/utils/analyticsEvents.js');
-  return { ...analyticsEvents, ...badges, ...countries, getUserPassport: jest.fn(), getMyReferralInfo: jest.fn() };
+  const passportMap = jest.requireActual('../../../../shared/src/utils/passportMap.js');
+  return { ...analyticsEvents, ...badges, ...countries, ...passportMap, getUserPassport: jest.fn(), getMyReferralInfo: jest.fn() };
 });
 
 jest.mock('../../utils/config', () => ({ WEB_URL: 'https://tobeatraveller.test' }));
@@ -24,7 +25,7 @@ jest.mock('expo-sharing', () => ({
   shareAsync: jest.fn(),
 }));
 
-import { Alert } from 'react-native';
+import { Alert, processColor } from 'react-native';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import * as Clipboard from 'expo-clipboard';
 import * as Sharing from 'expo-sharing';
@@ -70,6 +71,19 @@ it("stamps each country on the card with its flag and its name in the user's lan
 
   expect(screen.getByText('🇪🇸')).toBeTruthy();
   expect(screen.getByText('ESPAÑA')).toBeTruthy();
+});
+
+// The map has room for every country, unlike the seals under it.
+it('paints the shared countries on a world map above the seals', async () => {
+  const codes = ['ES', 'PT', 'FR', 'IT', 'DE', 'NL', 'BE', 'AT', 'CH', 'PL', 'CZ', 'HU', 'GR', 'HR', 'SI', 'SK', 'DK', 'SE', 'NO', 'FI'];
+  getUserPassport.mockResolvedValue({ ...PUBLIC_PASSPORT, countries: codes.map(code => ({ code, isPrivate: false })) });
+  await renderModal();
+
+  // react-native-svg keeps colours as native numbers.
+  const fillOf = (code) => screen.getByTestId(`share-map-country-${code}`).props.fill.payload;
+  expect(fillOf('FI')).toBe(processColor('#d9a441'));
+  expect(fillOf('JP')).not.toBe(processColor('#d9a441'));
+  expect(screen.queryByText('FINLANDIA')).toBeNull();
 });
 
 // Same events as the web, so the sharing funnel covers both.

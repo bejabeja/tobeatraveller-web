@@ -1,10 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator, Alert, Modal, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View,
 } from 'react-native';
+import Svg, { Circle, Path } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
 import {
-  ANALYTICS_EVENTS, BADGE_EMOJI, countryFlag, countryName, PASSPORT_SHARE_METHODS, PASSPORT_SHARE_SOURCES, PASSPORT_SHARE_STAMP_LAYOUT, passportShareFlagLayout, passportUrl, summarizePassportForSharing,
+  ANALYTICS_EVENTS, BADGE_EMOJI, countryFlag, countryName, PASSPORT_SHARE_METHODS, PASSPORT_SHARE_SOURCES, PASSPORT_SHARE_STAMP_LAYOUT,
+  passportShareFlagLayout, passportShareMap, passportShareMapLayout, passportUrl, summarizePassportForSharing,
 } from '@tobeatraveller/shared';
 import { useShareablePassport } from '../hooks/useShareablePassport';
 import {
@@ -25,6 +27,13 @@ const STAMPS_PANEL_HEIGHT = 480;
 const PREVIEW_WIDTH = 196;
 
 const { GOLD: PASSPORT_GOLD, PAPER: PASSPORT_PAPER, INK_MUTED: PASSPORT_INK_MUTED } = STORY_COLORS;
+
+// As on the web image (client/src/utils/passportShareImage.js): in map units,
+// thicker than on the passport screen's map, which is seen bigger.
+const MAP_LAND = '#e7ddc8';
+const MAP_BORDER_WIDTH = 0.8;
+const MAP_DOT_RADIUS = 6;
+const MAP_DOT_BORDER_WIDTH = 1.5;
 
 // A paper panel with its title and its content centred below it.
 const CardPanel = ({ title, height, children }) => (
@@ -52,6 +61,39 @@ const CountrySeal = ({ code, layout, language }) => (
   </View>
 );
 
+// Every shared country painted on the world, above the seals, which only
+// have room for some of them. Sizes from passportShareMapLayout, shared with
+// the web image. Memoised, as the passport screen's map: hundreds of outlines
+// not worth redrawing on every toggle or while sharing.
+const ShareWorldMap = memo(({ countryCodes, showAchievements }) => {
+  const map = useMemo(() => passportShareMap(countryCodes), [countryCodes]);
+  const layout = passportShareMapLayout(showAchievements);
+
+  return (
+    <Svg
+      width={scale(layout.width)}
+      height={scale(layout.height)}
+      viewBox={`0 0 ${map.width} ${map.height}`}
+      style={{ marginBottom: scale(layout.gap) }}
+    >
+      {map.countries.map(({ code, d, state }) => d && (
+        <Path key={code} testID={`share-map-country-${code}`} d={d} fill={state ? PASSPORT_GOLD : MAP_LAND} stroke={PASSPORT_PAPER} strokeWidth={MAP_BORDER_WIDTH} />
+      ))}
+      {map.countries.filter(country => country.dot).map(({ code, dot }) => (
+        <Circle
+          key={`${code}-dot`}
+          cx={dot[0]}
+          cy={dot[1]}
+          r={MAP_DOT_RADIUS}
+          fill={PASSPORT_GOLD}
+          stroke={STORY_COLORS.NAVY}
+          strokeWidth={MAP_DOT_BORDER_WIDTH}
+        />
+      ))}
+    </Svg>
+  );
+});
+
 const PassportShareCard = ({ summary, t, language }) => {
   const flagLayout = passportShareFlagLayout(summary.flagCodes.length, summary.showAchievements);
 
@@ -69,9 +111,12 @@ const PassportShareCard = ({ summary, t, language }) => {
         height={summary.showAchievements ? COUNTRIES_PANEL_HEIGHT_WITH_ACHIEVEMENTS : COUNTRIES_PANEL_HEIGHT_ALONE}
       >
         {summary.flagCodes.length > 0 ? (
-          <View style={styles.cardGrid}>
-            {summary.flagCodes.map(code => <CountrySeal key={code} code={code} layout={flagLayout} language={language} />)}
-          </View>
+          <>
+            <ShareWorldMap countryCodes={summary.mapCodes} showAchievements={summary.showAchievements} />
+            <View style={styles.cardGrid}>
+              {summary.flagCodes.map(code => <CountrySeal key={code} code={code} layout={flagLayout} language={language} />)}
+            </View>
+          </>
         ) : (
           <Text style={styles.cardEmpty}>{t('passport.noCountriesYet')}</Text>
         )}
@@ -123,7 +168,10 @@ const PassportShareModal = ({
   const [includeAchievements, setIncludeAchievements] = useState(false);
   const [includePrivate, setIncludePrivate] = useState(false);
   const { passport, referralCode, loading, error } = useShareablePassport(userId, visible, { includePrivate });
-  const summary = passport ? summarizePassportForSharing(passport, { includeAchievements }) : null;
+  const summary = useMemo(
+    () => (passport ? summarizePassportForSharing(passport, { includeAchievements }) : null),
+    [passport, includeAchievements],
+  );
 
   // Opted into for one share at a time, never remembered: private ones must
   // not go out again just because they were included last time.

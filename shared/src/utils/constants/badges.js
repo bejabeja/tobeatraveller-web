@@ -1,4 +1,5 @@
 import { countryFlag, countryName } from './countries.js';
+import { WORLD_MAP_SIZE } from './worldMapSize.js';
 
 // Display side of the badge catalog; which badges exist and what earns them
 // is decided by the API (api/src/utils/badges.js).
@@ -50,7 +51,8 @@ export const summarizePassport = (passport, maxFlags) => {
 
 // How much fits on the shareable image (1080x1920). The countries panel
 // takes the whole card when the achievements are left out.
-export const PASSPORT_SHARE_LIMITS = Object.freeze({ flagsOnly: 25, flagsWithAchievements: 15, stamps: 8 });
+// Under the world map there's room for fewer seals than the map shows.
+export const PASSPORT_SHARE_LIMITS = Object.freeze({ flagsOnly: 15, flagsWithAchievements: 5, stamps: 8 });
 
 // What the shareable passport image shows. Works on either version of the
 // passport: the public one by default, or the owner's full one when they
@@ -68,6 +70,8 @@ export const summarizePassportForSharing = (passport, { includeAchievements }) =
     return {
         username: passport.owner.username,
         flagCodes: passport.countries.slice(0, maxFlags).map(country => country.code),
+        // The world map has room for every one of them, unlike the seals.
+        mapCodes: passport.countries.map(country => country.code),
         hiddenCountries: Math.max(countryCount - maxFlags, 0),
         countryCount,
         showAchievements,
@@ -78,16 +82,31 @@ export const summarizePassportForSharing = (passport, { includeAchievements }) =
     };
 };
 
-// Countries per row and their size on the shareable image, in image pixels:
-// each flag in a round ink seal, as on the card of a single new country, with
-// the country's name under it. With the whole card to themselves, a few
-// countries get fewer, bigger seals instead of a small row lost in an empty panel.
+// The world map at the top of the shareable image's countries panel, in
+// image pixels: the whole panel width, smaller when the achievements share
+// the card. `gap` separates it from the seals under it.
 const SHARE_CONTENT_WIDTH = 900;
-const SHARE_FLAGS_PER_ROW_BY_COUNT = [[4, 2], [9, 3], [16, 4]];
+const SHARE_MAP_WIDTH_WITH_ACHIEVEMENTS = 560;
+const SHARE_MAP_GAP = 24;
+
+export const passportShareMapLayout = (showAchievements) => {
+    const width = showAchievements ? SHARE_MAP_WIDTH_WITH_ACHIEVEMENTS : SHARE_CONTENT_WIDTH;
+    return { width, height: Math.round((width * WORLD_MAP_SIZE.height) / WORLD_MAP_SIZE.width), gap: SHARE_MAP_GAP };
+};
+
+// Countries per row under the map and their size, in image pixels: each flag
+// in a round ink seal, as on the card of a single new country, with the
+// country's name under it. A few countries get bigger seals; the size is the
+// biggest that fits the space the map leaves.
+const SHARE_COUNTRIES_CONTENT_HEIGHT_ALONE = 1140;
+const SHARE_MORE_LABEL_HEIGHT = 80;
+const SHARE_FEW_FLAGS = 8;
+const SHARE_FLAGS_PER_ROW_FEW = 4;
 const SHARE_MAX_FLAGS_PER_ROW = 5;
 const SHARE_SEAL_TO_CELL_WIDTH = 0.84;
 const SHARE_MAX_SEAL_DIAMETER = 300;
 const SHARE_SEAL_DIAMETER_WITH_ACHIEVEMENTS = 120;
+const SHARE_SEAL_SHRINK_STEP = 2;
 const SHARE_FLAG_FONT_TO_SEAL = 0.5;
 const SHARE_NAME_FONT_TO_SEAL = 0.16;
 const SHARE_MIN_NAME_FONT_SIZE = 18;
@@ -109,9 +128,13 @@ const shareSealLayout = (perRow, sealDiameter) => {
 
 export const passportShareFlagLayout = (flagCount, showAchievements) => {
     if (showAchievements) return shareSealLayout(SHARE_MAX_FLAGS_PER_ROW, SHARE_SEAL_DIAMETER_WITH_ACHIEVEMENTS);
-    const perRow = SHARE_FLAGS_PER_ROW_BY_COUNT.find(([maxCount]) => flagCount <= maxCount)?.[1] ?? SHARE_MAX_FLAGS_PER_ROW;
-    const sealDiameter = Math.round(Math.min((SHARE_CONTENT_WIDTH / perRow) * SHARE_SEAL_TO_CELL_WIDTH, SHARE_MAX_SEAL_DIAMETER));
-    return shareSealLayout(perRow, sealDiameter);
+    const perRow = flagCount <= SHARE_FEW_FLAGS ? SHARE_FLAGS_PER_ROW_FEW : SHARE_MAX_FLAGS_PER_ROW;
+    const rows = Math.max(Math.ceil(flagCount / perRow), 1);
+    const map = passportShareMapLayout(false);
+    const room = SHARE_COUNTRIES_CONTENT_HEIGHT_ALONE - map.height - map.gap - SHARE_MORE_LABEL_HEIGHT;
+    let layout = shareSealLayout(perRow, Math.round(Math.min((SHARE_CONTENT_WIDTH / perRow) * SHARE_SEAL_TO_CELL_WIDTH, SHARE_MAX_SEAL_DIAMETER)));
+    while (rows * layout.cellHeight > room) layout = shareSealLayout(perRow, layout.sealDiameter - SHARE_SEAL_SHRINK_STEP);
+    return layout;
 };
 
 // The earned badges on the shareable image: each emoji in a round ink seal,

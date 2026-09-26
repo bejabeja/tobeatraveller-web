@@ -28,3 +28,7 @@ export const passportMap = (passport) => {
 
     return { width: WORLD_MAP.width, height: WORLD_MAP.height, countries };
 };
+
+// The world map on the shareable image: the countries it shares all painted
+// alike. Whether a private one goes out at all was the owner's choice.
+export const passportShareMap = (countryCodes) => passportMap({ countries: countryCodes.map(code => ({ code })) });
