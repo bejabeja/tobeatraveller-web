@@ -22,7 +22,7 @@ import { signupSchema } from "../../utils/schemasValidation";
 import "./Auth.scss";
 
 const Signup = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -110,7 +110,7 @@ const Signup = () => {
         (cErrors.ageConfirmed ? ageCheckboxRef : termsCheckboxRef).current?.focus();
         return;
       }
-      return dispatch(createUser({ ...data, termsAccepted, ageConfirmed, referralCode }, () => {
+      return dispatch(createUser({ ...data, termsAccepted, ageConfirmed, referralCode, language: i18n.resolvedLanguage }, () => {
         trackEvent(ANALYTICS_EVENTS.USER_SIGNED_UP, { source: signupSource ?? null, referred: Boolean(referralCode) });
         navigate("/welcome", { state: redirectTo ? { redirectTo } : undefined });
       }));

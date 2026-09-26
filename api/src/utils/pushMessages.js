@@ -1,7 +1,5 @@
 import { countryFlag } from './countryCodes.js';
-
-export const SUPPORTED_PUSH_LOCALES = ['en', 'es'];
-export const DEFAULT_PUSH_LOCALE = 'en';
+import { DEFAULT_LANGUAGE } from './languages.js';
 
 const countryNameIn = (locale, code) => new Intl.DisplayNames([locale], { type: 'region', fallback: 'code' }).of(code);
 
@@ -79,6 +77,6 @@ const PUSH_MESSAGES = {
 };
 
 export const buildPushMessage = (type, locale, context) => {
-    const messages = PUSH_MESSAGES[locale] ?? PUSH_MESSAGES[DEFAULT_PUSH_LOCALE];
+    const messages = PUSH_MESSAGES[locale] ?? PUSH_MESSAGES[DEFAULT_LANGUAGE];
     return messages[type]?.(context) ?? null;
 };

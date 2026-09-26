@@ -252,6 +252,18 @@ describe('AuthService', () => {
             });
         });
 
+        it('sends the reset link in the language of the account', async () => {
+            const emailService = { sendPasswordReset: vi.fn().mockResolvedValue(undefined) };
+            authService = new AuthService(mockUserRepository, emailService, mockPasswordResetRepository, mockAuditLogService);
+            mockUserRepository.findByEmail.mockResolvedValue({ ...mockUser, email: 'johndoe@example.com', language: 'es' });
+
+            await authService.forgotPassword('johndoe@example.com');
+
+            expect(emailService.sendPasswordReset).toHaveBeenCalledWith(expect.objectContaining({
+                email: 'johndoe@example.com', language: 'es',
+            }));
+        });
+
         it('does not log (or reveal the account exists) when the email is unknown', async () => {
             mockUserRepository.findByEmail.mockResolvedValue(null);
 

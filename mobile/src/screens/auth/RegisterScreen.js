@@ -17,7 +17,7 @@ const AUTH_BG = require('../../../assets/auth.webp');
 const { height: SCREEN_H } = Dimensions.get('window');
 
 const RegisterScreen = ({ navigation }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const dispatch = useDispatch();
   const insets = useSafeAreaInsets();
   const authError = useSelector(selectAuthError);
@@ -83,6 +83,7 @@ const RegisterScreen = ({ navigation }) => {
         {
           email: email.trim(), username: username.trim(), password, confirmPassword, termsAccepted, ageConfirmed,
           referralCode: referralCode.trim() || undefined,
+          language: i18n.resolvedLanguage,
         },
         () => {
           trackEvent(ANALYTICS_EVENTS.USER_SIGNED_UP, { source: null, referred: Boolean(referralCode.trim()) });

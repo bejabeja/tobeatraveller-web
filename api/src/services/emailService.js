@@ -45,8 +45,8 @@ export class EmailService {
         }
     }
 
-    async sendWelcome({ username, email }) {
-        const { subject, html } = welcomeTemplate({ username });
+    async sendWelcome({ username, email, language }) {
+        const { subject, html } = welcomeTemplate({ username, language });
         await this._send({ to: email, subject, html });
     }
 
@@ -56,28 +56,28 @@ export class EmailService {
         await this._send({ to: this.contactRecipientEmail, subject: emailSubject, html, replyTo: email });
     }
 
-    async sendContactConfirmation({ name, email }) {
-        const { subject, html } = contactConfirmationTemplate({ name });
+    async sendContactConfirmation({ name, email, language }) {
+        const { subject, html } = contactConfirmationTemplate({ name, language });
         await this._send({ to: email, subject, html, replyTo: this.contactRecipientEmail });
     }
 
-    async sendPasswordReset({ username, email, token }) {
-        const { subject, html } = passwordResetTemplate({ username, token });
+    async sendPasswordReset({ username, email, token, language }) {
+        const { subject, html } = passwordResetTemplate({ username, token, language });
         await this._send({ to: email, subject, html });
     }
 
-    async sendPasswordChanged({ username, email }) {
-        const { subject, html } = passwordChangedTemplate({ username });
+    async sendPasswordChanged({ username, email, language }) {
+        const { subject, html } = passwordChangedTemplate({ username, language });
         await this._send({ to: email, subject, html });
     }
 
-    async sendAccountDeleted({ username, email }) {
-        const { subject, html } = accountDeletedTemplate({ username });
+    async sendAccountDeleted({ username, email, language }) {
+        const { subject, html } = accountDeletedTemplate({ username, language });
         await this._send({ to: email, subject, html });
     }
 
-    async sendReferralReward({ username, email, friendUsername }) {
-        const { subject, html } = referralRewardTemplate({ username, friendUsername });
+    async sendReferralReward({ username, email, friendUsername, language }) {
+        const { subject, html } = referralRewardTemplate({ username, friendUsername, language });
         await this._send({ to: email, subject, html });
     }
 

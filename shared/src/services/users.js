@@ -75,6 +75,18 @@ export const changePassword = async ({ currentPassword, newPassword }) => {
     return response.json();
 };
 
+// The language the user uses the app in, so their emails go in it too.
+export const updateMyLanguage = async (language) => {
+    const response = await authFetch(`${baseUrl()}/me/language`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ language }),
+    });
+    if (!response.ok) {
+        await parseError(response, 'Failed to update language');
+    }
+};
+
 export const deleteMyAccount = async () => {
     const response = await authFetch(`${baseUrl()}/me`, {
         method: 'DELETE',

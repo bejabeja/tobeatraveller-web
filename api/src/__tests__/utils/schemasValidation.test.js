@@ -3,7 +3,7 @@ import {
     signupSchema, resetPasswordSchema, vanLogEntrySchema,
     createItineraryDataSchema, updateItineraryDataSchema,
     registerPushTokenSchema, createVanLogEntrySchema, vanLogEntrySchema as vanLogUpdateSchema,
-    declaredCountriesSchema,
+    declaredCountriesSchema, contactSchema, updateLanguageSchema,
 } from '../../utils/schemasValidation.js';
 
 const validSignupData = {
@@ -275,5 +275,26 @@ describe('declaredCountriesSchema', () => {
 
     it('rejects more entries than there are countries', () => {
         expect(declaredCountriesSchema.safeParse({ countries: Array(300).fill('JP') }).success).toBe(false);
+    });
+});
+
+describe('language', () => {
+    const validSignup = { ...validSignupData, password: 'secret1', confirmPassword: 'secret1' };
+    const validContact = { name: 'Jane', email: 'jane@example.com', subject: 'Hello', message: 'A message long enough' };
+
+    it('takes the language of the app on signup, and allows leaving it out', () => {
+        expect(signupSchema.safeParse({ ...validSignup, language: 'es' }).data.language).toBe('es');
+        expect(signupSchema.safeParse(validSignup).success).toBe(true);
+    });
+
+    it('rejects a language the apps are not translated into', () => {
+        expect(signupSchema.safeParse({ ...validSignup, language: 'pt' }).success).toBe(false);
+        expect(contactSchema.safeParse({ ...validContact, language: 'pt' }).success).toBe(false);
+        expect(updateLanguageSchema.safeParse({ language: 'pt' }).success).toBe(false);
+    });
+
+    it('requires the language when changing it', () => {
+        expect(updateLanguageSchema.safeParse({}).success).toBe(false);
+        expect(updateLanguageSchema.safeParse({ language: 'en' }).success).toBe(true);
     });
 });

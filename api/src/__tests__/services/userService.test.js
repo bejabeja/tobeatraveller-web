@@ -358,6 +358,28 @@ describe('UserService.create()', () => {
         expect(savedUser.signupUserAgent).toBe('Mozilla/5.0 (test)');
     });
 
+    it('keeps the language the user signed up in, and welcomes them in it', async () => {
+        let savedUser;
+        userRepository.save = async (user) => { savedUser = user; return makeUser(user); };
+        const emailService = { sendWelcome: vi.fn().mockResolvedValue(undefined) };
+        service = new UserService(userRepository, { findPublicByUserId: async () => [] }, {}, emailService);
+
+        await service.create({ username: 'jane', email: 'jane@example.com', password: 'secret1', language: 'es' });
+
+        expect(savedUser.language).toBe('es');
+        expect(emailService.sendWelcome).toHaveBeenCalledWith({ username: 'jane', email: 'jane@example.com', language: 'es' });
+    });
+
+    // Signing up from an older app that doesn't send it.
+    it('leaves the language unknown when the signup does not say it', async () => {
+        let savedUser;
+        userRepository.save = async (user) => { savedUser = user; return makeUser(user); };
+
+        await service.create({ username: 'jane', email: 'jane@example.com', password: 'secret1' });
+
+        expect(savedUser.language).toBeNull();
+    });
+
     it('stores null signup metadata when no request context is given', async () => {
         let savedUser;
         userRepository.save = async (user) => { savedUser = user; return makeUser(user); };
@@ -603,13 +625,14 @@ describe('UserService.changePassword()', () => {
         });
     });
 
-    it('sends a password-changed confirmation email to the account owner', async () => {
+    it('sends a password-changed confirmation email to the account owner, in their language', async () => {
+        userRepository.getUserById = async () => makeUser({ password: hashedCurrentPassword, language: 'es' });
         const emailService = { sendPasswordChanged: vi.fn().mockResolvedValue(undefined) };
         service = new UserService(userRepository, {}, {}, emailService);
 
         await service.changePassword('user-1', 'correct-password', 'new-password');
 
-        expect(emailService.sendPasswordChanged).toHaveBeenCalledWith({ username: 'jane', email: 'jane@example.com' });
+        expect(emailService.sendPasswordChanged).toHaveBeenCalledWith({ username: 'jane', email: 'jane@example.com', language: 'es' });
     });
 
     // Regression: a rejected fire-and-forget email send must not surface as a
@@ -620,5 +643,32 @@ describe('UserService.changePassword()', () => {
         service = new UserService(userRepository, {}, {}, emailService);
 
         await expect(service.changePassword('user-1', 'correct-password', 'new-password')).resolves.toBeUndefined();
+    });
+});
+
+describe('UserService.updateLanguage()', () => {
+    it('saves the language the user now uses the app in', async () => {
+        const userRepository = { updateLanguage: vi.fn().mockResolvedValue(undefined) };
+        const service = new UserService(userRepository, {}, {});
+
+        await service.updateLanguage('user-1', 'es');
+
+        expect(userRepository.updateLanguage).toHaveBeenCalledWith('user-1', 'es');
+    });
+});
+
+describe('UserService.deleteUser() email', () => {
+    it('confirms the deletion in the language of the deleted account', async () => {
+        const userRepository = {
+            getUserById: async () => makeUser({ language: 'es' }),
+            deleteUser: vi.fn().mockResolvedValue(undefined),
+        };
+        const itinerariesRepository = { findImagePublicIdsByUserId: async () => [] };
+        const emailService = { sendAccountDeleted: vi.fn().mockResolvedValue(undefined) };
+        const service = new UserService(userRepository, itinerariesRepository, {}, emailService);
+
+        await service.deleteUser('user-1');
+
+        expect(emailService.sendAccountDeleted).toHaveBeenCalledWith({ username: 'jane', email: 'jane@example.com', language: 'es' });
     });
 });

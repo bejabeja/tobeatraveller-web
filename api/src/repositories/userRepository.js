@@ -5,16 +5,16 @@ export class UserRepository {
     async save(user) {
         const {
             uuid, username, email, password, location, avatarUrl, termsAcceptedAt,
-            signupCountryCode, signupUserAgent, referralCode,
+            signupCountryCode, signupUserAgent, referralCode, language,
         } = user;
         const result = await db.query(
             `INSERT INTO users (
                 id, username, email, password, location, avatar_url, terms_accepted_at,
-                signup_country_code, signup_user_agent, referral_code
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
+                signup_country_code, signup_user_agent, referral_code, language
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
             [
                 uuid, username, email.trim().toLowerCase(), password, location, avatarUrl, termsAcceptedAt ?? null,
-                signupCountryCode ?? null, signupUserAgent ?? null, referralCode ?? null,
+                signupCountryCode ?? null, signupUserAgent ?? null, referralCode ?? null, language ?? null,
             ]
         );
 
@@ -182,6 +182,12 @@ export class UserRepository {
             "UPDATE users SET password = $1, updated_at = NOW() WHERE id = $2",
             [hashedPassword, id]
         );
+    }
+
+    // Not a profile edit: updated_at is left alone, as it is what the sitemap
+    // reports as the profile's last change.
+    async updateLanguage(id, language) {
+        await db.query("UPDATE users SET language = $1 WHERE id = $2", [language, id]);
     }
 
     async findByRole(role) {

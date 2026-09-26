@@ -23,6 +23,7 @@ import {
 import { useCanonicalUrl } from "./hooks/useCanonicalUrl";
 import { identifyUser, initAnalyticsIfConsented } from "./utils/analytics";
 import { useSyncPendingDeclaredCountries } from "./hooks/useSyncPendingDeclaredCountries";
+import { useSyncUserLanguage } from "./hooks/useSyncUserLanguage";
 import { useAchievementCelebrations } from "./hooks/useAchievementCelebrations";
 import AchievementCelebration from "./components/celebration/AchievementCelebration";
 
@@ -91,6 +92,7 @@ const App = () => {
   useCanonicalUrl(location.pathname);
   // Countries marked as a visitor on a shared passport, saved once signed in.
   useSyncPendingDeclaredCountries(isAuthenticated ? userAuthenticated?.id : null);
+  useSyncUserLanguage(isAuthenticated ? userAuthenticated?.id : null);
 
   // Shared between Navbar's mobile bottom-nav trigger and Topbar's desktop
   // trigger, which are siblings (not parent/child), so the modal itself

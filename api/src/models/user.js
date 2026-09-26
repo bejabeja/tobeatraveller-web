@@ -6,7 +6,7 @@ export class User {
         id, username, email, password, location, avatarUrl, avatarPublicId,
         createdAt, updatedAt, name, followersListIds,
         followingListIds, itineraries, bio, about, totalItineraries, role, premiumUntil,
-        stripeCustomerId, referralCode
+        stripeCustomerId, referralCode, language
     }) {
         this.id = id;
         this.username = username;
@@ -19,6 +19,7 @@ export class User {
         this.premiumUntil = premiumUntil || null;
         this.stripeCustomerId = stripeCustomerId || null;
         this.referralCode = referralCode || null;
+        this.language = language || null;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.name = name || null;
@@ -43,6 +44,7 @@ export class User {
             premiumUntil: row.premium_until,
             stripeCustomerId: row.stripe_customer_id,
             referralCode: row.referral_code,
+            language: row.language,
             createdAt: row.created_at,
             updatedAt: row.updated_at,
             name: row.name,

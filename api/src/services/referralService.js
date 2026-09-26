@@ -131,7 +131,7 @@ export class ReferralService {
         // active right now, so a re-engagement email is the one worth sending.
         if (referrer?.email) {
             this.emailService?.sendReferralReward({
-                username: referrer.username, email: referrer.email, friendUsername: referred?.username,
+                username: referrer.username, email: referrer.email, friendUsername: referred?.username, language: referrer.language,
             }).catch(() => {});
         }
     }

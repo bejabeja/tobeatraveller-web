@@ -20,7 +20,7 @@ import { shadow } from '../../utils/styles';
 const CONTACT_EMAIL = 'tobeatravellercompany@gmail.com';
 
 const ContactScreen = ({ navigation }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const insets = useSafeAreaInsets();
   const meDetail = useSelector(selectMe);
   const authUser = useSelector(selectAuthUser);
@@ -74,7 +74,7 @@ const ContactScreen = ({ navigation }) => {
     if (!validate()) return;
     setLoading(true);
     try {
-      await sendContact(fields);
+      await sendContact({ ...fields, language: i18n.resolvedLanguage });
       setSent(true);
     } catch {
       Alert.alert(

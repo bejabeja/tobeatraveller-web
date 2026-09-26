@@ -132,7 +132,7 @@ export class AuthService {
 
         await this.passwordResetRepository.save({ userId: user.id, tokenHash, expiresAt });
 
-        this.emailService?.sendPasswordReset({ username: user.username, email: user.email, token })
+        this.emailService?.sendPasswordReset({ username: user.username, email: user.email, token, language: user.language })
             .catch(err => logger.error('[email] password reset failed:', err));
 
         this.auditLogService?.log({

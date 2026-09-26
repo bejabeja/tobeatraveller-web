@@ -8,6 +8,7 @@ export {
     getUserById,
     updateUser,
     changePassword,
+    updateMyLanguage,
     deleteMyAccount,
     deleteUserById,
     getAllUsers,

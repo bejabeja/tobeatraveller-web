@@ -16,6 +16,7 @@ import Navigation from './src/navigation';
 import { OfflineBanner } from './src/components/OfflineBanner';
 import { API_URL } from './src/utils/config';
 import { usePushNotificationReceived, usePushTokenRegistration } from './src/hooks/usePushNotifications';
+import { useSyncUserLanguage } from './src/hooks/useSyncUserLanguage';
 import { useOutboxSync } from './src/offline/useOutbox';
 import { useNetworkStatus } from './src/hooks/useNetworkStatus';
 import { useAnalyticsConsent } from './src/hooks/useAnalyticsConsent';
@@ -45,6 +46,7 @@ function AppContent() {
   const { i18n } = useTranslation();
 
   usePushTokenRegistration(isAuthenticated, i18n.language);
+  useSyncUserLanguage(isAuthenticated ? authUser?.id : null, i18n.resolvedLanguage);
   const sessionUser = me ?? authUser;
   useOutboxSync(
     isAuthenticated ? authUser?.id : null,

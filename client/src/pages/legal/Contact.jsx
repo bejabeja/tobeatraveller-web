@@ -18,7 +18,7 @@ import "./Contact.scss";
 const CONTACT_EMAIL = "tobeatravellercompany@gmail.com";
 
 const Contact = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const dispatch = useDispatch();
   const meDetail = useSelector(selectMe);
   const meLoading = useSelector(selectMeLoading);
@@ -85,7 +85,7 @@ const Contact = () => {
     if (!validate()) return;
     setStatus("sending");
     try {
-      await sendContact(fields);
+      await sendContact({ ...fields, language: i18n.resolvedLanguage });
       setStatus("success");
       setFields((prev) => ({ ...prev, subject: "", message: "" }));
     } catch {

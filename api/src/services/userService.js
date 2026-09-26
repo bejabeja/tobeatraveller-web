@@ -41,7 +41,7 @@ export class UserService {
     }
 
     async create(userData, { ip, userAgent } = {}) {
-        const { password, username, email, location, termsAccepted, referralCode } = userData;
+        const { password, username, email, location, termsAccepted, referralCode, language } = userData;
 
         await this._ensureUsernameAvailable(username);
         await this._ensureEmailAvailable(email);
@@ -61,11 +61,12 @@ export class UserService {
             // This new user's own shareable code (not to be confused with the
             // `referralCode` they may have signed up *with*, handled below).
             referralCode: this.referralService?.codeFromUsername(username) ?? null,
+            language: language ?? null,
         };
 
         const savedUser = await this.userRepository.save(userToSave);
 
-        this.emailService?.sendWelcome({ username, email })
+        this.emailService?.sendWelcome({ username, email, language: savedUser.language })
             .catch(err => logger.error('[email] welcome failed:', err));
 
         if (referralCode) {
@@ -245,7 +246,7 @@ export class UserService {
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         await this.userRepository.updatePassword(id, hashedPassword);
 
-        this.emailService?.sendPasswordChanged({ username: user.username, email: user.email })
+        this.emailService?.sendPasswordChanged({ username: user.username, email: user.email, language: user.language })
             .catch(err => logger.error('[email] password changed failed:', err));
 
         this.auditLogService?.log({
@@ -253,6 +254,12 @@ export class UserService {
             action: AUDIT_EVENTS.PASSWORD_CHANGED,
             ipAddress: ip, userAgent,
         });
+    }
+
+    // The language the user last used the app in, for the emails sent to
+    // them from then on.
+    async updateLanguage(id, language) {
+        await this.userRepository.updateLanguage(id, language);
     }
 
     async getFeaturedUsers() {
@@ -297,7 +304,7 @@ export class UserService {
             this.lifeDiaryRepository ? this.lifeDiaryRepository.findImagePublicIdsByUserId(id) : [],
         ]);
 
-        this.emailService?.sendAccountDeleted({ username: user.username, email: user.email })
+        this.emailService?.sendAccountDeleted({ username: user.username, email: user.email, language: user.language })
             .catch(err => logger.error('[email] account deleted failed:', err));
 
         await this.userRepository.deleteUser(id);
@@ -385,6 +392,7 @@ export class UserService {
                 location: user.location,
                 avatarUrl: user.avatarUrl,
                 referralCode: user.referralCode,
+                language: user.language,
                 createdAt: user.createdAt,
             },
             itineraries: itineraries.map(i => i.toDTO()),

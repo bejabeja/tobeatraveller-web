@@ -52,11 +52,12 @@ export const resetPassword = async (token, newPassword) => {
     return response.json();
 };
 
-export const sendContact = async ({ name, email, subject, message }) => {
+// `language` is the app's, for the confirmation sent back to the sender.
+export const sendContact = async ({ name, email, subject, message, language }) => {
     const response = await fetch(`${baseUrl()}/contact`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, subject, message }),
+        body: JSON.stringify({ name, email, subject, message, language }),
     });
     if (!response.ok) await parseError(response, 'Contact failed');
     return response.json();

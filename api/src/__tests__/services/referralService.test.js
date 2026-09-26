@@ -333,6 +333,23 @@ describe('ReferralService', () => {
       await expect(serviceWithNotifications.rewardFirstItinerary('new-user')).resolves.toBeUndefined();
     });
 
+    it('writes to the referrer in their own language, not the referred user\'s', async () => {
+      const emailService = { sendReferralReward: vi.fn().mockResolvedValue(undefined) };
+      const serviceWithEmail = new ReferralService(referralRepository, userRepository, null, null, emailService);
+      referralRepository.findPendingByReferredUserId.mockResolvedValue({
+        id: 'referral-1', referrerId: 'referrer-1', referredUserId: 'new-user',
+      });
+      userRepository.getUserById.mockImplementation(async (id) =>
+        id === 'referrer-1'
+          ? makeUser({ id, username: 'alice', email: 'alice@example.com', premiumUntil: null, language: 'es' })
+          : makeUser({ id, username: 'bob', email: 'bob@example.com', premiumUntil: null, language: 'en' })
+      );
+
+      await serviceWithEmail.rewardFirstItinerary('new-user');
+
+      expect(emailService.sendReferralReward).toHaveBeenCalledWith(expect.objectContaining({ email: 'alice@example.com', language: 'es' }));
+    });
+
     it('emails only the referrer, using the referred user\'s username', async () => {
       const emailService = { sendReferralReward: vi.fn().mockResolvedValue(undefined) };
       const serviceWithEmail = new ReferralService(referralRepository, userRepository, null, null, emailService);

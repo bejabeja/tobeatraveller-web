@@ -59,6 +59,7 @@ export const createUsersRouter = () => {
     router.get("/me/export", authenticate, userController.exportMyData.bind(userController));
     router.put("/me", authenticate, upload.single("avatar"), userController.updateUserMe.bind(userController));
     router.patch("/me/password", authenticate, userController.changePassword.bind(userController));
+    router.patch("/me/language", authenticate, userController.updateMyLanguage.bind(userController));
     router.put("/me/declared-countries", authenticate, badgeController.updateMyDeclaredCountries.bind(badgeController));
     router.get("/me/passport/leaderboard", authenticate, badgeController.getMyLeaderboard.bind(badgeController));
     router.delete("/me", authenticate, userController.deleteUserMe.bind(userController));

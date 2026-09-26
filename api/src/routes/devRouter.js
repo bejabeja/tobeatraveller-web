@@ -11,9 +11,10 @@ export const createDevRouter = () => {
   const router = Router();
   const emailService = new EmailService();
 
-  // Preview: GET /dev/emails/welcome?username=jane
+  // Preview: GET /dev/emails/welcome?username=jane&language=es (every user email takes ?language=)
   router.get('/emails/welcome', (req, res) => {
     const { html } = welcomeTemplate({
+      language: req.query.language,
       username: req.query.username || 'traveller',
     });
     res.send(html);
@@ -33,6 +34,7 @@ export const createDevRouter = () => {
   // Preview: GET /dev/emails/password-reset?username=jane
   router.get('/emails/password-reset', (req, res) => {
     const { html } = passwordResetTemplate({
+      language: req.query.language,
       username: req.query.username || 'traveller',
       token: 'preview_token_not_real_do_not_use',
     });
@@ -42,6 +44,7 @@ export const createDevRouter = () => {
   // Preview: GET /dev/emails/contact-confirmation?name=Jane
   router.get('/emails/contact-confirmation', (req, res) => {
     const { html } = contactConfirmationTemplate({
+      language: req.query.language,
       name: req.query.name || 'Jane Doe',
     });
     res.send(html);
@@ -50,6 +53,7 @@ export const createDevRouter = () => {
   // Preview: GET /dev/emails/password-changed?username=jane
   router.get('/emails/password-changed', (req, res) => {
     const { html } = passwordChangedTemplate({
+      language: req.query.language,
       username: req.query.username || 'traveller',
     });
     res.send(html);
@@ -58,19 +62,20 @@ export const createDevRouter = () => {
   // Preview: GET /dev/emails/account-deleted?username=jane
   router.get('/emails/account-deleted', (req, res) => {
     const { html } = accountDeletedTemplate({
+      language: req.query.language,
       username: req.query.username || 'traveller',
     });
     res.send(html);
   });
 
-  // Send test: GET /dev/emails/send?type=welcome&to=your@email.com
+  // Send test: GET /dev/emails/send?type=welcome&to=your@email.com&language=es
   router.get('/emails/send', async (req, res) => {
-    const { type = 'welcome', to } = req.query;
+    const { type = 'welcome', to, language } = req.query;
     if (!to) return res.status(400).json({ error: 'Missing ?to= param' });
 
     try {
       if (type === 'welcome') {
-        await emailService.sendWelcome({ username: 'testuser', email: to });
+        await emailService.sendWelcome({ username: 'testuser', email: to, language });
       } else if (type === 'contact') {
         await emailService.sendContactNotification({
           name: 'Jane Doe',
@@ -83,13 +88,14 @@ export const createDevRouter = () => {
           username: 'testuser',
           email: to,
           token: 'dev_test_token_not_real',
+          language,
         });
       } else if (type === 'contact-confirmation') {
-        await emailService.sendContactConfirmation({ name: 'Jane Doe', email: to });
+        await emailService.sendContactConfirmation({ name: 'Jane Doe', email: to, language });
       } else if (type === 'password-changed') {
-        await emailService.sendPasswordChanged({ username: 'testuser', email: to });
+        await emailService.sendPasswordChanged({ username: 'testuser', email: to, language });
       } else if (type === 'account-deleted') {
-        await emailService.sendAccountDeleted({ username: 'testuser', email: to });
+        await emailService.sendAccountDeleted({ username: 'testuser', email: to, language });
       } else {
         return res.status(400).json({ error: `Unknown type "${type}". Use welcome, contact, contact-confirmation, password-reset, password-changed or account-deleted.` });
       }

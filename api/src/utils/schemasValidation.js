@@ -3,7 +3,7 @@ import { VAN_LOG_CATEGORIES } from "../models/vanLogEntry.js";
 import { SUPPLY_CATEGORIES, SUPPLY_UNITS, SUPPLY_WHOLE_UNITS } from "./supplyConstants.js";
 import { PACKING_CATEGORIES } from "./packingConstants.js";
 import { ROLES } from "./roles.js";
-import { DEFAULT_PUSH_LOCALE, SUPPORTED_PUSH_LOCALES } from "./pushMessages.js";
+import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from "./languages.js";
 import { ISO_COUNTRY_CODES } from "./countryCodes.js";
 
 const PUSH_PLATFORMS = ["ios", "android"];
@@ -67,6 +67,9 @@ export const signupSchema = z.object({
         errorMap: () => ({ message: "You must confirm you are at least 16 years old" }),
     }),
     referralCode: z.string().trim().max(20).optional().or(z.literal("")),
+    // The app's language when signing up, for the welcome email and the
+    // ones after it.
+    language: z.enum(SUPPORTED_LANGUAGES).optional(),
 }).refine((data) => {
     return data.password === data.confirmPassword;
 }, {
@@ -174,6 +177,12 @@ export const contactSchema = z.object({
     email: z.string().email("Invalid email address"),
     subject: z.string().min(2, "Subject must be at least 2 characters").max(CONTACT_SUBJECT_MAX_LENGTH, `Subject must be less than ${CONTACT_SUBJECT_MAX_LENGTH} characters`),
     message: z.string().min(10, "Message must be at least 10 characters").max(CONTACT_MESSAGE_MAX_LENGTH, `Message must be less than ${CONTACT_MESSAGE_MAX_LENGTH} characters`),
+    // For the confirmation sent back: the form can be sent without an account.
+    language: z.enum(SUPPORTED_LANGUAGES).optional(),
+});
+
+export const updateLanguageSchema = z.object({
+    language: z.enum(SUPPORTED_LANGUAGES, { errorMap: () => ({ message: "Unsupported language" }) }),
 });
 
 export const commentSchema = z.object({
@@ -294,7 +303,7 @@ export const updateNotificationPreferencesSchema = z.object({
 export const registerPushTokenSchema = z.object({
     token: z.string().max(PUSH_TOKEN_MAX_LENGTH).regex(/^Expo(nent)?PushToken\[.+\]$/, "Invalid push token"),
     platform: z.enum(PUSH_PLATFORMS),
-    locale: z.enum(SUPPORTED_PUSH_LOCALES).default(DEFAULT_PUSH_LOCALE),
+    locale: z.enum(SUPPORTED_LANGUAGES).default(DEFAULT_LANGUAGE),
 });
 
 export const unregisterPushTokenSchema = z.object({

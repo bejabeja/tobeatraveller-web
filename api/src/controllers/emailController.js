@@ -13,10 +13,10 @@ export class ContactController {
             return next(new ValidationError('Contact validation failed'));
         }
         try {
-            const { name, email, subject, message } = result.data;
+            const { name, email, subject, message, language } = result.data;
             await this.emailService.sendContactNotification({ name, email, subject, message });
             // Confirmation to the sender: fire and forget, doesn't block the response
-            this.emailService.sendContactConfirmation({ name, email })
+            this.emailService.sendContactConfirmation({ name, email, language })
                 .catch(err => logger.error('[email] contact confirmation failed:', err));
             return res.status(200).json({ message: 'Message sent' });
         } catch (error) {
