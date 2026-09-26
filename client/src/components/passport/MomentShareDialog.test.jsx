@@ -37,6 +37,19 @@ describe("MomentShareDialog", () => {
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
   });
 
+  // Only the whole passport can be opened on the phone from a QR code.
+  it("tells a computer to open the app on the phone, without a QR code", async () => {
+    window.matchMedia = jest.fn(() => ({ matches: true }));
+    try {
+      renderDialog({ kind: "country", code: "IT", isPrivate: false });
+
+      expect(await screen.findByText("passport.downloadImageHintDesktop")).toBeInTheDocument();
+      expect(screen.queryByRole("img", { name: "passport.phoneQrLabel" })).toBeNull();
+    } finally {
+      delete window.matchMedia;
+    }
+  });
+
   it("draws the card of a new badge with its emoji and name", async () => {
     renderDialog({ kind: "badge", code: "explorer", isPrivate: false });
 

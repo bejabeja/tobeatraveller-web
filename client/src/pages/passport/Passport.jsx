@@ -3,10 +3,10 @@ import toast from "react-hot-toast";
 import { IoArrowBack, IoShareSocialOutline } from "react-icons/io5";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { Link, useParams, useSearchParams } from "react-router-dom";
+import { Link, Navigate, useLocation, useParams, useSearchParams } from "react-router-dom";
 import {
   BADGE_EMOJI, BADGE_FAMILY_ORDER, MOMENT_KINDS, findPassportMoment, PASSPORT_MOMENT_BADGE_PARAM, PASSPORT_MOMENT_COUNTRY_PARAM, PASSPORT_SHARE_MOMENT,
-  PASSPORT_SHARE_PARAM, PASSPORT_SHARE_WITH_ACHIEVEMENTS,
+  PASSPORT_SHARE_ON_PHONE, PASSPORT_SHARE_PARAM, PASSPORT_SHARE_WITH_ACHIEVEMENTS,
   countryFlag, countryName, isPassportUnstarted, passportStampStyle, signupUrlFromPassport,
 } from "@tobeatraveller/shared";
 import CountryPickerDialog from "../../components/passport/CountryPickerDialog";
@@ -19,7 +19,7 @@ import { getPendingDeclaredCountries, setPendingDeclaredCountries } from "../../
 import { usePassportLeaderboard } from "../../hooks/usePassportLeaderboard";
 import { useUserPassport } from "../../hooks/useUserPassport";
 import { usePageMeta } from "../../hooks/usePageMeta";
-import { selectAuthUser } from "../../store/auth/authSelectors";
+import { selectAuthUser, selectIsAuthChecked, selectIsAuthenticated } from "../../store/auth/authSelectors";
 import { trackEvent } from "../../utils/analytics";
 import { optimizedCloudinaryUrl } from "../../utils/cloudinaryUrl";
 import { generateAvatar } from "../../utils/constants/constants";
@@ -313,6 +313,9 @@ const Passport = () => {
   const { t, i18n } = useTranslation();
   const { id } = useParams();
   const authUser = useSelector(selectAuthUser);
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  const isAuthChecked = useSelector(selectIsAuthChecked);
+  const location = useLocation();
   const { passport, loading, error, reload } = useUserPassport(id);
   const [isDeclaredOpen, setIsDeclaredOpen] = useState(false);
   const [savingDeclared, setSavingDeclared] = useState(false);
@@ -332,6 +335,7 @@ const Passport = () => {
   // Coming from a new country or badge notification: open the card of that
   // country or badge (or the whole passport's dialog if it can't be found)
   // right away, then drop the parameters so a reload doesn't open it again.
+  // From the desktop dialog's QR code, the whole passport's dialog.
   // A moment waits for the passport, which says whether it's private.
   useEffect(() => {
     if (!shareRequest || !isOwner) return;
@@ -346,7 +350,7 @@ const Passport = () => {
       setMoment(momentFound);
     } else {
       setShareWithAchievements(shareRequest === PASSPORT_SHARE_WITH_ACHIEVEMENTS || Boolean(searchParams.get(PASSPORT_MOMENT_BADGE_PARAM)));
-      setShareSource(PASSPORT_SHARE_SOURCES.NOTIFICATION);
+      setShareSource(shareRequest === PASSPORT_SHARE_ON_PHONE ? PASSPORT_SHARE_SOURCES.QR_CODE : PASSPORT_SHARE_SOURCES.NOTIFICATION);
       setIsShareOpen(true);
     }
     setSearchParams((params) => {
@@ -398,6 +402,12 @@ const Passport = () => {
     ? t("passport.ownTitle")
     : passport ? t("passport.ofUser", { username: passport.owner.username }) : t("passport.title");
   usePageMeta({ title });
+
+  // Share links (a notification, the QR code) open a dialog only the owner
+  // has: signed out, typically on a phone, they sign in and come back to it.
+  if (shareRequest && isAuthChecked && !isAuthenticated) {
+    return <Navigate to="/login" replace state={{ redirectTo: `${location.pathname}${location.search}` }} />;
+  }
 
   if (loading) {
     return <div className="passport section__container"><div className="passport__skeleton" /></div>;

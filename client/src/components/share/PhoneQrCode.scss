@@ -1,0 +1,19 @@
+// Dark on white in either theme: a camera can't read a code in light on dark.
+.phone-qr-code {
+  flex-shrink: 0;
+  // About 3px per module for a passport link (version 5, 41 modules with
+  // the quiet zone): smaller, phone cameras struggle to read it off a screen.
+  width: 120px;
+  height: 120px;
+  border-radius: 6px;
+  background: #fff;
+
+  // Two classes, to win over pages that size every svg as an icon, such as
+  // `.passport svg`, where this dialog opens.
+  .phone-qr-code__code {
+    display: block;
+    width: 100%;
+    height: 100%;
+    fill: #1b2a41;
+  }
+}

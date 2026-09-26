@@ -1499,6 +1499,8 @@
     "copyLink": "Copiar enlace",
     "downloadImageHint": "¿Lo subes a Instagram? Descarga la imagen.",
     "downloadImageHintDesktop": "¿Lo subes a Instagram? Descarga la imagen o abre ToBeATraveller en el móvil.",
+    "downloadImageHintQr": "¿Lo subes a Instagram? Escanéalo con el móvil o descarga la imagen.",
+    "phoneQrLabel": "Código QR para compartir tu pasaporte desde el móvil",
     "linkCopiedPlain": "Enlace copiado",
     "shareReward": "🎁 Si alguien se registra con tu enlace y publica su primer viaje, los dos ganáis 1 mes de Premium.",
     "inAppBrowserHint": "Estás en el navegador de {{app}}, que no permite compartir imágenes. Para compartir tu pasaporte, abre esta página en Safari o Chrome (menú ··· → Abrir en el navegador).",

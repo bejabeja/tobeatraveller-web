@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { passportSharePath } from "@tobeatraveller/shared";
 import { usePassportShareImage } from "../../hooks/usePassportShareImage";
 import ShareImageActions from "../share/ShareImageActions";
 import { trackEvent } from "../../utils/analytics";
@@ -120,6 +121,7 @@ const PassportShareDialog = ({
               shareText={t("passport.shareText")}
               loading={loading}
               onShared={trackShared}
+              phoneUrl={`${window.location.origin}${passportSharePath(userId, { onPhone: true })}`}
             />
           </div>
         </div>

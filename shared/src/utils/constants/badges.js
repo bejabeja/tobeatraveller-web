@@ -160,8 +160,12 @@ export const PASSPORT_SHARE_COUNTRIES = 'countries';
 export const PASSPORT_SHARE_MOMENT = 'moment';
 export const PASSPORT_MOMENT_COUNTRY_PARAM = 'country';
 export const PASSPORT_MOMENT_BADGE_PARAM = 'badge';
-export const passportSharePath = (userId, { withAchievements = false, moment = null } = {}) => {
+// `onPhone` is the QR code on the desktop dialog: the owner goes on sharing
+// from their phone, which can post the image to a story.
+export const PASSPORT_SHARE_ON_PHONE = 'phone';
+export const passportSharePath = (userId, { withAchievements = false, moment = null, onPhone = false } = {}) => {
     const base = `/profile/${userId}/passport?${PASSPORT_SHARE_PARAM}=`;
+    if (onPhone) return `${base}${PASSPORT_SHARE_ON_PHONE}`;
     if (moment?.countryCode) {
         return `${base}${PASSPORT_SHARE_MOMENT}&${PASSPORT_MOMENT_COUNTRY_PARAM}=${encodeURIComponent(moment.countryCode)}`;
     }

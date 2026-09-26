@@ -194,6 +194,10 @@ describe('summarizePassportForSharing', () => {
         expect(passportSharePath('user-1', { withAchievements: true })).toBe('/profile/user-1/passport?share=achievements');
     });
 
+    it('links to the passport with the share dialog open on the phone, from the QR code', () => {
+        expect(passportSharePath('user-1', { onPhone: true })).toBe('/profile/user-1/passport?share=phone');
+    });
+
     it('keeps the referral code in the sign-up link offered to a visitor, and marks where it came from', () => {
         expect(signupUrlFromPassport('jane doe')).toBe('/register?source=passport&ref=jane%20doe');
         expect(signupUrlFromPassport(null)).toBe('/register?source=passport');

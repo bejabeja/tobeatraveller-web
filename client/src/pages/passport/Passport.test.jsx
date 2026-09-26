@@ -1,11 +1,18 @@
 import { render, screen } from "@testing-library/react";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
 import Passport from "./Passport.jsx";
 
 let mockAuthUser = { id: "user-1" };
 
+// Signed in as `mockAuthUser`, or signed out when it is null; the stored
+// session always already checked.
 jest.mock("react-redux", () => ({
-  useSelector: () => mockAuthUser,
+  useSelector: (selector) => {
+    const { selectIsAuthChecked, selectIsAuthenticated } = jest.requireActual("../../store/auth/authSelectors");
+    if (selector === selectIsAuthenticated) return Boolean(mockAuthUser);
+    if (selector === selectIsAuthChecked) return true;
+    return mockAuthUser;
+  },
 }));
 
 jest.mock("react-i18next", () => ({
@@ -50,11 +57,14 @@ const PASSPORT = {
   ],
 };
 
+const LoginPage = () => <div>login redirectTo:{useLocation().state?.redirectTo}</div>;
+
 const renderPassport = (path = "/profile/user-1/passport") =>
   render(
     <MemoryRouter initialEntries={[path]}>
       <Routes>
         <Route path="/profile/:id/passport" element={<Passport />} />
+        <Route path="/login" element={<LoginPage />} />
       </Routes>
     </MemoryRouter>
   );
@@ -206,6 +216,24 @@ describe("Passport page", () => {
 
     expect(await screen.findByText(/share-dialog achievements:false/)).toBeInTheDocument();
     expect(screen.queryByText(/moment-dialog/)).not.toBeInTheDocument();
+  });
+
+  it("opens the share dialog when scanning the QR code of the desktop dialog, and says so", async () => {
+    getUserPassport.mockResolvedValue(PASSPORT);
+
+    renderPassport("/profile/user-1/passport?share=phone");
+
+    expect(await screen.findByText("share-dialog achievements:false source:qr_code")).toBeInTheDocument();
+  });
+
+  // Typically the phone scanning the QR code, not signed in there yet.
+  it("sends a signed-out owner to log in first, and back to the share dialog", async () => {
+    mockAuthUser = null;
+    getUserPassport.mockResolvedValue(PASSPORT);
+
+    renderPassport("/profile/user-1/passport?share=phone");
+
+    expect(await screen.findByText("login redirectTo:/profile/user-1/passport?share=phone")).toBeInTheDocument();
   });
 
   it("does not open the share dialog for someone else's passport", async () => {

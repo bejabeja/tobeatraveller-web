@@ -18,6 +18,7 @@ export const PASSPORT_SHARE_SOURCES = Object.freeze({
     PASSPORT_PAGE: 'passport_page',
     PROFILE: 'profile',
     NOTIFICATION: 'notification',
+    QR_CODE: 'qr_code',
 });
 
 // Where the yearly recap was opened from.

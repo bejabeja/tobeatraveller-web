@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import PassportShareDialog from "./PassportShareDialog.jsx";
+import PhoneQrCode from "../share/PhoneQrCode";
 
 // Stable like the real one: the hook rebuilds the image whenever `t` changes.
 const mockT = (key) => key;
@@ -258,12 +259,29 @@ describe("PassportShareDialog", () => {
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith(expect.stringContaining("?ref=jane"));
   });
 
-  it("suggests posting the image from the phone on a computer", async () => {
+  // The phone can post the image to a story; a computer can't.
+  it("shows a computer a QR code that opens the sharing on the phone", async () => {
     window.matchMedia = jest.fn(() => ({ matches: true }));
     try {
       renderDialog();
 
-      expect(await screen.findByText("passport.downloadImageHintDesktop")).toBeInTheDocument();
+      expect(await screen.findByRole("img", { name: "passport.phoneQrLabel" })).toBeInTheDocument();
+      expect(screen.getByText("passport.downloadImageHintQr")).toBeInTheDocument();
+    } finally {
+      delete window.matchMedia;
+    }
+  });
+
+  // The owner's own passport with the dialog open, not the referral link
+  // meant for others.
+  it("encodes in the QR code the owner's passport with the share dialog open", async () => {
+    window.matchMedia = jest.fn(() => ({ matches: true }));
+    try {
+      renderDialog();
+      const qrCode = await screen.findByRole("img", { name: "passport.phoneQrLabel" });
+
+      const { container } = render(<PhoneQrCode url={`${window.location.origin}/profile/user-1/passport?share=phone`} label="expected" />);
+      expect(qrCode.innerHTML).toBe(container.querySelector("svg").innerHTML);
     } finally {
       delete window.matchMedia;
     }
@@ -273,6 +291,7 @@ describe("PassportShareDialog", () => {
     renderDialog();
 
     expect(await screen.findByText("passport.downloadImageHint")).toBeInTheDocument();
+    expect(screen.queryByRole("img", { name: "passport.phoneQrLabel" })).toBeNull();
   });
 
   it("tells the owner to open the page in the phone's browser when inside Instagram's", async () => {

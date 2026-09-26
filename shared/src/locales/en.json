@@ -1499,6 +1499,8 @@
     "copyLink": "Copy link",
     "downloadImageHint": "Posting on Instagram? Download the image.",
     "downloadImageHintDesktop": "Posting on Instagram? Download the image or open ToBeATraveller on your phone.",
+    "downloadImageHintQr": "Posting on Instagram? Scan this with your phone or download the image.",
+    "phoneQrLabel": "QR code to share your passport from your phone",
     "linkCopiedPlain": "Link copied",
     "shareReward": "🎁 If someone signs up with your link and posts their first trip, you both get 1 month of Premium.",
     "inAppBrowserHint": "You're in {{app}}'s built-in browser, which can't share images. To share your passport, open this page in Safari or Chrome (··· menu → Open in browser).",

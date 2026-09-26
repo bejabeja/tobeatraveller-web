@@ -3,14 +3,19 @@ import { useTranslation } from "react-i18next";
 import { PASSPORT_SHARE_METHODS } from "../../utils/analyticsEvents";
 import { inAppBrowserName } from "../../utils/inAppBrowser";
 import { canShareImages, copyLink, downloadImage, isDesktop } from "../../utils/shareImage";
+import PhoneQrCode from "./PhoneQrCode";
 import "./ShareImageActions.scss";
 
 // Share a generated story image, with its link, through the system share
 // sheet where the browser can share files; otherwise the link, to copy,
 // with the image to download for a story. `onShared(method)` is told how
-// it went out, for analytics.
-const ShareImageActions = ({ blob, previewUrl, url, fileName, shareText, loading, onShared }) => {
+// it went out, for analytics. `phoneUrl`, where there is one, opens the same
+// sharing on the phone: a computer shows it as a QR code to scan.
+const ShareImageActions = ({ blob, previewUrl, url, fileName, shareText, loading, onShared, phoneUrl = null }) => {
   const { t } = useTranslation();
+  const desktop = isDesktop();
+  const showQrCode = desktop && Boolean(phoneUrl);
+  const storyHint = showQrCode ? "passport.downloadImageHintQr" : desktop ? "passport.downloadImageHintDesktop" : "passport.downloadImageHint";
   const file = blob ? new File([blob], fileName, { type: "image/png" }) : null;
   const canShareFile = canShareImages(fileName);
   const inAppBrowser = canShareFile ? null : inAppBrowserName();
@@ -72,14 +77,17 @@ const ShareImageActions = ({ blob, previewUrl, url, fileName, shareText, loading
             </button>
           </div>
           <div className="share-actions__story">
-            <p className="share-actions__hint">{t(isDesktop() ? "passport.downloadImageHintDesktop" : "passport.downloadImageHint")}</p>
-            <button
-              className="btn btn--ghost share-actions__download"
-              onClick={() => { downloadImage(previewUrl, fileName); onShared(PASSPORT_SHARE_METHODS.DOWNLOAD); }}
-              disabled={!previewUrl || loading}
-            >
-              {t("passport.downloadImage")}
-            </button>
+            {showQrCode && <PhoneQrCode url={phoneUrl} label={t("passport.phoneQrLabel")} />}
+            <div className={`share-actions__story-body${showQrCode ? " share-actions__story-body--stacked" : ""}`}>
+              <p className="share-actions__hint">{t(storyHint)}</p>
+              <button
+                className="btn btn--ghost share-actions__download"
+                onClick={() => { downloadImage(previewUrl, fileName); onShared(PASSPORT_SHARE_METHODS.DOWNLOAD); }}
+                disabled={!previewUrl || loading}
+              >
+                {t("passport.downloadImage")}
+              </button>
+            </div>
           </div>
         </div>
       )}
