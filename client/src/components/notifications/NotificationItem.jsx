@@ -18,7 +18,7 @@ const NotificationItem = ({ notification: n, onClick }) => {
     follow:  () => <><strong>@{n.actor?.username}</strong>{others}{verb("startedFollowing")}</>,
     like:    () => <><strong>@{n.actor?.username}</strong>{others}{verb("liked")}<em>{n.itinerary?.title}</em></>,
     comment: () => <><strong>@{n.actor?.username}</strong>{others}{verb("commented")}<em>{n.itinerary?.title}</em></>,
-    referral_reward: () => <>🎁 {t("notifications.referralRewardPrefix")}<strong>@{n.actor?.username}</strong> {t("notifications.referralRewardSuffix")}</>,
+    referral_reward: () => <>🎁 {t("notifications.referralRewardPrefix")} <strong>@{n.actor?.username}</strong> {t("notifications.referralRewardSuffix")}</>,
     badge_earned: () => <>{BADGE_EMOJI[n.badgeId]} {t("notifications.badgeEarned")}<strong>{t(`badges.${n.badgeId}.name`)}</strong></>,
     recap_ready: () => <>{t("notifications.recapReady")}<strong>{t("notifications.recapReadyCta")}</strong></>,
     country_stamp: () => <>{t("notifications.countryStamp")}<strong>{countryFlag(n.countryCode)} {countryName(n.countryCode, i18n.language)}</strong></>,
