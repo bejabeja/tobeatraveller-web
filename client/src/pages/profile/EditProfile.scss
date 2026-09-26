@@ -1,4 +1,6 @@
 // ── EditProfile / Settings layout (ep__) ────────────────────────────────────────
+$ep-column-width: 600px;
+
 .ep {
   display: flex;
   flex-direction: column;
@@ -12,7 +14,8 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.875rem 1.25rem;
+    // Its content lines up with the body's column below it.
+    padding: 0.875rem max(1.25rem, calc((100% - #{$ep-column-width}) / 2));
     background: var(--white-color);
     border-bottom: 1px solid var(--border-color);
     box-shadow: 0 1px 0 var(--border-color);
@@ -69,10 +72,10 @@
   }
 
   &__body {
-    max-width: 600px;
+    max-width: calc(#{$ep-column-width} + 2rem);
     width: 100%;
     margin: 0 auto;
-    padding: 0 0 3rem;
+    padding: 0 1rem 3rem;
     display: flex;
     flex-direction: column;
   }
@@ -84,6 +87,13 @@
     padding: 2rem 0 1.5rem;
     background: var(--white-color);
     border-bottom: 1px solid var(--border-color);
+
+    // Edge to edge where the body's gutter reaches the screen's edges, as it
+    // was before the gutter; as wide as the cards everywhere else.
+    @media (max-width: calc(#{$ep-column-width} + 2rem)) {
+      width: auto;
+      margin: 0 -1rem;
+    }
   }
 
   &__avatar-editor {
@@ -157,14 +167,9 @@
     flex-direction: column;
     gap: 0.75rem;
     margin-top: 1rem;
-
-    &--danger {
-      border-color: color-mix(in srgb, var(--error-color) 25%, transparent);
-      background: color-mix(in srgb, var(--error-color) 4%, transparent);
-    }
   }
 
-  // Icon + label row used as a section's heading (danger uses its own red variant below)
+  // Icon + label row used as a section's heading
   &__section-heading {
     display: flex;
     align-items: center;
@@ -225,139 +230,6 @@
     &--checking  { color: var(--text-secondary-color); background: var(--surface-color); }
     &--available { color: #16a34a; background: #f0fdf4; }
     &--taken     { color: var(--error-color); background: #fef2f2; }
-  }
-
-  // Language
-  // Two per row, so every language fits on a narrow screen.
-  &__lang-toggle {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.5rem;
-  }
-
-  &__lang-btn {
-    flex: 1;
-    border: 1.5px solid var(--border-color);
-    border-radius: 10px;
-    padding: 0.6rem 1rem;
-    background: none;
-    cursor: pointer;
-    font-size: 0.875rem;
-    font-family: inherit;
-    color: var(--text-secondary-color);
-    font-weight: 500;
-    transition: border-color 0.15s, background 0.15s, color 0.15s;
-    text-align: center;
-
-    // An odd one out takes the whole last row, as on mobile.
-    &:last-child:nth-child(odd) {
-      grid-column: 1 / -1;
-    }
-
-    &--active {
-      border-color: var(--primary-color);
-      background: #FFF0E8;
-      color: var(--primary-color);
-      font-weight: 700;
-    }
-  }
-
-  // Notification preferences
-  &__toggle-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-  }
-
-  &__toggle-label {
-    font-size: 0.9rem;
-    color: var(--text-color);
-    margin: 0;
-    width: auto;
-  }
-
-  &__toggle {
-    position: relative;
-    display: inline-flex;
-    flex-shrink: 0;
-    width: 42px;
-    height: 24px;
-
-    input {
-      position: absolute;
-      opacity: 0;
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      cursor: pointer;
-
-      &:disabled { cursor: default; }
-
-      &:checked + .ep__toggle-slider {
-        background: var(--primary-color);
-        &::before { transform: translateX(18px); }
-      }
-    }
-  }
-
-  &__toggle-slider {
-    position: absolute;
-    inset: 0;
-    background: var(--border-color);
-    border-radius: 999px;
-    transition: background 0.15s;
-    pointer-events: none;
-
-    &::before {
-      content: "";
-      position: absolute;
-      top: 2px;
-      left: 2px;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: var(--white-color);
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
-      transition: transform 0.15s;
-    }
-  }
-
-  // Data
-  &__link-btn {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--primary-color);
-    text-decoration: none;
-    width: fit-content;
-    background: none;
-    border: none;
-    padding: 0;
-    font-family: inherit;
-    cursor: pointer;
-    &:hover { text-decoration: underline; }
-    &:disabled { opacity: 0.6; cursor: default; }
-  }
-
-  // Danger
-  &__danger-header {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    color: var(--error-color);
-
-    svg {
-      width: 16px;
-      height: 16px;
-      min-width: 16px;
-      flex-shrink: 0;
-    }
-
-    .ep__section-label {
-      color: var(--error-color);
-      flex: 1;
-      min-width: 0;
-    }
   }
 
   // Generic text input inside a modal

@@ -981,7 +981,7 @@
     "notifyOnFriendStamps": "Tampons et pays des personnes que je suis",
     "yourData": "Tes données",
     "legal": "Mentions légales",
-    "dangerZone": "⚠️ Zone de danger"
+    "dangerZone": "Zone de danger"
   },
   "errors": {
     "profileLoad": "Impossible de charger les infos du profil. Réessaie plus tard.",

@@ -974,7 +974,7 @@
     "notifyOnFriendStamps": "Stamps and countries from people I follow",
     "yourData": "Your data",
     "legal": "Legal",
-    "dangerZone": "⚠️ Danger zone"
+    "dangerZone": "Danger zone"
   },
   "errors": {
     "profileLoad": "We couldn't load the profile info. Please try again later.",

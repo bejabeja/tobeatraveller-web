@@ -1,6 +1,180 @@
-// Settings page: reuses all ep__ classes from EditProfile.scss.
-// Add only overrides or page-specific additions here.
+// Settings page: the page frame, cards and headings come from the ep__
+// classes in EditProfile.scss; its rows are its own.
 
-.ep__body--settings {
-  // placeholder for future settings-specific layout tweaks
+// Tall enough to tap comfortably.
+$settings-row-min-height: 48px;
+
+.ep {
+  // The on/off switch of the notification rows.
+  &__toggle {
+    position: relative;
+    display: inline-flex;
+    flex-shrink: 0;
+    width: 42px;
+    height: 24px;
+
+    input {
+      position: absolute;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      cursor: pointer;
+
+      &:disabled { cursor: default; }
+
+      &:checked + .ep__toggle-slider {
+        background: var(--primary-color);
+        &::before { transform: translateX(18px); }
+      }
+    }
+  }
+
+  &__toggle-slider {
+    position: absolute;
+    inset: 0;
+    background: var(--border-color);
+    border-radius: 999px;
+    transition: background 0.15s;
+    pointer-events: none;
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--white-color);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+      transition: transform 0.15s;
+    }
+  }
+}
+
+.settings {
+  &__group {
+    gap: 0.25rem;
+
+    .ep__section-label {
+      text-transform: uppercase;
+    }
+
+    &--danger {
+      border-color: color-mix(in srgb, var(--error-color) 25%, transparent);
+
+      .ep__section-heading,
+      .ep__section-label {
+        color: var(--error-color);
+      }
+    }
+  }
+
+  // One row per setting, the same shape whatever it is: its name on the
+  // left, and its value, control or chevron on the right.
+  &__rows {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: $settings-row-min-height;
+    padding: 0.5rem 0;
+    border-top: 1px solid var(--border-color);
+    font-family: inherit;
+    text-align: left;
+    color: var(--text-color);
+
+    &:first-child {
+      border-top: none;
+    }
+
+    &:last-child {
+      padding-bottom: 0;
+    }
+
+    &--action {
+      width: 100%;
+      background: none;
+      border-right: none;
+      border-bottom: none;
+      border-left: none;
+      text-decoration: none;
+      cursor: pointer;
+
+      &:hover .settings__row-label {
+        color: var(--primary-color);
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: default;
+      }
+    }
+
+    &--danger {
+      .settings__row-label,
+      &:hover .settings__row-label {
+        color: var(--error-color);
+      }
+    }
+  }
+
+  &__row-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+    width: auto;
+  }
+
+  &__row-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-color);
+    width: auto;
+    transition: color 0.15s;
+  }
+
+  &__row-hint {
+    font-size: 0.8rem;
+    line-height: 1.45;
+    color: var(--text-secondary-color);
+    width: auto;
+  }
+
+  &__row-value {
+    min-width: 0;
+    width: auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.875rem;
+    color: var(--text-secondary-color);
+  }
+
+  &__row-chevron {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    color: var(--text-secondary-color);
+  }
+
+  &__select {
+    width: auto;
+    max-width: 55%;
+    padding: 0.4rem 0.6rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--white-color);
+    font-family: inherit;
+    font-size: 0.875rem;
+    color: var(--text-color);
+    cursor: pointer;
+  }
 }

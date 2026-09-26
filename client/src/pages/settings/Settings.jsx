@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import {
-  IoArrowBackOutline, IoCloudDownloadOutline, IoDocumentTextOutline, IoGlobeOutline,
-  IoLockClosedOutline, IoNotificationsOutline,
+  IoArrowBackOutline, IoChevronForward, IoCloudDownloadOutline, IoDocumentTextOutline,
+  IoNotificationsOutline, IoPersonOutline, IoWarningOutline,
 } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
@@ -26,6 +26,22 @@ const NOTIFICATION_PREFERENCE_TOGGLES = [
   { key: "notifyOnFollow", labelKey: "settings.notifyOnFollow" },
   { key: "notifyOnFriendStamps", labelKey: "settings.notifyOnFriendStamps" },
 ];
+
+// Every setting that opens or does something: a full-width row with its
+// name, an optional line under it, and a chevron. `as` makes it a link.
+const SettingsActionRow = ({ as: Component = "button", label, hint, danger = false, ...props }) => (
+  <Component
+    {...(Component === "button" ? { type: "button" } : {})}
+    className={`settings__row settings__row--action${danger ? " settings__row--danger" : ""}`}
+    {...props}
+  >
+    <span className="settings__row-text">
+      <span className="settings__row-label">{label}</span>
+      {hint && <span className="settings__row-hint">{hint}</span>}
+    </span>
+    <IoChevronForward className="settings__row-chevron" aria-hidden="true" />
+  </Component>
+);
 
 const Settings = () => {
   const { t } = useTranslation();
@@ -151,113 +167,101 @@ const Settings = () => {
       </header>
 
       <div className="ep__body">
-        {/* Account */}
-        <section className="ep__section">
+        <section className="ep__section settings__group">
           <div className="ep__section-heading">
-            <IoLockClosedOutline aria-hidden="true" />
-            <p className="ep__section-label">{t("settings.account").toUpperCase()}</p>
+            <IoPersonOutline aria-hidden="true" />
+            <h2 className="ep__section-label">{t("settings.account")}</h2>
           </div>
-          <p className="ep__section-desc">{userMe?.email}</p>
-          <button
-            type="button"
-            className="ep__link-btn"
-            onClick={() => setShowPasswordModal(true)}
-          >
-            {t("editProfile.changePassword")} →
-          </button>
+          <div className="settings__rows">
+            <div className="settings__row">
+              <span className="settings__row-label">{t("auth.emailLabel")}</span>
+              <span className="settings__row-value">{userMe?.email}</span>
+            </div>
+            <label className="settings__row">
+              <span className="settings__row-label">{t("settings.language")}</span>
+              <select
+                className="settings__select"
+                value={currentLang}
+                onChange={(event) => i18n.changeLanguage(event.target.value)}
+              >
+                {APP_LANGUAGES.map(({ code, flag, name }) => (
+                  <option key={code} value={code}>{flag} {name}</option>
+                ))}
+              </select>
+            </label>
+            <SettingsActionRow label={t("editProfile.changePassword")} onClick={() => setShowPasswordModal(true)} />
+          </div>
         </section>
 
-        {/* Notifications */}
-        <section className="ep__section">
+        <section className="ep__section settings__group">
           <div className="ep__section-heading">
             <IoNotificationsOutline aria-hidden="true" />
-            <p className="ep__section-label">{t("settings.notifications").toUpperCase()}</p>
+            <h2 className="ep__section-label">{t("settings.notifications")}</h2>
           </div>
-          {notificationPreferences &&
-            NOTIFICATION_PREFERENCE_TOGGLES.map(({ key, labelKey }) => (
-              <div className="ep__toggle-row" key={key}>
-                <p className="ep__toggle-label">{t(labelKey)}</p>
-                <label className="ep__toggle">
-                  <input
-                    type="checkbox"
-                    checked={notificationPreferences[key]}
-                    disabled={updatingPreferenceKey === key}
-                    onChange={() => handleTogglePreference(key)}
-                  />
-                  <span className="ep__toggle-slider" />
+          {notificationPreferences && (
+            <div className="settings__rows">
+              {NOTIFICATION_PREFERENCE_TOGGLES.map(({ key, labelKey }) => (
+                <label className="settings__row" key={key}>
+                  <span className="settings__row-label">{t(labelKey)}</span>
+                  <span className="ep__toggle">
+                    <input
+                      type="checkbox"
+                      role="switch"
+                      checked={notificationPreferences[key]}
+                      disabled={updatingPreferenceKey === key}
+                      onChange={() => handleTogglePreference(key)}
+                    />
+                    <span className="ep__toggle-slider" />
+                  </span>
                 </label>
-              </div>
-            ))}
+              ))}
+            </div>
+          )}
         </section>
 
-        {/* Language */}
-        <section className="ep__section">
-          <div className="ep__section-heading">
-            <IoGlobeOutline aria-hidden="true" />
-            <p className="ep__section-label">{t("settings.language").toUpperCase()}</p>
-          </div>
-          <div className="ep__lang-toggle">
-            {APP_LANGUAGES.map(({ code, flag, name }) => (
-              <button
-                key={code}
-                type="button"
-                className={`ep__lang-btn${currentLang === code ? " ep__lang-btn--active" : ""}`}
-                aria-pressed={currentLang === code}
-                onClick={() => i18n.changeLanguage(code)}
-              >
-                {flag} {name}
-              </button>
-            ))}
-          </div>
-        </section>
-
-        {/* Your data */}
-        <section className="ep__section">
+        <section className="ep__section settings__group">
           <div className="ep__section-heading">
             <IoCloudDownloadOutline aria-hidden="true" />
-            <p className="ep__section-label">{t("settings.yourData").toUpperCase()}</p>
+            <h2 className="ep__section-label">{t("settings.yourData")}</h2>
           </div>
-          <p className="ep__section-desc">{t("editProfile.yourDataDesc")}</p>
-          <button
-            type="button"
-            className="ep__link-btn"
-            onClick={handleExportData}
-            disabled={isExporting}
-          >
-            {isExporting ? t("common.loading") : `${t("editProfile.downloadData")} →`}
-          </button>
+          <div className="settings__rows">
+            <SettingsActionRow
+              label={isExporting ? t("common.loading") : t("editProfile.downloadData")}
+              hint={t("editProfile.yourDataDesc")}
+              onClick={handleExportData}
+              disabled={isExporting}
+            />
+          </div>
         </section>
 
-        {/* Legal */}
-        <section className="ep__section">
+        <section className="ep__section settings__group">
           <div className="ep__section-heading">
             <IoDocumentTextOutline aria-hidden="true" />
-            <p className="ep__section-label">{t("settings.legal").toUpperCase()}</p>
+            <h2 className="ep__section-label">{t("settings.legal")}</h2>
           </div>
-          <Link to="/terms" className="ep__link-btn">{t("auth.termsOfService")} →</Link>
-          <Link to="/privacy-policy" className="ep__link-btn">{t("auth.privacyPolicy")} →</Link>
-          <button
-            type="button"
-            className="ep__link-btn"
-            onClick={() => window.dispatchEvent(new Event(REOPEN_COOKIE_PREFERENCES_EVENT))}
-          >
-            {t("footer.cookiePreferences")} →
-          </button>
+          <div className="settings__rows">
+            <SettingsActionRow as={Link} to="/terms" label={t("auth.termsOfService")} />
+            <SettingsActionRow as={Link} to="/privacy-policy" label={t("auth.privacyPolicy")} />
+            <SettingsActionRow
+              label={t("footer.cookiePreferences")}
+              onClick={() => window.dispatchEvent(new Event(REOPEN_COOKIE_PREFERENCES_EVENT))}
+            />
+          </div>
         </section>
 
-        {/* Danger zone */}
-        <section className="ep__section ep__section--danger">
-          <div className="ep__danger-header">
-            <p className="ep__section-label">{t("settings.dangerZone").toUpperCase()}</p>
+        <section className="ep__section settings__group settings__group--danger">
+          <div className="ep__section-heading">
+            <IoWarningOutline aria-hidden="true" />
+            <h2 className="ep__section-label">{t("settings.dangerZone")}</h2>
           </div>
-          <p className="ep__section-desc">{t("editProfile.dangerZoneDesc")}</p>
-          <button
-            type="button"
-            className="btn btn--danger"
-            onClick={() => { setDeleteConfirmInput(""); setShowDeleteModal(true); }}
-          >
-            {t("editProfile.deleteAccount")}
-          </button>
+          <div className="settings__rows">
+            <SettingsActionRow
+              danger
+              label={t("editProfile.deleteAccount")}
+              hint={t("editProfile.dangerZoneDesc")}
+              onClick={() => { setDeleteConfirmInput(""); setShowDeleteModal(true); }}
+            />
+          </div>
         </section>
       </div>
 
