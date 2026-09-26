@@ -643,6 +643,78 @@ $avatar-size-tablet: 112px;
 
 // ── Visibility toggle ─────────────────────────────────────────────────────────
 .profile {
+  // Your trips / saved trips, on your own profile.
+  &__trips-tabs {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  &__trips-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    width: auto;
+    margin-bottom: -1px;
+    padding: 0.6rem 0;
+    border: none;
+    border-bottom: 2px solid transparent;
+    background: none;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-secondary-color);
+    cursor: pointer;
+
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    &--active {
+      border-bottom-color: var(--primary-color);
+      color: var(--text-color);
+    }
+  }
+
+  &__trips-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    width: 100%;
+  }
+
+  &__trips-filter {
+    width: auto;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary-color);
+    text-decoration: none;
+
+    &:hover {
+      color: var(--primary-color);
+    }
+  }
+
+  &__saved {
+    margin-top: 1rem;
+  }
+
+  &__saved-hint,
+  &__saved-empty {
+    margin: 0 0 1rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary-color);
+  }
+
+  &__saved-empty {
+    padding: 2rem 0;
+    text-align: center;
+  }
+
   &__visibility-toggle {
     display: flex;
     flex-wrap: wrap;

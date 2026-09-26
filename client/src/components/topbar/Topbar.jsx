@@ -4,9 +4,7 @@ import {
   IoCardOutline,
   IoChevronDownOutline,
   IoGiftOutline,
-  IoListOutline,
   IoNotificationsOutline,
-  IoSaveOutline,
   IoSearchOutline,
   IoSettingsOutline,
 } from "react-icons/io5";
@@ -101,14 +99,6 @@ const Topbar = ({ onOpenSearch }) => {
             <Link to={`/profile/${userMe?.id}`} className="topbar__menu-item" onClick={() => setMenuOpen(false)}>
               <GoPerson className="topbar__menu-icon" />
               <span>{t("nav.profile")}</span>
-            </Link>
-            <Link to="/my-itineraries" className="topbar__menu-item" onClick={() => setMenuOpen(false)}>
-              <IoListOutline className="topbar__menu-icon" />
-              <span>{t("nav.myTrips")}</span>
-            </Link>
-            <Link to="/itineraries/saved" className="topbar__menu-item" onClick={() => setMenuOpen(false)}>
-              <IoSaveOutline className="topbar__menu-icon" />
-              <span>{t("nav.savedTrips")}</span>
             </Link>
             <Link to="/settings" className="topbar__menu-item" onClick={() => setMenuOpen(false)}>
               <IoSettingsOutline className="topbar__menu-icon" />

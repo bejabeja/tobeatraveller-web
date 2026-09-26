@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { IoChevronForward, IoLinkOutline, IoLocationOutline, IoSettingsOutline, IoShareSocialOutline } from "react-icons/io5";
+import { IoChevronForward, IoLinkOutline, IoLocationOutline, IoLockClosedOutline, IoSettingsOutline, IoShareSocialOutline } from "react-icons/io5";
 import { MdOutlineCalendarMonth, MdOutlineEdit } from "react-icons/md";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
@@ -10,6 +10,7 @@ import Modal from "../../components/modal/Modal";
 import { useFollow } from "../../hooks/useFollow";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useProfileData } from "../../hooks/useProfileData";
+import { useSavedTrips } from "../../hooks/useSavedTrips";
 import { useUserPassport } from "../../hooks/useUserPassport";
 import JsonLd from "../../components/seo/JsonLd";
 import { selectAuthUser } from "../../store/auth/authSelectors";
@@ -33,6 +34,10 @@ const COMPLETENESS_TIP_KEYS = [
   { key: "avatarUrl", tipKey: "profile.completenessTipPhoto" },
 ];
 
+// On your own profile, your trips and the ones you saved sit side by side,
+// as in the app; everyone else only sees the trips.
+const TRIPS_TABS = Object.freeze({ MINE: "mine", SAVED: "saved" });
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 const Profile = () => {
   const { t } = useTranslation();
@@ -46,6 +51,13 @@ const Profile = () => {
   const [showUnfollowModal, setShowUnfollowModal] = useState(false);
   const [followsModal, setFollowsModal] = useState(null); // null | 'followers' | 'following'
   const [visibility, setVisibility] = useState('all');
+  const [tripsTab, setTripsTab] = useState(TRIPS_TABS.MINE);
+  // Only the owner has the saved tab: saved trips are private.
+  const savedTrips = useSavedTrips(isMyProfile);
+
+  // The same page is reused from one profile to the next: each one opens on
+  // its trips, not on the tab left open on the previous one.
+  useEffect(() => setTripsTab(TRIPS_TABS.MINE), [id]);
 
   const filteredItineraries = useMemo(() => {
     if (!isMyProfile) return itineraries;
@@ -125,31 +137,81 @@ const Profile = () => {
             />
             {isMyProfile && <ProfileCompleteness user={user} t={t} />}
             {aboutContent}
-            <ItinerariesSection
-              user={user}
-              itineraries={filteredItineraries}
-              title={`${isMyProfile ? t("profile.myTrips") : t("profile.otherTrips")} (${filteredItineraries.length})`}
-              headerActions={isMyProfile && (
-                <div className="profile__visibility-toggle">
-                  {[
-                    { val: 'all',     label: t('myItineraries.all') },
-                    { val: 'public',  label: '🌍 ' + t('myItineraries.public') },
-                    { val: 'private', label: '🔒 ' + t('myItineraries.private') },
-                  ].map(opt => (
-                    <button
-                      key={opt.val}
-                      type="button"
-                      className={`profile__vis-btn${visibility === opt.val ? ' profile__vis-btn--active' : ''}`}
-                      onClick={() => setVisibility(opt.val)}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
+            {isMyProfile && (
+              <div className="profile__trips-tabs" role="tablist">
+                <button
+                  type="button"
+                  role="tab"
+                  id="profile-tab-mine"
+                  aria-controls="profile-trips-panel"
+                  aria-selected={tripsTab === TRIPS_TABS.MINE}
+                  className={`profile__trips-tab${tripsTab === TRIPS_TABS.MINE ? " profile__trips-tab--active" : ""}`}
+                  onClick={() => setTripsTab(TRIPS_TABS.MINE)}
+                >
+                  {t("profile.myTrips")} ({itineraries.length})
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  id="profile-tab-saved"
+                  aria-controls="profile-trips-panel"
+                  aria-selected={tripsTab === TRIPS_TABS.SAVED}
+                  className={`profile__trips-tab${tripsTab === TRIPS_TABS.SAVED ? " profile__trips-tab--active" : ""}`}
+                  onClick={() => setTripsTab(TRIPS_TABS.SAVED)}
+                >
+                  <IoLockClosedOutline aria-hidden="true" />
+                  {/* No count while it loads or when it couldn't: "(0)" would be wrong. */}
+                  {t("profile.savedTrips")}{!savedTrips.loading && !savedTrips.error && ` (${savedTrips.trips.length})`}
+                </button>
+              </div>
+            )}
+            <div
+              id="profile-trips-panel"
+              {...(isMyProfile ? { role: "tabpanel", "aria-labelledby": `profile-tab-${tripsTab}` } : {})}
+            >
+              {isMyProfile && tripsTab === TRIPS_TABS.SAVED ? (
+                <div className="profile__saved">
+                  <p className="profile__saved-hint">{t("profile.savedOnlyYou")}</p>
+                  {savedTrips.error ? (
+                    <p className="error-message">{t("favorites.errorMsg")}</p>
+                  ) : !savedTrips.loading && savedTrips.trips.length === 0 ? (
+                    <p className="profile__saved-empty">{t("profile.noSavedTrips")}</p>
+                  ) : (
+                    <ItinerariesSection itineraries={savedTrips.trips} isLoading={savedTrips.loading} />
+                  )}
                 </div>
+              ) : (
+                <ItinerariesSection
+                  user={user}
+                  itineraries={filteredItineraries}
+                  title={isMyProfile ? "" : `${t("profile.otherTrips")} (${filteredItineraries.length})`}
+                  headerActions={isMyProfile && (
+                    <div className="profile__trips-actions">
+                      <div className="profile__visibility-toggle">
+                        {[
+                          { val: 'all',     label: t('myItineraries.all') },
+                          { val: 'public',  label: '🌍 ' + t('myItineraries.public') },
+                          { val: 'private', label: '🔒 ' + t('myItineraries.private') },
+                        ].map(opt => (
+                          <button
+                            key={opt.val}
+                            type="button"
+                            className={`profile__vis-btn${visibility === opt.val ? ' profile__vis-btn--active' : ''}`}
+                            onClick={() => setVisibility(opt.val)}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                      {/* The full list, with search and filters by destination and dates. */}
+                      <Link to="/my-itineraries" className="profile__trips-filter">{t("profile.filterTrips")}</Link>
+                    </div>
+                  )}
+                  isLoading={loadingItineraries}
+                  isOwner={isMyProfile}
+                />
               )}
-              isLoading={loadingItineraries}
-              isOwner={isMyProfile}
-            />
+            </div>
             {/* SuggestedUsersWidget hidden for now: too few users on the
                 platform yet for "people to follow" to be useful. Re-enable
                 once there's a meaningful pool of suggestions. */}

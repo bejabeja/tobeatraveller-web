@@ -6,8 +6,6 @@ import {
   IoChevronForward,
   IoGiftOutline,
   IoJournalOutline,
-  IoListOutline,
-  IoSaveOutline,
   IoSettingsOutline,
   IoSparkles,
 } from "react-icons/io5";
@@ -36,21 +34,7 @@ const Account = () => {
   // .account__link-item--mobile-only) because the desktop sidebar already
   // lists the tools and the Topbar's account menu already has logout.
   // Grouped into titled sections (like iOS Settings/Airbnb's account page)
-  // rather than one flat list, now that it's grown to 9 rows.
-  // Rendered right after the header, before the upsell cards: a returning
-  // user opening "Me" is almost always after their own trips, not the
-  // premium/referral pitch, so that's what should be one tap away first.
-  const primarySection = {
-    // Profile itself isn't repeated here: the header card above already
-    // links to it (see the comment on that Link), so listing it again a
-    // few rows down would be the exact "same destination twice on one
-    // screen" issue this page keeps needing to avoid.
-    items: [
-      { to: "/my-itineraries", Icon: IoListOutline, label: t("nav.myTrips") },
-      { to: "/itineraries/saved", Icon: IoSaveOutline, label: t("nav.savedTrips") },
-    ],
-  };
-
+  // rather than one flat list.
   const sections = [
     {
       title: t("nav.yourTools"),
@@ -110,8 +94,6 @@ const Account = () => {
         </div>
         <IoChevronForward className="account__header-arrow" aria-hidden="true" />
       </Link>
-
-      {renderSection(primarySection, "primary")}
 
       {!isPremium && (
         <Link to="/subscription" className="account__upsell">

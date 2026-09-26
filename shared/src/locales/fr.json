@@ -398,6 +398,8 @@
     "savedTrips": "Voyages enregistrés",
     "noTripsYet": "Aucun voyage pour l'instant. Lance-toi !",
     "noPublicTrips": "Aucun voyage public pour l'instant.",
+    "filterTrips": "Rechercher et filtrer →",
+    "savedOnlyYou": "Visibles uniquement par toi.",
     "noSavedTrips": "Aucun voyage enregistré pour l'instant. Garde les itinéraires qui te plaisent !",
     "seeAll": "Tout voir →",
     "unfollowModal": "Ne plus suivre ?",
