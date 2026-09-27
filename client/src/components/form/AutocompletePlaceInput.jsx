@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Controller } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
+import { translateValidationMessage } from "@tobeatraveller/shared";
 import { useGeocodeSearch } from "../../hooks/useGeocodeSearch";
 import { useCurrentLocation } from "../../hooks/useCurrentLocation";
 import UseCurrentLocationButton from "./UseCurrentLocationButton";
@@ -130,15 +131,15 @@ const AutocompletePlaceInput = ({
               <div className="input__footer">
                 <div className="input__error">
                   {error?.label
-                    ? "Please select a valid place from the list"
-                    : error?.message || "\u00A0"}
+                    ? t("validation.placeFromList")
+                    : translateValidationMessage(t, error?.message) || "\u00A0"}
                 </div>
               </div>
 
               {shouldShowDropdown && (
                 <ul className="autocomplete-dropdown">
                   {isLoading ? (
-                    <li className="loading">Loading...</li>
+                    <li className="loading">{t("common.loading")}</li>
                   ) : suggestions.length > 0 ? (
                     suggestions.map((place, index) => (
                       <li

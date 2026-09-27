@@ -1,5 +1,6 @@
 {
   "common": {
+    "selectOption": "Choisis une option",
     "save": "Enregistrer",
     "saving": "Enregistrement…",
     "cancel": "Annuler",
@@ -1013,6 +1014,36 @@
     "yourData": "Tes données",
     "legal": "Mentions légales",
     "dangerZone": "Zone de danger"
+  },
+  "validation": {
+    "required": "Ce champ est obligatoire",
+    "tooShort": "C'est trop court",
+    "tooLong": "C'est trop long",
+    "invalid": "Cette valeur n'est pas valide",
+    "emailRequired": "L'e-mail est obligatoire",
+    "emailInvalid": "Saisis une adresse e-mail valide",
+    "usernameMin": "Le nom d'utilisateur doit contenir au moins 2 caractères",
+    "usernameMax": "Le nom d'utilisateur peut contenir au maximum 50 caractères",
+    "usernameNoSpaces": "Le nom d'utilisateur ne peut pas contenir d'espaces",
+    "passwordMin": "Le mot de passe doit contenir au moins 6 caractères",
+    "passwordsMismatch": "Les mots de passe ne correspondent pas",
+    "titleRequired": "Le titre est obligatoire",
+    "placeFromList": "Choisis un lieu dans la liste",
+    "destinationFromList": "Choisis une destination dans la liste",
+    "destinationFirst": "Choisis d'abord une destination",
+    "endBeforeStart": "La date de fin ne peut pas être antérieure à la date de début",
+    "currencyInvalid": "Choisis une devise valide",
+    "nameRequired": "Le nom est obligatoire",
+    "nameMin": "Le nom doit contenir au moins 2 caractères",
+    "subjectMin": "L'objet doit contenir au moins 2 caractères",
+    "messageMin": "Le message doit contenir au moins 10 caractères",
+    "chooseCategory": "Choisis une catégorie",
+    "chooseUnit": "Choisis une unité",
+    "dateRequired": "La date est obligatoire",
+    "pricePerLiterFuelOnly": "Le prix au litre ne s'applique qu'à la catégorie carburant",
+    "amountRequired": "La quantité est obligatoire",
+    "amountPositive": "La quantité doit être supérieure à zéro",
+    "unitNoDecimals": "Cette unité n'accepte pas de décimales"
   },
   "errors": {
     "title": "Un problème est survenu",

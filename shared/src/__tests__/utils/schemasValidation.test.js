@@ -23,7 +23,7 @@ describe('updateUserSchema', () => {
     it('still rejects a location over 50 characters', () => {
         const result = updateUserSchema.safeParse({ ...baseFields, location: 'a'.repeat(51) });
         expect(result.success).toBe(false);
-        expect(result.error.errors[0].message).toBe('No valid location');
+        expect(result.error.errors[0].message).toBe('validation.tooLong');
     });
 });
 

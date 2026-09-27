@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useController } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import { translateValidationMessage } from "@tobeatraveller/shared";
 import { vanLogCommonCurrencies } from "@tobeatraveller/shared";
 import "../../components/form/InputForm.scss";
 import "./CurrencyField.scss";
@@ -78,7 +79,7 @@ const CurrencyField = ({ label, name, control, error, required = false }) => {
 
       {error && (
         <div className="input__error" id={errorId} role="alert" aria-live="assertive">
-          {error.message}
+          {translateValidationMessage(t, error.message)}
         </div>
       )}
     </div>

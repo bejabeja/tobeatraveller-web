@@ -1,5 +1,6 @@
 {
   "common": {
+    "selectOption": "Wähle eine Option",
     "save": "Speichern",
     "saving": "Wird gespeichert…",
     "cancel": "Abbrechen",
@@ -1003,6 +1004,36 @@
     "yourData": "Deine Daten",
     "legal": "Rechtliches",
     "dangerZone": "Gefahrenzone"
+  },
+  "validation": {
+    "required": "Dieses Feld ist erforderlich",
+    "tooShort": "Das ist zu kurz",
+    "tooLong": "Das ist zu lang",
+    "invalid": "Dieser Wert ist ungültig",
+    "emailRequired": "E-Mail ist erforderlich",
+    "emailInvalid": "Gib eine gültige E-Mail-Adresse ein",
+    "usernameMin": "Der Benutzername muss mindestens 2 Zeichen haben",
+    "usernameMax": "Der Benutzername darf höchstens 50 Zeichen haben",
+    "usernameNoSpaces": "Der Benutzername darf keine Leerzeichen enthalten",
+    "passwordMin": "Das Passwort muss mindestens 6 Zeichen haben",
+    "passwordsMismatch": "Die Passwörter stimmen nicht überein",
+    "titleRequired": "Der Titel ist erforderlich",
+    "placeFromList": "Wähle einen Ort aus der Liste",
+    "destinationFromList": "Wähle ein Reiseziel aus der Liste",
+    "destinationFirst": "Wähle zuerst ein Reiseziel",
+    "endBeforeStart": "Das Enddatum darf nicht vor dem Startdatum liegen",
+    "currencyInvalid": "Wähle eine gültige Währung",
+    "nameRequired": "Der Name ist erforderlich",
+    "nameMin": "Der Name muss mindestens 2 Zeichen haben",
+    "subjectMin": "Der Betreff muss mindestens 2 Zeichen haben",
+    "messageMin": "Die Nachricht muss mindestens 10 Zeichen haben",
+    "chooseCategory": "Wähle eine Kategorie",
+    "chooseUnit": "Wähle eine Einheit",
+    "dateRequired": "Das Datum ist erforderlich",
+    "pricePerLiterFuelOnly": "Der Literpreis gilt nur für die Kategorie Kraftstoff",
+    "amountRequired": "Die Menge ist erforderlich",
+    "amountPositive": "Die Menge muss größer als null sein",
+    "unitNoDecimals": "Diese Einheit erlaubt keine Dezimalstellen"
   },
   "errors": {
     "title": "Etwas ist schiefgelaufen",

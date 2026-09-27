@@ -1,5 +1,6 @@
 {
   "common": {
+    "selectOption": "Scegli un'opzione",
     "save": "Salva",
     "saving": "Salvataggio…",
     "cancel": "Annulla",
@@ -1013,6 +1014,36 @@
     "yourData": "I tuoi dati",
     "legal": "Note legali",
     "dangerZone": "Zona pericolosa"
+  },
+  "validation": {
+    "required": "Questo campo è obbligatorio",
+    "tooShort": "È troppo corto",
+    "tooLong": "È troppo lungo",
+    "invalid": "Questo valore non è valido",
+    "emailRequired": "L'email è obbligatoria",
+    "emailInvalid": "Inserisci un indirizzo email valido",
+    "usernameMin": "Il nome utente deve avere almeno 2 caratteri",
+    "usernameMax": "Il nome utente può avere al massimo 50 caratteri",
+    "usernameNoSpaces": "Il nome utente non può contenere spazi",
+    "passwordMin": "La password deve avere almeno 6 caratteri",
+    "passwordsMismatch": "Le password non coincidono",
+    "titleRequired": "Il titolo è obbligatorio",
+    "placeFromList": "Scegli un luogo dall'elenco",
+    "destinationFromList": "Scegli una destinazione dall'elenco",
+    "destinationFirst": "Scegli prima una destinazione",
+    "endBeforeStart": "La data di fine non può essere precedente a quella di inizio",
+    "currencyInvalid": "Scegli una valuta valida",
+    "nameRequired": "Il nome è obbligatorio",
+    "nameMin": "Il nome deve avere almeno 2 caratteri",
+    "subjectMin": "L'oggetto deve avere almeno 2 caratteri",
+    "messageMin": "Il messaggio deve avere almeno 10 caratteri",
+    "chooseCategory": "Scegli una categoria",
+    "chooseUnit": "Scegli un'unità",
+    "dateRequired": "La data è obbligatoria",
+    "pricePerLiterFuelOnly": "Il prezzo al litro vale solo per la categoria carburante",
+    "amountRequired": "La quantità è obbligatoria",
+    "amountPositive": "La quantità deve essere maggiore di zero",
+    "unitNoDecimals": "Questa unità non ammette decimali"
   },
   "errors": {
     "title": "Qualcosa è andato storto",

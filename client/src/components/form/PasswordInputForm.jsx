@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Controller } from "react-hook-form";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { useTranslation } from "react-i18next";
+import { translateValidationMessage } from "@tobeatraveller/shared";
 
 export const PasswordInputForm = ({ label, name, control, error, hint, autoComplete }) => {
   const { t } = useTranslation();
@@ -50,7 +51,7 @@ export const PasswordInputForm = ({ label, name, control, error, hint, autoCompl
         role="alert"
         aria-live="assertive"
       >
-        {error ? error.message : " "}
+        {error ? translateValidationMessage(t, error.message) : " "}
       </div>
     </div>
   );

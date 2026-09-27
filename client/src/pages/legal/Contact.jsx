@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { sendContact } from "@tobeatraveller/shared";
+import { sendContact, translateValidationMessage } from "@tobeatraveller/shared";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { selectAuthUser } from "../../store/auth/authSelectors";
 import { setUserInfo } from "../../store/user/userInfoActions";
@@ -67,7 +67,7 @@ const Contact = () => {
     }
     const e = {};
     for (const issue of result.error.issues) {
-      e[issue.path[0]] = issue.message;
+      e[issue.path[0]] = translateValidationMessage(t, issue.message);
     }
     setErrors(e);
     return false;

@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
-import { supplyCategories, supplyItemSchema, supplyUnits } from '@tobeatraveller/shared';
+import { supplyCategories, supplyItemSchema, supplyUnits, translateValidationMessage } from '@tobeatraveller/shared';
 import { newEntityId, runOrQueue } from '../../offline/outbox';
 import { CHANGE_KINDS, COLLECTIONS } from '../../offline/pendingChanges';
 import { shadow } from '../../utils/styles';
@@ -62,7 +62,7 @@ const SupplyFormScreen = ({ navigation, route }) => {
     const parsed = supplyItemSchema.safeParse({ name, category, amount, unit, notes });
     if (!parsed.success) {
       const fieldErrors = {};
-      parsed.error.errors.forEach(e => { fieldErrors[e.path[0]] = e.message; });
+      parsed.error.errors.forEach(e => { fieldErrors[e.path[0]] = translateValidationMessage(t, e.message); });
       setErrors(fieldErrors);
       return;
     }

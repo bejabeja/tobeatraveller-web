@@ -1,5 +1,6 @@
 {
   "common": {
+    "selectOption": "Choose an option",
     "save": "Save",
     "saving": "Saving…",
     "cancel": "Cancel",
@@ -1003,6 +1004,36 @@
     "yourData": "Your data",
     "legal": "Legal",
     "dangerZone": "Danger zone"
+  },
+  "validation": {
+    "required": "This field is required",
+    "tooShort": "It's too short",
+    "tooLong": "It's too long",
+    "invalid": "This value isn't valid",
+    "emailRequired": "Email is required",
+    "emailInvalid": "Enter a valid email address",
+    "usernameMin": "Username must be at least 2 characters",
+    "usernameMax": "Username can be at most 50 characters",
+    "usernameNoSpaces": "Username can't contain spaces",
+    "passwordMin": "Password must be at least 6 characters",
+    "passwordsMismatch": "Passwords don't match",
+    "titleRequired": "Title is required",
+    "placeFromList": "Choose a place from the list",
+    "destinationFromList": "Choose a destination from the list",
+    "destinationFirst": "Choose a destination first",
+    "endBeforeStart": "The end date can't be before the start date",
+    "currencyInvalid": "Choose a valid currency",
+    "nameRequired": "Name is required",
+    "nameMin": "Name must be at least 2 characters",
+    "subjectMin": "Subject must be at least 2 characters",
+    "messageMin": "Message must be at least 10 characters",
+    "chooseCategory": "Choose a category",
+    "chooseUnit": "Choose a unit",
+    "dateRequired": "Date is required",
+    "pricePerLiterFuelOnly": "Price per litre only applies to the fuel category",
+    "amountRequired": "Amount is required",
+    "amountPositive": "Amount must be greater than zero",
+    "unitNoDecimals": "This unit can't have decimals"
   },
   "errors": {
     "title": "Something went wrong",

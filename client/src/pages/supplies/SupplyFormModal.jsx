@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
+import { translateValidationMessage } from "@tobeatraveller/shared";
 import { IoLockClosedOutline } from "react-icons/io5";
 import { Link } from "react-router-dom";
 import { isInventoryCapReachedError, isShoppingListCapReachedError, supplyCategories, supplyUnits } from "@tobeatraveller/shared";
@@ -126,7 +127,7 @@ const SupplyFormModal = ({ item, title, saveLabel, existingItems = [], listType,
                     className={`input__field ${errors.name ? "input__field--invalid" : ""}`}
                   />
                   <div className="input__footer">
-                    <div className="input__error">{errors.name?.message || " "}</div>
+                    <div className="input__error">{translateValidationMessage(t, errors.name?.message) || " "}</div>
                   </div>
                   {suggestions.length > 0 && (
                     <ul className="autocomplete-dropdown">

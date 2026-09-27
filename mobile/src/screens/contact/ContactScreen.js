@@ -8,6 +8,7 @@ import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
   contactSchema,
+  translateValidationMessage,
   selectMe,
   selectAuthUser,
   sendContact,
@@ -64,7 +65,7 @@ const ContactScreen = ({ navigation }) => {
     }
     const e = {};
     for (const issue of result.error.issues) {
-      e[issue.path[0]] = issue.message;
+      e[issue.path[0]] = translateValidationMessage(t, issue.message);
     }
     setErrors(e);
     return false;

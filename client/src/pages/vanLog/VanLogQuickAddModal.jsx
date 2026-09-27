@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
+import { translateValidationMessage } from "@tobeatraveller/shared";
 import { IoChevronDown, IoLockClosedOutline } from "react-icons/io5";
 import { Link } from "react-router-dom";
 import { isVanLogCapReachedError, vanLogCategories, vanLogCategoryEmoji } from "@tobeatraveller/shared";
@@ -112,7 +113,7 @@ const VanLogQuickAddModal = ({ onClose, onSaved, initialCapReached = false }) =>
               </button>
             ))}
           </div>
-          {errors.category && <div className="input__error">{errors.category.message}</div>}
+          {errors.category && <div className="input__error">{translateValidationMessage(t, errors.category.message)}</div>}
 
           <label className="van-log-quick-add__amount-label" htmlFor="quick-add-amount">
             {t("vanLog.amountLabel")}
