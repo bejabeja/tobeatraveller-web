@@ -21,6 +21,23 @@ $recap-gold: #d9a441;
     font-size: 1.05rem;
   }
 
+  &--message .btn {
+    width: auto;
+    margin-top: 0.5rem;
+  }
+
+  &__off-season-icon {
+    width: auto;
+    font-size: 3rem;
+  }
+
+  &__off-season-title {
+    max-width: 420px;
+    font-size: 1.4rem;
+    font-weight: 800;
+    text-align: center;
+  }
+
   // width: auto (over index.scss's 100%) so left and right set its width;
   // with 100% it ignores `right` and sticks out, scrolling the page sideways.
   &__progress {

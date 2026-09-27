@@ -196,7 +196,21 @@ const Recap = () => {
 
   if (loading) return <div className="recap recap--message">{closeButton}<div className="recap__spinner" /></div>;
   if (error) return <div className="recap recap--message">{closeButton}<p>{t("recap.loadError")}</p></div>;
-  if (!recap.available) return <div className="recap recap--message">{closeButton}<p>{t("recap.notAvailable")}</p></div>;
+  // Out of season (reached by a link): what it will hold, and somewhere to go
+  // meanwhile, instead of one line on an empty screen.
+  if (!recap.available) {
+    return (
+      <div className="recap recap--message">
+        {closeButton}
+        <span className="recap__off-season-icon" aria-hidden="true">🚐</span>
+        <h1 className="recap__off-season-title">{t("recap.offSeasonTitle")}</h1>
+        <p>{t("recap.offSeasonText")}</p>
+        <button type="button" className="btn btn--primary" onClick={() => navigate(`/profile/${owner?.id}/passport`)}>
+          {t("recap.offSeasonCta")}
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="recap">

@@ -218,12 +218,15 @@ describe("Recap page", () => {
     expect(container.querySelector(".recap__progress-fill--current")).toBeNull();
   });
 
-  it("says when the recap will be available out of season", async () => {
+  // Regression: out of season it was one line on an empty screen.
+  it("says what the recap will hold out of season, and offers the passport meanwhile", async () => {
     getMyRecap.mockResolvedValue({ available: false });
 
     renderRecap();
 
-    expect(await screen.findByText("recap.notAvailable")).toBeInTheDocument();
+    expect(await screen.findByText("recap.offSeasonTitle")).toBeInTheDocument();
+    expect(screen.getByText("recap.offSeasonText")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "recap.offSeasonCta" })).toBeInTheDocument();
     expect(trackEvent).not.toHaveBeenCalled();
   });
 

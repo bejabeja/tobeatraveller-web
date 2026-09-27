@@ -1732,7 +1732,9 @@
     "previous": "Indietro",
     "close": "Chiudi",
     "empty": "Niente registrato nel {{year}}. Al prossimo anno!",
-    "notAvailable": "Il riepilogo del tuo anno sarà disponibile a dicembre.",
+    "offSeasonTitle": "Il tuo riepilogo dell'anno arriva a dicembre",
+    "offSeasonText": "Raccoglieremo i tuoi paesi, i giorni in viaggio, i viaggi, le spese, il diario e i timbri dell'anno. Tutto ciò che registri conta già.",
+    "offSeasonCta": "Vedi il mio passaporto",
     "loadError": "Impossibile caricare il riepilogo del tuo anno."
   },
   "tripCategories": {

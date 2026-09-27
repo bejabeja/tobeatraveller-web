@@ -1688,7 +1688,9 @@
     "previous": "Previous",
     "close": "Close",
     "empty": "Nothing logged in {{year}}. Here's to next year!",
-    "notAvailable": "Your year in review will be available in December.",
+    "offSeasonTitle": "Your year in review arrives in December",
+    "offSeasonText": "We'll gather your countries, days on the road, trips, expenses, diary and stamps of the year. Everything you log from now on counts.",
+    "offSeasonCta": "See my passport",
     "loadError": "Couldn't load your year in review."
   },
   "tripCategories": {

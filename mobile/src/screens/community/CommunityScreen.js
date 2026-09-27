@@ -3,6 +3,7 @@ import {
   ActivityIndicator, FlatList, Image, RefreshControl, StyleSheet,
   Text, TextInput, TouchableOpacity, View,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
@@ -14,7 +15,7 @@ import {
 } from '@tobeatraveller/shared';
 import { UserCardSkeleton } from '../../components/Skeleton';
 import { buildSkeletonItems, FILLER_ITEM_ID, padForTwoColumns } from '../../utils/gridListHelpers';
-import { shadow } from '../../utils/styles';
+import { COLORS, shadow } from '../../utils/styles';
 
 const CommunityScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -228,25 +229,37 @@ const UserCard = ({ user, me, isAuthenticated, onPress }) => {
     finally { setLoadingFollow(false); }
   };
 
+  const tagline = user.bio
+    || (user.lastItinerary?.title ? `${t('community.lastTripPrefix')} ${user.lastItinerary.title}` : t('community.noTripsYet'));
+
+  // A person, not a trip (as on the web): face and name lead, the last trip
+  // is a thin banner, and following them is a full-width button.
   return (
-    <TouchableOpacity style={styles.userCard} onPress={onPress} activeOpacity={0.85}>
-      {/* Banner with last itinerary photo */}
+    <TouchableOpacity
+      style={styles.userCard}
+      onPress={onPress}
+      activeOpacity={0.85}
+      accessibilityRole="button"
+      accessibilityLabel={`@${user.username}`}
+    >
       <View style={styles.userCardBanner}>
-        {user.lastItinerary?.photoUrl && (
+        {user.lastItinerary?.photoUrl ? (
           <Image source={{ uri: user.lastItinerary.photoUrl }} style={styles.userCardBannerImg} resizeMode="cover" />
+        ) : (
+          // No trip photo yet: the brand gradient instead of a grey strip.
+          <LinearGradient colors={[COLORS.accent, COLORS.primary]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.userCardBannerImg} />
         )}
-        {/* Avatar */}
-        <View style={styles.userCardAvatarWrapper}>
-          {user.avatarUrl ? (
-            <Image source={{ uri: user.avatarUrl }} style={styles.userCardAvatar} />
-          ) : (
-            <View style={styles.userCardAvatarFallback}>
-              <Text style={styles.userCardAvatarInitial}>
-                {user.username?.charAt(0).toUpperCase() || '?'}
-              </Text>
-            </View>
-          )}
-        </View>
+      </View>
+      <View style={styles.userCardAvatarWrapper}>
+        {user.avatarUrl ? (
+          <Image source={{ uri: user.avatarUrl }} style={styles.userCardAvatar} />
+        ) : (
+          <View style={styles.userCardAvatarFallback}>
+            <Text style={styles.userCardAvatarInitial}>
+              {user.username?.charAt(0).toUpperCase() || '?'}
+            </Text>
+          </View>
+        )}
       </View>
 
       <View style={styles.userCardBody}>
@@ -260,14 +273,17 @@ const UserCard = ({ user, me, isAuthenticated, onPress }) => {
         {user.location && (
           <Text style={styles.userCardLocation} numberOfLines={1}>📍 {user.location}</Text>
         )}
-
+        <Text style={styles.userCardTagline} numberOfLines={2}>{tagline}</Text>
         <Text style={styles.userCardTrips}>{t('community.trips', { count: user.totalItineraries ?? 0 })}</Text>
 
-        {!isMe && isAuthenticated && (
+        {/* Signed out, following needs an account: the card's own press goes to it. */}
+        {!isMe && (
           <TouchableOpacity
             style={[styles.followBtn, following && styles.followBtnFollowing, loadingFollow && styles.followBtnDisabled]}
-            onPress={handleFollow}
+            onPress={isAuthenticated ? handleFollow : onPress}
             disabled={loadingFollow}
+            accessibilityRole="button"
+            accessibilityState={{ selected: following, disabled: loadingFollow }}
           >
             <Text style={[styles.followBtnText, following && styles.followBtnTextFollowing]}>
               {loadingFollow ? '…' : following ? t('community.following') : t('community.follow')}
@@ -358,40 +374,40 @@ const styles = StyleSheet.create({
 
   // User card
   userCard: {
-    backgroundColor: '#fff', borderRadius: 14, overflow: 'hidden',
+    backgroundColor: '#fff', borderRadius: 16, overflow: 'hidden',
     ...shadow(2, 0.06, 8, 2),
   },
-  userCardBanner: { height: 64, backgroundColor: '#e5e7eb', position: 'relative' },
+  userCardBanner: { height: 56 },
   userCardBannerImg: { width: '100%', height: '100%' },
   userCardAvatarWrapper: {
-    position: 'absolute', bottom: -18, left: 12,
-    borderWidth: 3, borderColor: '#fff', borderRadius: 22,
-    ...shadow(1, 0.1, 4, 2),
+    alignSelf: 'center', marginTop: -28,
+    borderWidth: 3, borderColor: '#fff', borderRadius: 31,
   },
-  userCardAvatar: { width: 40, height: 40, borderRadius: 20 },
+  userCardAvatar: { width: 56, height: 56, borderRadius: 28 },
   userCardAvatarFallback: {
-    width: 40, height: 40, borderRadius: 20,
+    width: 56, height: 56, borderRadius: 28,
     backgroundColor: '#E8743B', alignItems: 'center', justifyContent: 'center',
   },
-  userCardAvatarInitial: { color: '#fff', fontWeight: '700', fontSize: 16 },
-  userCardBody: { paddingTop: 22, paddingHorizontal: 12, paddingBottom: 12 },
-  userCardNameRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 2 },
-  userCardUsername: { fontSize: 13, fontWeight: '700', color: '#111827', flex: 1 },
+  userCardAvatarInitial: { color: '#fff', fontWeight: '700', fontSize: 20 },
+  userCardBody: { flex: 1, alignItems: 'center', paddingTop: 6, paddingHorizontal: 10, paddingBottom: 10, gap: 3 },
+  userCardNameRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, maxWidth: '100%' },
+  userCardUsername: { fontSize: 13, fontWeight: '700', color: '#111827', flexShrink: 1 },
   officialBadge: {
     width: 14, height: 14, borderRadius: 7,
     backgroundColor: '#E8743B', alignItems: 'center', justifyContent: 'center',
   },
   officialText: { color: '#fff', fontSize: 8, fontWeight: '700' },
-  userCardLocation: { fontSize: 11, color: '#9ca3af', marginBottom: 2 },
-  userCardTrips: { fontSize: 11, color: '#6b7280', marginBottom: 8 },
+  userCardLocation: { fontSize: 11, color: '#9ca3af', maxWidth: '100%' },
+  userCardTagline: { fontSize: 12, lineHeight: 16, color: '#374151', textAlign: 'center' },
+  userCardTrips: { marginTop: 'auto', fontSize: 11, fontWeight: '600', color: '#6b7280' },
   followBtn: {
-    borderWidth: 1.5, borderColor: '#E8743B', borderRadius: 999,
-    paddingVertical: 5, alignItems: 'center',
+    alignSelf: 'stretch', marginTop: 6, paddingVertical: 8, alignItems: 'center',
+    borderRadius: 999, backgroundColor: COLORS.primary,
   },
-  followBtnFollowing: { backgroundColor: '#f3f4f6', borderColor: '#e5e7eb' },
+  followBtnFollowing: { backgroundColor: '#fff', borderWidth: 1.5, borderColor: '#e5e7eb' },
   followBtnDisabled: { opacity: 0.5 },
-  followBtnText: { fontSize: 12, fontWeight: '600', color: '#E8743B' },
-  followBtnTextFollowing: { color: '#6b7280' },
+  followBtnText: { fontSize: 12, fontWeight: '700', color: '#fff' },
+  followBtnTextFollowing: { color: '#374151' },
 });
 
 export default CommunityScreen;

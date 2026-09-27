@@ -131,8 +131,18 @@ it('says when the recap will be available out of season, and closes', async () =
   await renderScreen(navigation);
   fireEvent.press(screen.getByLabelText('recap.close'));
 
-  expect(screen.getByText('recap.notAvailable')).toBeTruthy();
+  expect(screen.getByText('recap.offSeasonTitle')).toBeTruthy();
   expect(navigation.goBack).toHaveBeenCalled();
+});
+
+it('offers the passport while the recap is out of season', async () => {
+  getMyRecap.mockResolvedValue({ available: false });
+  const navigation = { goBack: jest.fn(), canGoBack: () => true, navigate: jest.fn() };
+
+  await renderScreen(navigation);
+  fireEvent.press(screen.getByText('recap.offSeasonCta'));
+
+  expect(navigation.navigate).toHaveBeenCalledWith('Passport', expect.objectContaining({ userId: expect.anything() }));
 });
 
 // Opened from a push with the app closed: there's no screen to go back to.

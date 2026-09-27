@@ -1688,7 +1688,9 @@
     "previous": "Zurück",
     "close": "Schließen",
     "empty": "Nichts eingetragen in {{year}}. Auf das nächste Jahr!",
-    "notAvailable": "Dein Jahresrückblick ist ab Dezember verfügbar.",
+    "offSeasonTitle": "Dein Jahresrückblick kommt im Dezember",
+    "offSeasonText": "Wir sammeln deine Länder, Tage unterwegs, Reisen, Ausgaben, dein Tagebuch und deine Stempel des Jahres. Alles, was du einträgst, zählt schon.",
+    "offSeasonCta": "Meinen Pass ansehen",
     "loadError": "Dein Jahresrückblick konnte nicht geladen werden."
   },
   "tripCategories": {

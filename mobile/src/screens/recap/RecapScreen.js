@@ -263,13 +263,29 @@ const RecapScreen = ({ navigation, route }) => {
     </TouchableOpacity>
   );
 
-  if (loading || error || !recap?.available) {
+  // Out of season (reached by a link): what it will hold, and somewhere to go
+  // meanwhile, instead of one line on an empty screen.
+  if (!loading && !error && !recap?.available) {
+    return (
+      <View style={[styles.container, styles.centered, styles.offSeason]}>
+        {closeButton}
+        <Text style={styles.offSeasonIcon}>🚐</Text>
+        <Text style={styles.offSeasonTitle}>{t('recap.offSeasonTitle')}</Text>
+        <Text style={styles.subtitle}>{t('recap.offSeasonText')}</Text>
+        <TouchableOpacity style={styles.offSeasonButton} onPress={() => navigation.navigate('Passport', { userId: owner?.id })} accessibilityRole="button">
+          <Text style={styles.offSeasonButtonText}>{t('recap.offSeasonCta')}</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  if (loading || error) {
     return (
       <View style={[styles.container, styles.centered]}>
         {closeButton}
         {loading
           ? <ActivityIndicator size="large" color={STORY_COLORS.GOLD} />
-          : <Text style={styles.subtitle}>{error ? t('recap.loadError') : t('recap.notAvailable')}</Text>}
+          : <Text style={styles.subtitle}>{t('recap.loadError')}</Text>}
       </View>
     );
   }
@@ -364,6 +380,11 @@ const { NAVY, GOLD, PAPER, INK_MUTED } = STORY_COLORS;
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: NAVY },
   centered: { alignItems: 'center', justifyContent: 'center', padding: 24 },
+  offSeason: { gap: 12, paddingHorizontal: 32 },
+  offSeasonIcon: { fontSize: 48 },
+  offSeasonTitle: { fontSize: 22, fontWeight: '800', color: '#fff', textAlign: 'center' },
+  offSeasonButton: { marginTop: 8, paddingVertical: 12, paddingHorizontal: 22, borderRadius: 999, backgroundColor: '#E8743B' },
+  offSeasonButtonText: { fontSize: 15, fontWeight: '700', color: '#fff' },
   progress: { flexDirection: 'row', gap: 4, marginHorizontal: 16, marginTop: 10, marginRight: 56 },
   progressBar: { flex: 1, height: 4, borderRadius: 2, backgroundColor: 'rgba(255, 255, 255, 0.25)', overflow: 'hidden' },
   progressFill: { height: '100%', backgroundColor: GOLD },

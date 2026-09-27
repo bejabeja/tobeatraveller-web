@@ -1732,7 +1732,9 @@
     "previous": "Anterior",
     "close": "Cerrar",
     "empty": "No registraste actividad en {{year}}. ¡A por el año que viene!",
-    "notAvailable": "El resumen del año estará disponible en diciembre.",
+    "offSeasonTitle": "Tu resumen del año llega en diciembre",
+    "offSeasonText": "Juntaremos tus países, tus días en ruta, tus viajes, gastos, diario y sellos del año. Todo lo que vayas registrando ya cuenta.",
+    "offSeasonCta": "Ver mi pasaporte",
     "loadError": "No se pudo cargar tu resumen del año."
   },
   "tripCategories": {

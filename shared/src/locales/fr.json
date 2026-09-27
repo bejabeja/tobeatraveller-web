@@ -1732,7 +1732,9 @@
     "previous": "Précédent",
     "close": "Fermer",
     "empty": "Rien d'enregistré en {{year}}. Vivement l'année prochaine !",
-    "notAvailable": "Ton bilan de l'année sera disponible en décembre.",
+    "offSeasonTitle": "Ton bilan de l'année arrive en décembre",
+    "offSeasonText": "Nous réunirons tes pays, tes jours sur la route, tes voyages, dépenses, journal et tampons de l'année. Tout ce que tu enregistres compte déjà.",
+    "offSeasonCta": "Voir mon passeport",
     "loadError": "Impossible de charger ton bilan de l'année."
   },
   "tripCategories": {

@@ -7,7 +7,9 @@ jest.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key) => key }),
 }));
 
+jest.mock('expo-linear-gradient', () => ({ LinearGradient: () => null }));
 jest.mock('@tobeatraveller/shared', () => ({
+  COLORS: jest.requireActual('../../../../shared/src/utils/constants/colors.js').COLORS,
   followUser: jest.fn(),
   unfollowUser: jest.fn(),
   initAllUsers: jest.fn(() => ({ type: 'init' })),
@@ -94,4 +96,23 @@ it('reminds, under a search\'s results, that the person may not be here yet', as
   expect(screen.getByText('community.searchInvite')).toBeTruthy();
   expect(screen.queryByText('community.inviteTitle')).toBeNull();
   expect(navigation.navigate).toHaveBeenCalledWith('Referral');
+});
+
+it("shows a person's bio, and a follow button that sends a signed-out visitor to log in", async () => {
+  selectIsAuthenticated.mockReturnValue(false);
+  selectAllUsers.mockReturnValue([{ id: 'u2', username: 'ana', bio: 'Furgo y surf', totalItineraries: 1 }]);
+  const navigation = await renderScreen();
+
+  fireEvent.press(screen.getByText('community.follow'));
+
+  expect(screen.getByText('Furgo y surf')).toBeTruthy();
+  expect(navigation.navigate).toHaveBeenCalledWith('Tabs', { screen: 'Profile' });
+});
+
+it('offers no follow button on your own card', async () => {
+  selectAllUsers.mockReturnValue([{ id: 'u1', username: 'tbat', totalItineraries: 1 }]);
+
+  await renderScreen();
+
+  expect(screen.queryByText('community.follow')).toBeNull();
 });

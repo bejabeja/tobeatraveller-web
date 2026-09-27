@@ -36,11 +36,11 @@ export const UserCardSkeleton = () => {
       <View style={sk.userAvatarWrapper}>
         <View style={sk.userAvatar} />
       </View>
-      <View style={sk.cardBody}>
+      <View style={[sk.cardBody, { alignItems: 'center' }]}>
         <View style={[sk.line, { width: '70%', height: 12, marginBottom: 6 }]} />
-        <View style={[sk.line, { width: '45%', height: 10, marginBottom: 6 }]} />
+        <View style={[sk.line, { width: '85%', height: 10, marginBottom: 6 }]} />
         <View style={[sk.line, { width: '55%', height: 10, marginBottom: 10 }]} />
-        <View style={sk.followBtnSk} />
+        <View style={[sk.followBtnSk, { alignSelf: 'stretch' }]} />
       </View>
     </Animated.View>
   );
@@ -155,10 +155,11 @@ const sk = StyleSheet.create({
   cardBody:  { padding: 12, gap: 0 },
 
   // User card
-  userBanner:      { height: 64, backgroundColor: '#e5e7eb' },
-  userAvatarWrapper: { position: 'absolute', top: 44, left: 12 },
-  userAvatar:      { width: 40, height: 40, borderRadius: 20, backgroundColor: '#d1d5db', borderWidth: 3, borderColor: '#fff' },
-  followBtnSk:     { height: 28, backgroundColor: '#e5e7eb', borderRadius: 999 },
+  // Same shape as the person card: thin banner, centred avatar over it.
+  userBanner:      { height: 56, backgroundColor: '#e5e7eb' },
+  userAvatarWrapper: { alignSelf: 'center', marginTop: -28 },
+  userAvatar:      { width: 62, height: 62, borderRadius: 31, backgroundColor: '#d1d5db', borderWidth: 3, borderColor: '#fff' },
+  followBtnSk:     { height: 32, backgroundColor: '#e5e7eb', borderRadius: 999 },
   followBtnSkSmall:{ width: 72, height: 30, backgroundColor: '#e5e7eb', borderRadius: 999 },
 
   // User row (follows)
