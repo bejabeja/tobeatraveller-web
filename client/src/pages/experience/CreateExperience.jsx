@@ -40,6 +40,8 @@ import { useGeocodeSearch } from "../../hooks/useGeocodeSearch";
 import { useCurrentLocation } from "../../hooks/useCurrentLocation";
 import UseCurrentLocationButton from "../../components/form/UseCurrentLocationButton";
 import { NEW_ITINERARY_DEFAULT_VISIBILITY } from "../../utils/schemasValidation";
+import { trackEvent } from "../../utils/analytics";
+import { ANALYTICS_EVENTS, TRIP_KINDS, tripCreatedProperties } from "../../utils/analyticsEvents";
 import "./CreateExperience.scss";
 
 // ─── Step config (icons + colors) ────────────────────────────────────────────
@@ -230,8 +232,9 @@ const CreateExperience = () => {
         mood: null,
         personalNote: "",
       }));
+      trackEvent(ANALYTICS_EVENTS.AI_ITINERARY_GENERATED, { kind: TRIP_KINDS.EXPERIENCE, pace, days });
       setSteps(generated);
-      setTitle(`My trip to ${destination.name}`);
+      setTitle(ce("defaultTitle", { destination: destination.name }));
       setPhase("review");
     } catch (error) {
       if (isPremiumRequiredError(error)) {
@@ -335,6 +338,9 @@ const CreateExperience = () => {
       if (imageFile) formData.append("file", imageFile);
       formData.append("itinerary", JSON.stringify(body));
       await createItinerary(formData);
+      trackEvent(ANALYTICS_EVENTS.TRIP_CREATED, tripCreatedProperties({
+        kind: TRIP_KINDS.EXPERIENCE, isPublic, places: body.places.length, days,
+      }));
       toast.success(ce("savedSuccess"));
       dispatch(setUserInfo(userMe.id));
       dispatch(setUserInfoItineraries());

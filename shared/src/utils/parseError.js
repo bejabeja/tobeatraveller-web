@@ -1,3 +1,14 @@
+import { translateValidationMessage } from './validationMessages.js';
+
+// Each app hands over its i18n `t` at startup: the API turns things down
+// with the same `validation.*` keys the apps use, so its message reaches
+// the screen in the viewer's language wherever the error is shown.
+let translateApiMessage = (message) => message;
+
+export const setApiErrorTranslator = (t) => {
+  translateApiMessage = (message) => translateValidationMessage(t, message);
+};
+
 export const parseError = async (response, defaultMsg = "Something went wrong") => {
   let msg = defaultMsg;
   let field;
@@ -6,7 +17,7 @@ export const parseError = async (response, defaultMsg = "Something went wrong") 
     msg = data?.error || msg;
     field = data?.field;
   } catch (_) { }
-  const error = new Error(msg);
+  const error = new Error(translateApiMessage(msg));
   error.status = response.status;
   error.field = field;
   throw error;

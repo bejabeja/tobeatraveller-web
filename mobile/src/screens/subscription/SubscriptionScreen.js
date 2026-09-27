@@ -7,8 +7,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
   createCheckoutSession, createPortalSession, getMySubscription, PLAN_COMPARISON, resumeSubscription,
-  selectAuthUser, selectIsAuthenticated, selectMe, setUserInfo, formatDate,
+  selectAuthUser, selectIsAuthenticated, selectMe, setUserInfo, formatDate, ANALYTICS_EVENTS,
 } from '@tobeatraveller/shared';
+import { trackEvent } from '../../utils/analytics';
 import { shadow } from '../../utils/styles';
 
 const PLANS = [
@@ -81,6 +82,7 @@ const SubscriptionScreen = ({ navigation }) => {
     setLoadingPlanId(planId);
     try {
       const { url } = await createCheckoutSession(planId);
+      trackEvent(ANALYTICS_EVENTS.CHECKOUT_STARTED, { plan: planId });
       await Linking.openURL(url);
     } catch (error) {
       Alert.alert(error.message || t('subscription.checkoutErrorToast'));

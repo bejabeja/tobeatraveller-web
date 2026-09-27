@@ -13,6 +13,8 @@ import { createCheckoutSession, createPortalSession, getMySubscription, resumeSu
 import { getCategoryIcon } from "../../assets/icons";
 import { preloadImg } from "../../utils/preloadImg";
 import { useScrollReveal } from "../../hooks/useScrollReveal";
+import { trackEvent } from "../../utils/analytics";
+import { ANALYTICS_EVENTS } from "../../utils/analyticsEvents";
 import "./Subscription.scss";
 
 // A different photo from Home's hero.jpg (van-life specific, not the
@@ -146,6 +148,7 @@ const Subscription = () => {
     setLoadingPlanId(planId);
     try {
       const { url } = await createCheckoutSession(planId);
+      trackEvent(ANALYTICS_EVENTS.CHECKOUT_STARTED, { plan: planId });
       window.location.href = url;
     } catch (error) {
       toast.error(error.message || t("subscription.checkoutErrorToast"));

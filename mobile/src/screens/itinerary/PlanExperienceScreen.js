@@ -14,8 +14,9 @@ import {
   isPremiumRequiredError, itineraryCategories, NEW_ITINERARY_DEFAULT_VISIBILITY, placeCategories,
   reverseGeocode, searchDestinations, selectAuthUser, selectMe,
   setUserInfo, setUserInfoItineraries,
-  stepNameHintKey,
+  stepNameHintKey, ANALYTICS_EVENTS, TRIP_KINDS, tripCreatedProperties,
 } from '@tobeatraveller/shared';
+import { trackEvent } from '../../utils/analytics';
 import { COLORS, shadow } from '../../utils/styles';
 import { getStepConfig } from '../../utils/stepConfig';
 import { GEOAPIFY_KEY } from '../../utils/config';
@@ -155,8 +156,9 @@ const PlanExperienceScreen = ({ navigation }) => {
         mood: null,
         personalNote: '',
       }));
+      trackEvent(ANALYTICS_EVENTS.AI_ITINERARY_GENERATED, { kind: TRIP_KINDS.EXPERIENCE, pace, days });
       setSteps(generated);
-      setTitle(`My trip to ${destination.name}`);
+      setTitle(ce('defaultTitle', { destination: destination.name }));
       setPhase('review');
     } catch (error) {
       if (isPremiumRequiredError(error)) {
@@ -281,6 +283,9 @@ const PlanExperienceScreen = ({ navigation }) => {
       }
       formData.append('itinerary', JSON.stringify(body));
       await createItinerary(formData);
+      trackEvent(ANALYTICS_EVENTS.TRIP_CREATED, tripCreatedProperties({
+        kind: TRIP_KINDS.EXPERIENCE, isPublic, places: body.places.length, days,
+      }));
       if (me?.id) { dispatch(setUserInfo(me.id)); dispatch(setUserInfoItineraries()); }
       navigation.navigate('Tabs', { screen: 'Profile' });
     } catch (err) {

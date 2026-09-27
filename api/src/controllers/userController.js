@@ -59,7 +59,7 @@ export class UserController {
         try {
             if (req.file) {
                 if (req.file.size > MAX_AVATAR_SIZE) {
-                    return next(new ValidationError("Image must be under 5 MB"));
+                    return next(new ValidationError("validation.imageTooLarge"));
                 }
                 const currentUser = await this.userService.getUserForAuth(id);
                 const oldPublicId = extractCloudinaryPublicId(currentUser.avatarUrl);
@@ -249,8 +249,8 @@ export class UserController {
             return next(new ValidationError(result.error.errors[0]?.message || "Invalid tier"));
         }
         try {
-            const user = await this.userService.updateUserTier(req.params.id, result.data.tier, req.user, getRequestContext(req));
-            res.status(200).json({ id: user.id, isPremium: user.isPremium() });
+            const user = await this.userService.updateUserTier(req.params.id, result.data, req.user, getRequestContext(req));
+            res.status(200).json({ id: user.id, isPremium: user.isPremium(), premiumUntil: user.premiumUntil });
         } catch (error) {
             next(error);
         }

@@ -176,7 +176,15 @@
     "getStarted": "Jetzt starten, kostenlos",
     "noTripsYet": "Noch keine Reisepläne.",
     "trips": "Reisen",
-    "destinationsCount": "{{count}} Reiseziele"
+    "destinationsCount": "{{count}} Reiseziele",
+    "nextTripLabel": "Deine nächste Reise",
+    "nextTripIn_one": "Morgen",
+    "nextTripIn_other": "In {{count}} Tagen",
+    "onTripLabel": "Du bist unterwegs",
+    "onTripDay": "Tag {{day}} von {{total}}",
+    "noNextTrip": "Wohin geht es als Nächstes?",
+    "planTrip": "Reise planen",
+    "openTrip": "Reise ansehen"
   },
   "explore": {
     "clearSearch": "Suche löschen",
@@ -386,7 +394,18 @@
     "referralsTopReferrersTitle": "Meiste Empfehlungen",
     "referralsNoData": "Noch keine Empfehlungen.",
     "referralsInvitedCount": "{{count}} eingeladen",
-    "referralsRewardedCount": "{{count}} belohnt"
+    "referralsRewardedCount": "{{count}} belohnt",
+    "premiumUntil": "Premium bis {{date}}",
+    "premiumIndefinite": "Premium ohne Enddatum",
+    "giftPremiumMonths_one": "{{count}} Monat schenken",
+    "giftPremiumMonths_other": "{{count}} Monate schenken",
+    "giftPremiumIndefinite": "Ohne Enddatum schenken",
+    "removePremium": "Premium entfernen",
+    "tierKeptPaid": "Bleibt Premium bis {{date}}: bereits bezahlt.",
+    "auditPremiumGiftedMonths_one": "{{actor}} hat {{target}} {{count}} Monat Premium geschenkt",
+    "auditPremiumGiftedMonths_other": "{{actor}} hat {{target}} {{count}} Monate Premium geschenkt",
+    "auditPremiumGiftedIndefinite": "{{actor}} hat {{target}} Premium ohne Enddatum geschenkt",
+    "auditPremiumRemoved": "{{actor}} hat {{target}} Premium entfernt"
   },
   "profile": {
     "shareProfile": "Profil teilen",
@@ -1005,7 +1024,10 @@
     "startBuilding": "Beginne mit deinem Reiseplan",
     "startBuildingHint": "Füge Tag für Tag die Orte hinzu, die du besuchen möchtest",
     "noPlacesDay": "Noch keine Orte, füge den ersten Ort für diesen Tag hinzu.",
-    "daySummary": "{{places}} · {{days}}"
+    "daySummary": "{{places}} · {{days}}",
+    "foldAllDays": "Tage einklappen",
+    "unfoldAllDays": "Tage ausklappen",
+    "dayMorePlaces": "+{{count}} weitere"
   },
   "settings": {
     "title": "Einstellungen",
@@ -1049,7 +1071,16 @@
     "pricePerLiterFuelOnly": "Der Literpreis gilt nur für die Kategorie Kraftstoff",
     "amountRequired": "Die Menge ist erforderlich",
     "amountPositive": "Die Menge muss größer als null sein",
-    "unitNoDecimals": "Diese Einheit erlaubt keine Dezimalstellen"
+    "unitNoDecimals": "Diese Einheit erlaubt keine Dezimalstellen",
+    "travellersMin": "Es muss mindestens eine reisende Person geben",
+    "commentEmpty": "Der Kommentar darf nicht leer sein",
+    "amountNotNegative": "Der Betrag darf nicht negativ sein",
+    "pricePositive": "Der Preis muss größer als null sein",
+    "currentPasswordRequired": "Gib dein aktuelles Passwort ein",
+    "passwordSameAsCurrent": "Das neue Passwort muss sich vom aktuellen unterscheiden",
+    "imageTooLarge": "Das Bild muss kleiner als 5 MB sein",
+    "termsRequired": "Du musst die Nutzungsbedingungen und die Datenschutzerklärung akzeptieren",
+    "ageRequired": "Du musst bestätigen, dass du mindestens 16 Jahre alt bist"
   },
   "errors": {
     "title": "Etwas ist schiefgelaufen",
@@ -1200,7 +1231,8 @@
       "curious": "Neugierig",
       "grounding": "Erdend",
       "indulgent": "Genussvoll"
-    }
+    },
+    "defaultTitle": "Meine Reise nach {{destination}}"
   },
   "legalTerms": {
     "documentTitle": "Nutzungsbedingungen",

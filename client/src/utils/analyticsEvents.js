@@ -6,6 +6,8 @@ export {
   PASSPORT_START_STEPS,
   PASSPORT_VIEWERS,
   RECAP_SOURCES,
+  TRIP_KINDS,
+  tripCreatedProperties,
   redactReferralCodes,
   withoutReferralCode,
 } from "@tobeatraveller/shared";

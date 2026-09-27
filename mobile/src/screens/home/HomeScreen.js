@@ -15,9 +15,10 @@ import {
   selectFeaturedItineraries, selectFeaturedItinerariesLoading,
   selectFeaturedUsers, selectFeaturedUsersLoading,
   selectFeed, selectFeedLoading,
-  selectIsAuthenticated, selectUnreadCount,
+  selectAuthUser, selectIsAuthenticated, selectMe, selectUnreadCount,
 } from '@tobeatraveller/shared';
 import ItineraryCard from '../../components/ItineraryCard';
+import NextTripCard from '../../components/NextTripCard';
 import { ItineraryCardSkeleton, UserAvatarSkeleton } from '../../components/Skeleton';
 import { COLORS, shadow } from '../../utils/styles';
 
@@ -73,6 +74,8 @@ const HomeScreen = ({ navigation }) => {
   const feedLoading = useSelector(selectFeedLoading);
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const unreadCount = useSelector(selectUnreadCount);
+  const me = useSelector(selectMe);
+  const authUser = useSelector(selectAuthUser);
 
   useEffect(() => {
     if (!itineraries?.length) dispatch(initFeaturedItineraries());
@@ -102,10 +105,16 @@ const HomeScreen = ({ navigation }) => {
         style={[styles.hero, { paddingTop: insets.top + 20 }]}
       >
         <View style={styles.heroRow}>
-          <View>
-            <Text style={styles.heroTitle}>{t('home.heroTitle')}</Text>
-            <Text style={styles.heroSubtitle}>{t('home.heroSubtitle')}</Text>
-          </View>
+          {isAuthenticated ? (
+            <Text style={[styles.heroTitle, styles.heroGreeting]} numberOfLines={1}>
+              {t('home.heroGreeting', { username: me?.username ?? authUser?.username })}
+            </Text>
+          ) : (
+            <View>
+              <Text style={styles.heroTitle}>{t('home.heroTitle')}</Text>
+              <Text style={styles.heroSubtitle}>{t('home.heroSubtitle')}</Text>
+            </View>
+          )}
           {isAuthenticated && (
             <TouchableOpacity
               style={styles.bellBtn}
@@ -121,6 +130,7 @@ const HomeScreen = ({ navigation }) => {
             </TouchableOpacity>
           )}
         </View>
+        {isAuthenticated && <NextTripCard navigation={navigation} />}
         {isAuthenticated && (
           <View style={styles.tabs}>
             <TouchableOpacity
@@ -303,6 +313,7 @@ const styles = StyleSheet.create({
   heroRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: 20 },
   heroTitle: { fontSize: 26, fontWeight: '800', color: '#fff', letterSpacing: -0.3 },
   heroSubtitle: { fontSize: 14, color: '#A8D5C7', marginTop: 4 },
+  heroGreeting: { flex: 1, marginRight: 12 },
 
   bellBtn: { padding: 4, position: 'relative' },
   bellBadge: {

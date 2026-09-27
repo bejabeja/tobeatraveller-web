@@ -11,6 +11,7 @@ import {
 import { selectMe } from "../../store/user/userInfoSelectors";
 import { heroImage } from "../../utils/constants/constants";
 import { preloadImg } from "../../utils/preloadImg";
+import NextTrip from "./NextTrip";
 import "./Hero.scss";
 
 const Hero = () => {
@@ -37,11 +38,14 @@ const Hero = () => {
         {isAuthenticated ? (
           // A returning, logged-in user has already been sold on the app;
           // repeating the same pitch every time they open Home read as if
-          // the app didn't recognize them, so this swaps to a greeting
-          // instead of the marketing copy/CTA shown to anonymous visitors.
-          <h1 className="hero__content__title">
-            {t("home.heroGreeting", { username: userMe?.username ?? authUser?.username })}
-          </h1>
+          // the app didn't recognize them, so they get a greeting and their
+          // own next trip instead of the marketing copy shown to visitors.
+          <>
+            <h1 className="hero__content__title">
+              {t("home.heroGreeting", { username: userMe?.username ?? authUser?.username })}
+            </h1>
+            <NextTrip />
+          </>
         ) : (
           <>
             <h1 className="hero__content__title">{t("home.heroTitle")}</h1>

@@ -21,6 +21,8 @@ import ImageUpload from "../sectionsForm/ImageUpload";
 import PlacesForm from "../sectionsForm/PlacesForm";
 import TravellersForm from "../sectionsForm/TravellersForm";
 import VisibilityForm from "../sectionsForm/VisibilityForm";
+import { trackEvent } from "../../../utils/analytics";
+import { ANALYTICS_EVENTS, TRIP_KINDS, tripCreatedProperties } from "../../../utils/analyticsEvents";
 import "./CreateItinerary.scss";
 
 const TOTAL_STEPS = 5;
@@ -158,6 +160,9 @@ const CreateItinerary = () => {
         success: <b>{t("itinerary.createItinerary")} 🎉</b>,
         error: <b>{t("errors.somethingWrong")}</b>,
       });
+      trackEvent(ANALYTICS_EVENTS.TRIP_CREATED, tripCreatedProperties({
+        kind: TRIP_KINDS.ITINERARY, isPublic: data.isPublic, places: body.places.length, days: days.length,
+      }));
       dispatch(setUserInfo(userMe.id));
       dispatch(setUserInfoItineraries());
       navigate(`/profile/${userMe.id}`);

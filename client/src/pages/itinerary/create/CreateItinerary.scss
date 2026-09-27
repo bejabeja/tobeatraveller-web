@@ -230,6 +230,61 @@
     color: var(--text-secondary-color);
     font-style: italic;
   }
+
+  &-places {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  &-toggle {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    gap: 0.5rem;
+    padding: 0.25rem 0.25rem 0.25rem 0;
+    border: none;
+    background: none;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+
+    svg {
+      width: 1.25rem;
+      height: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--primary-color);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+  }
+
+  &-preview {
+    font-size: 0.85rem;
+    color: var(--text-secondary-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.form__days-fold-all {
+  align-self: flex-end;
+  width: fit-content;
+  padding: 0.25rem 0.5rem;
+  border: none;
+  background: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 // #1: days/dates sync nudge
@@ -567,6 +622,8 @@
 }
 
 .form__day-remove-btn {
+  flex-shrink: 0;
+  white-space: nowrap;
   font-size: 0.78rem;
   padding: 0.2rem 0.6rem;
   border: 1px solid var(--error-color, #e63946);

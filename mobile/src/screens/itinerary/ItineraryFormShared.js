@@ -1,5 +1,5 @@
 import * as ImagePicker from 'expo-image-picker';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Alert, ActivityIndicator, FlatList, Image, Modal, ScrollView, StyleSheet,
   Text, TextInput, TouchableOpacity, View,
@@ -7,10 +7,11 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import {
-  aiPaceOptions, currencyOptions, DEFAULT_AI_PACE, GENERATE_TIMEOUT_MESSAGE, generateSmartItinerary,
+  aiPaceOptions, currencyOptions, dayPlacesPreview, daysToFold, DEFAULT_AI_PACE, GENERATE_TIMEOUT_MESSAGE, generateSmartItinerary,
   getCurrencySymbol, isPremiumRequiredError, itineraryCategories, placeCategories, formatBudgetAmount,
-  stepNameHintKey,
+  stepNameHintKey, ANALYTICS_EVENTS, TRIP_KINDS,
 } from '@tobeatraveller/shared';
+import { trackEvent } from '../../utils/analytics';
 import { COLORS, shadow } from '../../utils/styles';
 import { getStepConfig } from '../../utils/stepConfig';
 
@@ -427,6 +428,32 @@ export const PlacesSection = ({
   const { t } = useTranslation();
   const [generating, setGenerating] = useState(false);
   const [pace, setPace] = useState(DEFAULT_AI_PACE);
+  const [foldedDays, setFoldedDays] = useState(() => new Set());
+  // From 0, so places already there when the section appears (the edit
+  // screen shows it once the trip has loaded) count as arriving at once too.
+  const previousPlaceCount = useRef(0);
+  const foldOnceDaysArrive = useRef(false);
+
+  // Places and days can arrive in separate renders: the folding waits until
+  // both are there.
+  useEffect(() => {
+    if (previousPlaceCount.current === 0 && places.length > 0) foldOnceDaysArrive.current = true;
+    previousPlaceCount.current = places.length;
+    if (!foldOnceDaysArrive.current) return;
+    if (!places.every(place => days.includes(place.dayNumber))) return;
+    foldOnceDaysArrive.current = false;
+    setFoldedDays(new Set(daysToFold(days, places.length)));
+  }, [places, days]);
+
+  const toggleDay = (day) => setFoldedDays(prev => {
+    const next = new Set(prev);
+    if (next.has(day)) next.delete(day); else next.add(day);
+    return next;
+  });
+
+  const daysWithPlaces = days.filter(day => places.some(p => p.dayNumber === day));
+  const allFolded = daysWithPlaces.length > 0 && daysWithPlaces.every(day => foldedDays.has(day));
+  const toggleAllDays = () => setFoldedDays(allFolded ? new Set() : new Set(daysWithPlaces));
 
   const addPlace = (dayNumber) =>
     setPlaces(prev => [...prev, {
@@ -494,7 +521,9 @@ export const PlacesSection = ({
               .filter(p => p.dayNumber !== day)
               .map(p => ({ ...p, dayNumber: p.dayNumber > day ? p.dayNumber - 1 : p.dayNumber }))
             );
-            setDays(prev => prev.filter(d => d !== day).map(d => d > day ? d - 1 : d));
+            const shiftDays = dayNumbers => [...dayNumbers].filter(d => d !== day).map(d => d > day ? d - 1 : d);
+            setDays(shiftDays);
+            setFoldedDays(prev => new Set(shiftDays(prev)));
           },
         },
       ]
@@ -541,9 +570,11 @@ export const PlacesSection = ({
         lat: parseFloat(p.latitude ?? p.lat ?? 0),
         lon: parseFloat(p.longitude ?? p.lng ?? 0),
       }));
+      trackEvent(ANALYTICS_EVENTS.AI_ITINERARY_GENERATED, { kind: TRIP_KINDS.ITINERARY, pace, days: tripDays || days.length || 1 });
       setPlaces(generated);
       const uniqueDays = [...new Set(generated.map(p => p.dayNumber))].sort((a, b) => a - b);
       setDays(uniqueDays.length > 0 ? uniqueDays : [1]);
+      setFoldedDays(new Set(daysToFold(uniqueDays, generated.length)));
     } catch (error) {
       if (isPremiumRequiredError(error)) {
         Alert.alert(t('premium.requiredTitle'), t('premium.requiredDesc'));
@@ -613,13 +644,32 @@ export const PlacesSection = ({
         </View>
       )}
 
+      {daysWithPlaces.length > 1 && (
+        <TouchableOpacity style={s.foldAllBtn} onPress={toggleAllDays}>
+          <Text style={s.foldAllText}>{allFolded ? t('itineraryForm.unfoldAllDays') : t('itineraryForm.foldAllDays')}</Text>
+        </TouchableOpacity>
+      )}
+
       {days.map(day => {
         const dayPlaces = places.filter(p => p.dayNumber === day);
+        const isFolded = foldedDays.has(day) && dayPlaces.length > 0;
+        const preview = isFolded && dayPlacesPreview(dayPlaces.map(p => p.name));
         return (
           <View key={day} style={s.daySection}>
             <View style={s.dayHeader}>
-              <Text style={s.dayTitle}>{t('itineraryForm.dayTitle', { day })}</Text>
-              <Text style={s.dayCount}>{dayPlaces.length === 1 ? t('itineraryForm.placesInDay_one', { count: 1 }) : t('itineraryForm.placesInDay_other', { count: dayPlaces.length })}</Text>
+              <TouchableOpacity
+                style={s.dayToggle}
+                onPress={() => toggleDay(day)}
+                disabled={dayPlaces.length === 0}
+                accessibilityRole="button"
+                accessibilityState={dayPlaces.length > 0 ? { expanded: !isFolded } : undefined}
+              >
+                {dayPlaces.length > 0 && (
+                  <Ionicons name={isFolded ? 'chevron-forward' : 'chevron-down'} size={16} color="#6b7280" />
+                )}
+                <Text style={s.dayTitle}>{t('itineraryForm.dayTitle', { day })}</Text>
+                <Text style={s.dayCount}>{t('itineraryForm.placesInDay', { count: dayPlaces.length })}</Text>
+              </TouchableOpacity>
               {days.length > 1 && (
                 <TouchableOpacity onPress={() => removeDay(day)} style={s.removeDayBtn}>
                   <Text style={s.removeDayText}>{t('itineraryForm.removeDay')}</Text>
@@ -629,24 +679,35 @@ export const PlacesSection = ({
             {isPublic && dayPlaces.length === 0 && (
               <Text style={s.dayWarning}>{t('itineraryForm.addPlaceWarning')}</Text>
             )}
-            {dayPlaces.map((place, idx) => (
-              <PlaceCard
-                key={place._key}
-                place={place}
-                days={days}
-                currentDay={day}
-                onMoveToDay={newDay => moveToDay(place._key, newDay)}
-                onMoveUp={() => moveUp(place._key, dayPlaces)}
-                onMoveDown={() => moveDown(place._key, dayPlaces)}
-                isFirst={idx === 0}
-                isLast={idx === dayPlaces.length - 1}
-                onUpdate={(field, val) => updatePlace(place._key, field, val)}
-                onRemove={() => removePlace(place._key)}
-              />
-            ))}
-            <TouchableOpacity style={s.addPlaceBtn} onPress={() => addPlace(day)}>
-              <Text style={s.addPlaceBtnText}>{t('itineraryForm.addPlaceToDay', { day })}</Text>
-            </TouchableOpacity>
+            {isFolded ? (
+              <TouchableOpacity onPress={() => toggleDay(day)}>
+                <Text style={s.dayPreview} numberOfLines={1}>
+                  {[preview.names.join(' · '), preview.moreCount > 0 && t('itineraryForm.dayMorePlaces', { count: preview.moreCount })]
+                    .filter(Boolean).join(' ')}
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <>
+                {dayPlaces.map((place, idx) => (
+                  <PlaceCard
+                    key={place._key}
+                    place={place}
+                    days={days}
+                    currentDay={day}
+                    onMoveToDay={newDay => moveToDay(place._key, newDay)}
+                    onMoveUp={() => moveUp(place._key, dayPlaces)}
+                    onMoveDown={() => moveDown(place._key, dayPlaces)}
+                    isFirst={idx === 0}
+                    isLast={idx === dayPlaces.length - 1}
+                    onUpdate={(field, val) => updatePlace(place._key, field, val)}
+                    onRemove={() => removePlace(place._key)}
+                  />
+                ))}
+                <TouchableOpacity style={s.addPlaceBtn} onPress={() => addPlace(day)}>
+                  <Text style={s.addPlaceBtnText}>{t('itineraryForm.addPlaceToDay', { day })}</Text>
+                </TouchableOpacity>
+              </>
+            )}
           </View>
         );
       })}
@@ -738,8 +799,12 @@ export const s = StyleSheet.create({
 
   daySection: { marginBottom: 16 },
   dayHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
+  dayToggle: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 4 },
   dayTitle: { fontSize: 15, fontWeight: '700', color: '#111827' },
-  dayCount: { fontSize: 13, color: '#9ca3af', flex: 1 },
+  dayCount: { fontSize: 13, color: '#9ca3af' },
+  dayPreview: { fontSize: 13, color: '#6b7280', paddingLeft: 22 },
+  foldAllBtn: { alignSelf: 'flex-end', paddingVertical: 4, paddingHorizontal: 4, marginBottom: 8 },
+  foldAllText: { fontSize: 13, fontWeight: '600', color: COLORS.primary },
   removeDayBtn: { paddingVertical: 4, paddingHorizontal: 8 },
   removeDayText: { fontSize: 12, color: '#ef4444' },
   dayWarning: { fontSize: 12, color: '#f59e0b', marginBottom: 8 },

@@ -12,6 +12,7 @@ jest.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (key) => key }),
 }));
 
+jest.mock("../../../utils/analytics", () => ({ trackEvent: jest.fn() }));
 jest.mock("../../../services/comments", () => ({
   getCommentsByItineraryId: jest.fn(),
   addComment: jest.fn(),
@@ -19,6 +20,8 @@ jest.mock("../../../services/comments", () => ({
 }));
 
 import { addComment, getCommentsByItineraryId } from "../../../services/comments";
+import { trackEvent } from "../../../utils/analytics";
+import { ANALYTICS_EVENTS } from "../../../utils/analyticsEvents";
 
 const COMMENTS = [
   { id: "c1", content: "first comment", postedAgo: "2h", user: { id: "u1", username: "alice", avatarUrl: null } },
@@ -71,5 +74,19 @@ describe("Comments deep-link scroll/highlight", () => {
 
     await screen.findByText("new comment");
     expect(window.HTMLElement.prototype.scrollIntoView).toHaveBeenCalledTimes(1);
+  });
+
+  it("counts a posted comment, without what it says", async () => {
+    addComment.mockResolvedValue({
+      id: "c3", content: "new comment", postedAgo: "just now",
+      user: { id: "me-1", username: "me", avatarUrl: null },
+    });
+    renderAtHash("");
+
+    await userEvent.type(await screen.findByPlaceholderText("comments.addComment"), "new comment");
+    await userEvent.click(screen.getByRole("button", { name: "comments.post" }));
+
+    await screen.findByText("new comment");
+    expect(trackEvent).toHaveBeenCalledWith(ANALYTICS_EVENTS.COMMENT_POSTED);
   });
 });

@@ -11,6 +11,8 @@ import {
 } from "../../../services/comments";
 import { selectMe } from "../../../store/user/userInfoSelectors";
 import Modal from "../../modal/Modal";
+import { trackEvent } from "../../../utils/analytics";
+import { ANALYTICS_EVENTS } from "../../../utils/analyticsEvents";
 import "./Comments.scss";
 
 
@@ -59,6 +61,7 @@ const Comments = ({ itineraryId, isAuthenticated }) => {
     setLoading(true);
     try {
       const comment = await addComment(itineraryId, newComment);
+      trackEvent(ANALYTICS_EVENTS.COMMENT_POSTED);
       setComments((prev) => {
         const next = [...prev, comment];
         dispatch(updateCommentsCount(itineraryId, next.length));

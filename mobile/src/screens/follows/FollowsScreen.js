@@ -8,8 +8,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
   followUser, getAllFollowers, getAllFollowing, unfollowUser,
-  selectIsAuthenticated, selectMe, selectAuthUser, setUserInfo,
+  selectIsAuthenticated, selectMe, selectAuthUser, setUserInfo, ANALYTICS_EVENTS,
 } from '@tobeatraveller/shared';
+import { trackEvent } from '../../utils/analytics';
 import { UserRowSkeleton } from '../../components/Skeleton';
 import { shadow } from '../../utils/styles';
 
@@ -106,7 +107,10 @@ const UserRow = ({ user, me, dispatch, onPress }) => {
     setLoading(true);
     try {
       if (following) await unfollowUser(user.id);
-      else await followUser(user.id);
+      else {
+        await followUser(user.id);
+        trackEvent(ANALYTICS_EVENTS.USER_FOLLOWED);
+      }
       setFollowing(f => !f);
       if (me?.id) dispatch(setUserInfo(me.id));
     } catch {}

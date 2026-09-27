@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isNetworkError, isPremiumRequiredError, parseError } from '../../utils/parseError.js';
+import { isNetworkError, isPremiumRequiredError, parseError, setApiErrorTranslator } from '../../utils/parseError.js';
 
 // Regression coverage: callers need to tell a 403 (e.g. a premium-only
 // feature) apart from any other failure to show the right message, which
@@ -58,5 +58,26 @@ describe('isNetworkError', () => {
     it('is false for an ordinary server error', () => {
         expect(isNetworkError({ status: 500, message: 'Internal server error' })).toBe(false);
         expect(isNetworkError(undefined)).toBe(false);
+    });
+});
+
+// Regression: the apps translated their own validation messages, but one
+// from the API (the same kind of check, turned down on the server) was shown
+// in English.
+describe('parseError with the app language', () => {
+    const t = (key) => ({ 'validation.tooLong': 'Es demasiado largo' })[key] ?? key;
+
+    it('translates a validation message from the API', async () => {
+        setApiErrorTranslator(t);
+        const response = { status: 400, json: async () => ({ error: 'validation.tooLong', field: 'bio' }) };
+
+        await expect(parseError(response)).rejects.toMatchObject({ message: 'Es demasiado largo', field: 'bio' });
+    });
+
+    it('leaves any other message from the API as it came', async () => {
+        setApiErrorTranslator(t);
+        const response = { status: 409, json: async () => ({ error: 'Email already in use' }) };
+
+        await expect(parseError(response)).rejects.toMatchObject({ message: 'Email already in use' });
     });
 });

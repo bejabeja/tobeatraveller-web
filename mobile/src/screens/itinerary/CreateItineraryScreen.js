@@ -10,8 +10,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
   createItinerary, NEW_ITINERARY_DEFAULT_VISIBILITY, reverseGeocode, searchDestinations, selectAuthUser, selectMe,
-  setUserInfo, setUserInfoItineraries,
+  setUserInfo, setUserInfoItineraries, ANALYTICS_EVENTS, TRIP_KINDS, tripCreatedProperties,
 } from '@tobeatraveller/shared';
+import { trackEvent } from '../../utils/analytics';
 import {
   BudgetSection, Card, CategorySection, DatesSection,
   Field, GallerySection, PlacesSection, TravellersSection, useGalleryPicker, VisibilitySection, s,
@@ -179,6 +180,9 @@ const CreateItineraryScreen = ({ navigation }) => {
       newPhotos.forEach(photo => formData.append('images', photo));
       formData.append('itinerary', JSON.stringify(body));
       await createItinerary(formData);
+      trackEvent(ANALYTICS_EVENTS.TRIP_CREATED, tripCreatedProperties({
+        kind: TRIP_KINDS.ITINERARY, isPublic, places: body.places.length, days: days.length,
+      }));
       if (me?.id) {
         dispatch(setUserInfo(me.id));
         dispatch(setUserInfoItineraries());

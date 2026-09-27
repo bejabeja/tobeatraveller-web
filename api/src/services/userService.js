@@ -9,14 +9,27 @@ import { generateAvatar } from "../utils/avatar.js";
 import { countryCodeFromIp } from "../utils/geoLookup.js";
 import { logger } from "../utils/logger.js";
 import { AUDIT_EVENTS } from "../utils/auditEvents.js";
+import { ACTIVE_SUBSCRIPTION_STATUSES } from "../models/subscription.js";
 import { ROLES } from "../utils/roles.js";
 import { referralCodeFromUsername } from "../utils/referralCode.js";
 import { isUsernameChange, USERNAME_CHANGE_COOLDOWN_DAYS, usernameChangeAvailableAt } from "../utils/usernameChange.js";
 
-// A staff-granted premium override (no Stripe subscription behind it yet):
-// far enough out to behave as "indefinite" without a magic null/sentinel
-// value that isPremium() would need special-casing for.
-const MANUAL_PREMIUM_DURATION_MS = 100 * 365 * 24 * 60 * 60 * 1000;
+// A staff-granted premium with no end date: far enough out to behave as
+// "indefinite" without a magic null/sentinel value that isPremium() would
+// need special-casing for.
+const INDEFINITE_PREMIUM_YEARS = 100;
+
+const manualPremiumEnd = (months) => {
+    const end = new Date();
+    if (months) end.setMonth(end.getMonth() + months);
+    else end.setFullYear(end.getFullYear() + INDEFINITE_PREMIUM_YEARS);
+    return end;
+};
+
+const latestDate = (...dates) => {
+    const present = dates.filter(Boolean);
+    return present.length ? new Date(Math.max(...present)) : null;
+};
 
 export class UserService {
     constructor(
@@ -155,22 +168,41 @@ export class UserService {
         return user;
     }
 
-    async updateUserTier(targetId, tier, actingUser, { ip, userAgent } = {}) {
+    // Staff gift or take away premium. A gift never shortens the premium the
+    // user already has (paid, earned by invites or gifted before), and taking
+    // it away keeps them premium until the period they paid for ends.
+    async updateUserTier(targetId, { tier, months = null }, actingUser, { ip, userAgent } = {}) {
         const previousUser = await this.userRepository.getUserById(targetId);
         if (!previousUser) throw new NotFoundError("User not found");
 
-        const premiumUntil = tier === 'premium' ? new Date(Date.now() + MANUAL_PREMIUM_DURATION_MS) : null;
+        const paidUntil = await this._paidPremiumUntil(targetId);
+        const currentUntil = previousUser.isPremium() ? new Date(previousUser.premiumUntil) : null;
+        const premiumUntil = tier === 'premium'
+            ? latestDate(manualPremiumEnd(months), paidUntil, currentUntil)
+            : paidUntil;
         const user = await this.userRepository.updatePremiumUntil(targetId, premiumUntil);
 
         this.auditLogService?.log({
             actorId: actingUser.id, actorUsername: actingUser.username,
             action: AUDIT_EVENTS.TIER_UPDATED,
             targetUserId: targetId, targetUsername: user.username,
-            metadata: { previousTier: previousUser.isPremium() ? 'premium' : 'free', newTier: tier },
+            metadata: {
+                previousTier: previousUser.isPremium() ? 'premium' : 'free', newTier: tier,
+                months, premiumUntil, keptPaidSubscription: Boolean(paidUntil),
+            },
             ipAddress: ip, userAgent,
         });
 
         return user;
+    }
+
+    async _paidPremiumUntil(userId) {
+        const subscriptions = await this.subscriptionRepository?.findByUserId(userId) ?? [];
+        const now = new Date();
+        return latestDate(...subscriptions
+            .filter((subscription) => ACTIVE_SUBSCRIPTION_STATUSES.includes(subscription.status))
+            .map((subscription) => new Date(subscription.currentPeriodEnd))
+            .filter((periodEnd) => periodEnd > now));
     }
 
     async getUserForAuth(id) {

@@ -50,7 +50,7 @@ export { getDestinations } from './services/itineraries.js';
 export { setApiUrl } from './utils/apiConfig.js';
 export { setTokenStorage } from './utils/tokenStorage.js';
 export {
-    parseError, isPremiumRequiredError, isVanLogCapReachedError, isLifeDiaryCapReachedError,
+    parseError, setApiErrorTranslator, isPremiumRequiredError, isVanLogCapReachedError, isLifeDiaryCapReachedError,
     isShoppingListCapReachedError, isInventoryCapReachedError, isNetworkError, isTimeoutError,
 } from './utils/parseError.js';
 export { normalizeSearchText } from './utils/normalizeSearchText.js';
@@ -68,6 +68,8 @@ export * from './utils/constants/badges.js';
 export * from './utils/constants/countries.js';
 export * from './utils/constants/languages.js';
 export * from './utils/recap.js';
+export * from './utils/dayPlaces.js';
+export * from './utils/nextTrip.js';
 export * from './utils/celebrations.js';
 export * from './utils/analyticsEvents.js';
 export * from './utils/passportMap.js';

@@ -6,7 +6,8 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
-import { followUser, getSuggestedUsers, selectAuthUser, setUserInfo, unfollowUser } from '@tobeatraveller/shared';
+import { followUser, getSuggestedUsers, selectAuthUser, setUserInfo, unfollowUser, ANALYTICS_EVENTS } from '@tobeatraveller/shared';
+import { trackEvent } from '../../utils/analytics';
 import { useDispatch, useSelector } from 'react-redux';
 import { shadow } from '../../utils/styles';
 
@@ -59,7 +60,12 @@ const OnboardingScreen = ({ navigation }) => {
       return next;
     });
     try {
-      isFollowing ? await unfollowUser(userId) : await followUser(userId);
+      if (isFollowing) {
+        await unfollowUser(userId);
+      } else {
+        await followUser(userId);
+        trackEvent(ANALYTICS_EVENTS.USER_FOLLOWED);
+      }
     } catch {
       setFollowing(prev => {
         const next = new Set(prev);
@@ -114,7 +120,10 @@ const OnboardingScreen = ({ navigation }) => {
           <View style={styles.start}>
             <Text style={styles.startTitle} accessibilityRole="header">{t('onboarding.startTitle')}</Text>
             {START_ACTIONS.map(({ key, emoji, screen, params }) => (
-              <TouchableOpacity key={key} style={styles.startAction} onPress={() => startWith(screen, params?.(authUser?.id))} accessibilityRole="button">
+              <TouchableOpacity key={key} style={styles.startAction} onPress={() => {
+                  trackEvent(ANALYTICS_EVENTS.ONBOARDING_START_STEP_CLICKED, { step: key });
+                  startWith(screen, params?.(authUser?.id));
+                }} accessibilityRole="button">
                 <Text style={styles.startEmoji}>{emoji}</Text>
                 <View style={styles.startText}>
                   <Text style={styles.startActionTitle}>{t(`onboarding.${key}`)}</Text>

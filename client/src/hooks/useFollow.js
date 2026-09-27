@@ -7,6 +7,8 @@ import { followUser, unfollowUser } from "../services/followers";
 import { selectIsAuthenticated } from "../store/auth/authSelectors";
 import { setUserInfo, setUserInfoFollowing } from "../store/user/userInfoActions";
 import { selectMe } from "../store/user/userInfoSelectors";
+import { trackEvent } from "../utils/analytics";
+import { ANALYTICS_EVENTS } from "../utils/analyticsEvents";
 
 export const useFollow = (targetUserId) => {
     const { t } = useTranslation();
@@ -53,6 +55,7 @@ export const useFollow = (targetUserId) => {
                 await unfollowUser(requestedTargetId);
             } else {
                 await followUser(requestedTargetId);
+                trackEvent(ANALYTICS_EVENTS.USER_FOLLOWED);
             }
             if (targetUserIdRef.current !== requestedTargetId) return;
             if (userMe?.id) {

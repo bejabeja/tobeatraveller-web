@@ -43,6 +43,8 @@ import { optimizedCloudinaryUrl } from "../../utils/cloudinaryUrl.js";
 import { getCurrencySymbol } from "../../utils/constants/currencies.js";
 import { buildItineraryJsonLd } from "../../utils/jsonLd.js";
 import { formatBudgetAmount, tripCategoryLabelKey } from "@tobeatraveller/shared";
+import { trackEvent } from "../../utils/analytics";
+import { ANALYTICS_EVENTS } from "../../utils/analyticsEvents";
 import "./Itinerary.scss";
 import Error from "../error/Error.jsx";
 
@@ -237,6 +239,7 @@ const Hero = ({
     if (!isAuthenticated) { navigate("/login"); return; }
     try {
       const cloned = await cloneItinerary(itinerary.id);
+      trackEvent(ANALYTICS_EVENTS.TRIP_CLONED);
       toast.success(t("itinerary.cloneSuccess"));
       navigate(cloned.source === "experience" ? `/experience/edit/${cloned.id}` : `/itinerary/edit/${cloned.id}`);
     } catch {
@@ -251,6 +254,7 @@ const Hero = ({
     try {
       if (!wasFavorite) {
         await addFavorite(itinerary.id);
+        trackEvent(ANALYTICS_EVENTS.TRIP_SAVED);
         toast.success(t("itinerary.addedToFavorites"));
       } else {
         await removeFavorite(itinerary.id);

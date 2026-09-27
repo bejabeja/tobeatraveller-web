@@ -1,3 +1,6 @@
+// The statuses that keep premium on: paid, or in its free trial.
+export const ACTIVE_SUBSCRIPTION_STATUSES = ['active', 'trialing'];
+
 export class Subscription {
     constructor({ id, userId, stripeSubscriptionId, status, currentPeriodEnd, cancelAtPeriodEnd, createdAt, updatedAt }) {
         this.id = id;

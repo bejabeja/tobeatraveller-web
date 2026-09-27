@@ -3,7 +3,7 @@ import {
     signupSchema, resetPasswordSchema, vanLogEntrySchema,
     createItineraryDataSchema, updateItineraryDataSchema,
     registerPushTokenSchema, createVanLogEntrySchema, vanLogEntrySchema as vanLogUpdateSchema,
-    declaredCountriesSchema, contactSchema, updateLanguageSchema,
+    declaredCountriesSchema, contactSchema, updateLanguageSchema, updateUserTierSchema,
 } from '../../utils/schemasValidation.js';
 
 const validSignupData = {
@@ -237,7 +237,7 @@ describe('client-generated ids on create schemas', () => {
     it('still applies the fuel-only price rule on create', () => {
         const result = createVanLogEntrySchema.safeParse({ ...entry, category: 'groceries', pricePerLiter: 1.5 });
 
-        expect(result.error.errors[0].message).toBe('Price per liter only applies to the fuel category');
+        expect(result.error.errors[0].message).toBe('validation.pricePerLiterFuelOnly');
 
         expect(result.success).toBe(false);
     });
@@ -315,5 +315,38 @@ describe('signupSchema referral code', () => {
         const result = signupSchema.safeParse({ ...validSignup, referralCode: 'a'.repeat(51) });
 
         expect(result.success).toBe(false);
+    });
+});
+
+describe('updateUserTierSchema', () => {
+    it('takes a gift of premium for one of the offered durations, or with no end', () => {
+        expect(updateUserTierSchema.safeParse({ tier: 'premium', months: 3 }).success).toBe(true);
+        expect(updateUserTierSchema.safeParse({ tier: 'premium' }).success).toBe(true);
+    });
+
+    it('rejects a duration that is not offered', () => {
+        expect(updateUserTierSchema.safeParse({ tier: 'premium', months: 7 }).success).toBe(false);
+    });
+
+    it('rejects a duration on the free tier', () => {
+        expect(updateUserTierSchema.safeParse({ tier: 'free', months: 3 }).success).toBe(false);
+    });
+});
+
+// Regression: the apps translate their own validation messages, but when the
+// API turned something down its English message reached the person as is.
+describe('messages a person can run into', () => {
+    it('are the translation keys the apps share', () => {
+        const result = signupSchema.safeParse({ ...validSignupData, username: 'a b', email: 'nope' });
+
+        expect(result.error.errors.map((issue) => issue.message)).toEqual(
+            expect.arrayContaining(['validation.usernameNoSpaces', 'validation.emailInvalid'])
+        );
+    });
+
+    it('fall back to a shared key instead of Zod\'s English default', () => {
+        const result = contactSchema.safeParse({ name: 'Ana', email: 'ana@example.com', subject: 'Hola' });
+
+        expect(result.error.errors[0].message).toBe('validation.required');
     });
 });

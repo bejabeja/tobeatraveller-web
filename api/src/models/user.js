@@ -158,6 +158,7 @@ export class User {
             avatarUrl: this.avatarUrl,
             role: this.role,
             isPremium: this.isPremium(),
+            premiumUntil: this.premiumUntil,
             createdAt: this.createdAt,
             totalItineraries: this.countItineraries(),
         };

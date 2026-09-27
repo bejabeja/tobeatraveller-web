@@ -21,6 +21,7 @@ jest.mock("../../services/subscription", () => ({
   createCheckoutSession: jest.fn(), createPortalSession: jest.fn(), getMySubscription: jest.fn(), resumeSubscription: jest.fn(),
 }));
 jest.mock("../../utils/preloadImg", () => ({ preloadImg: jest.fn() }));
+jest.mock("../../utils/analytics", () => ({ trackEvent: jest.fn() }));
 jest.mock("../../hooks/useScrollReveal", () => ({ useScrollReveal: () => null }));
 
 import Subscription from "./Subscription";

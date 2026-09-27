@@ -3,6 +3,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { followUser, getSuggestedUsers, selectAuthUser, setUserInfo, unfollowUser } from "@tobeatraveller/shared";
+import { trackEvent } from "../../utils/analytics";
+import { ANALYTICS_EVENTS } from "../../utils/analyticsEvents";
 import { generateAvatar } from "../../utils/constants/constants";
 import "./Onboarding.scss";
 
@@ -46,7 +48,12 @@ const Onboarding = () => {
       return next;
     });
     try {
-      isFollowing ? await unfollowUser(userId) : await followUser(userId);
+      if (isFollowing) {
+        await unfollowUser(userId);
+      } else {
+        await followUser(userId);
+        trackEvent(ANALYTICS_EVENTS.USER_FOLLOWED);
+      }
     } catch {
       setFollowing(prev => {
         const next = new Set(prev);
@@ -113,7 +120,14 @@ const Onboarding = () => {
             <ul className="onboarding__start-list">
               {START_ACTIONS.map(({ key, emoji, path }) => (
                 <li key={key}>
-                  <Link to={path(authUser?.id)} className="onboarding__start-action" onClick={refreshUser}>
+                  <Link
+                    to={path(authUser?.id)}
+                    className="onboarding__start-action"
+                    onClick={() => {
+                      trackEvent(ANALYTICS_EVENTS.ONBOARDING_START_STEP_CLICKED, { step: key });
+                      refreshUser();
+                    }}
+                  >
                     <span className="onboarding__start-emoji" aria-hidden="true">{emoji}</span>
                     <span className="onboarding__start-text">
                       <strong>{t(`onboarding.${key}`)}</strong>

@@ -16,7 +16,14 @@ import "./InternalUsers.scss";
 
 const PAGE_SIZE = 20;
 const ASSIGNABLE_ROLES = ["user", "admin", "superadmin"];
-const ASSIGNABLE_TIERS = ["free", "premium"];
+const GIFT_PREMIUM_MONTHS = [1, 3, 12];
+const REMOVE_PREMIUM = "free";
+const GIFT_PREFIX = "gift:";
+// A gift with no end date is stored a century out (see userService.js).
+const INDEFINITE_AFTER_YEARS = 50;
+
+const isIndefinite = (premiumUntil) =>
+  new Date(premiumUntil).getFullYear() - new Date().getFullYear() > INDEFINITE_AFTER_YEARS;
 
 const InternalUsers = () => {
   const { t, i18n } = useTranslation();
@@ -74,15 +81,28 @@ const InternalUsers = () => {
     applyRoleChange(user, newRole);
   };
 
-  const handleTierChange = async (user, newTier) => {
-    const currentTier = user.isPremium ? "premium" : "free";
-    if (newTier === currentTier) return;
+  const shortDate = (date) => formatDate(date, i18n.language, { day: "numeric", month: "short", year: "numeric" });
+
+  const tierStatus = (user) => {
+    if (!user.isPremium) return t("admin.free");
+    return isIndefinite(user.premiumUntil)
+      ? t("admin.premiumIndefinite")
+      : t("admin.premiumUntil", { date: shortDate(user.premiumUntil) });
+  };
+
+  const handleTierChange = async (user, choice) => {
+    const isRemoval = choice === REMOVE_PREMIUM;
+    const months = isRemoval ? undefined : Number(choice.slice(GIFT_PREFIX.length)) || undefined;
 
     setUpdatingTierId(user.id);
     try {
-      await updateUserTier(user.id, newTier);
-      setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, isPremium: newTier === "premium" } : u)));
-      toast.success(t("admin.tierUpdated"));
+      const updated = await updateUserTier(user.id, isRemoval ? "free" : "premium", months);
+      setUsers((prev) => prev.map((u) => (
+        u.id === user.id ? { ...u, isPremium: updated.isPremium, premiumUntil: updated.premiumUntil } : u
+      )));
+      toast.success(isRemoval && updated.isPremium
+        ? t("admin.tierKeptPaid", { date: shortDate(updated.premiumUntil) })
+        : t("admin.tierUpdated"));
     } catch (err) {
       toast.error(err.message || t("admin.tierUpdateError"));
     } finally {
@@ -171,7 +191,7 @@ const InternalUsers = () => {
                   </span>
                   <span className="internal-users__meta">{user.email}</span>
                   <span className="internal-users__meta">
-                    {t("admin.joined", { date: formatDate(user.createdAt, i18n.language, { day: "numeric", month: "short", year: "numeric" }) })}
+                    {t("admin.joined", { date: shortDate(user.createdAt) })}
                     {" · "}
                     {t("admin.itinerariesCount", { count: user.totalItineraries })}
                   </span>
@@ -188,13 +208,19 @@ const InternalUsers = () => {
                 </select>
                 <select
                   className="internal-users__tier-select"
-                  value={user.isPremium ? "premium" : "free"}
+                  value=""
                   disabled={updatingTierId === user.id}
                   onChange={(e) => handleTierChange(user, e.target.value)}
+                  aria-label={t("admin.premium")}
                 >
-                  {ASSIGNABLE_TIERS.map((tier) => (
-                    <option key={tier} value={tier}>{t(`admin.${tier}`)}</option>
+                  <option value="" disabled>{tierStatus(user)}</option>
+                  {GIFT_PREMIUM_MONTHS.map((months) => (
+                    <option key={months} value={`${GIFT_PREFIX}${months}`}>
+                      {t("admin.giftPremiumMonths", { count: months })}
+                    </option>
                   ))}
+                  <option value={GIFT_PREFIX}>{t("admin.giftPremiumIndefinite")}</option>
+                  {user.isPremium && <option value={REMOVE_PREMIUM}>{t("admin.removePremium")}</option>}
                 </select>
                 <button
                   type="button"

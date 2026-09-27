@@ -1,5 +1,6 @@
-// The passport sharing funnel: a passport is shared, the link is opened, the
-// visitor clicks the invite and signs up.
+// The passport sharing funnel (a passport is shared, the link is opened, the
+// visitor clicks the invite and signs up) and the core actions, to see what
+// people actually use.
 export const ANALYTICS_EVENTS = Object.freeze({
     PASSPORT_VIEWED: 'passport_viewed',
     PASSPORT_SHARE_OPENED: 'passport_share_opened',
@@ -12,6 +13,26 @@ export const ANALYTICS_EVENTS = Object.freeze({
     RECAP_OPENED: 'recap_opened',
     RECAP_SHARED: 'recap_shared',
     USER_SIGNED_UP: 'user_signed_up',
+    ONBOARDING_START_STEP_CLICKED: 'onboarding_start_step_clicked',
+    TRIP_CREATED: 'trip_created',
+    AI_ITINERARY_GENERATED: 'ai_itinerary_generated',
+    TRIP_CLONED: 'trip_cloned',
+    TRIP_LIKED: 'trip_liked',
+    TRIP_SAVED: 'trip_saved',
+    COMMENT_POSTED: 'comment_posted',
+    USER_FOLLOWED: 'user_followed',
+    CHECKOUT_STARTED: 'checkout_started',
+});
+
+// A regular trip, or an experience (planned by day count, without dates).
+export const TRIP_KINDS = Object.freeze({
+    ITINERARY: 'itinerary',
+    EXPERIENCE: 'experience',
+});
+
+// What a trip was like when created: counts and flags, nothing it says.
+export const tripCreatedProperties = ({ kind, isPublic, places, days }) => ({
+    kind, is_public: Boolean(isPublic), places, days,
 });
 
 export const PASSPORT_SHARE_SOURCES = Object.freeze({

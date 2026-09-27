@@ -10,7 +10,7 @@ export class ContactController {
     async sendContact(req, res, next) {
         const result = contactSchema.safeParse(req.body);
         if (!result.success) {
-            return next(new ValidationError('Contact validation failed'));
+            return next(new ValidationError(result.error.errors[0]?.message || 'Contact validation failed'));
         }
         try {
             const { name, email, subject, message, language } = result.data;

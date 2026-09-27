@@ -10,7 +10,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
   EXISTING_ITINERARY_VISIBILITY_FALLBACK, getItineraryById, selectAuthUser, selectMe,
-  setUserInfo, updateItinerary,
+  setUserInfo, setUserInfoItineraries, updateItinerary,
 } from '@tobeatraveller/shared';
 import {
   BudgetSection, Card, CategorySection, DatesSection,
@@ -141,6 +141,7 @@ const EditItineraryScreen = ({ route, navigation }) => {
       formData.append('itinerary', JSON.stringify(body));
       await updateItinerary(id, formData);
       if (me?.id) dispatch(setUserInfo(me.id));
+      dispatch(setUserInfoItineraries());
       navigation.goBack();
     } catch (err) {
       Alert.alert(t('errors.somethingWrong'), err?.message || t('editItinerary.errorSave'));

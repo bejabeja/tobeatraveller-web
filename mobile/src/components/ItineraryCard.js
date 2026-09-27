@@ -4,7 +4,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { checkIsLiked, toggleLike, selectIsAuthenticated } from '@tobeatraveller/shared';
+import { checkIsLiked, toggleLike, selectIsAuthenticated, ANALYTICS_EVENTS } from '@tobeatraveller/shared';
+import { trackEvent } from '../utils/analytics';
 import { COLORS, shadow } from '../utils/styles';
 
 const ItineraryCard = ({ itinerary, onPress, onRequestLogin, compact = false }) => {
@@ -27,6 +28,7 @@ const ItineraryCard = ({ itinerary, onPress, onRequestLogin, compact = false }) 
     setLikesCount(c => prev ? c - 1 : c + 1);
     try {
       const data = await toggleLike(itinerary.id);
+      if (data.isLiked) trackEvent(ANALYTICS_EVENTS.TRIP_LIKED);
       setIsLiked(data.isLiked);
       setLikesCount(data.likesCount);
     } catch {

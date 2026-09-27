@@ -1,7 +1,12 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { useTranslation } from "react-i18next";
+
+// The same limit the API applies to a profile photo.
+const MAX_AVATAR_BYTES = 5 * 1024 * 1024;
 
 export const useAvatarUpload = () => {
+  const { t } = useTranslation();
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [removeAvatar, setRemoveAvatar] = useState(false);
@@ -12,8 +17,8 @@ export const useAvatarUpload = () => {
 
   const handleAvatarChange = (file) => {
     if (avatarPreview) URL.revokeObjectURL(avatarPreview);
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image must be under 5 MB");
+    if (file.size > MAX_AVATAR_BYTES) {
+      toast.error(t("validation.imageTooLarge"));
       return;
     }
     setAvatarFile(file);

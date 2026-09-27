@@ -280,7 +280,7 @@ describe('UserService.updateUserTier()', () => {
     });
 
     it('grants a far-future premiumUntil when moving a free user to premium', async () => {
-        const result = await service.updateUserTier('user-2', 'premium', { id: 'admin-1', username: 'root' });
+        const result = await service.updateUserTier('user-2', { tier: 'premium' }, { id: 'admin-1', username: 'root' });
 
         expect(result.isPremium()).toBe(true);
         expect(result.premiumUntil.getFullYear()).toBeGreaterThan(new Date().getFullYear() + 50);
@@ -289,7 +289,7 @@ describe('UserService.updateUserTier()', () => {
     it('clears premiumUntil when moving a premium user to free', async () => {
         userRepository.getUserById = async (id) => makeUser({ id, premiumUntil: new Date('2099-01-01') });
 
-        const result = await service.updateUserTier('user-2', 'free', { id: 'admin-1', username: 'root' });
+        const result = await service.updateUserTier('user-2', { tier: 'free' }, { id: 'admin-1', username: 'root' });
 
         expect(result.isPremium()).toBe(false);
     });
@@ -298,7 +298,7 @@ describe('UserService.updateUserTier()', () => {
         userRepository.getUserById = async () => null;
 
         await expect(
-            service.updateUserTier('missing', 'premium', { id: 'admin-1', username: 'root' })
+            service.updateUserTier('missing', { tier: 'premium' }, { id: 'admin-1', username: 'root' })
         ).rejects.toThrow('User not found');
     });
 
@@ -307,7 +307,7 @@ describe('UserService.updateUserTier()', () => {
         auditLogService.log = (entry) => { loggedEntry = entry; };
         userRepository.getUserById = async (id) => makeUser({ id, premiumUntil: null });
 
-        await service.updateUserTier('user-2', 'premium', { id: 'admin-1', username: 'root' });
+        await service.updateUserTier('user-2', { tier: 'premium' }, { id: 'admin-1', username: 'root' });
 
         expect(loggedEntry).toEqual({
             actorId: 'admin-1',
@@ -315,7 +315,55 @@ describe('UserService.updateUserTier()', () => {
             action: AUDIT_EVENTS.TIER_UPDATED,
             targetUserId: 'user-2',
             targetUsername: 'jane',
-            metadata: { previousTier: 'free', newTier: 'premium' },
+            metadata: { previousTier: 'free', newTier: 'premium', months: null, premiumUntil: expect.any(Date), keptPaidSubscription: false },
+        });
+    });
+
+    it('gifts premium for the months chosen', async () => {
+        const result = await service.updateUserTier('user-2', { tier: 'premium', months: 3 }, { id: 'admin-1', username: 'root' });
+
+        const inThreeMonths = new Date();
+        inThreeMonths.setMonth(inThreeMonths.getMonth() + 3);
+        expect(Math.abs(result.premiumUntil - inThreeMonths)).toBeLessThan(60_000);
+    });
+
+    // Regression: a short gift replaced the premium they already had.
+    it('never shortens the premium they already have with a shorter gift', async () => {
+        const earnedUntil = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000);
+        userRepository.getUserById = async (id) => makeUser({ id, premiumUntil: earnedUntil });
+
+        const result = await service.updateUserTier('user-2', { tier: 'premium', months: 1 }, { id: 'admin-1', username: 'root' });
+
+        expect(result.premiumUntil).toEqual(earnedUntil);
+    });
+
+    describe('for someone paying through Stripe', () => {
+        const paidUntil = new Date(Date.now() + 200 * 24 * 60 * 60 * 1000);
+
+        beforeEach(() => {
+            userRepository.getUserById = async (id) => makeUser({ id, premiumUntil: paidUntil });
+            service = new UserService(
+                userRepository, {}, {}, null, null, auditLogService, null, null, null, null,
+                { findByUserId: async () => [
+                    { status: 'active', currentPeriodEnd: paidUntil },
+                    { status: 'canceled', currentPeriodEnd: new Date('2099-01-01') },
+                ] },
+            );
+        });
+
+        it('never shortens what they paid for with a shorter gift', async () => {
+            const result = await service.updateUserTier('user-2', { tier: 'premium', months: 1 }, { id: 'admin-1', username: 'root' });
+
+            expect(result.premiumUntil).toEqual(paidUntil);
+        });
+
+        // Regression: taking premium away cleared it, cutting off a period
+        // the user had already paid for.
+        it('leaves them premium until the paid period ends when premium is taken away', async () => {
+            const result = await service.updateUserTier('user-2', { tier: 'free' }, { id: 'admin-1', username: 'root' });
+
+            expect(result.premiumUntil).toEqual(paidUntil);
+            expect(result.isPremium()).toBe(true);
         });
     });
 
@@ -324,7 +372,7 @@ describe('UserService.updateUserTier()', () => {
         auditLogService.log = (entry) => { loggedEntry = entry; };
 
         await service.updateUserTier(
-            'user-2', 'premium', { id: 'admin-1', username: 'root' },
+            'user-2', { tier: 'premium' }, { id: 'admin-1', username: 'root' },
             { ip: '203.0.113.1', userAgent: 'Mozilla/5.0' }
         );
 

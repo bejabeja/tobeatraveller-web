@@ -6,9 +6,12 @@ jest.mock('@tobeatraveller/shared', () => ({
   getSuggestedUsers: jest.fn(),
   setUserInfo: jest.fn(),
   selectAuthUser: () => ({ id: 'u1' }),
+  ANALYTICS_EVENTS: { ONBOARDING_START_STEP_CLICKED: 'onboarding_start_step_clicked', USER_FOLLOWED: 'user_followed' },
 }));
+jest.mock('../../utils/analytics', () => ({ trackEvent: jest.fn() }));
 
 import { getSuggestedUsers } from '@tobeatraveller/shared';
+import { trackEvent } from '../../utils/analytics';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import OnboardingScreen from '../../screens/auth/OnboardingScreen';
@@ -35,6 +38,7 @@ it('offers first steps of their own when there is nobody to follow, and goes to 
 
   expect(navigation.replace).toHaveBeenCalledWith('Tabs');
   expect(navigation.navigate).toHaveBeenCalledWith('Passport', { userId: 'u1' });
+  expect(trackEvent).toHaveBeenCalledWith('onboarding_start_step_clicked', { step: 'startPassport' });
   expect(screen.queryByText('onboarding.skip')).toBeNull();
 });
 

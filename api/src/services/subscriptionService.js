@@ -1,14 +1,13 @@
 import { NotFoundError } from '../errors/NotFoundError.js';
 import { ConflictError } from '../errors/ConflictError.js';
 import { AUDIT_EVENTS } from '../utils/auditEvents.js';
+import { ACTIVE_SUBSCRIPTION_STATUSES } from '../models/subscription.js';
 import config from '../config/config.js';
 
 const PRICE_IDS_BY_PLAN = {
     monthly: config.stripePriceIdMonthly,
     annual: config.stripePriceIdAnnual,
 };
-
-const ACTIVE_SUBSCRIPTION_STATUSES = ['active', 'trialing'];
 
 // Advertised on the subscription page's main CTA ("Prueba Premium gratis 7
 // días"), so Checkout must actually grant it. Only for a user's first ever

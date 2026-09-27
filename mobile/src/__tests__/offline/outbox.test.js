@@ -6,8 +6,8 @@ jest.mock('expo-crypto', () => {
 jest.mock('../../offline/changeExecutors', () => ({ executeChange: jest.fn() }));
 
 jest.mock('@tobeatraveller/shared', () => {
-  const { isNetworkError, isTimeoutError } = jest.requireActual('../../../../shared/src/utils/parseError.js');
-  return { isNetworkError, isTimeoutError };
+  const { isNetworkError, isTimeoutError, setApiErrorTranslator } = jest.requireActual('../../../../shared/src/utils/parseError.js');
+  return { isNetworkError, isTimeoutError, setApiErrorTranslator };
 });
 
 import AsyncStorage from '@react-native-async-storage/async-storage';

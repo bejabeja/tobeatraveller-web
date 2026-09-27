@@ -11,8 +11,9 @@ import {
   followUser, initAllUsers, loadMoreUsers, unfollowUser,
   selectAllUsers, selectAllUsersCurrentPage, selectAllUsersLoading,
   selectAllUsersLoadingMore, selectAllUsersTotalPages,
-  selectIsAuthenticated, selectMe, selectAuthUser, setUserInfo,
+  selectIsAuthenticated, selectMe, selectAuthUser, setUserInfo, ANALYTICS_EVENTS,
 } from '@tobeatraveller/shared';
+import { trackEvent } from '../../utils/analytics';
 import { UserCardSkeleton } from '../../components/Skeleton';
 import { buildSkeletonItems, FILLER_ITEM_ID, padForTwoColumns } from '../../utils/gridListHelpers';
 import { COLORS, shadow } from '../../utils/styles';
@@ -221,7 +222,10 @@ const UserCard = ({ user, me, isAuthenticated, onPress }) => {
     setLoadingFollow(true);
     try {
       if (following) await unfollowUser(user.id);
-      else await followUser(user.id);
+      else {
+        await followUser(user.id);
+        trackEvent(ANALYTICS_EVENTS.USER_FOLLOWED);
+      }
       setFollowing(f => !f);
       // Keep me.followingListIds fresh so state is correct on next render
       if (me?.id) dispatch(setUserInfo(me.id));

@@ -21,6 +21,13 @@ const AUDIT_DESCRIPTIONS = {
     actor: entry.actorUsername, target: entry.targetUsername,
     previousRole: entry.metadata?.previousRole, newRole: entry.metadata?.newRole,
   }),
+  tier_updated: (entry, t) => {
+    const names = { actor: entry.actorUsername, target: entry.targetUsername ?? entry.targetUserId };
+    if (entry.metadata?.newTier !== "premium") return t("admin.auditPremiumRemoved", names);
+    return entry.metadata?.months
+      ? t("admin.auditPremiumGiftedMonths", { ...names, count: entry.metadata.months })
+      : t("admin.auditPremiumGiftedIndefinite", names);
+  },
   login_success: (entry, t) => t("admin.auditLoginSuccess", { actor: entry.actorUsername }),
   login_failed: (entry, t) => t("admin.auditLoginFailed", {
     who: entry.actorUsername ?? entry.metadata?.email ?? "?",

@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 
 jest.mock("react-redux", () => ({ useDispatch: () => jest.fn(), useSelector: (selector) => selector() }));
@@ -12,7 +12,11 @@ jest.mock("@tobeatraveller/shared", () => ({
   generateAvatar: (username) => `avatar:${username}`,
 }));
 
+jest.mock("../../utils/analytics", () => ({ trackEvent: jest.fn() }));
+jest.mock("../../utils/analyticsEvents", () => ({ ANALYTICS_EVENTS: { ONBOARDING_START_STEP_CLICKED: "onboarding_start_step_clicked" } }));
+
 import { getSuggestedUsers } from "@tobeatraveller/shared";
+import { trackEvent } from "../../utils/analytics";
 import Onboarding from "./Onboarding";
 
 const renderOnboarding = () => render(<MemoryRouter><Onboarding /></MemoryRouter>);
@@ -30,6 +34,15 @@ describe("Onboarding with nobody to follow yet", () => {
     expect(screen.getByRole("link", { name: /onboarding.startProfile/ })).toHaveAttribute("href", "/profile/edit/u1");
     expect(screen.queryByText("onboarding.readyToGo")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "onboarding.skip" })).not.toBeInTheDocument();
+  });
+
+  it("counts which first step they chose", async () => {
+    getSuggestedUsers.mockResolvedValue([]);
+    renderOnboarding();
+
+    fireEvent.click(await screen.findByRole("link", { name: /onboarding.startTrip/ }));
+
+    expect(trackEvent).toHaveBeenCalledWith("onboarding_start_step_clicked", { step: "startTrip" });
   });
 
   // Regression: a failed request left the page loading forever.

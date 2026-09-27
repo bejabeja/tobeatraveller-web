@@ -5,6 +5,8 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { checkIsLiked, toggleLike } from "../services/likes";
 import { selectIsAuthenticated } from "../store/auth/authSelectors";
+import { trackEvent } from "../utils/analytics";
+import { ANALYTICS_EVENTS } from "../utils/analyticsEvents";
 
 export const useLike = (itineraryId, initialLikesCount = 0) => {
     const { t } = useTranslation();
@@ -51,6 +53,7 @@ export const useLike = (itineraryId, initialLikesCount = 0) => {
 
         try {
             const data = await toggleLike(itineraryId);
+            if (data.isLiked) trackEvent(ANALYTICS_EVENTS.TRIP_LIKED);
             if (itineraryIdRef.current !== requestedItineraryId) return;
             setIsLiked(data.isLiked);
             setLikesCount(data.likesCount);

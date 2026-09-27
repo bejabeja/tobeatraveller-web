@@ -5,7 +5,7 @@ import es from '../../shared/src/locales/es.json';
 import fr from '../../shared/src/locales/fr.json';
 import it from '../../shared/src/locales/it.json';
 import de from '../../shared/src/locales/de.json';
-import { DEFAULT_APP_LANGUAGE, SUPPORTED_APP_LANGUAGES } from '@tobeatraveller/shared';
+import { DEFAULT_APP_LANGUAGE, SUPPORTED_APP_LANGUAGES, setApiErrorTranslator } from '@tobeatraveller/shared';
 
 // expo-localization is native-only; fall back to navigator.language on web
 let deviceLang = 'en';
@@ -28,6 +28,8 @@ i18n
     supportedLngs: SUPPORTED_APP_LANGUAGES,
     interpolation: { escapeValue: false },
   });
+
+setApiErrorTranslator((key) => i18n.t(key));
 
 export const changeLanguage = (lang) => i18n.changeLanguage(lang);
 export default i18n;

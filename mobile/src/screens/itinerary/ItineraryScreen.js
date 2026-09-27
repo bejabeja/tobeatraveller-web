@@ -20,9 +20,10 @@ import {
   addComment, addFavorite, checkIsFavorite, checkIsLiked, deleteComment,
   deleteItinerary, getCommentsByItineraryId,
   getItineraryById, getUserById, removeFavorite, toggleLike,
-  selectIsAuthenticated, selectMe, MAX_COMMENT_LENGTH, updateCommentsCount,
-  COMMENT_HIGHLIGHT_DURATION_MS, formatBudgetAmount, formatTimeAgo, tripCategoryLabelKey,
+  selectIsAuthenticated, selectMe, MAX_COMMENT_LENGTH, updateCommentsCount, setUserInfo, setUserInfoItineraries,
+  COMMENT_HIGHLIGHT_DURATION_MS, formatBudgetAmount, formatTimeAgo, tripCategoryLabelKey, ANALYTICS_EVENTS,
 } from '@tobeatraveller/shared';
+import { trackEvent } from '../../utils/analytics';
 
 
 // "Other" says nothing about the trip, so it gets no badge.
@@ -128,7 +129,10 @@ const ItineraryScreen = ({ route, navigation }) => {
     setIsFavorite(!wasFavorite);
     try {
       if (wasFavorite) await removeFavorite(itinerary.id);
-      else await addFavorite(itinerary.id);
+      else {
+        await addFavorite(itinerary.id);
+        trackEvent(ANALYTICS_EVENTS.TRIP_SAVED);
+      }
     } catch {
       setIsFavorite(wasFavorite);
       Alert.alert(t('errors.somethingWrong'), t('itinerary.errorFavorite'));
@@ -144,6 +148,7 @@ const ItineraryScreen = ({ route, navigation }) => {
     setIsLikeToggling(true);
     try {
       const data = await toggleLike(itinerary.id);
+      if (data.isLiked) trackEvent(ANALYTICS_EVENTS.TRIP_LIKED);
       setIsLiked(data.isLiked);
       setLikesCount(data.likesCount);
     } catch {
@@ -177,6 +182,8 @@ const ItineraryScreen = ({ route, navigation }) => {
           onPress: async () => {
             try {
               await deleteItinerary(itinerary.id);
+              if (me?.id) dispatch(setUserInfo(me.id));
+              dispatch(setUserInfoItineraries());
               navigation.goBack();
             } catch {
               Alert.alert(t('errors.somethingWrong'), t('itinerary.errorDelete'));
@@ -192,6 +199,7 @@ const ItineraryScreen = ({ route, navigation }) => {
     setSubmitting(true);
     try {
       const created = await addComment(itinerary.id, commentText.trim());
+      trackEvent(ANALYTICS_EVENTS.COMMENT_POSTED);
       setComments(prev => {
         const next = [...prev, created];
         dispatch(updateCommentsCount(itinerary.id, next.length));

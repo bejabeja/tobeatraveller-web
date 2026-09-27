@@ -9,7 +9,7 @@ jest.mock("../../store/auth/authSelectors", () => ({
   selectIsAuthenticated: () => true,
   selectimageHeroLoaded: () => true,
 }));
-jest.mock("../../store/user/userInfoSelectors", () => ({ selectMe: () => null }));
+jest.mock("../../store/user/userInfoSelectors", () => ({ selectMe: () => null, selectMyItineraries: () => [], selectMyItinerariesLoaded: () => false }));
 jest.mock("../../utils/preloadImg", () => ({ preloadImg: jest.fn() }));
 
 import Hero from "./Hero";

@@ -28,7 +28,7 @@ export class AuthController {
     async login(req, res, next) {
         const result = loginSchema.safeParse(req.body);
         if (!result.success) {
-            return next(new ValidationError("Login validation failed"));
+            return next(new ValidationError(result.error.errors[0]?.message || "Login validation failed"));
         }
         try {
             const { email, password } = result.data;
@@ -68,7 +68,7 @@ export class AuthController {
     async forgotPassword(req, res, next) {
         const result = forgotPasswordSchema.safeParse(req.body);
         if (!result.success) {
-            return next(new ValidationError("Please provide a valid email address"));
+            return next(new ValidationError("validation.emailInvalid"));
         }
         try {
             await this.authService.forgotPassword(result.data.email, getRequestContext(req));
@@ -82,7 +82,10 @@ export class AuthController {
     async resetPassword(req, res, next) {
         const result = resetPasswordSchema.safeParse(req.body);
         if (!result.success) {
-            return next(new ValidationError("Invalid token or password too short"));
+            const firstError = result.error.errors[0];
+            return next(new ValidationError(
+                firstError?.path?.[0] === "newPassword" ? firstError.message : "Invalid token or password too short"
+            ));
         }
         try {
             await this.authService.resetPassword(result.data.token, result.data.newPassword, getRequestContext(req));

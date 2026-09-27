@@ -40,6 +40,8 @@ import { useGeocodeSearch } from "../../hooks/useGeocodeSearch";
 import { useCurrentLocation } from "../../hooks/useCurrentLocation";
 import UseCurrentLocationButton from "../../components/form/UseCurrentLocationButton";
 import { EXISTING_ITINERARY_VISIBILITY_FALLBACK } from "../../utils/schemasValidation";
+import { trackEvent } from "../../utils/analytics";
+import { ANALYTICS_EVENTS, TRIP_KINDS } from "../../utils/analyticsEvents";
 import "./CreateExperience.scss"; // reuse same styles
 
 const STEP_CONFIG = {
@@ -280,6 +282,7 @@ const EditExperience = () => {
         mood: null,
         personalNote: "",
       }));
+      trackEvent(ANALYTICS_EVENTS.AI_ITINERARY_GENERATED, { kind: TRIP_KINDS.EXPERIENCE, pace, days });
       setSteps(generated);
       setPhase("review");
     } catch (error) {

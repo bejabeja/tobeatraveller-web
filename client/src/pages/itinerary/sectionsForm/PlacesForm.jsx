@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Controller, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { MdClose, MdKeyboardArrowDown, MdKeyboardArrowUp, MdOutlineExplore } from "react-icons/md";
+import { MdClose, MdKeyboardArrowDown, MdKeyboardArrowRight, MdKeyboardArrowUp, MdOutlineExplore } from "react-icons/md";
 import { RiSparklingLine } from "react-icons/ri";
 import toast from "react-hot-toast";
-import { aiPaceOptions, DEFAULT_AI_PACE, isPremiumRequiredError } from "@tobeatraveller/shared";
+import { aiPaceOptions, dayPlacesPreview, daysToFold, DEFAULT_AI_PACE, isPremiumRequiredError } from "@tobeatraveller/shared";
 import { getCategoryIcon } from "../../../assets/icons";
 import AiGenerationUpsell from "../../../components/aiGenerationUpsell/AiGenerationUpsell";
 import AutocompletePlaceInput from "../../../components/form/AutocompletePlaceInput";
@@ -12,6 +12,8 @@ import Modal from "../../../components/modal/Modal";
 import { TextAreaForm } from "../../../components/form/InputForm";
 import { placeCategories } from "../../../utils/constants/constants";
 import { GENERATE_TIMEOUT_MESSAGE, generateSmartItinerary } from "../../../services/itineraries";
+import { trackEvent } from "../../../utils/analytics";
+import { ANALYTICS_EVENTS, TRIP_KINDS } from "../../../utils/analyticsEvents";
 
 const PlacesForm = ({
   control, errors, fields, append, remove, replace, move,
@@ -24,7 +26,7 @@ const PlacesForm = ({
 
   const maxDay = days.length > 0 ? Math.max(...days) : 0;
   const prevIsPublic = useRef(isPublic);
-  const justAddedRef = useRef(false);
+  const dayJustAddedTo = useRef(null);
   const [confirmRemoveDay, setConfirmRemoveDay] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [showRegenConfirm, setShowRegenConfirm] = useState(false);
@@ -32,6 +34,23 @@ const PlacesForm = ({
   const [uncontrolledPace, setUncontrolledPace] = useState(DEFAULT_AI_PACE);
   const pace = controlledPace ?? uncontrolledPace;
   const setPace = setControlledPace ?? setUncontrolledPace;
+  const [foldedDays, setFoldedDays] = useState(() => new Set());
+  // From 0, so places already there when the form appears (the edit page
+  // shows it once the trip has loaded) count as arriving at once too.
+  const previousPlaceCount = useRef(0);
+  const foldOnceDaysArrive = useRef(false);
+  const placeValues = useWatch({ control, name: "places" }) ?? [];
+
+  // Places and days can arrive in separate renders: the folding waits until
+  // both are there.
+  useEffect(() => {
+    if (previousPlaceCount.current === 0 && fields.length > 0) foldOnceDaysArrive.current = true;
+    previousPlaceCount.current = fields.length;
+    if (!foldOnceDaysArrive.current) return;
+    if (!fields.every((field) => days.includes(field.dayNumber ?? 1))) return;
+    foldOnceDaysArrive.current = false;
+    setFoldedDays(new Set(daysToFold(days, fields.length)));
+  }, [fields, days]);
 
   useEffect(() => {
     if (isPublic && !prevIsPublic.current) {
@@ -45,17 +64,15 @@ const PlacesForm = ({
   }, [isPublic, days, fields]);
 
   useEffect(() => {
-    if (justAddedRef.current && fields.length > 0) {
-      justAddedRef.current = false;
-      const cards = document.querySelectorAll(".form__place-card");
-      const lastCard = cards[cards.length - 1];
-      lastCard?.querySelector("input")?.focus();
-    }
+    if (dayJustAddedTo.current === null) return;
+    const cards = document.querySelectorAll(`#day-places-${dayJustAddedTo.current} .form__place-card`);
+    dayJustAddedTo.current = null;
+    cards[cards.length - 1]?.querySelector("input")?.focus();
   }, [fields.length]);
 
   const handleAddPlace = (dayNumber) => {
     append({ description: "", infoPlace: {}, category: "other", dayNumber });
-    justAddedRef.current = true;
+    dayJustAddedTo.current = dayNumber;
   };
 
   const handleAddDay = () => setDays((prev) => [...prev, maxDay + 1]);
@@ -68,15 +85,26 @@ const PlacesForm = ({
         return { ...f, dayNumber: dn > dayToRemove ? dn - 1 : dn };
       });
     replace(remaining);
-    setDays((prev) =>
-      prev.filter((d) => d !== dayToRemove).map((d) => (d > dayToRemove ? d - 1 : d))
-    );
+    const shiftDays = (dayNumbers) =>
+      [...dayNumbers].filter((d) => d !== dayToRemove).map((d) => (d > dayToRemove ? d - 1 : d));
+    setDays(shiftDays);
+    setFoldedDays((prev) => new Set(shiftDays(prev)));
     setConfirmRemoveDay(null);
   };
 
   const handleMoveToDay = (fieldIndex, newDay) => {
     replace(fields.map((f, i) => (i === fieldIndex ? { ...f, dayNumber: newDay } : f)));
   };
+
+  const toggleDay = (day) => setFoldedDays((prev) => {
+    const next = new Set(prev);
+    if (next.has(day)) next.delete(day); else next.add(day);
+    return next;
+  });
+
+  const daysWithPlaces = days.filter((day) => fields.some((field) => (field.dayNumber ?? 1) === day));
+  const allFolded = daysWithPlaces.length > 0 && daysWithPlaces.every((day) => foldedDays.has(day));
+  const toggleAllDays = () => setFoldedDays(allFolded ? new Set() : new Set(daysWithPlaces));
 
   const handleAutoGenerateDays = () => {
     setDays(Array.from({ length: tripDays }, (_, i) => i + 1));
@@ -114,9 +142,11 @@ const PlacesForm = ({
           },
         },
       }));
+      trackEvent(ANALYTICS_EVENTS.AI_ITINERARY_GENERATED, { kind: TRIP_KINDS.ITINERARY, pace, days: totalDays });
       replace(generatedPlaces);
       const uniqueDays = [...new Set(generatedPlaces.map((p) => p.dayNumber))].sort((a, b) => a - b);
       setDays(uniqueDays);
+      setFoldedDays(new Set(daysToFold(uniqueDays, generatedPlaces.length)));
       toast.success(f("generated"));
     } catch (error) {
       if (isPremiumRequiredError(error)) {
@@ -189,19 +219,49 @@ const PlacesForm = ({
         </div>
       )}
 
+      {daysWithPlaces.length > 1 && (
+        <button type="button" className="form__days-fold-all" onClick={toggleAllDays}>
+          {allFolded ? f("unfoldAllDays") : f("foldAllDays")}
+        </button>
+      )}
+
       {days.map((day) => {
         const dayFields = fields
           .map((field, index) => ({ ...field, index }))
           .filter((f) => (f.dayNumber ?? 1) === day);
+        // A day with a place still to fix stays open, or its error would be hidden.
+        const hasErrors = dayFields.some(({ index }) => errors?.places?.[index]);
+        const isFolded = foldedDays.has(day) && dayFields.length > 0 && !hasErrors;
+        const dayPlacesId = `day-places-${day}`;
+        const dayCount = (
+          <span className="form__day-count">
+            {t("itineraryForm.placesInDay", { count: dayFields.length })}
+          </span>
+        );
+        const preview = isFolded && dayPlacesPreview(dayFields.map(({ index }) => placeValues[index]?.infoPlace?.name));
 
         return (
           <div key={day} id={`day-section-${day}`} className="form__day-section">
             <div className="form__day-header">
               <h3 className="form__day-title">
-                {f("dayTitle", { day })}
-                <span className="form__day-count">
-                  {t(`itineraryForm.placesInDay_${dayFields.length === 1 ? "one" : "other"}`, { count: dayFields.length })}
-                </span>
+                {dayFields.length > 0 ? (
+                  <button
+                    type="button"
+                    className="form__day-toggle"
+                    onClick={() => toggleDay(day)}
+                    aria-expanded={!isFolded}
+                    aria-controls={isFolded ? undefined : dayPlacesId}
+                  >
+                    {isFolded ? <MdKeyboardArrowRight aria-hidden="true" /> : <MdKeyboardArrowDown aria-hidden="true" />}
+                    {f("dayTitle", { day })}
+                    {dayCount}
+                  </button>
+                ) : (
+                  <>
+                    {f("dayTitle", { day })}
+                    {dayCount}
+                  </>
+                )}
               </h3>
 
               {days.length > 1 && (
@@ -234,27 +294,36 @@ const PlacesForm = ({
               <p className="form__day-empty-hint">{f("noPlacesDay")}</p>
             )}
 
-            {dayFields.map(({ id, index }, position) => (
-              <PlaceField
-                key={id}
-                index={index}
-                control={control}
-                errors={errors}
-                remove={remove}
-                destination={destination}
-                days={days}
-                currentDay={day}
-                isFirst={position === 0}
-                isLast={position === dayFields.length - 1}
-                onMoveUp={() => move(index, dayFields[position - 1].index)}
-                onMoveDown={() => move(index, dayFields[position + 1].index)}
-                onMoveToDay={(newDay) => handleMoveToDay(index, newDay)}
-              />
-            ))}
+            {isFolded ? (
+              <p className="form__day-preview">
+                {[preview.names.join(" · "), preview.moreCount > 0 && f("dayMorePlaces", { count: preview.moreCount })]
+                  .filter(Boolean).join(" ")}
+              </p>
+            ) : (
+              <div id={dayPlacesId} className="form__day-places">
+                {dayFields.map(({ id, index }, position) => (
+                  <PlaceField
+                    key={id}
+                    index={index}
+                    control={control}
+                    errors={errors}
+                    remove={remove}
+                    destination={destination}
+                    days={days}
+                    currentDay={day}
+                    isFirst={position === 0}
+                    isLast={position === dayFields.length - 1}
+                    onMoveUp={() => move(index, dayFields[position - 1].index)}
+                    onMoveDown={() => move(index, dayFields[position + 1].index)}
+                    onMoveToDay={(newDay) => handleMoveToDay(index, newDay)}
+                  />
+                ))}
 
-            <button type="button" className="btn btn--secondary" onClick={() => handleAddPlace(day)}>
-              {f("addPlaceToDay", { day })}
-            </button>
+                <button type="button" className="btn btn--secondary" onClick={() => handleAddPlace(day)}>
+                  {f("addPlaceToDay", { day })}
+                </button>
+              </div>
+            )}
           </div>
         );
       })}

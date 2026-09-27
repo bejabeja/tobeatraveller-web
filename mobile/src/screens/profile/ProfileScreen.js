@@ -13,8 +13,9 @@ import {
   followUser, getItinerariesByUserId, getUserById, getUserFavorites, logoutUser,
   selectAuthUser, selectIsAuthenticated, selectMe, selectMyItineraries,
   PASSPORT_SHARE_SOURCES, RECAP_SOURCES, setUserInfo, unfollowUser, formatDate, selectMyItinerariesLoaded,
-  getMyReferralInfo, profileShareUrl,
+  getMyReferralInfo, profileShareUrl, ANALYTICS_EVENTS,
 } from '@tobeatraveller/shared';
+import { trackEvent } from '../../utils/analytics';
 import ItineraryCard from '../../components/ItineraryCard';
 import { ItineraryCardSkeleton, ProfileSkeleton } from '../../components/Skeleton';
 import { shadow } from '../../utils/styles';
@@ -145,6 +146,7 @@ const ProfileScreen = ({ route, navigation }) => {
         await unfollowUser(requestedProfileId);
       } else {
         await followUser(requestedProfileId);
+        trackEvent(ANALYTICS_EVENTS.USER_FOLLOWED);
       }
       if (profileIdRef.current !== requestedProfileId) return;
       if (me?.id) dispatch(setUserInfo(me.id));

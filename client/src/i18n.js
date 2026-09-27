@@ -3,7 +3,7 @@ import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import es from '../../shared/src/locales/es.json';
 import en from '../../shared/src/locales/en.json';
-import { DEFAULT_APP_LANGUAGE, SUPPORTED_APP_LANGUAGES } from '@tobeatraveller/shared';
+import { DEFAULT_APP_LANGUAGE, SUPPORTED_APP_LANGUAGES, setApiErrorTranslator } from '@tobeatraveller/shared';
 
 // Spanish and English (the most used, and the fallback) come with the app;
 // the others are fetched only when someone uses them, so no visitor
@@ -47,5 +47,7 @@ export const i18nReady = i18n
     },
     interpolation: { escapeValue: false },
   });
+
+setApiErrorTranslator((key) => i18n.t(key));
 
 export default i18n;

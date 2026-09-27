@@ -15,8 +15,9 @@ import {
   itineraryCategories, placeCategories,
   reverseGeocode, searchDestinations, selectAuthUser, selectMe,
   setUserInfo, setUserInfoItineraries,
-  stepNameHintKey,
+  stepNameHintKey, ANALYTICS_EVENTS, TRIP_KINDS,
 } from '@tobeatraveller/shared';
+import { trackEvent } from '../../utils/analytics';
 import { COLORS, shadow } from '../../utils/styles';
 import { getStepConfig } from '../../utils/stepConfig';
 import { GEOAPIFY_KEY } from '../../utils/config';
@@ -189,6 +190,7 @@ const EditExperienceScreen = ({ navigation, route }) => {
         lat: parseFloat(p.latitude ?? p.lat ?? 0), lon: parseFloat(p.longitude ?? p.lng ?? 0),
         mood: null, personalNote: '',
       }));
+      trackEvent(ANALYTICS_EVENTS.AI_ITINERARY_GENERATED, { kind: TRIP_KINDS.EXPERIENCE, pace, days });
       setSteps(generated);
       setPhase('review');
     } catch (error) {

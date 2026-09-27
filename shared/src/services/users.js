@@ -191,11 +191,12 @@ export const updateUserRole = async (id, role) => {
     return response.json();
 };
 
-export const updateUserTier = async (id, tier) => {
+// `months` only when gifting premium; left out, the gift doesn't expire.
+export const updateUserTier = async (id, tier, months) => {
     const response = await authFetch(`${baseUrl()}/${id}/tier`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tier }),
+        body: JSON.stringify({ tier, months }),
     });
     if (!response.ok) {
         await parseError(response, 'Failed to update tier');

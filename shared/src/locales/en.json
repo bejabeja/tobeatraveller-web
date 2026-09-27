@@ -176,7 +176,15 @@
     "getStarted": "Get Started, It's Free",
     "noTripsYet": "No itineraries yet.",
     "trips": "trips",
-    "destinationsCount": "{{count}} destinations"
+    "destinationsCount": "{{count}} destinations",
+    "nextTripLabel": "Your next trip",
+    "nextTripIn_one": "Tomorrow",
+    "nextTripIn_other": "In {{count}} days",
+    "onTripLabel": "You're on the road",
+    "onTripDay": "Day {{day}} of {{total}}",
+    "noNextTrip": "Where are you heading next?",
+    "planTrip": "Plan a trip",
+    "openTrip": "View trip"
   },
   "explore": {
     "clearSearch": "Clear search",
@@ -386,7 +394,18 @@
     "referralsTopReferrersTitle": "Top referrers",
     "referralsNoData": "No referrals yet.",
     "referralsInvitedCount": "{{count}} invited",
-    "referralsRewardedCount": "{{count}} rewarded"
+    "referralsRewardedCount": "{{count}} rewarded",
+    "premiumUntil": "Premium until {{date}}",
+    "premiumIndefinite": "Premium, no end date",
+    "giftPremiumMonths_one": "Gift {{count}} month",
+    "giftPremiumMonths_other": "Gift {{count}} months",
+    "giftPremiumIndefinite": "Gift with no end date",
+    "removePremium": "Remove Premium",
+    "tierKeptPaid": "Still Premium until {{date}}: they've paid for it.",
+    "auditPremiumGiftedMonths_one": "{{actor}} gifted {{target}} {{count}} month of Premium",
+    "auditPremiumGiftedMonths_other": "{{actor}} gifted {{target}} {{count}} months of Premium",
+    "auditPremiumGiftedIndefinite": "{{actor}} gifted {{target}} Premium with no end date",
+    "auditPremiumRemoved": "{{actor}} removed Premium from {{target}}"
   },
   "profile": {
     "shareProfile": "Share profile",
@@ -1005,7 +1024,10 @@
     "startBuilding": "Start building your itinerary",
     "startBuildingHint": "Add the places you want to visit, day by day",
     "noPlacesDay": "No places yet, add your first place for this day.",
-    "daySummary": "{{places}} · {{days}}"
+    "daySummary": "{{places}} · {{days}}",
+    "foldAllDays": "Collapse days",
+    "unfoldAllDays": "Expand days",
+    "dayMorePlaces": "+{{count}} more"
   },
   "settings": {
     "title": "Settings",
@@ -1049,7 +1071,16 @@
     "pricePerLiterFuelOnly": "Price per litre only applies to the fuel category",
     "amountRequired": "Amount is required",
     "amountPositive": "Amount must be greater than zero",
-    "unitNoDecimals": "This unit can't have decimals"
+    "unitNoDecimals": "This unit can't have decimals",
+    "travellersMin": "There has to be at least one traveller",
+    "commentEmpty": "The comment can't be empty",
+    "amountNotNegative": "The amount can't be negative",
+    "pricePositive": "The price has to be greater than zero",
+    "currentPasswordRequired": "Enter your current password",
+    "passwordSameAsCurrent": "The new password has to be different from the current one",
+    "imageTooLarge": "The image has to be under 5 MB",
+    "termsRequired": "You must accept the Terms and Privacy Policy",
+    "ageRequired": "You must confirm you are at least 16 years old"
   },
   "errors": {
     "title": "Something went wrong",
@@ -1200,7 +1231,8 @@
       "curious": "Curious",
       "grounding": "Grounding",
       "indulgent": "Indulgent"
-    }
+    },
+    "defaultTitle": "My trip to {{destination}}"
   },
   "legalTerms": {
     "documentTitle": "Terms of Service",

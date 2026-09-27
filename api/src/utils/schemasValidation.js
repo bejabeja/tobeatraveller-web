@@ -6,6 +6,23 @@ import { ROLES } from "./roles.js";
 import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from "./languages.js";
 import { ISO_COUNTRY_CODES } from "./countryCodes.js";
 
+// Messages a person can run into are the translation keys the apps share
+// (`validation.*` in shared/src/locales), shown in their language; checks
+// only another program can trip keep plain English. Fields without a message
+// of their own get these instead of Zod's English defaults.
+z.setErrorMap((issue, ctx) => {
+    if (issue.code === z.ZodIssueCode.invalid_type && (issue.received === "undefined" || issue.received === "null")) {
+        return { message: "validation.required" };
+    }
+    if (issue.code === z.ZodIssueCode.too_small) {
+        return { message: issue.minimum === 1 ? "validation.required" : "validation.tooShort" };
+    }
+    if (issue.code === z.ZodIssueCode.too_big) return { message: "validation.tooLong" };
+    if (issue.code === z.ZodIssueCode.invalid_string && issue.validation === "email") return { message: "validation.emailInvalid" };
+    if (issue.code === z.ZodIssueCode.invalid_type || issue.code === z.ZodIssueCode.invalid_enum_value) return { message: "validation.invalid" };
+    return { message: ctx.defaultError };
+});
+
 const PUSH_PLATFORMS = ["ios", "android"];
 // Matches push_tokens.token VARCHAR(255).
 const PUSH_TOKEN_MAX_LENGTH = 255;
@@ -14,9 +31,13 @@ export const updateUserRoleSchema = z.object({
     role: z.enum([ROLES.USER, ROLES.ADMIN, ROLES.SUPERADMIN]),
 });
 
+// How long staff can gift premium for; left out, it doesn't expire.
+const MANUAL_PREMIUM_MONTHS = [1, 3, 12];
+
 export const updateUserTierSchema = z.object({
     tier: z.enum(['free', 'premium']),
-});
+    months: z.number().int().refine((months) => MANUAL_PREMIUM_MONTHS.includes(months), "Invalid premium duration").nullish(),
+}).refine(({ tier, months }) => tier === 'premium' || months == null, "Only premium takes a duration");
 
 export const createCheckoutSessionSchema = z.object({
     plan: z.enum(['monthly', 'annual']),
@@ -24,47 +45,47 @@ export const createCheckoutSessionSchema = z.object({
 
 export const updateUserSchema = z.object({
     username: z.string()
-        .min(2, "Username is required")
-        .max(50, "Username must be less than 50 characters")
-        .regex(/^\S+$/, "Username cannot contain spaces"),
+        .min(2, "validation.usernameMin")
+        .max(50, "validation.usernameMax")
+        .regex(/^\S+$/, "validation.usernameNoSpaces"),
     location: z.string()
-        .max(50, "No valid location")
+        .max(50, "validation.tooLong")
         .nullable(),
     name: z
         .string()
-        .max(50, "Max 50 characters")
+        .max(50, "validation.tooLong")
         .nullable(),
 
     about: z
         .string()
-        .max(1000, "Max 1000 characters")
+        .max(1000, "validation.tooLong")
         .nullable(),
 
     bio: z
         .string()
-        .max(160, "Max 160 characters")
+        .max(160, "validation.tooLong")
         .nullable(),
 });
 
 export const signupSchema = z.object({
     username: z.string()
-        .min(2, "Username is required")
-        .max(50, "Username must be less than 50 characters")
-        .regex(/^\S+$/, "Username cannot contain spaces"),
+        .min(2, "validation.usernameMin")
+        .max(50, "validation.usernameMax")
+        .regex(/^\S+$/, "validation.usernameNoSpaces"),
     email: z
         .string()
-        .email("Invalid email address")
-        .min(1, "Email is required"),
+        .email("validation.emailInvalid")
+        .min(1, "validation.emailRequired"),
     password: z.string()
-        .min(6, "Password must be at least 6 characters long")
-        .refine((password) => password.trim().length >= 6, "Password must be at least 6 characters long"),
+        .min(6, "validation.passwordMin")
+        .refine((password) => password.trim().length >= 6, "validation.passwordMin"),
     confirmPassword: z.string(),
-    location: z.string().max(50, "No valid location").optional().or(z.literal("")),
+    location: z.string().max(50, "validation.tooLong").optional().or(z.literal("")),
     termsAccepted: z.literal(true, {
-        errorMap: () => ({ message: "You must accept the Terms of Service and Privacy Policy" }),
+        errorMap: () => ({ message: "validation.termsRequired" }),
     }),
     ageConfirmed: z.literal(true, {
-        errorMap: () => ({ message: "You must confirm you are at least 16 years old" }),
+        errorMap: () => ({ message: "validation.ageRequired" }),
     }),
     // A code is its owner's username (see ReferralService.codeFromUsername),
     // so it can be as long as one.
@@ -75,13 +96,13 @@ export const signupSchema = z.object({
 }).refine((data) => {
     return data.password === data.confirmPassword;
 }, {
-    message: "Passwords don't match",
+    message: "validation.passwordsMismatch",
     path: ["confirmPassword"],
 });
 
 export const loginSchema = z.object({
-    email: z.string().email("Invalid email address").min(1, "Email is required"),
-    password: z.string().min(6, "Password must be at least 6 characters long"),
+    email: z.string().email("validation.emailInvalid").min(1, "validation.emailRequired"),
+    password: z.string().min(6, "validation.passwordMin"),
 });
 
 export const forgotPasswordSchema = z.object({
@@ -92,7 +113,7 @@ export const resetPasswordSchema = z.object({
     token: z.string().min(64),
     newPassword: z.string()
         .min(6)
-        .refine((password) => password.trim().length >= 6, "Password must be at least 6 characters"),
+        .refine((password) => password.trim().length >= 6, "validation.passwordMin"),
 });
 
 // Keep in sync with shared/src/utils/constants/constants.js#itineraryCategories and
@@ -109,7 +130,7 @@ const PLACE_CATEGORIES = [
 ];
 
 const itineraryLocationSchema = z.object({
-    name: z.string().min(1, "Location name is required"),
+    name: z.string().min(1, "validation.destinationFromList"),
     label: z.string().nullable().optional(),
     lat: z.number(),
     lon: z.number(),
@@ -117,12 +138,12 @@ const itineraryLocationSchema = z.object({
 
 const itineraryPlaceSchema = z.object({
     id: z.string().uuid().optional(),
-    description: z.string().max(500, "Place description must be less than 500 characters").nullable().optional(),
-    category: z.enum(PLACE_CATEGORIES, { errorMap: () => ({ message: "Invalid place category" }) }).nullable().optional().default("other"),
+    description: z.string().max(500, "validation.tooLong").nullable().optional(),
+    category: z.enum(PLACE_CATEGORIES, { errorMap: () => ({ message: "validation.chooseCategory" }) }).nullable().optional().default("other"),
     orderIndex: z.number().int().nonnegative(),
     dayNumber: z.number().int().min(1).nullable().optional().transform((value) => value ?? 1),
     infoPlace: z.object({
-        name: z.string().min(1, "Place name is required"),
+        name: z.string().min(1, "validation.placeFromList"),
         label: z.string().nullable().optional(),
         lat: z.number(),
         lon: z.number(),
@@ -139,21 +160,21 @@ const itineraryBudgetSchema = z.union([z.number(), z.string()])
     });
 
 const itineraryDataFields = {
-    title: z.string().min(2, "Title is required").max(255, "Title must be less than 255 characters"),
-    description: z.string().max(500, "Description must be less than 500 characters").nullable().optional(),
+    title: z.string().min(2, "validation.titleRequired").max(255, "validation.tooLong"),
+    description: z.string().max(500, "validation.tooLong").nullable().optional(),
     location: itineraryLocationSchema,
-    startDate: z.string().min(1, "Start date is required"),
-    endDate: z.string().min(1, "End date is required"),
-    numberOfPeople: z.number().int().positive("Number of travellers must be greater than zero"),
+    startDate: z.string().min(1, "validation.dateRequired"),
+    endDate: z.string().min(1, "validation.dateRequired"),
+    numberOfPeople: z.number().int().positive("validation.travellersMin"),
     budget: itineraryBudgetSchema,
-    currency: z.string().max(3, "Currency code too long").nullable().optional(),
-    category: z.enum(ITINERARY_CATEGORIES, { errorMap: () => ({ message: "Invalid category" }) }),
+    currency: z.string().max(3, "validation.currencyInvalid").nullable().optional(),
+    category: z.enum(ITINERARY_CATEGORIES, { errorMap: () => ({ message: "validation.chooseCategory" }) }),
     isPublic: z.boolean().optional(),
     places: z.array(itineraryPlaceSchema).optional().default([]),
 };
 
 const validateItineraryDateRange = (data) => data.endDate >= data.startDate;
-const itineraryDateRangeIssue = { message: "End date must be after or equal to start date", path: ["endDate"] };
+const itineraryDateRangeIssue = { message: "validation.endBeforeStart", path: ["endDate"] };
 
 export const createItineraryDataSchema = z.object({
     ...itineraryDataFields,
@@ -175,20 +196,20 @@ const CONTACT_MESSAGE_MAX_LENGTH = 1000;
 const COMMENT_MAX_LENGTH = 500;
 
 export const contactSchema = z.object({
-    name: z.string().min(2, "Name must be at least 2 characters").max(CONTACT_NAME_MAX_LENGTH, `Name must be less than ${CONTACT_NAME_MAX_LENGTH} characters`),
-    email: z.string().email("Invalid email address"),
-    subject: z.string().min(2, "Subject must be at least 2 characters").max(CONTACT_SUBJECT_MAX_LENGTH, `Subject must be less than ${CONTACT_SUBJECT_MAX_LENGTH} characters`),
-    message: z.string().min(10, "Message must be at least 10 characters").max(CONTACT_MESSAGE_MAX_LENGTH, `Message must be less than ${CONTACT_MESSAGE_MAX_LENGTH} characters`),
+    name: z.string().min(2, "validation.nameMin").max(CONTACT_NAME_MAX_LENGTH, "validation.tooLong"),
+    email: z.string().email("validation.emailInvalid"),
+    subject: z.string().min(2, "validation.subjectMin").max(CONTACT_SUBJECT_MAX_LENGTH, "validation.tooLong"),
+    message: z.string().min(10, "validation.messageMin").max(CONTACT_MESSAGE_MAX_LENGTH, "validation.tooLong"),
     // For the confirmation sent back: the form can be sent without an account.
     language: z.enum(SUPPORTED_LANGUAGES).optional(),
 });
 
 export const updateLanguageSchema = z.object({
-    language: z.enum(SUPPORTED_LANGUAGES, { errorMap: () => ({ message: "Unsupported language" }) }),
+    language: z.enum(SUPPORTED_LANGUAGES, { errorMap: () => ({ message: "validation.invalid" }) }),
 });
 
 export const commentSchema = z.object({
-    text: z.string().min(1, "Comment cannot be empty").max(COMMENT_MAX_LENGTH, `Comment must be at most ${COMMENT_MAX_LENGTH} characters`),
+    text: z.string().min(1, "validation.commentEmpty").max(COMMENT_MAX_LENGTH, "validation.tooLong"),
 });
 
 export const userIdParamSchema = z.string().uuid("Invalid user id");
@@ -219,19 +240,19 @@ const vanLogLocationSchema = z.object({
 }).nullable().optional();
 
 const vanLogEntryFields = z.object({
-    category: z.enum(VAN_LOG_CATEGORIES, { errorMap: () => ({ message: "Invalid category" }) }),
-    title: z.string().max(255, "Title must be less than 255 characters").nullable().optional(),
-    amount: z.number().nonnegative("Amount cannot be negative").nullable().optional(),
-    currency: z.string().length(3, "Currency must be a 3-letter code").nullable().optional(),
-    pricePerLiter: z.number().positive("Price per liter must be greater than zero").nullable().optional(),
+    category: z.enum(VAN_LOG_CATEGORIES, { errorMap: () => ({ message: "validation.chooseCategory" }) }),
+    title: z.string().max(255, "validation.tooLong").nullable().optional(),
+    amount: z.number().nonnegative("validation.amountNotNegative").nullable().optional(),
+    currency: z.string().length(3, "validation.currencyInvalid").nullable().optional(),
+    pricePerLiter: z.number().positive("validation.pricePositive").nullable().optional(),
     location: vanLogLocationSchema,
-    notes: z.string().max(1000, "Notes must be less than 1000 characters").nullable().optional(),
-    entryDate: z.string().min(1, "Date is required"),
+    notes: z.string().max(1000, "validation.tooLong").nullable().optional(),
+    entryDate: z.string().min(1, "validation.dateRequired"),
 });
 
 const withPricePerLiterOnlyForFuel = (schema) => schema.refine(
     (data) => data.category === 'fuel' || data.pricePerLiter == null,
-    { message: "Price per liter only applies to the fuel category", path: ["pricePerLiter"] }
+    { message: "validation.pricePerLiterFuelOnly", path: ["pricePerLiter"] }
 );
 
 export const vanLogEntrySchema = withPricePerLiterOnlyForFuel(vanLogEntryFields);
@@ -239,11 +260,11 @@ export const createVanLogEntrySchema = withPricePerLiterOnlyForFuel(vanLogEntryF
 
 export const lifeDiaryEntrySchema = z.object({
     location: vanLogLocationSchema,
-    entryDate: z.string().min(1, "Date is required"),
-    bestMoment: z.string().max(500, "Best moment must be less than 500 characters").nullable().optional(),
-    lessonLearned: z.string().max(500, "Lesson learned must be less than 500 characters").nullable().optional(),
-    memories: z.string().max(3000, "Memories must be less than 3000 characters").nullable().optional(),
-    peopleMet: z.string().max(500, "People met must be less than 500 characters").nullable().optional(),
+    entryDate: z.string().min(1, "validation.dateRequired"),
+    bestMoment: z.string().max(500, "validation.tooLong").nullable().optional(),
+    lessonLearned: z.string().max(500, "validation.tooLong").nullable().optional(),
+    memories: z.string().max(3000, "validation.tooLong").nullable().optional(),
+    peopleMet: z.string().max(500, "validation.tooLong").nullable().optional(),
     wouldReturn: z.boolean().nullable().optional(),
     keepImageIds: z.array(z.string()).optional(),
 });
@@ -251,44 +272,44 @@ export const lifeDiaryEntrySchema = z.object({
 export const createLifeDiaryEntrySchema = lifeDiaryEntrySchema.extend(clientGeneratedIdField);
 
 const supplyItemFields = z.object({
-    name: z.string().min(1, "Name is required").max(255, "Name must be less than 255 characters"),
-    category: z.enum(SUPPLY_CATEGORIES, { errorMap: () => ({ message: "Invalid category" }) }).optional().default('other'),
-    amount: z.number().positive("Amount must be greater than zero"),
-    unit: z.enum(SUPPLY_UNITS, { errorMap: () => ({ message: "Invalid unit" }) }),
-    notes: z.string().max(500, "Notes must be less than 500 characters").nullable().optional(),
+    name: z.string().min(1, "validation.nameRequired").max(255, "validation.tooLong"),
+    category: z.enum(SUPPLY_CATEGORIES, { errorMap: () => ({ message: "validation.chooseCategory" }) }).optional().default('other'),
+    amount: z.number().positive("validation.amountPositive"),
+    unit: z.enum(SUPPLY_UNITS, { errorMap: () => ({ message: "validation.chooseUnit" }) }),
+    notes: z.string().max(500, "validation.tooLong").nullable().optional(),
 });
 
 const withWholeUnitsAsIntegers = (schema) => schema.refine(
     data => !SUPPLY_WHOLE_UNITS.includes(data.unit) || Number.isInteger(data.amount),
-    { message: "This unit can't have decimals", path: ["amount"] }
+    { message: "validation.unitNoDecimals", path: ["amount"] }
 );
 
 export const supplyItemSchema = withWholeUnitsAsIntegers(supplyItemFields);
 export const createSupplyItemSchema = withWholeUnitsAsIntegers(supplyItemFields.extend(clientGeneratedIdField));
 
 export const purchaseAmountSchema = z.object({
-    purchasedAmount: z.number().positive("Purchased amount must be greater than zero").optional(),
+    purchasedAmount: z.number().positive("validation.amountPositive").optional(),
 });
 
 export const consumeAmountSchema = z.object({
-    consumedAmount: z.number().positive("Consumed amount must be greater than zero").optional(),
+    consumedAmount: z.number().positive("validation.amountPositive").optional(),
 });
 
 export const packingItemSchema = z.object({
-    category: z.enum(PACKING_CATEGORIES, { errorMap: () => ({ message: "Invalid category" }) }),
-    name: z.string().min(1, "Name is required").max(255, "Name must be less than 255 characters"),
+    category: z.enum(PACKING_CATEGORIES, { errorMap: () => ({ message: "validation.chooseCategory" }) }),
+    name: z.string().min(1, "validation.nameRequired").max(255, "validation.tooLong"),
     checked: z.boolean().optional(),
 });
 
 export const createPackingItemSchema = packingItemSchema.extend(clientGeneratedIdField);
 
 export const changePasswordSchema = z.object({
-    currentPassword: z.string().min(1, "Current password is required"),
+    currentPassword: z.string().min(1, "validation.currentPasswordRequired"),
     newPassword: z.string()
-        .min(6, "Password must be at least 6 characters long")
-        .refine((password) => password.trim().length >= 6, "Password must be at least 6 characters long"),
+        .min(6, "validation.passwordMin")
+        .refine((password) => password.trim().length >= 6, "validation.passwordMin"),
 }).refine((data) => data.currentPassword !== data.newPassword, {
-    message: "New password must be different from the current password",
+    message: "validation.passwordSameAsCurrent",
     path: ["newPassword"],
 });
 
@@ -314,7 +335,7 @@ export const unregisterPushTokenSchema = z.object({
 
 export const packingSeedSchema = z.object({
     items: z.array(z.object({
-        category: z.enum(PACKING_CATEGORIES, { errorMap: () => ({ message: "Invalid category" }) }),
+        category: z.enum(PACKING_CATEGORIES, { errorMap: () => ({ message: "validation.chooseCategory" }) }),
         name: z.string().min(1).max(255),
     })).min(1, "At least one item is required").max(200, "Too many items"),
 });
