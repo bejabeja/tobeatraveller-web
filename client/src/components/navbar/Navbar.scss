@@ -467,11 +467,7 @@
 }
 
 .mobile-header__lang {
-  position: absolute;
   width: fit-content;
-  right: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
 }
 
 .nav-section {
@@ -787,4 +783,26 @@
     flex-direction: row;
     gap: 1rem;
   }
+}
+
+// Signed out: the logo to the left, the language and sign-up to the right.
+.mobile-header--guest {
+  justify-content: space-between;
+  padding: 0 1rem;
+
+  .logo {
+    width: auto;
+  }
+}
+
+.mobile-header__guest-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: auto;
+}
+
+.mobile-header__register {
+  padding: 0.5em 0.9em;
+  font-size: 0.8rem;
 }

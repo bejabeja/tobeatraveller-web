@@ -3,12 +3,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
-  initNotifications,
-  markAllNotificationsRead,
+  openNotifications,
   selectNotifications,
   selectNotificationsError,
   selectNotificationsLoading,
-  selectUnreadCount,
 } from "@tobeatraveller/shared";
 import NotificationItem from "../notifications/NotificationItem";
 import "./NotificationsPanel.scss";
@@ -24,18 +22,12 @@ const NotificationsPanel = ({ isOpen, onClose }) => {
   const notifications = useSelector(selectNotifications);
   const loading = useSelector(selectNotificationsLoading);
   const error = useSelector(selectNotificationsError);
-  const unreadCount = useSelector(selectUnreadCount);
 
+  // Loaded, then marked as seen, like the full page (there's no per-item
+  // "mark as read" endpoint): the badge clears and the new ones still show.
   useEffect(() => {
-    if (isOpen) dispatch(initNotifications());
+    if (isOpen) dispatch(openNotifications());
   }, [isOpen, dispatch]);
-
-  // There's no per-notification "mark as read" endpoint, only mark-all
-  // (same constraint the full page works under), so viewing the preview
-  // clears the badge exactly like viewing the full page already does.
-  useEffect(() => {
-    if (isOpen && unreadCount > 0) dispatch(markAllNotificationsRead());
-  }, [isOpen, unreadCount, dispatch]);
 
   const preview = notifications.slice(0, PREVIEW_COUNT);
 

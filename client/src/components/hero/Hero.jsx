@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { setImageHeroLoaded } from "../../store/auth/authActions";
 import {
+  selectAuthUser,
   selectIsAuthenticated,
   selectimageHeroLoaded,
 } from "../../store/auth/authSelectors";
@@ -18,6 +19,9 @@ const Hero = () => {
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const imageHeroLoaded = useSelector(selectimageHeroLoaded);
   const userMe = useSelector(selectMe);
+  // The session's user is there from the start; the full profile comes a
+  // moment later, and until then the greeting read "Hello, !".
+  const authUser = useSelector(selectAuthUser);
 
   useEffect(() => {
     if (imageHeroLoaded) return;
@@ -36,7 +40,7 @@ const Hero = () => {
           // the app didn't recognize them, so this swaps to a greeting
           // instead of the marketing copy/CTA shown to anonymous visitors.
           <h1 className="hero__content__title">
-            {t("home.heroGreeting", { username: userMe?.username })}
+            {t("home.heroGreeting", { username: userMe?.username ?? authUser?.username })}
           </h1>
         ) : (
           <>

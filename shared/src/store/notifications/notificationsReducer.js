@@ -48,12 +48,10 @@ export const notificationsReducer = (state = initialState, action) => {
             return { ...state, loadingMore: false };
         case SET_UNREAD_COUNT:
             return { ...state, unreadCount: action.payload };
+        // Only the count: the list on screen keeps showing which were new
+        // when it was opened, the point of opening it.
         case MARK_ALL_READ:
-            return {
-                ...state,
-                unreadCount: 0,
-                data: state.data.map(n => ({ ...n, isRead: true })),
-            };
+            return { ...state, unreadCount: 0 };
         default:
             return state;
     }

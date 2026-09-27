@@ -198,7 +198,7 @@ const Itinerary = () => {
       navigate(`/profile/${userMe?.id}`);
       dispatch(setUserInfo(itinerary?.userId));
       dispatch(setUserInfoItineraries());
-    } catch (error) {
+    } catch {
       toast.error(t("itinerary.deleteFailed"));
     }
   }
@@ -274,7 +274,7 @@ const Hero = ({
       <div className="itinerary__hero-overlay" />
 
       <div className="itinerary__hero-back">
-        <button className="action-icon-btn" onClick={() => navigate(-1)} title={t("common.back")}>
+        <button type="button" className="action-icon-btn" onClick={() => navigate(-1)} title={t("common.back")} aria-label={t("common.back")}>
           <MdArrowBack />
         </button>
       </div>
@@ -309,17 +309,20 @@ const Hero = ({
 
       <div className="itinerary__hero-actions">
         <button
+          type="button"
           className={`action-icon-btn itinerary__like-btn ${isLiked ? "active" : ""}`}
           onClick={handleToggleLike}
           title={isLiked ? t("itinerary.unlike") : t("itinerary.like")}
+          aria-label={t("itinerary.like")}
+          aria-pressed={Boolean(isLiked)}
         >
           {isLiked ? <FaHeart /> : <FaRegHeart />}
           <span className="itinerary__like-count">{likesCount}</span>
         </button>
-        <button className="action-icon-btn" onClick={handleShare} title={t("common.send")}>
+        <button type="button" className="action-icon-btn" onClick={handleShare} title={t("itinerary.shareTrip")} aria-label={t("itinerary.shareTrip")}>
           <MdOutlineShare />
         </button>
-        <button className="action-icon-btn" onClick={handleClone} title={t("common.clone")}>
+        <button type="button" className="action-icon-btn" onClick={handleClone} title={t("itinerary.cloneTrip")} aria-label={t("itinerary.cloneTrip")}>
           <FaClone />
         </button>
         {isMyItinerary ? (
@@ -328,6 +331,7 @@ const Hero = ({
               to={itinerary.source === 'experience' ? `/experience/edit/${itinerary.id}` : `/itinerary/edit/${itinerary.id}`}
               className="action-icon-btn"
               title={t("common.edit")}
+              aria-label={t("common.edit")}
             >
               <FaEdit />
             </Link>
@@ -335,15 +339,19 @@ const Hero = ({
               className="action-icon-btn danger"
               onClick={(e) => { e.preventDefault(); setIsModalOpen(true); }}
               title={t("common.delete")}
+              aria-label={t("common.delete")}
             >
               <FaTrashAlt />
             </button>
           </>
         ) : (
           <button
+            type="button"
             className={`action-icon-btn ${isFavorite ? "saved" : ""}`}
             onClick={handleSave}
-            title={isFavorite ? t("itinerary.removedFromFavorites") : t("itinerary.addedToFavorites")}
+            title={isFavorite ? t("itinerary.unsaveTrip") : t("itinerary.saveTrip")}
+            aria-label={t("itinerary.saveTrip")}
+            aria-pressed={Boolean(isFavorite)}
           >
             {isFavorite ? <FaBookmark /> : <FaRegBookmark />}
           </button>

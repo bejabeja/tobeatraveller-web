@@ -107,6 +107,7 @@
     "tryAgain": "try again"
   },
   "nav": {
+    "signUpShort": "Sign up",
     "discover": "Discover",
     "home": "Home",
     "explore": "Explore",
@@ -487,6 +488,10 @@
     "alreadyTaken": "✗ Already taken"
   },
   "itinerary": {
+    "shareTrip": "Share trip",
+    "cloneTrip": "Clone trip",
+    "saveTrip": "Save trip",
+    "unsaveTrip": "Remove from saved",
     "noMap": "No map for this trip",
     "previousPhoto": "Previous photo",
     "nextPhoto": "Next photo",
@@ -785,6 +790,10 @@
     "photosAfterSync": "This entry hasn't synced yet. Add the photos once it has."
   },
   "notifications": {
+    "new": "New",
+    "earlier": "Earlier",
+    "newCount_one": "{{count}} new",
+    "newCount_other": "{{count}} new",
     "recapReady": "🎉 Your year on the road is ready: ",
     "recapReadyCta": "see it and share it",
     "countryStamp": "New country in your passport: ",
@@ -1329,6 +1338,7 @@
     "footerBackHome": "Back to home"
   },
   "footer": {
+    "plans": "Plans",
     "navigation": "Footer navigation",
     "tagline": "Discover journeys around the world.",
     "discover": "Discover",

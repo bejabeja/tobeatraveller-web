@@ -64,3 +64,17 @@ it('renders the packing list without crashing when the fetch succeeds', async ()
 
   expect(await screen.findByText('Linterna')).toBeTruthy();
 });
+
+// Without Premium it used to show only a lock: now a sample of the real
+// list, from the defaults in the app's language, under the offer.
+it('shows a sample of the list under the Premium offer', async () => {
+  const { defaultPackingItems } = jest.requireMock('@tobeatraveller/shared');
+  defaultPackingItems.es = { clothing: ['Chaqueta impermeable', 'Camisetas'] };
+  getPackingChecklist.mockRejectedValue(Object.assign(new Error('Premium required'), { status: 403 }));
+
+  await renderScreen(<PackingChecklistScreen navigation={{}} />);
+
+  // Hidden from screen readers on purpose: it's a picture of the feature.
+  expect(await screen.findByText('Chaqueta impermeable', { includeHiddenElements: true })).toBeTruthy();
+  expect(screen.queryByText('Chaqueta impermeable')).toBeNull();
+});

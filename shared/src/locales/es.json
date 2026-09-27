@@ -107,6 +107,7 @@
     "tryAgain": "inténtalo de nuevo"
   },
   "nav": {
+    "signUpShort": "Únete",
     "discover": "Descubrir",
     "home": "Inicio",
     "explore": "Explorar",
@@ -492,6 +493,10 @@
     "alreadyTaken": "✗ Ya está en uso"
   },
   "itinerary": {
+    "shareTrip": "Compartir viaje",
+    "cloneTrip": "Clonar viaje",
+    "saveTrip": "Guardar viaje",
+    "unsaveTrip": "Quitar de guardados",
     "noMap": "Sin mapa para este viaje",
     "previousPhoto": "Foto anterior",
     "nextPhoto": "Foto siguiente",
@@ -558,7 +563,7 @@
     "confirmUpdateDesc": "Los cambios en este itinerario se guardarán.",
     "confirmUpdate": "Guardar",
     "deleteItinerary": "Eliminar itinerario",
-    "deleteItineraryConfirm": "¿Seguro que quieres eliminar este itinerary? Esta acción no se puede deshacer.",
+    "deleteItineraryConfirm": "¿Seguro que quieres eliminar este itinerario? Esta acción no se puede deshacer.",
     "itineraryNotFound": "Itinerario no encontrado.",
     "deleteAlert": "Eliminar itinerario",
     "deleteAlertDesc": "¿Seguro que quieres eliminar este itinerario? Esta acción no se puede deshacer.",
@@ -776,6 +781,11 @@
     "photosAfterSync": "Esta entrada aún no se ha sincronizado. Añade las fotos cuando se sincronice."
   },
   "notifications": {
+    "new": "Nuevas",
+    "earlier": "Anteriores",
+    "newCount_one": "{{count}} nueva",
+    "newCount_other": "{{count}} nuevas",
+    "newCount_many": "{{count}} nuevas",
     "recapReady": "🎉 Tu año en ruta ya está listo: ",
     "recapReadyCta": "descúbrelo y compártelo",
     "countryStamp": "Nuevo país en tu pasaporte: ",
@@ -1340,6 +1350,7 @@
     "footerBackHome": "Volver al inicio"
   },
   "footer": {
+    "plans": "Planes",
     "navigation": "Navegación del pie de página",
     "tagline": "Descubre viajes por todo el mundo.",
     "discover": "Descubrir",

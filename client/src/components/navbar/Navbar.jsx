@@ -4,7 +4,6 @@ import {
   IoAddOutline,
   IoBookOutline,
   IoBriefcaseOutline,
-  IoCardOutline,
   IoCartOutline,
   IoChevronBack,
   IoChevronDownOutline,
@@ -179,7 +178,7 @@ const Navbar = ({ onOpenSearch }) => {
     <>
       {/* Mobile: fixed top header */}
       {!isAuthRoute && (
-        <div className="mobile-header">
+        <div className={`mobile-header${isAuthenticated ? "" : " mobile-header--guest"}`}>
           {/* Was the bottom-nav's "+"; on Van Log/Supplies/Packing checklist/
               Life diary that row also shows the page's own "+ Add x" button,
               so the same icon in the same bar opened two unrelated things.
@@ -207,9 +206,15 @@ const Navbar = ({ onOpenSearch }) => {
           {/* Anonymous visitors have no sidebar/marketing-nav on mobile web
               (both hidden below 480px), so without this the language switch
               added to the marketing nav wasn't reachable here at all. */}
+          {/* Signed out on a phone there was no way to sign up but the URL.
+              Beside the language, with the logo to the left: centred, the
+              logo left no room for both on a narrow phone. */}
           {!isAuthenticated && (
-            <div className="mobile-header__lang">
-              <LanguageSwitcher />
+            <div className="mobile-header__guest-actions">
+              <div className="mobile-header__lang">
+                <LanguageSwitcher />
+              </div>
+              <Link to="/register" className="btn btn--primary mobile-header__register">{t("nav.signUpShort")}</Link>
             </div>
           )}
         </div>
@@ -254,15 +259,18 @@ const Navbar = ({ onOpenSearch }) => {
 
           <div className="nav-section">
             <h3>{t("nav.yourTools")}</h3>
-            {PREMIUM_TOOLS.map(({ to, Icon, labelKey, iconClassName, premiumOnly = true }) => (
-              <NavLink key={to} to={to} className="nav-item" title={t(labelKey)}>
-                <Icon className={iconClassName ? `nav-icon ${iconClassName}` : "nav-icon"} />
-                <span>{t(labelKey)}</span>
-                {premiumOnly && !userMe?.isPremium && (
-                  <span className="nav-item__premium-badge">{t("admin.premium")}</span>
-                )}
-              </NavLink>
-            ))}
+            {PREMIUM_TOOLS.map((tool) => {
+              const { to, Icon, labelKey, iconClassName, premiumOnly = true } = tool;
+              return (
+                <NavLink key={to} to={to} className="nav-item" title={t(labelKey)}>
+                  <Icon className={iconClassName ? `nav-icon ${iconClassName}` : "nav-icon"} />
+                  <span>{t(labelKey)}</span>
+                  {premiumOnly && !userMe?.isPremium && (
+                    <span className="nav-item__premium-badge">{t("admin.premium")}</span>
+                  )}
+                </NavLink>
+              );
+            })}
           </div>
 
           <div className="navbar__bottom">
@@ -318,25 +326,12 @@ const Navbar = ({ onOpenSearch }) => {
           <IoCompassOutline className="bottom-nav__icon" />
           <span>{t("nav.explore")}</span>
         </NavLink>
-        {/* The desktop/tablet marketing nav shows this to anonymous visitors
-            (see marketing-navbar__links); this bar had no equivalent, so an
-            anonymous mobile web visitor had no way to reach the pricing page
-            at all short of the URL. */}
-        {!isAuthenticated && (
-          <NavLink to="/subscription" className="bottom-nav__item">
-            <IoCardOutline className="bottom-nav__icon" />
-            <span>{t("nav.subscription")}</span>
-          </NavLink>
-        )}
-        {/* Same gap as the desktop sidebar (see the nav-section above):
-            logged-in mobile users had no persistent way to reach Community
-            either, only a link buried in Home. */}
-        {isAuthenticated && (
-          <NavLink to="/community" className="bottom-nav__item">
-            <IoPeopleOutline className="bottom-nav__icon" />
-            <span>{t("community.title")}</span>
-          </NavLink>
-        )}
+        {/* For everyone: signed out, its preview of people is itself an
+            invitation to join. The plans stay a link away, in the footer. */}
+        <NavLink to="/community" className="bottom-nav__item">
+          <IoPeopleOutline className="bottom-nav__icon" />
+          <span>{t("community.title")}</span>
+        </NavLink>
         <button type="button" className="bottom-nav__item" onClick={onOpenSearch}>
           <IoSearchOutline className="bottom-nav__icon" />
           <span>{t("globalSearch.trigger")}</span>

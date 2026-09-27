@@ -341,6 +341,14 @@
       padding-top: 1rem;
       border-top: 1px solid var(--border-color);
 
+      // The main action as wide as the guest one below it: narrower, it read
+      // as the secondary choice.
+      .btn--primary {
+        width: 100%;
+        padding-top: 0.85em;
+        padding-bottom: 0.85em;
+      }
+
       a {
         font-size: 0.875rem;
         color: var(--text-secondary-color);

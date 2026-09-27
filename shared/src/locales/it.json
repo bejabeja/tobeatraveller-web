@@ -107,6 +107,7 @@
     "tryAgain": "riprova"
   },
   "nav": {
+    "signUpShort": "Iscriviti",
     "discover": "Scopri",
     "home": "Home",
     "explore": "Esplora",
@@ -492,6 +493,10 @@
     "alreadyTaken": "✗ Già in uso"
   },
   "itinerary": {
+    "shareTrip": "Condividi viaggio",
+    "cloneTrip": "Clona viaggio",
+    "saveTrip": "Salva viaggio",
+    "unsaveTrip": "Rimuovi dai salvati",
     "noMap": "Nessuna mappa per questo viaggio",
     "previousPhoto": "Foto precedente",
     "nextPhoto": "Foto successiva",
@@ -792,6 +797,11 @@
     "photosAfterSync": "Questa pagina non è ancora sincronizzata. Aggiungi le foto quando lo sarà."
   },
   "notifications": {
+    "new": "Nuove",
+    "earlier": "Precedenti",
+    "newCount_one": "{{count}} nuova",
+    "newCount_other": "{{count}} nuove",
+    "newCount_many": "{{count}} nuove",
     "recapReady": "🎉 Il tuo anno on the road è pronto: ",
     "recapReadyCta": "guardalo e condividilo",
     "countryStamp": "Nuovo paese nel tuo passaporto: ",
@@ -1340,6 +1350,7 @@
     "footerBackHome": "Torna alla home"
   },
   "footer": {
+    "plans": "Piani",
     "navigation": "Navigazione del piè di pagina",
     "tagline": "Scopri viaggi in tutto il mondo.",
     "discover": "Scopri",

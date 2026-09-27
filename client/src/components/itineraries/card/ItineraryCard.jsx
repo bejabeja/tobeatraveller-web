@@ -40,12 +40,19 @@ const ItineraryCard = ({ itinerary, user: userProp }) => {
           {categoryKey && (
             <span className="itinerary-card__category">{t(categoryKey)}</span>
           )}
-          <img
-            src={optimizedCloudinaryUrl(photoUrl, { width: 480 })}
-            alt={title ? `Cover photo for ${title}` : `Trip to ${location?.name || "an amazing destination"}`}
-            loading="lazy"
-            className="itinerary-card__image"
-          />
+          {/* The title below says what the card is: the photo needs no text of its own. */}
+          {photoUrl ? (
+            <img
+              src={optimizedCloudinaryUrl(photoUrl, { width: 480 })}
+              alt=""
+              loading="lazy"
+              className="itinerary-card__image"
+            />
+          ) : (
+            <div className="itinerary-card__image-placeholder" aria-hidden="true">
+              <img src="/logo-white.svg" alt="" className="itinerary-card__image-placeholder-logo" />
+            </div>
+          )}
           <div className="itinerary-card__author">
             {avatarUrl && (
               <img

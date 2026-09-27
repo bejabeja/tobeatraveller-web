@@ -141,6 +141,20 @@
     transform: scale(1.05);
   }
 
+  // No photo yet: the brand gradient, as on people cards, not a broken image.
+  &__image-placeholder {
+    display: grid;
+    place-items: center;
+    height: 100%;
+    background: linear-gradient(135deg, #1A535C 0%, #E8743B 100%);
+  }
+
+  &__image-placeholder-logo {
+    width: 55%;
+    max-width: 140px;
+    opacity: 0.9;
+  }
+
   &__category {
     position: absolute;
     top: 0.6rem;

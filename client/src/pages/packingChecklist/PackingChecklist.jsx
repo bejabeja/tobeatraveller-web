@@ -21,6 +21,10 @@ const PACKING_TO_SUPPLY_CATEGORY = { cleaning: "cleaning", toiletries: "hygiene"
 
 const UNDO_DELETE_WINDOW_MS = 5000;
 
+// How much of the default list the preview shows without Premium.
+const PREVIEW_CATEGORIES = 4;
+const PREVIEW_ITEMS_PER_CATEGORY = 4;
+
 const localizedDefaultItems = (i18n) => {
   return Object.entries(defaultPackingItems[toAppLanguage(i18n.language)]).flatMap(([category, names]) =>
     names.map(name => ({ category, name }))
@@ -175,6 +179,44 @@ const PackingChecklist = () => {
       toast.error(err.message || p("saveError"));
     }
   };
+
+  // Without Premium: a sample of the real list, blurred behind the offer,
+  // shows what they'd get instead of only saying it's locked.
+  if (error === "premium") {
+    const language = toAppLanguage(i18n.language);
+    const preview = packingCategories.slice(0, PREVIEW_CATEGORIES).map(({ value }) => ({
+      category: value,
+      names: (defaultPackingItems[language][value] ?? []).slice(0, PREVIEW_ITEMS_PER_CATEGORY),
+    }));
+
+    return (
+      <section className="packing-checklist section__container">
+        <ToolHeader title={p("title")} />
+        <div className="packing-checklist__preview">
+          <div className="packing-checklist__categories packing-checklist__preview-list" aria-hidden="true">
+            {preview.map(({ category, names }) => (
+              <div key={category} className="packing-checklist__category">
+                <h2 className="packing-checklist__category-title">{categoryLabel(category)}</h2>
+                <div className="packing-checklist__items">
+                  {names.map((name, index) => (
+                    <div key={name} className={`packing-checklist__item${index === 0 ? " packing-checklist__item--checked" : ""}`}>
+                      <label className="packing-checklist__item-label">
+                        <input type="checkbox" checked={index === 0} readOnly tabIndex={-1} />
+                        <span>{name}</span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="packing-checklist__preview-offer">
+            <FeatureLoadState status="premium" feature="packingChecklist" />
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   if (error) {
     return (

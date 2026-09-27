@@ -9,6 +9,7 @@ export const START_LOADING_MORE_NOTIFICATIONS = '@notifications/startLoadingMore
 export const APPEND_NOTIFICATIONS = '@notifications/append';
 export const APPEND_NOTIFICATIONS_ERROR = '@notifications/appendError';
 
+// Resolves to how many were unread, or null when the list couldn't load.
 export const initNotifications = () => async (dispatch) => {
     dispatch({ type: START_LOADING_NOTIFICATIONS });
     try {
@@ -18,9 +19,18 @@ export const initNotifications = () => async (dispatch) => {
         ]);
         dispatch({ type: SET_NOTIFICATIONS, payload: { notifications, totalPages, page: currentPage } });
         dispatch({ type: SET_UNREAD_COUNT, payload: count });
+        return count;
     } catch {
         dispatch({ type: SET_NOTIFICATIONS_ERROR });
+        return null;
     }
+};
+
+// Opening the list: loaded first, then marked as seen. The other way round
+// it could arrive already read, and none would show as new.
+export const openNotifications = () => async (dispatch) => {
+    const unreadCount = await dispatch(initNotifications());
+    if (unreadCount > 0) await dispatch(markAllNotificationsRead());
 };
 
 export const loadMoreNotifications = (nextPage) => async (dispatch) => {

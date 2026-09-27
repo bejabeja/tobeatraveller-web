@@ -220,10 +220,12 @@
   }
 }
 
+// The tabs head the section they switch, so they sit close to it: the
+// container's gap is for between sections.
 .home__tabs {
   display: flex;
   gap: 0.5rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: -2.5rem;
   border-bottom: 2px solid var(--border-color);
   padding-bottom: 0;
 }

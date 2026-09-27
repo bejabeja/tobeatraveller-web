@@ -293,3 +293,33 @@
     border-radius: 14px;
   }
 }
+
+// Without Premium: the sample list, blurred, with the offer on top of it.
+.packing-checklist__preview {
+  position: relative;
+  min-height: 480px;
+}
+
+.packing-checklist__preview-list {
+  filter: blur(3px);
+  opacity: 0.7;
+  pointer-events: none;
+  user-select: none;
+  // Fades out downwards, so it reads as "more of this below".
+  mask-image: linear-gradient(to bottom, #000 55%, transparent);
+}
+
+.packing-checklist__preview-offer {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: start center;
+  padding: 3rem 1rem 0;
+
+  .feature-load-state {
+    max-width: 420px;
+    border-radius: 16px;
+    background: var(--white-color);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+  }
+}

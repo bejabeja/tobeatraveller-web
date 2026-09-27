@@ -23,6 +23,7 @@ const Footer = () => {
             <span className="footer__nav-label">{t("footer.discover")}</span>
             <Link to="/explore">{t("footer.exploreTrips")}</Link>
             <Link to="/community">{t("footer.community")}</Link>
+            <Link to="/subscription">{t("footer.plans")}</Link>
           </div>
           <div className="footer__nav-group">
             <span className="footer__nav-label">{t("footer.legal")}</span>

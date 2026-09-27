@@ -107,6 +107,7 @@
     "tryAgain": "versuch es erneut"
   },
   "nav": {
+    "signUpShort": "Registrieren",
     "discover": "Entdecken",
     "home": "Start",
     "explore": "Erkunden",
@@ -487,6 +488,10 @@
     "alreadyTaken": "✗ Bereits vergeben"
   },
   "itinerary": {
+    "shareTrip": "Reise teilen",
+    "cloneTrip": "Reise klonen",
+    "saveTrip": "Reise speichern",
+    "unsaveTrip": "Aus Gespeicherten entfernen",
     "noMap": "Keine Karte für diese Reise",
     "previousPhoto": "Vorheriges Foto",
     "nextPhoto": "Nächstes Foto",
@@ -785,6 +790,10 @@
     "photosAfterSync": "Dieser Eintrag ist noch nicht synchronisiert. Füge die Fotos hinzu, sobald er es ist."
   },
   "notifications": {
+    "new": "Neu",
+    "earlier": "Früher",
+    "newCount_one": "{{count}} neue",
+    "newCount_other": "{{count}} neue",
     "recapReady": "🎉 Dein Jahr unterwegs ist fertig: ",
     "recapReadyCta": "ansehen und teilen",
     "countryStamp": "Neues Land in deinem Pass: ",
@@ -1329,6 +1338,7 @@
     "footerBackHome": "Zurück zur Startseite"
   },
   "footer": {
+    "plans": "Tarife",
     "navigation": "Fußzeilennavigation",
     "tagline": "Entdecke Reisen auf der ganzen Welt.",
     "discover": "Entdecken",

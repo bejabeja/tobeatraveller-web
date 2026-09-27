@@ -107,6 +107,7 @@
     "tryAgain": "réessaie"
   },
   "nav": {
+    "signUpShort": "S'inscrire",
     "discover": "Découvrir",
     "home": "Accueil",
     "explore": "Explorer",
@@ -492,6 +493,10 @@
     "alreadyTaken": "✗ Déjà pris"
   },
   "itinerary": {
+    "shareTrip": "Partager le voyage",
+    "cloneTrip": "Cloner le voyage",
+    "saveTrip": "Enregistrer le voyage",
+    "unsaveTrip": "Retirer des enregistrés",
     "noMap": "Pas de carte pour ce voyage",
     "previousPhoto": "Photo précédente",
     "nextPhoto": "Photo suivante",
@@ -792,6 +797,11 @@
     "photosAfterSync": "Cette entrée n'est pas encore synchronisée. Ajoute les photos une fois que ce sera fait."
   },
   "notifications": {
+    "new": "Nouvelles",
+    "earlier": "Plus anciennes",
+    "newCount_one": "{{count}} nouvelle",
+    "newCount_other": "{{count}} nouvelles",
+    "newCount_many": "{{count}} nouvelles",
     "recapReady": "🎉 Ton année sur la route est prête : ",
     "recapReadyCta": "découvre-la et partage-la",
     "countryStamp": "Nouveau pays dans ton passeport : ",
@@ -1340,6 +1350,7 @@
     "footerBackHome": "Retour à l'accueil"
   },
   "footer": {
+    "plans": "Offres",
     "navigation": "Navigation du pied de page",
     "tagline": "Découvre des voyages aux quatre coins du monde.",
     "discover": "Découvrir",

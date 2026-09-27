@@ -31,6 +31,10 @@ const localizedDefaultItems = (i18n) => {
   );
 };
 
+// How much of the default list the preview shows without Premium.
+const PREVIEW_CATEGORIES = 3;
+const PREVIEW_ITEMS_PER_CATEGORY = 4;
+
 const PackingChecklistScreen = ({ navigation }) => {
   const { t, i18n } = useTranslation();
   const p = (key, vars) => t(`packingChecklist.${key}`, vars);
@@ -327,6 +331,29 @@ const PackingChecklistScreen = ({ navigation }) => {
         >
           {loading ? (
             <ActivityIndicator size="small" color="#E8743B" style={{ marginTop: 40 }} />
+          ) : loadError === 'premium' ? (
+            // Without Premium: the offer, and below it a sample of the real
+            // list, faded, to show what they'd get instead of only a lock.
+            <>
+              <FeatureLoadState status={loadError} onRetry={fetchData} />
+              <View style={styles.preview} pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+                {packingCategories.slice(0, PREVIEW_CATEGORIES).map(({ value: category }) => (
+                  <View key={category} style={styles.category}>
+                    <View style={styles.categoryHeader}>
+                      <Text style={styles.categoryTitle}>{categoryLabel(category)}</Text>
+                    </View>
+                    {(defaultPackingItems[toAppLanguage(i18n.language)][category] ?? []).slice(0, PREVIEW_ITEMS_PER_CATEGORY).map((name, index) => (
+                      <View key={name} style={styles.item}>
+                        <View style={styles.itemLabel}>
+                          <Ionicons name={index === 0 ? 'checkbox' : 'square-outline'} size={20} color={index === 0 ? '#E8743B' : '#9ca3af'} />
+                          <Text style={[styles.itemName, index === 0 && styles.itemNameChecked]}>{name}</Text>
+                        </View>
+                      </View>
+                    ))}
+                  </View>
+                ))}
+              </View>
+            </>
           ) : loadError ? (
             <FeatureLoadState status={loadError} onRetry={fetchData} />
           ) : !hasSearchResults ? (
@@ -482,6 +509,7 @@ const styles = StyleSheet.create({
   emptyEmoji: { fontSize: 40, marginBottom: 12 },
   emptyTitle: { fontSize: 15, color: '#6b7280', textAlign: 'center' },
 
+  preview: { marginTop: 16, gap: 12, opacity: 0.35 },
   category: {
     backgroundColor: '#fff', borderRadius: 14,
     borderWidth: 1, borderColor: '#e5e7eb',

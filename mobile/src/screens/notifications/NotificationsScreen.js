@@ -8,9 +8,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
   BADGE_EMOJI, PASSPORT_SHARE_MOMENT, countryFlag, countryName,
-  initNotifications, loadMoreNotifications, markAllNotificationsRead,
+  loadMoreNotifications, openNotifications,
   selectNotifications, selectNotificationsError, selectNotificationsLoading,
-  RECAP_SOURCES, selectNotificationsLoadingMore, selectNotificationsPage, selectNotificationsTotalPages, selectUnreadCount, formatTimeAgo,
+  RECAP_SOURCES, selectNotificationsLoadingMore, selectNotificationsPage, selectNotificationsTotalPages, formatTimeAgo,
 } from '@tobeatraveller/shared';
 import { UserRowSkeleton } from '../../components/Skeleton';
 import { shadow } from '../../utils/styles';
@@ -27,15 +27,19 @@ const NotificationsScreen = ({ navigation }) => {
   const error = useSelector(selectNotificationsError);
   const page = useSelector(selectNotificationsPage);
   const totalPages = useSelector(selectNotificationsTotalPages);
-  const unreadCount = useSelector(selectUnreadCount);
 
   useEffect(() => {
-    dispatch(initNotifications());
+    dispatch(openNotifications());
   }, [dispatch]);
 
-  useEffect(() => {
-    if (unreadCount > 0) dispatch(markAllNotificationsRead());
-  }, [unreadCount, dispatch]);
+  // Marked as seen on opening, but still shown apart for this visit: what
+  // was new is what you came to see. The headings are rows of the list.
+  const fresh = notifications.filter(n => !n.isRead);
+  const earlier = notifications.filter(n => n.isRead);
+  const rows = fresh.length > 0
+    ? [{ id: 'heading-new', heading: t('notifications.new') }, ...fresh,
+      ...(earlier.length > 0 ? [{ id: 'heading-earlier', heading: t('notifications.earlier') }, ...earlier] : [])]
+    : earlier;
 
   const handleLoadMore = () => {
     if (loadingMore || page >= totalPages) return;
@@ -81,7 +85,7 @@ const NotificationsScreen = ({ navigation }) => {
         <View style={styles.empty}>
           <Text style={styles.emptyIcon}>⚠️</Text>
           <Text style={styles.emptyTitle}>{t('notifications.errorMsg')}</Text>
-          <TouchableOpacity style={styles.retryBtn} onPress={() => dispatch(initNotifications())}>
+          <TouchableOpacity style={styles.retryBtn} onPress={() => dispatch(openNotifications())}>
             <Text style={styles.retryBtnText}>{t('common.retry')}</Text>
           </TouchableOpacity>
         </View>
@@ -95,7 +99,7 @@ const NotificationsScreen = ({ navigation }) => {
         </View>
       ) : (
         <FlatList
-          data={notifications}
+          data={rows}
           keyExtractor={item => item.id}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
@@ -104,7 +108,9 @@ const NotificationsScreen = ({ navigation }) => {
           ListFooterComponent={loadingMore ? (
             <ActivityIndicator style={{ marginVertical: 16 }} color="#E8743B" />
           ) : null}
-          renderItem={({ item: n }) => (
+          renderItem={({ item: n }) => n.heading ? (
+            <Text style={styles.groupTitle} accessibilityRole="header">{n.heading}</Text>
+          ) : (
             <TouchableOpacity
               style={[styles.item, !n.isRead && styles.itemUnread]}
               onPress={() => handlePress(n)}
@@ -169,6 +175,10 @@ const styles = StyleSheet.create({
 
   list: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 32 },
 
+  groupTitle: {
+    marginTop: 12, marginBottom: 6, fontSize: 12, fontWeight: '700',
+    letterSpacing: 0.5, textTransform: 'uppercase', color: '#6b7280',
+  },
   item: {
     flexDirection: 'row', alignItems: 'center',
     paddingVertical: 12, gap: 12,
