@@ -12,6 +12,13 @@ import { shadow } from '../../utils/styles';
 
 const DOTS = 3;
 
+// With nobody to follow yet, what a new traveller can start with instead.
+const START_ACTIONS = [
+  { key: 'startTrip', emoji: '🗺️', screen: 'CreateItinerary' },
+  { key: 'startPassport', emoji: '🛂', screen: 'Passport', params: (userId) => ({ userId }) },
+  { key: 'startProfile', emoji: '🙂', screen: 'EditProfile' },
+];
+
 const OnboardingScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
@@ -30,11 +37,18 @@ const OnboardingScreen = ({ navigation }) => {
     navigation.replace('Tabs');
   };
 
+  // Onboarding done, straight on to the chosen first step.
+  const startWith = (screen, params) => {
+    handleFinish();
+    navigation.navigate(screen, params);
+  };
+
   useEffect(() => {
-    getSuggestedUsers().then(data => {
-      setUsers(Array.isArray(data) ? data : []);
-      setLoading(false);
-    });
+    // A failed request is no suggestions, not a screen loading forever.
+    getSuggestedUsers()
+      .then(data => setUsers(Array.isArray(data) ? data : []))
+      .catch(() => setUsers([]))
+      .finally(() => setLoading(false));
   }, []);
 
   const toggleFollow = async (userId) => {
@@ -73,7 +87,7 @@ const OnboardingScreen = ({ navigation }) => {
       >
         <Text style={styles.heroEmoji}>🌍</Text>
         <Text style={styles.title}>{t('onboarding.welcomeTitle')}</Text>
-        <Text style={styles.subtitle}>{t('onboarding.subtitle')}</Text>
+        <Text style={styles.subtitle}>{noSuggestions ? t('onboarding.subtitleStart') : t('onboarding.subtitle')}</Text>
       </LinearGradient>
 
       {/* Scrollable content */}
@@ -82,23 +96,32 @@ const OnboardingScreen = ({ navigation }) => {
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 110 }]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Progress dots */}
-        <View style={styles.progress}>
-          <View style={styles.dots}>
-            {Array.from({ length: DOTS }, (_, i) => (
-              <View key={i} style={[styles.dot, i < count && styles.dotFilled]} />
-            ))}
+        {/* Progress dots: only while there's someone to follow. */}
+        {!noSuggestions && (
+          <View style={styles.progress}>
+            <View style={styles.dots}>
+              {Array.from({ length: DOTS }, (_, i) => (
+                <View key={i} style={[styles.dot, i < count && styles.dotFilled]} />
+              ))}
+            </View>
+            <Text style={styles.progressLabel}>{progressLabel}</Text>
           </View>
-          <Text style={styles.progressLabel}>{progressLabel}</Text>
-        </View>
+        )}
 
         {loading ? (
           <ActivityIndicator size="large" color="#E8743B" style={styles.loader} />
         ) : noSuggestions ? (
-          <View style={styles.empty}>
-            <Text style={styles.emptyEmoji}>🧭</Text>
-            <Text style={styles.emptyTitle}>{t('onboarding.noSuggestionsTitle')}</Text>
-            <Text style={styles.emptyDesc}>{t('onboarding.noSuggestionsDesc')}</Text>
+          <View style={styles.start}>
+            <Text style={styles.startTitle} accessibilityRole="header">{t('onboarding.startTitle')}</Text>
+            {START_ACTIONS.map(({ key, emoji, screen, params }) => (
+              <TouchableOpacity key={key} style={styles.startAction} onPress={() => startWith(screen, params?.(authUser?.id))} accessibilityRole="button">
+                <Text style={styles.startEmoji}>{emoji}</Text>
+                <View style={styles.startText}>
+                  <Text style={styles.startActionTitle}>{t(`onboarding.${key}`)}</Text>
+                  <Text style={styles.startActionHint}>{t(`onboarding.${key}Hint`)}</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
           </View>
         ) : (
           <View style={styles.grid}>
@@ -127,9 +150,12 @@ const OnboardingScreen = ({ navigation }) => {
             {canContinue ? t('onboarding.continue') : t('onboarding.followPromptBtn')}
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={handleFinish} activeOpacity={0.7}>
-          <Text style={styles.skip}>{t('onboarding.skip')}</Text>
-        </TouchableOpacity>
+        {/* With nothing to follow, "Continue" already skips. */}
+        {!noSuggestions && (
+          <TouchableOpacity onPress={handleFinish} activeOpacity={0.7}>
+            <Text style={styles.skip}>{t('onboarding.skip')}</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
@@ -161,7 +187,7 @@ const UserCard = ({ user, isFollowing, onToggle, t }) => {
         {destination && (
           <Text style={styles.destination} numberOfLines={1}>✈️ {destination}</Text>
         )}
-        <Text style={styles.trips}>{t('onboarding.trips', { count: user.totalItineraries ?? 0 })}</Text>
+        <Text style={styles.trips}>{t('community.trips', { count: user.totalItineraries ?? 0 })}</Text>
         <TouchableOpacity
           style={[styles.followBtn, isFollowing && styles.followBtnActive]}
           onPress={onToggle}
@@ -226,15 +252,17 @@ const styles = StyleSheet.create({
 
   loader: { marginTop: 40 },
 
-  empty: {
-    alignItems: 'center', gap: 6,
-    paddingVertical: 40, paddingHorizontal: 24,
-    borderRadius: 16, backgroundColor: '#fff',
-    borderWidth: 1.5, borderColor: '#e5e7eb',
+  start: { gap: 10, paddingTop: 8 },
+  startTitle: { fontSize: 16, fontWeight: '700', color: '#111827', marginBottom: 2 },
+  startAction: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    backgroundColor: '#fff', borderRadius: 14, padding: 14,
+    borderWidth: 1, borderColor: '#e5e7eb',
   },
-  emptyEmoji: { fontSize: 32, marginBottom: 4 },
-  emptyTitle: { fontSize: 15, fontWeight: '700', color: '#111827' },
-  emptyDesc: { fontSize: 13, color: '#6b7280', textAlign: 'center', lineHeight: 19 },
+  startEmoji: { fontSize: 26 },
+  startText: { flex: 1, gap: 2 },
+  startActionTitle: { fontSize: 15, fontWeight: '700', color: '#111827' },
+  startActionHint: { fontSize: 13, color: '#6b7280', lineHeight: 18 },
 
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
 

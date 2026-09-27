@@ -155,6 +155,14 @@ describe("Profile trips", () => {
     expect(screen.getByRole("tab", { name: /profile.myTrips/ })).toHaveAttribute("aria-selected", "true");
   });
 
+  // Where the old /itineraries/saved page now leads.
+  it("opens on the saved trips when the address asks for them", () => {
+    render(<MemoryRouter initialEntries={["/profile/user-1?tab=saved"]}><Profile /></MemoryRouter>);
+
+    expect(screen.getByRole("tab", { name: /profile.savedTrips/ })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByText("trip:Lofoten")).toBeInTheDocument();
+  });
+
   it("gives no count for the saved trips when they could not be loaded", () => {
     useSavedTrips.mockReturnValue({ trips: [], loading: false, error: true });
     renderProfile();

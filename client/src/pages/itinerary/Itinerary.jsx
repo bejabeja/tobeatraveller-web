@@ -16,6 +16,7 @@ import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { getCategoryIcon } from "../../assets/icons.js";
 import Modal from "../../components/modal/Modal.jsx";
+import TripActionsMenu from "../../components/itineraries/TripActionsMenu.jsx";
 import Spinner from "../../components/spinner/Spinner.jsx";
 import { useLike } from "../../hooks/useLike.js";
 import {
@@ -41,7 +42,7 @@ import { selectMe } from "../../store/user/userInfoSelectors.js";
 import { optimizedCloudinaryUrl } from "../../utils/cloudinaryUrl.js";
 import { getCurrencySymbol } from "../../utils/constants/currencies.js";
 import { buildItineraryJsonLd } from "../../utils/jsonLd.js";
-import { formatNumber, tripCategoryLabelKey } from "@tobeatraveller/shared";
+import { formatBudgetAmount, tripCategoryLabelKey } from "@tobeatraveller/shared";
 import "./Itinerary.scss";
 import Error from "../error/Error.jsx";
 
@@ -322,49 +323,39 @@ const Hero = ({
         <button type="button" className="action-icon-btn" onClick={handleShare} title={t("itinerary.shareTrip")} aria-label={t("itinerary.shareTrip")}>
           <MdOutlineShare />
         </button>
-        <button type="button" className="action-icon-btn" onClick={handleClone} title={t("itinerary.cloneTrip")} aria-label={t("itinerary.cloneTrip")}>
-          <FaClone />
-        </button>
         {isMyItinerary ? (
+          <TripActionsMenu
+            items={[
+              {
+                key: "edit",
+                label: t("common.edit"),
+                Icon: FaEdit,
+                to: itinerary.source === 'experience' ? `/experience/edit/${itinerary.id}` : `/itinerary/edit/${itinerary.id}`,
+              },
+              { key: "clone", label: t("itinerary.cloneTrip"), Icon: FaClone, onSelect: handleClone },
+              { key: "delete", label: t("common.delete"), Icon: FaTrashAlt, onSelect: () => setIsModalOpen(true), danger: true },
+            ]}
+          />
+        ) : (
           <>
-            <Link
-              to={itinerary.source === 'experience' ? `/experience/edit/${itinerary.id}` : `/itinerary/edit/${itinerary.id}`}
-              className="action-icon-btn"
-              title={t("common.edit")}
-              aria-label={t("common.edit")}
-            >
-              <FaEdit />
-            </Link>
+            <button type="button" className="action-icon-btn" onClick={handleClone} title={t("itinerary.cloneTrip")} aria-label={t("itinerary.cloneTrip")}>
+              <FaClone />
+            </button>
             <button
-              className="action-icon-btn danger"
-              onClick={(e) => { e.preventDefault(); setIsModalOpen(true); }}
-              title={t("common.delete")}
-              aria-label={t("common.delete")}
+              type="button"
+              className={`action-icon-btn ${isFavorite ? "saved" : ""}`}
+              onClick={handleSave}
+              title={isFavorite ? t("itinerary.unsaveTrip") : t("itinerary.saveTrip")}
+              aria-label={t("itinerary.saveTrip")}
+              aria-pressed={Boolean(isFavorite)}
             >
-              <FaTrashAlt />
+              {isFavorite ? <FaBookmark /> : <FaRegBookmark />}
             </button>
           </>
-        ) : (
-          <button
-            type="button"
-            className={`action-icon-btn ${isFavorite ? "saved" : ""}`}
-            onClick={handleSave}
-            title={isFavorite ? t("itinerary.unsaveTrip") : t("itinerary.saveTrip")}
-            aria-label={t("itinerary.saveTrip")}
-            aria-pressed={Boolean(isFavorite)}
-          >
-            {isFavorite ? <FaBookmark /> : <FaRegBookmark />}
-          </button>
         )}
       </div>
     </div>
   );
-};
-
-const formatBudget = (budget, language) => {
-  const n = parseFloat(budget);
-  if (isNaN(n)) return budget;
-  return formatNumber(n, language, { maximumFractionDigits: 2 });
 };
 
 const Stats = ({ itinerary, hasDescription, t }) => {
@@ -372,9 +363,11 @@ const Stats = ({ itinerary, hasDescription, t }) => {
   const currencySymbol = getCurrencySymbol(itinerary.currency);
   const hasBudget = itinerary.budget !== null && itinerary.budget !== undefined && itinerary.budget !== "";
   const budget = parseFloat(itinerary.budget);
+  // Both with the currency, as the language writes it: "500 € · 250 € por persona".
+  const money = (amount) => formatBudgetAmount(amount, itinerary.currency, i18n.language);
   const perPerson =
     hasBudget && itinerary.numberOfPeople > 1 && !isNaN(budget)
-      ? formatBudget(budget / itinerary.numberOfPeople, i18n.language)
+      ? money(budget / itinerary.numberOfPeople)
       : null;
   return (
     <div className={`itinerary__stats${hasDescription ? " itinerary__stats--separated" : ""}`}>
@@ -398,10 +391,10 @@ const Stats = ({ itinerary, hasDescription, t }) => {
         <span className="itinerary__stat-value">
           {hasBudget ? (
             <>
-              {formatBudget(itinerary.budget, i18n.language)}{currencySymbol ? "" : ` ${itinerary.currency}`}
+              {isNaN(budget) ? itinerary.budget : money(budget)}
               {perPerson && (
                 <span className="itinerary__stat-subvalue">
-                  {` · ${currencySymbol || ""}${perPerson}${t("itinerary.perPerson")}`}
+                  {` · ${t("itinerary.perPersonAmount", { amount: perPerson })}`}
                 </span>
               )}
             </>

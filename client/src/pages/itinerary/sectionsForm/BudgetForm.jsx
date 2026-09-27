@@ -1,5 +1,6 @@
 import { useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import { formatBudgetAmount } from "@tobeatraveller/shared";
 import { DropdownForm, InputForm } from "../../../components/form/InputForm";
 import { currencyOptions, getCurrencySymbol } from "../../../utils/constants/currencies";
 
@@ -10,7 +11,7 @@ const PRESETS = [
 ];
 
 const BudgetForm = ({ control, errors, isComplete, tripDays, setValue }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const f = (key, vars) => t(`itineraryForm.${key}`, vars);
 
   const currency         = useWatch({ control, name: "currency" });
@@ -22,7 +23,7 @@ const BudgetForm = ({ control, errors, isComplete, tripDays, setValue }) => {
     const b = parseFloat(budget);
     const n = parseInt(numberOfTravellers);
     if (!b || !n || n <= 1) return null;
-    return (b / n).toFixed(2);
+    return formatBudgetAmount(b / n, currency, i18n.language);
   })();
 
   const handlePreset = (dailyRate) => {
@@ -74,7 +75,7 @@ const BudgetForm = ({ control, errors, isComplete, tripDays, setValue }) => {
       </div>
       {perPerson && (
         <p className="form__budget-per-person">
-          {f("perPerson", { amount: `${symbol}${perPerson}` })}
+          {f("perPerson", { amount: perPerson })}
         </p>
       )}
     </div>

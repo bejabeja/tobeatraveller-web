@@ -90,34 +90,6 @@
     @media (min-width: 768px) { grid-template-columns: repeat(4, 1fr); }
   }
 
-  // ── Empty state ────────────────────────────────────────────────
-  &__empty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 0.4rem;
-    padding: 2.5rem 1.5rem;
-    border-radius: 16px;
-    background: var(--surface-color);
-    border: 1.5px solid var(--border-color);
-  }
-
-  &__empty-emoji { font-size: 2rem; margin-bottom: 0.25rem; }
-
-  &__empty-title {
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--text-color);
-  }
-
-  &__empty-desc {
-    font-size: 0.875rem;
-    color: var(--text-secondary-color);
-    max-width: 360px;
-    line-height: 1.5;
-  }
-
   // ── Card ──────────────────────────────────────────────────────
   &__card {
     border-radius: 16px;
@@ -293,4 +265,67 @@
 @keyframes ob-fadeSlideUp {
   from { opacity: 0; transform: translateY(18px); }
   to   { opacity: 1; transform: translateY(0);    }
+}
+
+// With nobody to follow yet: first steps of their own.
+.onboarding__start {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.onboarding__start-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-color);
+}
+
+.onboarding__start-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0;
+  list-style: none;
+}
+
+.onboarding__start-action {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  background: var(--white-color);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &:hover,
+  &:focus-visible {
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+  }
+}
+
+.onboarding__start-emoji {
+  width: auto;
+  font-size: 1.8rem;
+}
+
+.onboarding__start-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+
+  strong {
+    font-size: 0.98rem;
+    color: var(--text-color);
+  }
+
+  span {
+    font-size: 0.85rem;
+    color: var(--text-secondary-color);
+  }
 }

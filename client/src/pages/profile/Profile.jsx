@@ -4,7 +4,7 @@ import { IoChevronForward, IoLinkOutline, IoLocationOutline, IoLockClosedOutline
 import { MdOutlineCalendarMonth, MdOutlineEdit } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import Filters from "../../components/filters/Filters";
 import ItinerariesSection from "../../components/itineraries/ItinerariesSection";
 import Modal from "../../components/modal/Modal";
@@ -40,6 +40,8 @@ const COMPLETENESS_TIP_KEYS = [
 // On your own profile, your trips and the ones you saved sit side by side,
 // as in the app; everyone else only sees the trips.
 const TRIPS_TABS = Object.freeze({ MINE: "mine", SAVED: "saved" });
+// ?tab=saved opens the saved trips (where the old /itineraries/saved leads).
+const TRIPS_TAB_PARAM = "tab";
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 // `id` comes from the address (/profile/:id) or, for a profile opened by
@@ -62,7 +64,9 @@ const Profile = ({ id: idFromName }) => {
   const [tripFiltersOpen, setTripFiltersOpen] = useState(false);
   // Remounting the filters is what empties them: they keep their own values.
   const [tripFiltersResetKey, setTripFiltersResetKey] = useState(0);
-  const [tripsTab, setTripsTab] = useState(TRIPS_TABS.MINE);
+  const [searchParams] = useSearchParams();
+  const tabFromUrl = searchParams.get(TRIPS_TAB_PARAM) === TRIPS_TABS.SAVED ? TRIPS_TABS.SAVED : TRIPS_TABS.MINE;
+  const [tripsTab, setTripsTab] = useState(tabFromUrl);
   // Asked for up front, not on the click: browsers only let a page copy
   // right after the click, not after waiting for the API.
   const [ownReferralCode, setOwnReferralCode] = useState(null);
@@ -78,8 +82,9 @@ const Profile = ({ id: idFromName }) => {
   const savedTrips = useSavedTrips(isMyProfile);
 
   // The same page is reused from one profile to the next: each one opens on
-  // its trips, not on the tab left open on the previous one.
-  useEffect(() => setTripsTab(TRIPS_TABS.MINE), [id]);
+  // its trips (or the tab its address asks for), not on the tab left open
+  // on the previous one.
+  useEffect(() => setTripsTab(tabFromUrl), [id, tabFromUrl]);
 
   const filteredItineraries = useMemo(() => {
     if (!isMyProfile) return itineraries;

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
+import { formatDate } from "@tobeatraveller/shared";
 import { IoTrashOutline } from "react-icons/io5";
 import { useSelector } from "react-redux";
 import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState";
@@ -10,6 +11,7 @@ import useDebouncedEffect from "../../hooks/useDebounced";
 import { deleteUserById, getAllUsersForAdmin, updateUserRole, updateUserTier } from "../../services/users";
 import { selectAuthUser } from "../../store/auth/authSelectors";
 import { selectMe } from "../../store/user/userInfoSelectors";
+import { generateAvatar } from "../../utils/constants/constants";
 import "./InternalUsers.scss";
 
 const PAGE_SIZE = 20;
@@ -17,7 +19,7 @@ const ASSIGNABLE_ROLES = ["user", "admin", "superadmin"];
 const ASSIGNABLE_TIERS = ["free", "premium"];
 
 const InternalUsers = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const authUser = useSelector(selectAuthUser);
   const meDetail = useSelector(selectMe);
   const currentUserId = (meDetail ?? authUser)?.id;
@@ -156,7 +158,12 @@ const InternalUsers = () => {
 
             return (
               <div key={user.id} className="internal-users__row">
-                <img className="internal-users__avatar" src={user.avatarUrl} alt="" />
+                <img
+                  className="internal-users__avatar"
+                  src={user.avatarUrl || generateAvatar(user.username)}
+                  alt=""
+                  onError={(e) => { e.currentTarget.src = generateAvatar(user.username); }}
+                />
                 <div className="internal-users__info">
                   <span className="internal-users__username">
                     {user.username}
@@ -164,7 +171,7 @@ const InternalUsers = () => {
                   </span>
                   <span className="internal-users__meta">{user.email}</span>
                   <span className="internal-users__meta">
-                    {t("admin.joined", { date: new Date(user.createdAt).toLocaleDateString() })}
+                    {t("admin.joined", { date: formatDate(user.createdAt, i18n.language, { day: "numeric", month: "short", year: "numeric" }) })}
                     {" · "}
                     {t("admin.itinerariesCount", { count: user.totalItineraries })}
                   </span>
@@ -176,7 +183,7 @@ const InternalUsers = () => {
                   onChange={(e) => handleRoleChange(user, e.target.value)}
                 >
                   {roleOptions.map((role) => (
-                    <option key={role} value={role}>{role}</option>
+                    <option key={role} value={role}>{t(`admin.roleName.${role}`, role)}</option>
                   ))}
                 </select>
                 <select

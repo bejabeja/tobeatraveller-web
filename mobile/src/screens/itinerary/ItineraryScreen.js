@@ -18,17 +18,12 @@ import { getStepConfig } from '../../utils/stepConfig';
 import { WEB_URL } from '../../utils/config';
 import {
   addComment, addFavorite, checkIsFavorite, checkIsLiked, deleteComment,
-  deleteItinerary, getCommentsByItineraryId, getCurrencySymbol,
+  deleteItinerary, getCommentsByItineraryId,
   getItineraryById, getUserById, removeFavorite, toggleLike,
   selectIsAuthenticated, selectMe, MAX_COMMENT_LENGTH, updateCommentsCount,
-  COMMENT_HIGHLIGHT_DURATION_MS, formatNumber, formatTimeAgo, tripCategoryLabelKey,
+  COMMENT_HIGHLIGHT_DURATION_MS, formatBudgetAmount, formatTimeAgo, tripCategoryLabelKey,
 } from '@tobeatraveller/shared';
 
-const formatBudget = (budget, language) => {
-  const n = parseFloat(budget);
-  if (isNaN(n)) return budget;
-  return formatNumber(n, language, { maximumFractionDigits: 2 });
-};
 
 // "Other" says nothing about the trip, so it gets no badge.
 const OTHER_CATEGORY_KEY = 'tripCategories.other';
@@ -112,11 +107,12 @@ const ItineraryScreen = ({ route, navigation }) => {
   );
 
   const isMyItinerary = me?.id === itinerary.userId;
-  const currencySymbol = getCurrencySymbol(itinerary.currency);
   const hasBudget = itinerary.budget !== null && itinerary.budget !== undefined && itinerary.budget !== '';
   const budget = parseFloat(itinerary.budget);
+  // Both with the currency, as the language writes it: "500 € · 250 € por persona".
+  const money = (amount) => formatBudgetAmount(amount, itinerary.currency, i18n.language);
   const perPerson = hasBudget && itinerary.numberOfPeople > 1 && !isNaN(budget)
-    ? formatBudget(budget / itinerary.numberOfPeople, i18n.language)
+    ? money(budget / itinerary.numberOfPeople)
     : null;
 
   const handleShare = async () => {
@@ -157,6 +153,17 @@ const ItineraryScreen = ({ route, navigation }) => {
     } finally {
       setIsLikeToggling(false);
     }
+  };
+
+  const openOwnerActions = () => {
+    Alert.alert(itinerary.title, undefined, [
+      {
+        text: t('common.edit'),
+        onPress: () => navigation.navigate(itinerary.source === 'experience' ? 'EditExperience' : 'EditItinerary', { id: itinerary.id }),
+      },
+      { text: t('common.delete'), style: 'destructive', onPress: handleDelete },
+      { text: t('common.cancel'), style: 'cancel' },
+    ]);
   };
 
   const handleDelete = () => {
@@ -240,30 +247,32 @@ const ItineraryScreen = ({ route, navigation }) => {
         </TouchableOpacity>
 
         <View style={[styles.heroActions, { top: insets.top + 12 }]}>
-          <TouchableOpacity style={[styles.actionBtn, styles.likeBtn, isLiked && styles.actionBtnLiked]} onPress={handleLike}>
+          <TouchableOpacity
+            style={[styles.actionBtn, styles.likeBtn, isLiked && styles.actionBtnLiked]}
+            onPress={handleLike}
+            accessibilityRole="button"
+            accessibilityLabel={t('itinerary.like')}
+            accessibilityState={{ selected: isLiked }}
+          >
             <Ionicons name={isLiked ? 'heart' : 'heart-outline'} size={17} color="#fff" />
             <Text style={styles.likeCountText}>{likesCount}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.actionBtn} onPress={handleShare}>
+          <TouchableOpacity style={styles.actionBtn} onPress={handleShare} accessibilityRole="button" accessibilityLabel={t('itinerary.shareTrip')}>
             <Text style={styles.actionIcon}>⤴</Text>
           </TouchableOpacity>
           {isMyItinerary ? (
-            <>
-              <TouchableOpacity
-                style={styles.actionBtn}
-                onPress={() => navigation.navigate(
-                  itinerary.source === 'experience' ? 'EditExperience' : 'EditItinerary',
-                  { id: itinerary.id }
-                )}
-              >
-                <Text style={styles.actionIcon}>✏️</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.actionBtn, styles.actionBtnDanger]} onPress={handleDelete}>
-                <Text style={styles.actionIcon}>🗑</Text>
-              </TouchableOpacity>
-            </>
+            // Edit and delete behind "⋯": delete isn't one slip from "like".
+            <TouchableOpacity style={styles.actionBtn} onPress={openOwnerActions} accessibilityRole="button" accessibilityLabel={t('common.moreOptions')}>
+              <Ionicons name="ellipsis-horizontal" size={18} color="#fff" />
+            </TouchableOpacity>
           ) : (
-            <TouchableOpacity style={[styles.actionBtn, isFavorite && styles.actionBtnSaved]} onPress={handleFavorite}>
+            <TouchableOpacity
+              style={[styles.actionBtn, isFavorite && styles.actionBtnSaved]}
+              onPress={handleFavorite}
+              accessibilityRole="button"
+              accessibilityLabel={t('itinerary.saveTrip')}
+              accessibilityState={{ selected: isFavorite }}
+            >
               <Text style={styles.actionIcon}>{isFavorite ? '🔖' : '📌'}</Text>
             </TouchableOpacity>
           )}
@@ -324,8 +333,8 @@ const ItineraryScreen = ({ route, navigation }) => {
           <StatCard
             icon="💰"
             label={t('itinerary.budget')}
-            value={hasBudget ? `${formatBudget(itinerary.budget, i18n.language)} ${currencySymbol || itinerary.currency}` : t('itinerary.budgetNotSpecified')}
-            subvalue={perPerson ? `${currencySymbol || ''}${perPerson}${t('itinerary.perPerson')}` : null}
+            value={hasBudget ? (isNaN(budget) ? itinerary.budget : money(budget)) : t('itinerary.budgetNotSpecified')}
+            subvalue={perPerson ? t('itinerary.perPersonAmount', { amount: perPerson }) : null}
           />
           <StatCard
             icon="👥"
@@ -630,10 +639,6 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
     borderRadius: 22, width: 40, height: 40,
     alignItems: 'center', justifyContent: 'center',
-  },
-  actionBtnDanger: {
-    backgroundColor: 'rgba(220,38,38,0.6)',
-    borderColor: 'rgba(255,100,100,0.3)',
   },
   actionBtnSaved: {
     backgroundColor: 'rgba(26,83,92,0.85)',

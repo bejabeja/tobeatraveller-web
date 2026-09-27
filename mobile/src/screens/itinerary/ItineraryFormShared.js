@@ -8,7 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import {
   aiPaceOptions, currencyOptions, DEFAULT_AI_PACE, GENERATE_TIMEOUT_MESSAGE, generateSmartItinerary,
-  getCurrencySymbol, isPremiumRequiredError, itineraryCategories, placeCategories, formatNumber,
+  getCurrencySymbol, isPremiumRequiredError, itineraryCategories, placeCategories, formatBudgetAmount,
   stepNameHintKey,
 } from '@tobeatraveller/shared';
 import { COLORS, shadow } from '../../utils/styles';
@@ -294,7 +294,7 @@ export const BudgetSection = ({ budget, setBudget, currency, setCurrency, travel
   const perPerson = (() => {
     const b = parseFloat(budget);
     if (!b || travellers <= 1) return null;
-    return formatNumber(b / travellers, i18n.language, { maximumFractionDigits: 2 });
+    return formatBudgetAmount(b / travellers, currency, i18n.language);
   })();
 
   const BUDGET_PRESETS = [
@@ -335,7 +335,7 @@ export const BudgetSection = ({ budget, setBudget, currency, setCurrency, travel
           </TouchableOpacity>
         </Field>
       </View>
-      {perPerson && <Text style={s.perPerson}>{t('itineraryForm.perPerson', { amount: `${symbol || ''}${perPerson}` })}</Text>}
+      {perPerson && <Text style={s.perPerson}>{t('itineraryForm.perPerson', { amount: perPerson })}</Text>}
 
       <Modal visible={showPicker} animationType="slide" transparent onRequestClose={() => setShowPicker(false)}>
         <View style={s.modalBackdrop}>

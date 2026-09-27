@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatAmount, formatCalendarDay, formatDate, formatNumber } from '../../utils/formatLocale.js';
+import { formatAmount, formatBudgetAmount, formatCalendarDay, formatDate, formatNumber } from '../../utils/formatLocale.js';
 
 // Intl separates currency and number with a no-break space.
 const plain = (text) => text.replace(/ | /g, ' ');
@@ -34,5 +34,18 @@ describe('formatCalendarDay', () => {
 describe('formatDate', () => {
     it('names the month in the app language', () => {
         expect(formatDate('2026-05-15T12:00:00Z', 'fr', { year: 'numeric', month: 'long' })).toBe('mai 2026');
+    });
+});
+
+// Regression: a trip's budget read "500 · €250/pers.": the total without its
+// currency and the share per person with it in front, whatever the language.
+describe('formatBudgetAmount()', () => {
+    it('writes a round budget without decimals, the currency where the language puts it', () => {
+        expect(plain(formatBudgetAmount(500, 'EUR', 'es'))).toBe('500 €');
+        expect(formatBudgetAmount(500, 'EUR', 'en')).toBe('€500');
+    });
+
+    it('writes cents as money does, with two digits', () => {
+        expect(plain(formatBudgetAmount(249.5, 'EUR', 'es'))).toBe('249,50 €');
     });
 });
