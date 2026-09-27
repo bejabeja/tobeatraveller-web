@@ -9,7 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
-  getInventory, getShoppingList, isNetworkError, isPremiumRequiredError, isTimeoutError, normalizeSearchText,
+  formatNumber, getInventory, getShoppingList, isNetworkError, isPremiumRequiredError, isTimeoutError, normalizeSearchText,
   selectAuthUser, supplyUnits,
 } from '@tobeatraveller/shared';
 import FeatureLoadState from '../../components/FeatureLoadState';
@@ -26,7 +26,7 @@ import { shadow } from '../../utils/styles';
 const CATEGORY_EMOJI = { food: '🍎', hygiene: '🧴', cleaning: '🧽', vehicle: '🚗', other: '📦' };
 
 const SuppliesScreen = ({ navigation }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const s = (key, vars) => t(`supplies.${key}`, vars);
   const insets = useSafeAreaInsets();
   // The session user rather than the full profile: it is restored even when
@@ -279,7 +279,7 @@ const SuppliesScreen = ({ navigation }) => {
                 <Text style={styles.itemCategory}>{CATEGORY_EMOJI[item.category] ?? '📦'} {categoryLabel(item.category)}</Text>
               </View>
               <Text style={styles.itemName}>{item.name}</Text>
-              <Text style={styles.itemAmount}>{item.amount} {unitLabel(item.unit)}</Text>
+              <Text style={styles.itemAmount}>{formatNumber(item.amount, i18n.language)} {unitLabel(item.unit)}</Text>
               {item.notes ? <Text style={styles.itemNotes} numberOfLines={2}>{item.notes}</Text> : null}
               <PendingSyncBadge item={item} />
             </View>
@@ -321,7 +321,7 @@ const SuppliesScreen = ({ navigation }) => {
               </Text>
               <Text style={styles.promptHint}>
                 {s(quantityPrompt.type === 'purchase' ? 'purchaseHint' : 'consumeHint', {
-                  amount: quantityPrompt.item.amount, unit: unitLabel(quantityPrompt.item.unit),
+                  amount: formatNumber(quantityPrompt.item.amount, i18n.language), unit: unitLabel(quantityPrompt.item.unit),
                 })}
               </Text>
               <Text style={styles.promptLabel}>{s('amountLabel')}</Text>

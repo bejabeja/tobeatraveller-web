@@ -223,7 +223,7 @@ const PassportShareModal = ({
             )}
 
             {/* Only when the link really carries their code: otherwise the promise would be false. */}
-            {referralCode && <Text style={styles.reward}>{t('passport.shareReward')}</Text>}
+            {!!referralCode && <Text style={styles.reward}>{t('passport.shareReward')}</Text>}
             <View style={styles.toggle}>
               <Text style={styles.toggleLabel}>{t('passport.shareIncludeAchievements')}</Text>
               <Switch

@@ -3,7 +3,6 @@ import {
   ActivityIndicator, FlatList, Image, RefreshControl, StyleSheet,
   Text, TextInput, TouchableOpacity, View,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
@@ -15,6 +14,7 @@ import {
 } from '@tobeatraveller/shared';
 import { trackEvent } from '../../utils/analytics';
 import { UserCardSkeleton } from '../../components/Skeleton';
+import TripPhoto from '../../components/TripPhoto';
 import { buildSkeletonItems, FILLER_ITEM_ID, padForTwoColumns } from '../../utils/gridListHelpers';
 import { COLORS, shadow } from '../../utils/styles';
 
@@ -247,12 +247,7 @@ const UserCard = ({ user, me, isAuthenticated, onPress }) => {
       accessibilityLabel={`@${user.username}`}
     >
       <View style={styles.userCardBanner}>
-        {user.lastItinerary?.photoUrl ? (
-          <Image source={{ uri: user.lastItinerary.photoUrl }} style={styles.userCardBannerImg} resizeMode="cover" />
-        ) : (
-          // No trip photo yet: the brand gradient instead of a grey strip.
-          <LinearGradient colors={[COLORS.accent, COLORS.primary]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.userCardBannerImg} />
-        )}
+        <TripPhoto uri={user.lastItinerary?.photoUrl} style={styles.userCardBannerImg} />
       </View>
       <View style={styles.userCardAvatarWrapper}>
         {user.avatarUrl ? (
@@ -274,7 +269,7 @@ const UserCard = ({ user, me, isAuthenticated, onPress }) => {
           )}
         </View>
 
-        {user.location && (
+        {!!user.location && (
           <Text style={styles.userCardLocation} numberOfLines={1}>📍 {user.location}</Text>
         )}
         <Text style={styles.userCardTagline} numberOfLines={2}>{tagline}</Text>
@@ -307,7 +302,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingTop: 16, paddingBottom: 12,
     gap: 10,
   },
-  headerTop: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  headerTop: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 8 },
   backBtn: { padding: 4, marginRight: 4 },
   backText: { fontSize: 20, color: '#374151' },
   headerTitle: { fontSize: 24, fontWeight: '800', color: '#111827' },

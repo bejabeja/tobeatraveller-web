@@ -42,7 +42,7 @@ import { selectMe } from "../../store/user/userInfoSelectors.js";
 import { optimizedCloudinaryUrl } from "../../utils/cloudinaryUrl.js";
 import { getCurrencySymbol } from "../../utils/constants/currencies.js";
 import { buildItineraryJsonLd } from "../../utils/jsonLd.js";
-import { formatBudgetAmount, tripCategoryLabelKey } from "@tobeatraveller/shared";
+import { formatBudgetAmount, formatTripDates, tripCategoryLabelKey } from "@tobeatraveller/shared";
 import { trackEvent } from "../../utils/analytics";
 import { ANALYTICS_EVENTS } from "../../utils/analyticsEvents";
 import "./Itinerary.scss";
@@ -52,7 +52,7 @@ import Error from "../error/Error.jsx";
 const OTHER_CATEGORY_KEY = "tripCategories.other";
 
 const Itinerary = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { id } = useParams();
@@ -303,10 +303,10 @@ const Hero = ({
             )}
             <span>@{userItinerary?.username}</span>
           </Link>
-          {itinerary.tripDates && (
+          {itinerary.startDate && itinerary.endDate && (
             <span className="itinerary__hero-date">
               <MdOutlineCalendarMonth />
-              {itinerary.tripDates}
+              {formatTripDates(itinerary.startDate, itinerary.endDate, i18n.language)}
             </span>
           )}
         </div>

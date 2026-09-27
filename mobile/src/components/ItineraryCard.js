@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { checkIsLiked, toggleLike, selectIsAuthenticated, ANALYTICS_EVENTS } from '@tobeatraveller/shared';
+import { checkIsLiked, formatBudgetAmount, toggleLike, selectIsAuthenticated, ANALYTICS_EVENTS } from '@tobeatraveller/shared';
 import { trackEvent } from '../utils/analytics';
+import TripPhoto from './TripPhoto';
 import { COLORS, shadow } from '../utils/styles';
 
 const ItineraryCard = ({ itinerary, onPress, onRequestLogin, compact = false }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const [isLiked, setIsLiked]       = useState(false);
   const [likesCount, setLikesCount] = useState(itinerary.likesCount ?? 0);
@@ -43,11 +44,7 @@ const ItineraryCard = ({ itinerary, onPress, onRequestLogin, compact = false }) 
       onPress={onPress}
       activeOpacity={0.88}
     >
-      <Image
-        source={{ uri: itinerary.photoUrl || 'https://placehold.co/400x200/1A535C/fff?text=✈' }}
-        style={StyleSheet.absoluteFillObject}
-        resizeMode="cover"
-      />
+      <TripPhoto uri={itinerary.photoUrl} style={StyleSheet.absoluteFillObject} />
       <LinearGradient
         colors={['transparent', 'rgba(0,0,0,0.78)']}
         style={StyleSheet.absoluteFillObject}
@@ -85,7 +82,7 @@ const ItineraryCard = ({ itinerary, onPress, onRequestLogin, compact = false }) 
         <Text style={[styles.title, compact && styles.titleCompact]} numberOfLines={compact ? 1 : 2}>
           {itinerary.title}
         </Text>
-        {itinerary.location?.name && (
+        {!!itinerary.location?.name && (
           <View style={styles.locationRow}>
             <Ionicons name="location-outline" size={compact ? 10 : 11} color="rgba(255,255,255,0.85)" />
             <Text
@@ -107,7 +104,7 @@ const ItineraryCard = ({ itinerary, onPress, onRequestLogin, compact = false }) 
             {parseFloat(itinerary.budget) > 0 && (
               <View style={styles.metaItem}>
                 <Ionicons name="cash-outline" size={10} color="rgba(255,255,255,0.7)" />
-                <Text style={styles.metaText}>{itinerary.budget} {itinerary.currency}</Text>
+                <Text style={styles.metaText}>{formatBudgetAmount(parseFloat(itinerary.budget), itinerary.currency, i18n.language)}</Text>
               </View>
             )}
             {(itinerary.commentsCount ?? 0) > 0 && (

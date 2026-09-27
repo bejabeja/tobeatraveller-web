@@ -164,7 +164,7 @@ const PlanExperienceScreen = ({ navigation }) => {
       if (isPremiumRequiredError(error)) {
         Alert.alert(t('premium.requiredTitle'), t('premium.requiredDesc'));
       } else {
-        Alert.alert('Oops', error.message === GENERATE_TIMEOUT_MESSAGE ? ce('generateTimeout') : (error.message || ce('generateError')));
+        Alert.alert(t('errors.somethingWrong'), error.message === GENERATE_TIMEOUT_MESSAGE ? ce('generateTimeout') : (error.message || ce('generateError')));
       }
     } finally {
       setGenerating(false);
@@ -289,7 +289,7 @@ const PlanExperienceScreen = ({ navigation }) => {
       if (me?.id) { dispatch(setUserInfo(me.id)); dispatch(setUserInfoItineraries()); }
       navigation.navigate('Tabs', { screen: 'Profile' });
     } catch (err) {
-      Alert.alert('Error', err?.message || 'Could not save the experience.');
+      Alert.alert(t('errors.somethingWrong'), err?.message || ce('saveError'));
     } finally {
       setSaving(false);
     }
@@ -425,7 +425,7 @@ const PlanExperienceScreen = ({ navigation }) => {
                   </TouchableOpacity>
                   <View style={ls.stepperMid}>
                     <Text style={ls.stepperNum}>{travelers}</Text>
-                    <Text style={ls.stepperUnit}>{travelers === 1 ? 'person' : 'people'}</Text>
+                    <Text style={ls.stepperUnit}>{travelers === 1 ? ce('person') : ce('people')}</Text>
                   </View>
                   <TouchableOpacity
                     style={[ls.stepperBtn, travelers >= 20 && ls.stepperBtnOff]}
@@ -786,7 +786,7 @@ const EditableStep = ({ step, isLast, onEdit }) => {
         ) : null}
         <View style={etl.editHint}>
           <Ionicons name="pencil-outline" size={11} color="#9CA3AF" />
-          <Text style={etl.editHintText}>Edit</Text>
+          <Text style={etl.editHintText}>{t('common.edit')}</Text>
         </View>
       </View>
     </TouchableOpacity>

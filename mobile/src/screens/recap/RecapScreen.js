@@ -53,7 +53,7 @@ const RecapShareCard = ({ summary, t }) => {
           <View key={tile.key} style={styles.cardTile}>
             <Text style={styles.cardTileValue} numberOfLines={1} adjustsFontSizeToFit>{tile.value}</Text>
             <Text style={styles.cardTileLabel} numberOfLines={1} adjustsFontSizeToFit>{tile.label}</Text>
-            {tile.note && <Text style={styles.cardTileNote}>{tile.note}</Text>}
+            {!!tile.note && <Text style={styles.cardTileNote}>{tile.note}</Text>}
           </View>
         ))}
       </View>

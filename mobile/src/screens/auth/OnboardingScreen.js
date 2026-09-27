@@ -193,7 +193,7 @@ const UserCard = ({ user, isFollowing, onToggle, t }) => {
       {/* Body */}
       <View style={styles.cardBody}>
         <Text style={styles.username} numberOfLines={1}>@{user.username}</Text>
-        {destination && (
+        {!!destination && (
           <Text style={styles.destination} numberOfLines={1}>✈️ {destination}</Text>
         )}
         <Text style={styles.trips}>{t('community.trips', { count: user.totalItineraries ?? 0 })}</Text>

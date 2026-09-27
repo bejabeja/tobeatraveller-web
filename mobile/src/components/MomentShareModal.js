@@ -85,7 +85,7 @@ const MomentShareModal = ({ moment, owner, visible, onClose, onShareWholePasspor
               </View>
             )}
             {/* Only when the link really carries their code: otherwise the promise would be false. */}
-            {referral.code && <Text style={styles.reward}>{t('passport.shareReward')}</Text>}
+            {!!referral.code && <Text style={styles.reward}>{t('passport.shareReward')}</Text>}
 
             <View style={styles.actions}>
               <TouchableOpacity style={styles.cancelBtn} onPress={onClose}>

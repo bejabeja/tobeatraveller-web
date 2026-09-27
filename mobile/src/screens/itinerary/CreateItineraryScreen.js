@@ -228,7 +228,7 @@ const CreateItineraryScreen = ({ navigation }) => {
         </TouchableOpacity>
         <View style={ls.headerCenter}>
           <Text style={ls.headerTitle}>{t('createItinerary.newItinerary')}</Text>
-          {destination?.name && (
+          {!!destination?.name && (
             <Text style={ls.headerSubtitle} numberOfLines={1}>📍 {destination.name}</Text>
           )}
         </View>

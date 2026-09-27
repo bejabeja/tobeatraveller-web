@@ -263,7 +263,7 @@ export const DatesSection = ({ startDate, endDate, onStartChange, onEndChange, e
             style={[s.input, errors?.startDate && s.inputError]}
             value={startDate}
             onChangeText={onStartChange}
-            placeholder="YYYY-MM-DD"
+            placeholder={t('common.datePlaceholder')}
             placeholderTextColor="#9ca3af"
             keyboardType="numbers-and-punctuation"
           />
@@ -274,7 +274,7 @@ export const DatesSection = ({ startDate, endDate, onStartChange, onEndChange, e
             style={[s.input, errors?.endDate && s.inputError]}
             value={endDate}
             onChangeText={onEndChange}
-            placeholder="YYYY-MM-DD"
+            placeholder={t('common.datePlaceholder')}
             placeholderTextColor="#9ca3af"
             keyboardType="numbers-and-punctuation"
           />

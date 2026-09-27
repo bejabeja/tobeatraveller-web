@@ -36,7 +36,8 @@
     "locationPermissionDeniedToast": "Standortzugriff verweigert. Du kannst trotzdem nach einem Ort suchen.",
     "locationErrorToast": "Dein Standort konnte nicht ermittelt werden. Versuch es erneut oder suche nach einem Ort.",
     "offlineBanner": "Du bist offline. Manche Daten sind eventuell nicht aktuell.",
-    "showingCachedData": "Es werden gespeicherte Daten von deinem letzten Besuch angezeigt."
+    "showingCachedData": "Es werden gespeicherte Daten von deinem letzten Besuch angezeigt.",
+    "datePlaceholder": "JJJJ-MM-TT"
   },
   "auth": {
     "welcomeBack": "Willkommen zurück",
@@ -1232,7 +1233,8 @@
       "grounding": "Erdend",
       "indulgent": "Genussvoll"
     },
-    "defaultTitle": "Meine Reise nach {{destination}}"
+    "defaultTitle": "Meine Reise nach {{destination}}",
+    "loadError": "Das Erlebnis konnte nicht geladen werden."
   },
   "legalTerms": {
     "documentTitle": "Nutzungsbedingungen",

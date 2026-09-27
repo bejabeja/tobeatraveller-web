@@ -82,13 +82,11 @@ const ForgotPasswordScreen = ({ navigation }) => {
             </Text>
 
             <View style={styles.fieldWrapper}>
-              <Text style={styles.label}>Email</Text>
+              <Text style={styles.label}>{t('auth.emailLabel')}</Text>
               <TextInput
                 style={[styles.input, error && styles.inputError]}
                 value={email}
                 onChangeText={v => { setEmail(v); setError(''); }}
-                placeholder="your@email.com"
-                placeholderTextColor="#9ca3af"
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}

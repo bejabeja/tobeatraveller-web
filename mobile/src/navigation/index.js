@@ -6,6 +6,7 @@ import { Modal, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react
 import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   MOMENT_KINDS, momentFromShareRequest, PASSPORT_SHARE_MOMENT, refreshUnreadCount, selectAuthUser, selectIsAuthenticated, selectUnreadCount,
 } from '@tobeatraveller/shared';
@@ -73,8 +74,14 @@ const CreateButton = ({ onPress }) => (
   </TouchableOpacity>
 );
 
+// Room for the icon and its label; the phone's bottom inset (the iPhone home
+// indicator) is added on top so neither ends up under it.
+const TAB_BAR_HEIGHT = 64;
+const TAB_BAR_BOTTOM_PADDING = 8;
+
 const TabNavigator = ({ navigation }) => {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   const [showSheet, setShowSheet] = useState(false);
 
   return (
@@ -87,8 +94,8 @@ const TabNavigator = ({ navigation }) => {
           tabBarStyle: {
             borderTopColor: '#e5e7eb',
             borderTopWidth: 1,
-            height: 60,
-            paddingBottom: 8,
+            height: TAB_BAR_HEIGHT + insets.bottom,
+            paddingBottom: TAB_BAR_BOTTOM_PADDING + insets.bottom,
             paddingTop: 6,
             backgroundColor: '#fff',
           },

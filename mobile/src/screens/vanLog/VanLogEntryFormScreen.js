@@ -300,7 +300,7 @@ const VanLogEntryFormScreen = ({ navigation, route }) => {
                 style={styles.input}
                 value={entryDate}
                 onChangeText={v => { setEntryDate(v); setErrors(e => ({ ...e, entryDate: null })); setIsDirty(true); }}
-                placeholder="YYYY-MM-DD"
+                placeholder={t('common.datePlaceholder')}
                 placeholderTextColor="#9ca3af"
                 keyboardType="numbers-and-punctuation"
               />

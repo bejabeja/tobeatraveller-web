@@ -120,7 +120,7 @@ const EditExperienceScreen = ({ navigation, route }) => {
         setLoading(false);
       })
       .catch(() => {
-        Alert.alert('Error', 'Could not load the experience.');
+        Alert.alert(t('errors.somethingWrong'), ce('loadError'));
         navigation.goBack();
       });
   }, [id]);
@@ -197,7 +197,7 @@ const EditExperienceScreen = ({ navigation, route }) => {
       if (isPremiumRequiredError(error)) {
         Alert.alert(t('premium.requiredTitle'), t('premium.requiredDesc'));
       } else {
-        Alert.alert('Oops', error.message === GENERATE_TIMEOUT_MESSAGE ? ce('generateTimeout') : (error.message || ce('generateError')));
+        Alert.alert(t('errors.somethingWrong'), error.message === GENERATE_TIMEOUT_MESSAGE ? ce('generateTimeout') : (error.message || ce('generateError')));
       }
     } finally {
       setGenerating(false);
@@ -253,7 +253,7 @@ const EditExperienceScreen = ({ navigation, route }) => {
       if (me?.id) { dispatch(setUserInfo(me.id)); dispatch(setUserInfoItineraries()); }
       navigation.navigate('Itinerary', { id });
     } catch (err) {
-      Alert.alert('Error', err?.message || ce('saveError'));
+      Alert.alert(t('errors.somethingWrong'), err?.message || ce('saveError'));
     } finally {
       setSaving(false);
     }
@@ -571,7 +571,7 @@ const EditableStep = ({ step, isLast, onEdit }) => {
         {step.personalNote ? <Text style={etl.personalNote} numberOfLines={2}>✍️ {step.personalNote}</Text> : null}
         <View style={etl.editHint}>
           <Ionicons name="pencil-outline" size={11} color="#9CA3AF" />
-          <Text style={etl.editHintText}>Edit</Text>
+          <Text style={etl.editHintText}>{t('common.edit')}</Text>
         </View>
       </View>
     </TouchableOpacity>

@@ -36,7 +36,8 @@
     "locationPermissionDeniedToast": "Permesso di localizzazione negato. Puoi comunque cercare un luogo per nome.",
     "locationErrorToast": "Non è stato possibile ottenere la tua posizione. Riprova o cerca un luogo per nome.",
     "offlineBanner": "Sei offline. Alcuni dati potrebbero non essere aggiornati.",
-    "showingCachedData": "Stai vedendo i dati salvati durante la tua ultima visita."
+    "showingCachedData": "Stai vedendo i dati salvati durante la tua ultima visita.",
+    "datePlaceholder": "AAAA-MM-GG"
   },
   "auth": {
     "welcomeBack": "Che bello rivederti",
@@ -1248,7 +1249,8 @@
       "grounding": "Rigenerante",
       "indulgent": "Di piacere"
     },
-    "defaultTitle": "Il mio viaggio a {{destination}}"
+    "defaultTitle": "Il mio viaggio a {{destination}}",
+    "loadError": "Impossibile caricare l'esperienza."
   },
   "legalTerms": {
     "documentTitle": "Termini di servizio",

@@ -11,7 +11,7 @@ jest.mock('react-redux', () => ({
 }));
 
 jest.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (key) => key }),
+  useTranslation: () => ({ t: (key) => key, i18n: { language: 'es' } }),
 }));
 
 jest.mock('@tobeatraveller/shared', () => {
@@ -21,6 +21,7 @@ jest.mock('@tobeatraveller/shared', () => {
     isNetworkError: parseError.isNetworkError,
     isPremiumRequiredError: parseError.isPremiumRequiredError,
     normalizeSearchText,
+    formatNumber: jest.requireActual('../../../../shared/src/utils/formatLocale.js').formatNumber,
     supplyUnits: ['unit', 'kg', 'l'],
     getShoppingList: jest.fn(),
     getInventory: jest.fn(),
@@ -61,3 +62,14 @@ it('renders the shopping list without crashing when the fetch succeeds', async (
 
   expect(await screen.findByText('Agua')).toBeTruthy();
 });
+
+// Regression: amounts showed as "1.5" whatever the app's language.
+it('writes amounts the way the app language does', async () => {
+  getShoppingList.mockResolvedValue([{ id: 'item-1', name: 'Arroz', unit: 'kg', amount: 1.5, category: 'food' }]);
+  getInventory.mockResolvedValue([]);
+
+  await renderScreen(<SuppliesScreen navigation={{}} />);
+
+  expect(await screen.findByText('1,5 supplies.unit.kg')).toBeTruthy();
+});
+

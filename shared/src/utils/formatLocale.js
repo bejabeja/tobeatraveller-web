@@ -25,9 +25,25 @@ export const formatDate = (date, language, options) => new Date(date).toLocaleDa
 
 // A calendar day stored as "2026-09-10", taken as that day where the user is:
 // read as a date-time it would be midnight UTC, the day before west of UTC.
-export const formatCalendarDay = (day, language, options) => {
-    const [year, month, date] = day.split('-').map(Number);
-    return new Date(year, month - 1, date).toLocaleDateString(language, options);
+const calendarDate = (day) => {
+    const [year, month, date] = day.slice(0, 10).split('-').map(Number);
+    return new Date(year, month - 1, date);
+};
+
+export const formatCalendarDay = (day, language, options) => calendarDate(day).toLocaleDateString(language, options);
+
+const TRIP_DAY = { day: 'numeric', month: 'short' };
+const TRIP_DAY_WITH_YEAR = { ...TRIP_DAY, year: 'numeric' };
+
+// A trip's dates in the viewer's language: "2–4 oct 2026", "Oct 2 – 4, 2026".
+// Where Intl can't format a range (Hermes on some phones), both ends in full.
+export const formatTripDates = (startDay, endDay, language) => {
+    const start = calendarDate(startDay);
+    const end = calendarDate(endDay);
+    const withYear = new Intl.DateTimeFormat(language, TRIP_DAY_WITH_YEAR);
+    if (typeof withYear.formatRange === 'function') return withYear.formatRange(start, end);
+    const startOptions = start.getFullYear() === end.getFullYear() ? TRIP_DAY : TRIP_DAY_WITH_YEAR;
+    return `${start.toLocaleDateString(language, startOptions)} – ${withYear.format(end)}`;
 };
 
 const NO_DECIMALS = { minimumFractionDigits: 0, maximumFractionDigits: 0 };

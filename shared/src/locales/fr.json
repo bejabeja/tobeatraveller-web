@@ -36,7 +36,8 @@
     "locationPermissionDeniedToast": "Accès à la position refusé. Tu peux quand même chercher un lieu par son nom.",
     "locationErrorToast": "Impossible d'obtenir ta position. Réessaie ou cherche un lieu par son nom.",
     "offlineBanner": "Tu es hors ligne. Certaines données peuvent ne pas être à jour.",
-    "showingCachedData": "Affichage des données enregistrées lors de ta dernière visite."
+    "showingCachedData": "Affichage des données enregistrées lors de ta dernière visite.",
+    "datePlaceholder": "AAAA-MM-JJ"
   },
   "auth": {
     "welcomeBack": "Bon retour parmi nous",
@@ -1248,7 +1249,8 @@
       "grounding": "Ressourçant",
       "indulgent": "Gourmand"
     },
-    "defaultTitle": "Mon voyage à {{destination}}"
+    "defaultTitle": "Mon voyage à {{destination}}",
+    "loadError": "Impossible de charger l'expérience."
   },
   "legalTerms": {
     "documentTitle": "Conditions d'utilisation",

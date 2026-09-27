@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { formatAmount, formatBudgetAmount, formatCalendarDay, formatDate, formatNumber } from '../../utils/formatLocale.js';
+import { formatAmount, formatBudgetAmount, formatCalendarDay, formatDate, formatNumber, formatTripDates } from '../../utils/formatLocale.js';
 
 // Intl separates currency and number with a no-break space.
-const plain = (text) => text.replace(/ | /g, ' ');
+const plain = (text) => text.replace(/[\u00a0\u202f\u2009]/g, ' ');
 
 describe('formatAmount', () => {
     it('writes an amount the way the app language does, not the browser', () => {
@@ -49,3 +49,26 @@ describe('formatBudgetAmount()', () => {
         expect(plain(formatBudgetAmount(249.5, 'EUR', 'es'))).toBe('249,50 €');
     });
 });
+
+// Regression: the dates came from the API written in English for everyone.
+describe('formatTripDates', () => {
+    it('writes a trip within one month in the viewer\'s language', () => {
+        expect(plain(formatTripDates('2026-10-02', '2026-10-04', 'es'))).toBe('2–4 oct 2026');
+        expect(plain(formatTripDates('2026-10-02', '2026-10-04', 'en'))).toBe('Oct 2 – 4, 2026');
+    });
+
+    it('names both months when the trip spans two', () => {
+        expect(plain(formatTripDates('2026-09-28', '2026-10-03', 'es'))).toBe('28 sept – 3 oct 2026');
+    });
+
+    it('writes both ends in full where a range can\'t be formatted', () => {
+        const formatRange = Intl.DateTimeFormat.prototype.formatRange;
+        delete Intl.DateTimeFormat.prototype.formatRange;
+        try {
+            expect(plain(formatTripDates('2026-10-02', '2026-10-04', 'es'))).toBe('2 oct – 4 oct 2026');
+        } finally {
+            Intl.DateTimeFormat.prototype.formatRange = formatRange;
+        }
+    });
+});
+

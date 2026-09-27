@@ -110,7 +110,7 @@ const HomeScreen = ({ navigation }) => {
               {t('home.heroGreeting', { username: me?.username ?? authUser?.username })}
             </Text>
           ) : (
-            <View>
+            <View style={styles.heroHeading}>
               <Text style={styles.heroTitle}>{t('home.heroTitle')}</Text>
               <Text style={styles.heroSubtitle}>{t('home.heroSubtitle')}</Text>
             </View>
@@ -202,7 +202,7 @@ const HomeScreen = ({ navigation }) => {
       <>
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <View>
+          <View style={styles.sectionHeading}>
             <Text style={styles.sectionTitle}>{t('home.featuredTrips')}</Text>
             <Text style={styles.sectionSubtitle}>{t('home.featuredSubtitle')}</Text>
           </View>
@@ -235,7 +235,7 @@ const HomeScreen = ({ navigation }) => {
       {(usersLoading || users?.length > 0) && (
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <View>
+          <View style={styles.sectionHeading}>
             <Text style={styles.sectionTitle}>{t('home.peopleYouMayLike')}</Text>
             <Text style={styles.sectionSubtitle}>{t('home.peopleSubtitle')}</Text>
           </View>
@@ -281,7 +281,8 @@ const HomeScreen = ({ navigation }) => {
       </View>
       )}
 
-      </> )} {/* end discover tab */}
+      </>
+      )}
 
       {/* CTA for guests */}
       {!isAuthenticated && (
@@ -314,6 +315,7 @@ const styles = StyleSheet.create({
   heroTitle: { fontSize: 26, fontWeight: '800', color: '#fff', letterSpacing: -0.3 },
   heroSubtitle: { fontSize: 14, color: '#A8D5C7', marginTop: 4 },
   heroGreeting: { flex: 1, marginRight: 12 },
+  heroHeading: { flex: 1 },
 
   bellBtn: { padding: 4, position: 'relative' },
   bellBadge: {
@@ -357,6 +359,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', justifyContent: 'space-between',
     alignItems: 'flex-start', marginBottom: 12,
   },
+  sectionHeading: { flex: 1, marginRight: 12 },
   sectionTitle: { fontSize: 18, fontWeight: '700', color: '#111827' },
   sectionSubtitle: { fontSize: 13, color: '#6b7280', marginTop: 2 },
   seeAll: { fontSize: 13, color: COLORS.primary, fontWeight: '600', paddingTop: 2 },

@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 const MapView = Platform.OS !== 'web' ? require('react-native-maps').default : null;
 const Marker  = Platform.OS !== 'web' ? require('react-native-maps').Marker  : null;
 import { ItineraryDetailSkeleton } from '../../components/Skeleton';
+import TripPhoto from '../../components/TripPhoto';
 import { COLORS, shadow, textShadow } from '../../utils/styles';
 import { getStepConfig } from '../../utils/stepConfig';
 import { WEB_URL } from '../../utils/config';
@@ -21,7 +22,7 @@ import {
   deleteItinerary, getCommentsByItineraryId,
   getItineraryById, getUserById, removeFavorite, toggleLike,
   selectIsAuthenticated, selectMe, MAX_COMMENT_LENGTH, updateCommentsCount, setUserInfo, setUserInfoItineraries,
-  COMMENT_HIGHLIGHT_DURATION_MS, formatBudgetAmount, formatTimeAgo, tripCategoryLabelKey, ANALYTICS_EVENTS,
+  COMMENT_HIGHLIGHT_DURATION_MS, formatBudgetAmount, formatTimeAgo, formatTripDates, tripCategoryLabelKey, ANALYTICS_EVENTS,
 } from '@tobeatraveller/shared';
 import { trackEvent } from '../../utils/analytics';
 
@@ -238,7 +239,7 @@ const ItineraryScreen = ({ route, navigation }) => {
     <ScrollView ref={scrollViewRef} style={styles.container} showsVerticalScrollIndicator={false}>
       {/* Hero */}
       <View style={styles.heroContainer}>
-        <Image source={{ uri: itinerary.photoUrl }} style={styles.heroImage} resizeMode="cover" />
+        <TripPhoto uri={itinerary.photoUrl} style={styles.heroImage} />
         <LinearGradient
           colors={['transparent', 'rgba(0,0,0,0.6)', 'rgba(0,0,0,0.92)']}
           locations={[0.3, 0.65, 1]}
@@ -312,8 +313,8 @@ const ItineraryScreen = ({ route, navigation }) => {
               </View>
               {author?.username && <Text style={styles.authorName}>@{author.username}</Text>}
             </TouchableOpacity>
-            {itinerary.tripDates && (
-              <Text style={styles.heroDate}>📅 {itinerary.tripDates}</Text>
+            {!!itinerary.startDate && !!itinerary.endDate && (
+              <Text style={styles.heroDate}>📅 {formatTripDates(itinerary.startDate, itinerary.endDate, i18n.language)}</Text>
             )}
           </View>
         </View>
@@ -321,7 +322,7 @@ const ItineraryScreen = ({ route, navigation }) => {
 
       <View style={styles.body}>
         {/* About */}
-        {itinerary.description && (
+        {!!itinerary.description && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{t('itinerary.aboutTrip')}</Text>
             <Text style={styles.description}>{itinerary.description}</Text>
@@ -330,7 +331,7 @@ const ItineraryScreen = ({ route, navigation }) => {
 
         {/* Stats */}
         <View style={styles.statsGrid}>
-          {itinerary.location?.name && (
+          {!!itinerary.location?.name && (
             <StatCard icon="📍" label={t('itinerary.destination')} value={itinerary.location.name} />
           )}
           <StatCard

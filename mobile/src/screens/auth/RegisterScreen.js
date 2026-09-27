@@ -117,7 +117,7 @@ const RegisterScreen = ({ navigation }) => {
         {/* Branding: flex:1 fills all space above the sheet */}
         <View style={[styles.branding, { paddingTop: insets.top + 20 }]}>
           <Text style={styles.brandIcon}>🌍</Text>
-          <Text style={styles.brandName}>Tobeatraveller</Text>
+          <Text style={styles.brandName}>ToBeATraveller</Text>
           <Text style={styles.tagline}>{t('auth.taglineRegister')}</Text>
         </View>
 

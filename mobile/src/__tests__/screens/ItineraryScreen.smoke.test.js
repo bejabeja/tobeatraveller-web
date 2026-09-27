@@ -16,6 +16,7 @@ jest.mock('@tobeatraveller/shared', () => ({
   MAX_COMMENT_LENGTH: 500, updateCommentsCount: jest.fn(),
   setUserInfo: (id) => ({ type: 'load-me', id }), setUserInfoItineraries: () => ({ type: 'load-my-trips' }),
   COMMENT_HIGHLIGHT_DURATION_MS: 1000, formatBudgetAmount: () => '500 €', formatTimeAgo: () => '',
+  formatTripDates: jest.requireActual('../../../../shared/src/utils/formatLocale.js').formatTripDates,
   tripCategoryLabelKey: () => 'tripCategories.other', ANALYTICS_EVENTS: {},
   COLORS: jest.requireActual('../../../../shared/src/utils/constants/colors.js').COLORS,
 }));
@@ -31,6 +32,24 @@ const TRIP = {
   id: 't1', userId: 'u1', title: 'Algarve', location: { name: 'Portugal' }, places: [], images: [],
   startDate: '2026-10-02', endDate: '2026-10-04', tripTotalDays: 3, budget: 500, currency: 'EUR', numberOfPeople: 2, category: 'other',
 };
+
+const renderTrip = async (navigation = { navigate: jest.fn(), goBack: jest.fn() }) => {
+  getItineraryById.mockResolvedValue(TRIP);
+  render(
+    <SafeAreaProvider initialMetrics={INITIAL_METRICS}>
+      <ItineraryScreen route={{ params: { id: 't1' } }} navigation={navigation} />
+    </SafeAreaProvider>
+  );
+  await act(async () => {});
+  return navigation;
+};
+
+// Regression: the dates came from the API written in English for everyone.
+it('writes the trip dates in the app language', async () => {
+  await renderTrip();
+
+  expect(screen.getByText(/2.4 oct 2026/)).toBeTruthy();
+});
 
 // Regression: after deleting a trip the list of one's own trips (the home
 // card, the profile) still had it.

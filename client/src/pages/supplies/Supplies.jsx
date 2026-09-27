@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import {
   IoAddOutline, IoBagCheckOutline, IoCartOutline, IoCloseOutline, IoCubeOutline, IoPencilOutline, IoRefreshOutline, IoSearchOutline, IoTrashOutline,
 } from "react-icons/io5";
-import { isPremiumRequiredError, normalizeSearchText, supplyCategories, supplyUnits } from "@tobeatraveller/shared";
+import { formatNumber, isPremiumRequiredError, normalizeSearchText, supplyCategories, supplyUnits } from "@tobeatraveller/shared";
 import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState";
 import Modal from "../../components/modal/Modal";
 import {
@@ -17,7 +17,7 @@ import ToolEmptyState from "../../components/toolPage/ToolEmptyState";
 import "./Supplies.scss";
 
 const Supplies = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const s = (key, vars) => t(`supplies.${key}`, vars);
 
   const [tab, setTab] = useState("shopping");
@@ -228,7 +228,7 @@ const Supplies = () => {
               <div className="supplies__item-main">
                 <span className="supplies__item-category">{categoryLabel(item.category)}</span>
                 <span className="supplies__item-name">{item.name}</span>
-                <span className="supplies__item-amount">{item.amount} {s(`unit.${item.unit}`, item.unit)}</span>
+                <span className="supplies__item-amount">{formatNumber(item.amount, i18n.language)} {s(`unit.${item.unit}`, item.unit)}</span>
                 {item.notes && <p className="supplies__item-notes">{item.notes}</p>}
               </div>
               <div className="supplies__item-actions">
@@ -294,7 +294,7 @@ const Supplies = () => {
             </h2>
             <p className="supplies__purchase-hint">
               {s(quantityPrompt.type === "purchase" ? "purchaseHint" : "consumeHint", {
-                amount: quantityPrompt.item.amount, unit: s(`unit.${quantityPrompt.item.unit}`, quantityPrompt.item.unit),
+                amount: formatNumber(quantityPrompt.item.amount, i18n.language), unit: s(`unit.${quantityPrompt.item.unit}`, quantityPrompt.item.unit),
               })}
             </p>
             <label htmlFor="quantity-prompt-amount" className="input__label">{s("amountLabel")}</label>

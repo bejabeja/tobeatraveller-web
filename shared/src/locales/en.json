@@ -36,7 +36,8 @@
     "locationPermissionDeniedToast": "Location permission denied. You can still search for a place by name.",
     "locationErrorToast": "Couldn't get your location. Try again or search for a place by name.",
     "offlineBanner": "You're offline. Some data may be out of date.",
-    "showingCachedData": "Showing saved data from your last visit."
+    "showingCachedData": "Showing saved data from your last visit.",
+    "datePlaceholder": "YYYY-MM-DD"
   },
   "auth": {
     "welcomeBack": "Welcome back",
@@ -1232,7 +1233,8 @@
       "grounding": "Grounding",
       "indulgent": "Indulgent"
     },
-    "defaultTitle": "My trip to {{destination}}"
+    "defaultTitle": "My trip to {{destination}}",
+    "loadError": "Couldn't load the experience."
   },
   "legalTerms": {
     "documentTitle": "Terms of Service",

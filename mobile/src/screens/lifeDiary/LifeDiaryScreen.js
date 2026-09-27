@@ -9,7 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
-  getLifeDiaryEntries, isNetworkError, isPremiumRequiredError, selectAuthUser,
+  formatCalendarDay, getLifeDiaryEntries, isNetworkError, isPremiumRequiredError, selectAuthUser,
 } from '@tobeatraveller/shared';
 import FeatureLoadState from '../../components/FeatureLoadState';
 import { PendingChangesNotice } from '../../components/PendingChangesNotice';
@@ -20,8 +20,11 @@ import { useOutbox, useRefetchAfterSync } from '../../offline/useOutbox';
 import { cacheGet, cacheSet } from '../../utils/offlineCache';
 import { shadow } from '../../utils/styles';
 
+const ENTRY_DATE_FORMAT = { day: 'numeric', month: 'short', year: 'numeric' };
+
 const LifeDiaryScreen = ({ navigation }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const entryDay = (day) => formatCalendarDay(day, i18n.language, ENTRY_DATE_FORMAT);
   const d = (key, vars) => t(`lifeDiary.${key}`, vars);
   const insets = useSafeAreaInsets();
   // The session user rather than the full profile: it is restored even when
@@ -97,7 +100,7 @@ const LifeDiaryScreen = ({ navigation }) => {
                 collection: COLLECTIONS.LIFE_DIARY,
                 kind: CHANGE_KINDS.DELETE,
                 entityId: entry.id,
-                label: entry.location?.name || entry.entryDate,
+                label: entry.location?.name || entryDay(entry.entryDate),
               });
               if (!queued) fetchEntries();
             } catch (err) {
@@ -172,7 +175,7 @@ const LifeDiaryScreen = ({ navigation }) => {
             <View style={styles.entry}>
               <View style={styles.entryTop}>
                 <View style={styles.entryPlace}>
-                  {item.location?.name && (
+                  {!!item.location?.name && (
                     <View style={styles.entryLocationRow}>
                       <Ionicons name="location-outline" size={13} color="#6b7280" />
                       <Text style={styles.entryLocation}>
@@ -180,7 +183,7 @@ const LifeDiaryScreen = ({ navigation }) => {
                       </Text>
                     </View>
                   )}
-                  <Text style={styles.entryDate}>{item.entryDate}</Text>
+                  <Text style={styles.entryDate}>{entryDay(item.entryDate)}</Text>
                 </View>
                 <View style={styles.entryActions}>
                   <TouchableOpacity
@@ -203,7 +206,7 @@ const LifeDiaryScreen = ({ navigation }) => {
                 </ScrollView>
               )}
 
-              {item.bestMoment && <Text style={styles.excerpt}>"{item.bestMoment}"</Text>}
+              {!!item.bestMoment && <Text style={styles.excerpt}>"{item.bestMoment}"</Text>}
 
               <PendingSyncBadge item={item} />
 
@@ -217,13 +220,13 @@ const LifeDiaryScreen = ({ navigation }) => {
 
               {expanded && (
                 <View style={styles.details}>
-                  {item.lessonLearned && (
+                  {!!item.lessonLearned && (
                     <Text style={styles.detailText}>
                       <Text style={styles.detailLabel}>{d('lessonLearnedLabel')}: </Text>{item.lessonLearned}
                     </Text>
                   )}
-                  {item.memories && <Text style={styles.memories}>{item.memories}</Text>}
-                  {item.peopleMet && (
+                  {!!item.memories && <Text style={styles.memories}>{item.memories}</Text>}
+                  {!!item.peopleMet && (
                     <Text style={styles.detailText}>
                       <Text style={styles.detailLabel}>{d('peopleMetLabel')}: </Text>{item.peopleMet}
                     </Text>

@@ -122,7 +122,7 @@ const ReferralScreen = ({ navigation }) => {
             </TouchableOpacity>
           </View>
           {/* Signing up in the app there's no link to follow: the code is typed in. */}
-          {info?.referralCode && (
+          {!!info?.referralCode && (
             <Text style={styles.codeHint}>
               {t('referral.appCodeHint')} <Text style={styles.codeHintCode}>{info.referralCode}</Text>
             </Text>

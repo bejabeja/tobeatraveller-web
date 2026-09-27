@@ -45,6 +45,7 @@ jest.mock('@tobeatraveller/shared', () => {
     ...recap,
     filterItineraries,
     ...jest.requireActual('../../../../shared/src/utils/profileLinks.js'),
+    ...jest.requireActual('../../../../shared/src/utils/constants/premiumFeatures.js'),
     getMyReferralInfo: jest.fn(),
     checkIsLiked: jest.fn(),
     toggleLike: jest.fn(),
@@ -153,3 +154,37 @@ it("counts all of the owner's trips, and shows a dash until they've loaded", asy
 
   expect(screen.getByText('–')).toBeTruthy();
 });
+
+const renderOwnProfile = async ({ routeName = 'Profile', canGoBack = true, me = ME } = {}) => {
+  selectMe.mockReturnValue(me);
+  getUserPassport.mockResolvedValue({ owner: { id: 'user-1', username: 'jane' }, achievements: [], countries: [] });
+  render(
+    <SafeAreaProvider initialMetrics={INITIAL_METRICS}>
+      <ProfileScreen route={{ name: routeName, params: {} }} navigation={{ navigate: jest.fn(), canGoBack: () => canGoBack, goBack: jest.fn() }} />
+    </SafeAreaProvider>
+  );
+  await act(async () => {});
+};
+
+// Regression: as a tab it showed a back arrow that jumped to another tab.
+it('has no back arrow as the profile tab', async () => {
+  await renderOwnProfile();
+
+  expect(screen.queryByLabelText('common.back')).toBeNull();
+});
+
+it('has a back arrow when opened over another screen', async () => {
+  await renderOwnProfile({ routeName: 'UserProfile' });
+
+  expect(screen.getByLabelText('common.back')).toBeTruthy();
+});
+
+// Regression: Expenses, the shopping list and the diary were marked Premium,
+// when the free plan has them up to 10 entries.
+it('marks as Premium only the tools the free plan does not have', async () => {
+  await renderOwnProfile({ me: { ...ME, isPremium: false } });
+
+  expect(screen.getAllByText('admin.premium')).toHaveLength(1);
+  expect(screen.getByText('🎒 packingChecklist.title')).toBeTruthy();
+});
+

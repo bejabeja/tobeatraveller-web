@@ -13,7 +13,7 @@ import {
   followUser, getItinerariesByUserId, getUserById, getUserFavorites, logoutUser,
   selectAuthUser, selectIsAuthenticated, selectMe, selectMyItineraries,
   PASSPORT_SHARE_SOURCES, RECAP_SOURCES, setUserInfo, unfollowUser, formatDate, selectMyItinerariesLoaded,
-  getMyReferralInfo, profileShareUrl, ANALYTICS_EVENTS,
+  getMyReferralInfo, profileShareUrl, ANALYTICS_EVENTS, PLAN_COMPARISON,
 } from '@tobeatraveller/shared';
 import { trackEvent } from '../../utils/analytics';
 import ItineraryCard from '../../components/ItineraryCard';
@@ -34,6 +34,18 @@ const COMPLETENESS_FIELDS = [
   { key: 'location',  tipKey: 'profile.completenessTipLocation' },
   { key: 'avatarUrl', tipKey: 'profile.completenessTipPhoto' },
 ];
+
+const PROFILE_TAB_ROUTE = 'Profile';
+
+const PROFILE_TOOLS = [
+  { id: 'vanLog', screen: 'VanLog', emoji: '🚐', titleKey: 'vanLog.title' },
+  { id: 'supplies', screen: 'Supplies', emoji: '🛒', titleKey: 'supplies.title' },
+  { id: 'packingChecklist', screen: 'PackingChecklist', emoji: '🎒', titleKey: 'packingChecklist.title' },
+  { id: 'lifeDiary', screen: 'LifeDiary', emoji: '📔', titleKey: 'lifeDiary.title' },
+];
+
+// The free plan has the others up to a limit, so only these get the badge.
+const isPremiumOnly = (toolId) => PLAN_COMPARISON.find((row) => row.id === toolId)?.free === false;
 
 const ProfileScreen = ({ route, navigation }) => {
   const { t, i18n } = useTranslation();
@@ -87,7 +99,8 @@ const ProfileScreen = ({ route, navigation }) => {
   const itineraries = isOwnProfile
     ? filterItineraries(rawItineraries, { visibility: visibility === 'all' ? '' : visibility })
     : rawItineraries;
-  const canGoBack = navigation.canGoBack();
+  // As a tab it's a starting point: going back would only jump to another tab.
+  const canGoBack = route.name !== PROFILE_TAB_ROUTE && navigation.canGoBack();
 
   useEffect(() => { setAvatarError(false); }, [user?.avatarUrl]);
 
@@ -394,42 +407,14 @@ const ProfileScreen = ({ route, navigation }) => {
         {/* Contact + Logout (own profile) */}
         {isOwnProfile && (
           <>
-            <TouchableOpacity
-              style={styles.contactBtn}
-              onPress={() => navigation.navigate('VanLog')}
-            >
-              <View style={styles.premiumToolRow}>
-                <Text style={styles.contactText}>🚐 {t('vanLog.title')}</Text>
-                {!user?.isPremium && <Text style={styles.premiumBadge}>{t('admin.premium')}</Text>}
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.contactBtn}
-              onPress={() => navigation.navigate('Supplies')}
-            >
-              <View style={styles.premiumToolRow}>
-                <Text style={styles.contactText}>🛒 {t('supplies.title')}</Text>
-                {!user?.isPremium && <Text style={styles.premiumBadge}>{t('admin.premium')}</Text>}
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.contactBtn}
-              onPress={() => navigation.navigate('PackingChecklist')}
-            >
-              <View style={styles.premiumToolRow}>
-                <Text style={styles.contactText}>🎒 {t('packingChecklist.title')}</Text>
-                {!user?.isPremium && <Text style={styles.premiumBadge}>{t('admin.premium')}</Text>}
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.contactBtn}
-              onPress={() => navigation.navigate('LifeDiary')}
-            >
-              <View style={styles.premiumToolRow}>
-                <Text style={styles.contactText}>📔 {t('lifeDiary.title')}</Text>
-                {!user?.isPremium && <Text style={styles.premiumBadge}>{t('admin.premium')}</Text>}
-              </View>
-            </TouchableOpacity>
+            {PROFILE_TOOLS.map(({ id, screen, emoji, titleKey }) => (
+              <TouchableOpacity key={id} style={styles.contactBtn} onPress={() => navigation.navigate(screen)}>
+                <View style={styles.premiumToolRow}>
+                  <Text style={styles.contactText}>{emoji} {t(titleKey)}</Text>
+                  {!user?.isPremium && isPremiumOnly(id) && <Text style={styles.premiumBadge}>{t('admin.premium')}</Text>}
+                </View>
+              </TouchableOpacity>
+            ))}
             <TouchableOpacity
               style={styles.contactBtn}
               onPress={() => navigation.navigate('Subscription')}
@@ -468,7 +453,7 @@ const ProfileScreen = ({ route, navigation }) => {
       </View>
 
       {/* About */}
-      {user?.about && (
+      {!!user?.about && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t('profile.about')}</Text>
           <Text style={styles.aboutText}>{user.about}</Text>
@@ -576,7 +561,7 @@ const UnauthView = ({ navigation, insets, t }) => {
         style={[styles.unauthHero, { paddingTop: insets.top + 24 }]}
       >
         <Text style={styles.unauthHeroEmoji}>🌍</Text>
-        <Text style={styles.unauthHeroTitle}>Tobeatraveller</Text>
+        <Text style={styles.unauthHeroTitle}>ToBeATraveller</Text>
         <Text style={styles.unauthHeroTagline}>
           {t('auth.taglineLogin')}
         </Text>
