@@ -276,7 +276,7 @@
 
     &__filters-sticky {
       position: sticky;
-      top: 1rem;
+      top: calc(var(--app-bar-height) + 1rem);
     }
   }
 }

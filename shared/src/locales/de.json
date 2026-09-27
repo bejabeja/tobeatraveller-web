@@ -486,6 +486,7 @@
     "alreadyTaken": "✗ Bereits vergeben"
   },
   "itinerary": {
+    "noMap": "Keine Karte für diese Reise",
     "previousPhoto": "Vorheriges Foto",
     "nextPhoto": "Nächstes Foto",
     "resetMapView": "Ansicht zurücksetzen",

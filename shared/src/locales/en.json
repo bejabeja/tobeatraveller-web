@@ -486,6 +486,7 @@
     "alreadyTaken": "✗ Already taken"
   },
   "itinerary": {
+    "noMap": "No map for this trip",
     "previousPhoto": "Previous photo",
     "nextPhoto": "Next photo",
     "resetMapView": "Reset view",

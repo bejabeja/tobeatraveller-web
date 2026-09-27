@@ -58,7 +58,7 @@ const Map = ({ location, places = [], hoveredPlaceIndex = null, panToRef = null 
   const resetRef = useRef(null);
 
   if (!location?.lat || !location?.lon) {
-    return <p className="map__error">No map available</p>;
+    return <p className="map__error">{t("itinerary.noMap")}</p>;
   }
 
   const center = [parseFloat(location.lat), parseFloat(location.lon)];

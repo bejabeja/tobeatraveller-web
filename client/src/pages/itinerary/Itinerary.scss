@@ -447,13 +447,15 @@
       flex: 1 1 0;
     }
 
+    // As tall as the trip beside it: the sticky part inside needs room to move.
     &__sidebar {
       width: 340px;
+      align-self: stretch;
     }
 
     &__sidebar-sticky {
       position: sticky;
-      top: 1.5rem;
+      top: calc(var(--app-bar-height) + 1.5rem);
     }
 
     &__stats {

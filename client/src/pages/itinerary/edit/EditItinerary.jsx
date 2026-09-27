@@ -269,7 +269,7 @@ const EditItinerary = () => {
         <TravellersForm control={control} errors={errors} />
         <VisibilityForm control={control} />
         {isMyItinerary() && (
-          <div className="form__cta">
+          <div className="form__cta form__cta--sticky">
             <button type="button" className="btn btn--ghost" onClick={handleCancel}>
               {t("common.cancel")}
             </button>

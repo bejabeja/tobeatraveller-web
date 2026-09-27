@@ -769,16 +769,28 @@
   text-align: right;
 }
 
-// Sticky submit bar on mobile
+// Sticky submit bar on mobile, above the bottom nav. Only the save bar: the
+// "add a day" button shares the look but must stay with the list.
 @media (max-width: 767px) {
-  .form__cta {
+  // As specific as the container rule that stacks its blocks in a column.
+  .form__container > div.form__cta--sticky {
     position: sticky;
-    bottom: 0;
+    bottom: var(--app-bottom-bar-height);
     background: var(--background-color, #f8fafc);
     border-top: 1px solid var(--border-color, #e2e8f0);
     padding: 0.75rem 0;
     z-index: 20;
     margin: 0;
+    // Side by side: stacked, the bar took a sixth of the screen.
+    display: flex;
+    flex-direction: row;
+    gap: 0.75rem;
+
+    .btn {
+      flex: 1;
+      width: auto;
+      max-width: none;
+    }
   }
 }
 

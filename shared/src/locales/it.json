@@ -491,6 +491,7 @@
     "alreadyTaken": "✗ Già in uso"
   },
   "itinerary": {
+    "noMap": "Nessuna mappa per questo viaggio",
     "previousPhoto": "Foto precedente",
     "nextPhoto": "Foto successiva",
     "resetMapView": "Ripristina la vista",

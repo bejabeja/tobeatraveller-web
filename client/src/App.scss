@@ -60,9 +60,14 @@
   .App--marketing {
     flex-direction: column;
 
+    // The nav's own box: it's the one that can stick, the nav inside it
+    // has no room to move.
     .side-content {
       width: 100%;
       min-width: 0;
+      position: sticky;
+      top: 0;
+      z-index: 1500;
     }
   }
 }

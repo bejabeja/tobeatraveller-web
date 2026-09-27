@@ -11,7 +11,7 @@ $ep-column-width: 600px;
   // the whole screen framed only the middle of it.
   &__header {
     position: sticky;
-    top: 0;
+    top: var(--app-bar-height);
     z-index: 10;
     display: flex;
     align-items: center;
