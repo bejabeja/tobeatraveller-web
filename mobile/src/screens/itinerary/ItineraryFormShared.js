@@ -9,8 +9,9 @@ import { useTranslation } from 'react-i18next';
 import {
   aiPaceOptions, currencyOptions, dayPlacesPreview, daysToFold, DEFAULT_AI_PACE, GENERATE_TIMEOUT_MESSAGE, generateSmartItinerary,
   getCurrencySymbol, isPremiumRequiredError, itineraryCategories, placeCategories, formatBudgetAmount,
-  stepNameHintKey, ANALYTICS_EVENTS, TRIP_KINDS,
+  localCalendarDay, stepNameHintKey, ANALYTICS_EVENTS, TRIP_KINDS, tripEndDate,
 } from '@tobeatraveller/shared';
+import DateField from '../../components/DateField';
 import { trackEvent } from '../../utils/analytics';
 import { COLORS, shadow } from '../../utils/styles';
 import { getStepConfig } from '../../utils/stepConfig';
@@ -237,11 +238,9 @@ export const DatesSection = ({ startDate, endDate, onStartChange, onEndChange, e
   })();
 
   const applyPreset = (numDays) => {
-    const start = startDate || new Date().toISOString().split('T')[0];
-    const end = new Date(start);
-    end.setDate(end.getDate() + numDays - 1);
+    const start = startDate || localCalendarDay();
     if (!startDate) onStartChange(start);
-    onEndChange(end.toISOString().split('T')[0]);
+    onEndChange(tripEndDate(start, numDays));
   };
 
   return (
@@ -259,24 +258,20 @@ export const DatesSection = ({ startDate, endDate, onStartChange, onEndChange, e
       </View>
       <View style={s.row}>
         <Field label={t('itineraryForm.startDate')} error={errors?.startDate} style={{ flex: 1 }}>
-          <TextInput
+          <DateField
             style={[s.input, errors?.startDate && s.inputError]}
             value={startDate}
-            onChangeText={onStartChange}
-            placeholder={t('common.datePlaceholder')}
-            placeholderTextColor="#9ca3af"
-            keyboardType="numbers-and-punctuation"
+            onChange={onStartChange}
+            accessibilityLabel={t('itineraryForm.startDate')}
           />
         </Field>
         <View style={{ width: 12 }} />
         <Field label={t('itineraryForm.endDate')} error={errors?.endDate} style={{ flex: 1 }}>
-          <TextInput
+          <DateField
             style={[s.input, errors?.endDate && s.inputError]}
             value={endDate}
-            onChangeText={onEndChange}
-            placeholder={t('common.datePlaceholder')}
-            placeholderTextColor="#9ca3af"
-            keyboardType="numbers-and-punctuation"
+            onChange={onEndChange}
+            accessibilityLabel={t('itineraryForm.endDate')}
           />
         </Field>
       </View>

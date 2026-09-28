@@ -1,17 +1,21 @@
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { experienceDates, formatTripDates, isCalendarDay } from '@tobeatraveller/shared';
+import { experienceDates, formatTripDates, isCalendarDay, localCalendarDay } from '@tobeatraveller/shared';
 import { COLORS } from '../utils/styles';
+import DateField from './DateField';
 
 const CALENDAR_DAY_LENGTH = 'YYYY-MM-DD'.length;
 
 // When an experience starts, if its traveller knows: it can be left empty
-// and the experience is planned by its days alone. The date is typed like
-// the trip form's ones.
+// and the experience is planned by its days alone. Only the web build types
+// the day, so only there can it be one that doesn't exist.
 const ExperienceStartDate = ({ value, days, onChange }) => {
   const { t, i18n } = useTranslation();
   const ce = (key) => t(`createExperience.${key}`);
   const valid = isCalendarDay(value);
+  // From today on, unless it's being edited and already started earlier.
+  const today = localCalendarDay();
+  const earliestDay = valid && value < today ? value : today;
   const invalid = value.length >= CALENDAR_DAY_LENGTH && !valid;
 
   return (
@@ -19,14 +23,11 @@ const ExperienceStartDate = ({ value, days, onChange }) => {
       <Text style={styles.label}>{ce('whenLeaving')}</Text>
       <Text style={styles.hint}>{ce('whenLeavingHint')}</Text>
       <View style={styles.row}>
-        <TextInput
+        <DateField
           style={[styles.input, invalid && styles.inputError]}
           value={value}
-          onChangeText={onChange}
-          placeholder={t('common.datePlaceholder')}
-          placeholderTextColor="#9ca3af"
-          keyboardType="numbers-and-punctuation"
-          maxLength={CALENDAR_DAY_LENGTH}
+          onChange={onChange}
+          minimumDate={earliestDay}
           accessibilityLabel={ce('whenLeaving')}
         />
         {value.length > 0 && (

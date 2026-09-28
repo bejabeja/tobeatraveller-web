@@ -37,7 +37,9 @@
     "locationErrorToast": "Couldn't get your location. Try again or search for a place by name.",
     "offlineBanner": "You're offline. Some data may be out of date.",
     "showingCachedData": "Showing saved data from your last visit.",
-    "datePlaceholder": "YYYY-MM-DD"
+    "datePlaceholder": "YYYY-MM-DD",
+    "pickDate": "Pick a date",
+    "done": "Done"
   },
   "auth": {
     "welcomeBack": "Welcome back",
@@ -749,7 +751,13 @@
       "units": "units",
       "packs": "packs",
       "cans": "cans",
-      "other": "other"
+      "other": "other",
+      "units_one": "unit",
+      "units_other": "units",
+      "packs_one": "pack",
+      "packs_other": "packs",
+      "cans_one": "can",
+      "cans_other": "cans"
     }
   },
   "packingChecklist": {

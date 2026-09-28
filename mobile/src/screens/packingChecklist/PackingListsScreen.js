@@ -14,10 +14,10 @@ import {
 } from '@tobeatraveller/shared';
 import FeatureLoadState from '../../components/FeatureLoadState';
 import PackingListFormModal from '../../components/PackingListFormModal';
-import { COLLECTIONS, packingListProgress } from '../../offline/pendingChanges';
-import { useOutbox, useRefetchAfterSync } from '../../offline/useOutbox';
+import { usePackingListProgress } from '../../hooks/usePackingListProgress';
+import { useRefetchAfterSync } from '../../offline/useOutbox';
 import { trackEvent } from '../../utils/analytics';
-import { cacheGet, cacheSet, packingListItemsCacheKey } from '../../utils/offlineCache';
+import { cacheGet, cacheSet, packingListsCacheKey } from '../../utils/offlineCache';
 import { COLORS, shadow } from '../../utils/styles';
 
 // Every list someone keeps (before driving off, a weekend, winter...), each
@@ -29,7 +29,7 @@ const PackingListsScreen = ({ navigation, route }) => {
   // The session user rather than the full profile: it is restored even when
   // the app opens offline, so the cached lists can still be found.
   const authUser = useSelector(selectAuthUser);
-  const cacheKey = `packinglists:${authUser?.id}`;
+  const cacheKey = packingListsCacheKey(authUser?.id);
   const trips = tripsToLinkTo(useSelector(selectMyItineraries), localCalendarDay());
   const tripsLoaded = useSelector(selectMyItinerariesLoaded);
   // Opened from a trip (the home card or its page) to start a list for it.
@@ -44,22 +44,7 @@ const PackingListsScreen = ({ navigation, route }) => {
   const [showingCached, setShowingCached] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [capReached, setCapReached] = useState(false);
-  const [cachedItemsByList, setCachedItemsByList] = useState({});
-  const { changes } = useOutbox();
-  const hasPendingPackingChanges = changes.some(change => change.collection === COLLECTIONS.PACKING_CHECKLIST);
-
-  // What was ticked offline isn't in the counts the server gave yet: with
-  // changes waiting to sync, each list's progress comes from the items last
-  // loaded for it with those changes on top.
-  useEffect(() => {
-    if (!hasPendingPackingChanges || lists.length === 0) return;
-    Promise.all(lists.map(async (list) => [list.id, await cacheGet(packingListItemsCacheKey(authUser?.id, list.id))]))
-      .then(entries => setCachedItemsByList(Object.fromEntries(entries.filter(([, items]) => items))));
-  }, [hasPendingPackingChanges, lists]);
-
-  const progressOf = (list) => (hasPendingPackingChanges && cachedItemsByList[list.id]
-    ? packingListProgress(cachedItemsByList[list.id], changes, list.id)
-    : list);
+  const progressOf = usePackingListProgress(lists);
 
   const fetchLists = async () => {
     try {

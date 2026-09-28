@@ -14,6 +14,7 @@ import {
 import { shadow } from '../../utils/styles';
 import { GEOAPIFY_KEY } from '../../utils/config';
 import { useCurrentLocation } from '../../hooks/useCurrentLocation';
+import DateField from '../../components/DateField';
 import { UseCurrentLocationButton } from '../../components/UseCurrentLocationButton';
 import { newEntityId, runOrQueue } from '../../offline/outbox';
 import { CHANGE_KINDS, COLLECTIONS } from '../../offline/pendingChanges';
@@ -251,13 +252,11 @@ const LifeDiaryEntryFormScreen = ({ navigation, route }) => {
         >
           <View style={styles.card}>
             <Field label={d('dateLabel')} error={errors.entryDate}>
-              <TextInput
+              <DateField
                 style={styles.input}
                 value={entryDate}
-                onChangeText={v => { setEntryDate(v); setErrors(e => ({ ...e, entryDate: null })); setIsDirty(true); }}
-                placeholder={t('common.datePlaceholder')}
-                placeholderTextColor="#9ca3af"
-                keyboardType="numbers-and-punctuation"
+                onChange={v => { setEntryDate(v); setErrors(e => ({ ...e, entryDate: null })); setIsDirty(true); }}
+                accessibilityLabel={d('dateLabel')}
               />
             </Field>
 

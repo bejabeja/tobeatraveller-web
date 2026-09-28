@@ -37,7 +37,9 @@
     "locationErrorToast": "Impossible d'obtenir ta position. Réessaie ou cherche un lieu par son nom.",
     "offlineBanner": "Tu es hors ligne. Certaines données peuvent ne pas être à jour.",
     "showingCachedData": "Affichage des données enregistrées lors de ta dernière visite.",
-    "datePlaceholder": "AAAA-MM-JJ"
+    "datePlaceholder": "AAAA-MM-JJ",
+    "pickDate": "Choisir une date",
+    "done": "OK"
   },
   "auth": {
     "welcomeBack": "Bon retour parmi nous",
@@ -759,7 +761,16 @@
       "units": "unités",
       "packs": "paquets",
       "cans": "boîtes",
-      "other": "autre"
+      "other": "autre",
+      "units_one": "unité",
+      "units_other": "unités",
+      "packs_one": "paquet",
+      "packs_other": "paquets",
+      "cans_one": "boîte",
+      "cans_other": "boîtes",
+      "units_many": "unités",
+      "packs_many": "paquets",
+      "cans_many": "boîtes"
     }
   },
   "packingChecklist": {

@@ -1,11 +1,6 @@
-const getHint = () => {
-    try {
-        const h = localStorage.getItem('user_hint');
-        return h ? JSON.parse(h) : null;
-    } catch { return null; }
-};
+import { getUserHint } from "./userHint";
 
-const hint = getHint();
+const hint = getUserHint();
 
 const initialState = {
     user: hint,

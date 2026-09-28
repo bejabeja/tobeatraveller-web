@@ -37,7 +37,9 @@
     "locationErrorToast": "Dein Standort konnte nicht ermittelt werden. Versuch es erneut oder suche nach einem Ort.",
     "offlineBanner": "Du bist offline. Manche Daten sind eventuell nicht aktuell.",
     "showingCachedData": "Es werden gespeicherte Daten von deinem letzten Besuch angezeigt.",
-    "datePlaceholder": "JJJJ-MM-TT"
+    "datePlaceholder": "JJJJ-MM-TT",
+    "pickDate": "Datum wählen",
+    "done": "Fertig"
   },
   "auth": {
     "welcomeBack": "Willkommen zurück",
@@ -749,7 +751,13 @@
       "units": "Stück",
       "packs": "Packungen",
       "cans": "Dosen",
-      "other": "Sonstige"
+      "other": "Sonstige",
+      "units_one": "Stück",
+      "units_other": "Stück",
+      "packs_one": "Packung",
+      "packs_other": "Packungen",
+      "cans_one": "Dose",
+      "cans_other": "Dosen"
     }
   },
   "packingChecklist": {

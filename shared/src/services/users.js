@@ -3,6 +3,7 @@ import { getApiUrl } from "../utils/apiConfig";
 import { authFetch } from "../utils/authFetch";
 
 const baseUrl = () => `${getApiUrl()}/users`;
+const UNAUTHORIZED = 401;
 
 // authFetch, not fetch: signed in (editing the profile), one's own name in
 // other capitals and one's own earlier names count as available.
@@ -13,14 +14,15 @@ export const checkUsernameAvailable = async (username) => {
     return data.available;
 };
 
-// Resolves to null when there is no valid session, but lets a network
-// failure through: "offline" and "logged out" need different handling
-// (see initAuthUser).
+// Null only when there is no session (401). Any other failure (the server
+// down, rate limited, no connection) throws: "couldn't check" and "logged
+// out" need different handling (see initAuthUser).
 export const getUserForAuth = async () => {
     const response = await authFetch(`${baseUrl()}/me`, {
         headers: { 'Content-Type': 'application/json' },
     });
-    if (!response.ok) return null;
+    if (response.status === UNAUTHORIZED) return null;
+    if (!response.ok) await parseError(response, 'Could not check the session');
     return response.json();
 }
 // authFetch, not fetch: signed in, the API leaves out who they already

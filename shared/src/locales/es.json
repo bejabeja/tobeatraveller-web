@@ -37,7 +37,9 @@
     "locationErrorToast": "No se pudo obtener tu ubicación. Inténtalo de nuevo o busca un lugar por nombre.",
     "offlineBanner": "Estás sin conexión. Algunos datos pueden no estar actualizados.",
     "showingCachedData": "Mostrando datos guardados de tu última visita.",
-    "datePlaceholder": "AAAA-MM-DD"
+    "datePlaceholder": "AAAA-MM-DD",
+    "pickDate": "Elegir fecha",
+    "done": "Listo"
   },
   "auth": {
     "welcomeBack": "Bienvenido de nuevo",
@@ -743,7 +745,16 @@
       "units": "unidades",
       "packs": "paquetes",
       "cans": "latas",
-      "other": "otro"
+      "other": "otro",
+      "units_one": "unidad",
+      "units_other": "unidades",
+      "packs_one": "paquete",
+      "packs_other": "paquetes",
+      "cans_one": "lata",
+      "cans_other": "latas",
+      "units_many": "unidades",
+      "packs_many": "paquetes",
+      "cans_many": "latas"
     }
   },
   "packingChecklist": {

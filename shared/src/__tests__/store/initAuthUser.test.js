@@ -52,6 +52,31 @@ describe('initAuthUser', () => {
         expect(storage.auth_user).toBeUndefined();
     });
 
+    // Regression: a server hiccup (a 503 while the API woke up) answered the
+    // session check with "no session", and the user was sent to log in.
+    it('keeps the last known user when the server fails to answer', async () => {
+        storage.auth_user = JSON.stringify(USER);
+        global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 503, json: async () => ({}) });
+
+        await initAuthUser()(dispatch);
+
+        expect(initAction().payload).toEqual(USER);
+        expect(JSON.parse(storage.auth_user)).toEqual(USER);
+    });
+
+    // Regression: with the access token expired, a refresh that failed on a
+    // bad connection returned the old 401, which read as "logged out".
+    it('keeps the last known user when the session could not be refreshed for lack of connection', async () => {
+        storage.auth_user = JSON.stringify(USER);
+        global.fetch = vi.fn((url) => (url.endsWith('/auth/refresh')
+            ? Promise.reject(new TypeError('Network request failed'))
+            : Promise.resolve({ ok: false, status: 401 })));
+
+        await initAuthUser()(dispatch);
+
+        expect(initAction().payload).toEqual(USER);
+    });
+
     it('refreshes the cached user from the server when online', async () => {
         storage.auth_user = JSON.stringify({ ...USER, isPremium: false });
         global.fetch = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => USER });

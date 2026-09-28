@@ -13,24 +13,32 @@ let refreshPromise = null;
 const DEFAULT_TIMEOUT_MS = 15_000;
 const UPLOAD_TIMEOUT_MS = 120_000;
 
+// The refresh responses that mean the session is really over (the refresh
+// token is missing, expired or revoked); anything else just failed this time.
+const SESSION_OVER_STATUSES = [401, 403];
+
+// Null when the session is over. When the refresh couldn't be done (no
+// connection, a timeout, the server down) it throws instead: answering the
+// request with its 401 would sign the user out over a passing failure.
 const refreshAccessToken = async () => {
   const refreshToken = await tokenStorage.getItem('refresh_token');
   if (!refreshToken) return null;
 
-  try {
-    const response = await fetchWithTimeout(`${getApiUrl()}/auth/refresh`, {
-      method: 'POST',
-      credentials: 'omit',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refreshToken }),
-    });
-    if (!response.ok) return null;
-    const data = await response.json();
-    await tokenStorage.setItem('access_token', data.accessToken);
-    return data.accessToken;
-  } catch {
-    return null;
+  const response = await fetchWithTimeout(`${getApiUrl()}/auth/refresh`, {
+    method: 'POST',
+    credentials: 'omit',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ refreshToken }),
+  });
+  if (SESSION_OVER_STATUSES.includes(response.status)) return null;
+  if (!response.ok) {
+    const error = new Error('Could not refresh the session');
+    error.status = response.status;
+    throw error;
   }
+  const data = await response.json();
+  await tokenStorage.setItem('access_token', data.accessToken);
+  return data.accessToken;
 };
 
 const withAuthHeader = (options, token) => ({

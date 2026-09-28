@@ -27,6 +27,7 @@ module.exports = ({ config }) => ({
     'expo-sharing',
     'expo-localization',
     'expo-notifications',
+    '@react-native-community/datetimepicker',
     ['expo-location', {
       locationWhenInUsePermission: 'Allow To Be a Traveller to use your location to fill in nearby places.',
     }],

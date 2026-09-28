@@ -121,7 +121,7 @@ const EditableStep = ({ step, isLast, onEdit }) => {
         {step.personalNote && (
           <span className="cexp-step__personal-note">✍️ {step.personalNote}</span>
         )}
-        <span className="cexp-step__edit-hint"><IoPencilOutline size={11} /> Edit</span>
+        <span className="cexp-step__edit-hint"><IoPencilOutline size={11} /> {t("common.edit")}</span>
       </button>
     </div>
   );

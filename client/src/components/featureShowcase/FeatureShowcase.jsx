@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { PREMIUM_FEATURES } from "@tobeatraveller/shared";
+import { PREMIUM_FEATURES, toAppLanguage } from "@tobeatraveller/shared";
 import "./FeatureShowcase.scss";
 
 // Only the features with an actual app screen to show; "noAds" has no
@@ -10,19 +10,17 @@ const SHOWCASE_FEATURES = SHOWCASE_FEATURE_IDS
   .map((id) => PREMIUM_FEATURES.find((feature) => feature.id === id))
   .filter(Boolean);
 
-// Drop each feature's phone screenshot (portrait) at
-// public/images/showcase/<id>.png (e.g. images/showcase/vanLog.png) and it
-// replaces this emoji placeholder automatically, no code change needed.
+// Each feature's phone screenshot (390x845) in each of the app's languages,
+// at public/images/showcase/<language>/<id>.webp (e.g. es/vanLog.webp). A
+// missing one shows the feature's emoji instead.
 const FeatureShowcase = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [activeId, setActiveId] = useState(SHOWCASE_FEATURES[0].id);
-  const [imageMissing, setImageMissing] = useState(false);
+  // The one screenshot that failed to load, so another tab or language
+  // still tries its own.
+  const [missingImage, setMissingImage] = useState(null);
   const active = SHOWCASE_FEATURES.find((feature) => feature.id === activeId);
-
-  const handleTabClick = (id) => {
-    setActiveId(id);
-    setImageMissing(false);
-  };
+  const image = `/images/showcase/${toAppLanguage(i18n.language)}/${active.id}.webp`;
 
   return (
     <section className="feature-showcase">
@@ -37,7 +35,7 @@ const FeatureShowcase = () => {
             role="tab"
             aria-selected={id === activeId}
             className={`feature-showcase__tab${id === activeId ? " feature-showcase__tab--active" : ""}`}
-            onClick={() => handleTabClick(id)}
+            onClick={() => setActiveId(id)}
           >
             <span aria-hidden="true">{emoji}</span> {t(titleKey)}
           </button>
@@ -51,15 +49,15 @@ const FeatureShowcase = () => {
       <div className="feature-showcase__frame">
         <div className="feature-showcase__frame-notch" aria-hidden="true" />
         <div className="feature-showcase__frame-body">
-          {imageMissing ? (
+          {missingImage === image ? (
             <div className="feature-showcase__placeholder" aria-hidden="true">{active.emoji}</div>
           ) : (
             <img
-              key={active.id}
-              src={`/images/showcase/${active.id}.png`}
+              key={image}
+              src={image}
               alt={t(active.titleKey)}
               className="feature-showcase__image"
-              onError={() => setImageMissing(true)}
+              onError={() => setMissingImage(image)}
             />
           )}
         </div>

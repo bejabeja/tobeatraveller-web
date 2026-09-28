@@ -2,8 +2,11 @@ jest.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key) => key, i1
 jest.mock('@tobeatraveller/shared', () => ({
   ...jest.requireActual('../../../../shared/src/utils/experienceDates.js'),
   ...jest.requireActual('../../../../shared/src/utils/formatLocale.js'),
+  ...jest.requireActual('../../../../shared/src/utils/nextTrip.js'),
   COLORS: { text: '#111', textSub: '#666', border: '#ddd', accent: '#1A535C' },
 }));
+
+jest.mock('@react-native-community/datetimepicker', () => ({ __esModule: true, default: () => null, DateTimePickerAndroid: { open: jest.fn() } }));
 
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import ExperienceStartDate from '../../components/ExperienceStartDate';

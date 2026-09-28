@@ -52,7 +52,9 @@
   flex: 1;
   min-width: 0;
 
-  h1 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  // Wraps rather than cutting it short: next to the edit button a phone
+  // has room for little more than "Shape your trip".
+  h1 { overflow-wrap: break-word; }
 }
 
 .cexp__hero-edit {

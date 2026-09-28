@@ -2,7 +2,6 @@ import { createNewUser, login, logout } from "../../services/auth";
 import { getUserForAuth } from "../../services/users";
 import { resetUserInfo } from "../user/userInfoActions";
 import { getCachedAuthUser, setCachedAuthUser } from "../../utils/cachedAuthUser";
-import { isNetworkError } from "../../utils/parseError";
 
 export const registerUser = (user, onSuccess) => {
     return async (dispatch) => {
@@ -51,10 +50,11 @@ export const initAuthUser = () => {
             const user = await getUserForAuth();
             await setCachedAuthUser(user);
             dispatch({ type: "@auth/init", payload: user });
-        } catch (error) {
-            // No connection doesn't mean no session: opening the app offline
-            // keeps the last known user, so the offline screens still work.
-            const cachedUser = isNetworkError(error) ? await getCachedAuthUser() : null;
+        } catch {
+            // The session couldn't be checked (no connection, the server
+            // down), which doesn't mean it's over: the last known user is
+            // kept, so the app, and its offline screens, still work.
+            const cachedUser = await getCachedAuthUser();
             dispatch({ type: "@auth/init", payload: cachedUser });
             if (!cachedUser) dispatch(resetUserInfo());
         }

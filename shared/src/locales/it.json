@@ -37,7 +37,9 @@
     "locationErrorToast": "Non è stato possibile ottenere la tua posizione. Riprova o cerca un luogo per nome.",
     "offlineBanner": "Sei offline. Alcuni dati potrebbero non essere aggiornati.",
     "showingCachedData": "Stai vedendo i dati salvati durante la tua ultima visita.",
-    "datePlaceholder": "AAAA-MM-GG"
+    "datePlaceholder": "AAAA-MM-GG",
+    "pickDate": "Scegli una data",
+    "done": "Fatto"
   },
   "auth": {
     "welcomeBack": "Che bello rivederti",
@@ -759,7 +761,16 @@
       "units": "pz",
       "packs": "confezioni",
       "cans": "lattine",
-      "other": "altro"
+      "other": "altro",
+      "units_one": "pz",
+      "units_other": "pz",
+      "packs_one": "confezione",
+      "packs_other": "confezioni",
+      "cans_one": "lattina",
+      "cans_other": "lattine",
+      "units_many": "pz",
+      "packs_many": "confezioni",
+      "cans_many": "lattine"
     }
   },
   "packingChecklist": {

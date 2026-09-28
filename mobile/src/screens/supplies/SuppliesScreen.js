@@ -51,7 +51,8 @@ const SuppliesScreen = ({ navigation }) => {
   );
 
   const categoryLabel = (value) => s(`category.${value}`, value);
-  const unitLabel = (value) => s(`unit.${value}`, value);
+  // Agrees with the amount: "1 unidad", "2 unidades".
+  const unitLabel = (value, amount) => s(`unit.${value}`, { count: amount, defaultValue: value });
 
   const fetchData = async () => {
     try {
@@ -279,7 +280,7 @@ const SuppliesScreen = ({ navigation }) => {
                 <Text style={styles.itemCategory}>{CATEGORY_EMOJI[item.category] ?? '📦'} {categoryLabel(item.category)}</Text>
               </View>
               <Text style={styles.itemName}>{item.name}</Text>
-              <Text style={styles.itemAmount}>{formatNumber(item.amount, i18n.language)} {unitLabel(item.unit)}</Text>
+              <Text style={styles.itemAmount}>{formatNumber(item.amount, i18n.language)} {unitLabel(item.unit, item.amount)}</Text>
               {item.notes ? <Text style={styles.itemNotes} numberOfLines={2}>{item.notes}</Text> : null}
               <PendingSyncBadge item={item} />
             </View>
@@ -321,7 +322,7 @@ const SuppliesScreen = ({ navigation }) => {
               </Text>
               <Text style={styles.promptHint}>
                 {s(quantityPrompt.type === 'purchase' ? 'purchaseHint' : 'consumeHint', {
-                  amount: formatNumber(quantityPrompt.item.amount, i18n.language), unit: unitLabel(quantityPrompt.item.unit),
+                  amount: formatNumber(quantityPrompt.item.amount, i18n.language), unit: unitLabel(quantityPrompt.item.unit, quantityPrompt.item.amount),
                 })}
               </Text>
               <Text style={styles.promptLabel}>{s('amountLabel')}</Text>

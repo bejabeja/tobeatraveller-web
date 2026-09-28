@@ -76,6 +76,26 @@ describe('authFetch', () => {
         expect(global.fetch).toHaveBeenCalledTimes(2);
     });
 
+    // Regression: a refresh that failed on a bad connection answered with the
+    // request's 401, and the apps took that as the session being over.
+    it('reports a refresh that fails for lack of connection as a network error, not a 401', async () => {
+        global.fetch = vi.fn((url) => (url.endsWith('/auth/refresh')
+            ? Promise.reject(new TypeError('Network request failed'))
+            : Promise.resolve({ ok: false, status: 401 })));
+
+        const error = await authFetch('http://api.test/itineraries/1').catch(caught => caught);
+
+        expect(isNetworkError(error)).toBe(true);
+    });
+
+    it('reports a refresh the server failed to answer as an error, not a 401', async () => {
+        global.fetch = vi.fn()
+            .mockResolvedValueOnce({ ok: false, status: 401 }) // original request
+            .mockResolvedValueOnce({ ok: false, status: 503 }); // /auth/refresh
+
+        await expect(authFetch('http://api.test/itineraries/1')).rejects.toMatchObject({ status: 503 });
+    });
+
     it('marks a raw fetch rejection (no network) as isNetworkError instead of letting it bubble unmarked', async () => {
         global.fetch = vi.fn().mockRejectedValue(new TypeError('Network request failed'));
 
@@ -169,15 +189,16 @@ describe('authFetch timeouts', () => {
         controller.abort();
     });
 
-    it('also stops waiting on a token refresh that stalls', async () => {
+    // A refresh that stalls is a failed connection, not an ended session.
+    it('also stops waiting on a token refresh that stalls, as a timeout', async () => {
         global.fetch = vi.fn((url, options) => url.endsWith('/auth/refresh')
             ? stalledFetch()(url, options)
             : Promise.resolve({ ok: false, status: 401 }));
 
-        const request = authFetch('http://api.test/van-logs');
+        const request = authFetch('http://api.test/van-logs').catch(caught => caught);
         await vi.advanceTimersByTimeAsync(15_000);
 
-        await expect(request).resolves.toMatchObject({ status: 401 });
+        expect(isTimeoutError(await request)).toBe(true);
     });
 
     it('does not send the timeout option to fetch', async () => {

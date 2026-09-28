@@ -5,14 +5,7 @@ import { createNewUser, login, logout } from "../../services/auth";
 import { getUserForAuth } from "../../services/users";
 import { resetAnalytics } from "../../utils/analytics";
 import { resetUserInfo } from "../user/userInfoActions";
-
-const saveHint = (user) => {
-    if (user) {
-        localStorage.setItem('user_hint', JSON.stringify({ id: user.id, username: user.username, avatarUrl: user.avatarUrl, role: user.role }));
-    } else {
-        localStorage.removeItem('user_hint');
-    }
-};
+import { getUserHint, saveUserHint } from "./userHint";
 
 export const createUser = (user, onSuccess) => {
     return async (dispatch) => {
@@ -26,7 +19,7 @@ export const createUser = (user, onSuccess) => {
                 }
             );
             const newUser = await login(user);
-            saveHint(newUser);
+            saveUserHint(newUser);
             dispatch({ type: "@auth/login", payload: newUser });
             if (onSuccess) onSuccess();
         } catch (error) {
@@ -46,7 +39,7 @@ export const loginUser = (user, onSuccess) => {
                     error: (err) => translateAuthError(i18n.t.bind(i18n), err.message) || i18n.t("auth.loginFailed"),
                 }
             );
-            saveHint(newUser);
+            saveUserHint(newUser);
             dispatch({ type: "@auth/login", payload: newUser });
             if (onSuccess) onSuccess();
         } catch (error) {
@@ -59,12 +52,12 @@ export const logoutUser = () => {
     return async (dispatch) => {
         try {
             await logout();
-            saveHint(null);
+            saveUserHint(null);
             resetAnalytics();
             dispatch({ type: "@auth/logout" });
             dispatch(resetUserInfo());
             toast.success(i18n.t("auth.sessionClosed"));
-        } catch (error) {
+        } catch {
             toast.error(i18n.t("auth.logoutFailed"));
         }
     };
@@ -74,12 +67,15 @@ export const initAuthUser = () => {
     return async (dispatch) => {
         try {
             const user = await getUserForAuth();
-            saveHint(user);
+            saveUserHint(user);
             dispatch({ type: "@auth/init", payload: user });
         } catch {
-            saveHint(null);
-            dispatch({ type: "@auth/init", payload: null });
-            dispatch(resetUserInfo());
+            // The session couldn't be checked (no connection, the server
+            // down), which doesn't mean it's over: whoever was signed in
+            // stays signed in, as the hint of their last sign-in says.
+            const lastUser = getUserHint();
+            dispatch({ type: "@auth/init", payload: lastUser });
+            if (!lastUser) dispatch(resetUserInfo());
         }
     };
 };
