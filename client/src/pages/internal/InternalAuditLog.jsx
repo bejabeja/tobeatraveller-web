@@ -52,6 +52,14 @@ const AUDIT_DESCRIPTIONS = {
   }),
 };
 
+// "role_updated" -> "Role updated". Keeps the filter dropdown self-maintaining
+// (see the comment above AUDIT_DESCRIPTIONS) instead of needing a parallel
+// short-label translation per action on top of the full sentence it already has.
+const humanizeAction = (key) => {
+  const words = key.replace(/_/g, ' ');
+  return words.charAt(0).toUpperCase() + words.slice(1);
+};
+
 export const describeEntry = (entry, t) => {
   const describe = AUDIT_DESCRIPTIONS[entry.action];
   return describe ? describe(entry, t) : entry.action;
@@ -98,7 +106,7 @@ const InternalAuditLog = () => {
           <select value={action} onChange={(e) => setAction(e.target.value)}>
             <option value="">{t("admin.auditFilterAllActions")}</option>
             {Object.keys(AUDIT_DESCRIPTIONS).map((key) => (
-              <option key={key} value={key}>{key}</option>
+              <option key={key} value={key}>{humanizeAction(key)}</option>
             ))}
           </select>
         </label>

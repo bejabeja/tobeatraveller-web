@@ -81,6 +81,16 @@
     flex-shrink: 0;
   }
 
+  // Fixed widths so the icon buttons that follow line up in a column from
+  // row to row, instead of drifting with each select's own selected text.
+  &__role-select {
+    min-width: 140px;
+  }
+
+  &__tier-select {
+    min-width: 190px;
+  }
+
   &__detail,
   &__notice,
   &__delete {
