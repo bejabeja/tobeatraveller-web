@@ -48,7 +48,7 @@ const renderTrip = async (navigation = { navigate: jest.fn(), goBack: jest.fn() 
 it('writes the trip dates in the app language', async () => {
   await renderTrip();
 
-  expect(screen.getByText(/2.4 oct 2026/)).toBeTruthy();
+  expect(await screen.findByText(/2.4 oct 2026/)).toBeTruthy();
 });
 
 // Regression: after deleting a trip the list of one's own trips (the home
@@ -64,7 +64,7 @@ it('reloads the list of my trips after deleting one', async () => {
   );
   await act(async () => {});
 
-  fireEvent.press(screen.getByLabelText('common.moreOptions'));
+  fireEvent.press(await screen.findByLabelText('common.moreOptions'));
   const deleteChoice = alertSpy.mock.calls.at(-1)[2].find((button) => button.style === 'destructive');
   act(() => deleteChoice.onPress());
   const confirm = alertSpy.mock.calls.at(-1)[2].find((button) => button.style === 'destructive');

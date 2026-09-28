@@ -208,8 +208,8 @@ const PassportShareModal = ({
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose}>
-        <TouchableOpacity style={styles.panel} activeOpacity={1} onPress={() => {}}>
+      <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose} accessible={false}>
+        <TouchableOpacity style={styles.panel} activeOpacity={1} onPress={() => {}} accessible={false}>
           {/* Scrolls rather than getting cut off on a small phone. */}
           <ScrollView contentContainerStyle={styles.panelContent} bounces={false}>
             <Text style={styles.title}>{t('passport.shareTitle')}</Text>

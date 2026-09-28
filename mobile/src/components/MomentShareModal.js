@@ -68,8 +68,8 @@ const MomentShareModal = ({ moment, owner, visible, onClose, onShareWholePasspor
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose}>
-        <TouchableOpacity style={styles.panel} activeOpacity={1} onPress={() => {}}>
+      <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose} accessible={false}>
+        <TouchableOpacity style={styles.panel} activeOpacity={1} onPress={() => {}} accessible={false}>
           <ScrollView contentContainerStyle={styles.panelContent} bounces={false}>
             <Text style={styles.title}>{t('passport.momentShareTitle')}</Text>
             <StoryCardPreview cardRef={cardRef} previewWidth={PREVIEW_WIDTH}>

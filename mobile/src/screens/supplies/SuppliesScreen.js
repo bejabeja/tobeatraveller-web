@@ -313,9 +313,9 @@ const SuppliesScreen = ({ navigation }) => {
       />
 
       <Modal visible={!!quantityPrompt} transparent animationType="fade" onRequestClose={() => setQuantityPrompt(null)}>
-        <TouchableOpacity style={styles.promptBackdrop} activeOpacity={1} onPress={() => setQuantityPrompt(null)}>
+        <TouchableOpacity style={styles.promptBackdrop} activeOpacity={1} onPress={() => setQuantityPrompt(null)} accessible={false}>
           {quantityPrompt && (
-            <TouchableOpacity style={styles.promptPanel} activeOpacity={1} onPress={() => {}}>
+            <TouchableOpacity style={styles.promptPanel} activeOpacity={1} onPress={() => {}} accessible={false}>
               <Text style={styles.promptTitle}>
                 {s(quantityPrompt.type === 'purchase' ? 'purchaseTitle' : 'consumeTitle', { name: quantityPrompt.item.name })}
               </Text>

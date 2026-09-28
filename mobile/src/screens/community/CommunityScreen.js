@@ -12,6 +12,7 @@ import {
   selectAllUsersLoadingMore, selectAllUsersTotalPages,
   selectIsAuthenticated, selectMe, selectAuthUser, setUserInfo, ANALYTICS_EVENTS,
 } from '@tobeatraveller/shared';
+import { cardInnerActions } from '../../utils/accessibility';
 import { trackEvent } from '../../utils/analytics';
 import { UserCardSkeleton } from '../../components/Skeleton';
 import TripPhoto from '../../components/TripPhoto';
@@ -245,6 +246,9 @@ const UserCard = ({ user, me, isAuthenticated, onPress }) => {
       activeOpacity={0.85}
       accessibilityRole="button"
       accessibilityLabel={`@${user.username}`}
+      {...cardInnerActions([!isMe && {
+        name: 'follow', label: following ? t('followers.unfollow') : t('community.follow'), onPress: isAuthenticated ? handleFollow : onPress,
+      }])}
     >
       <View style={styles.userCardBanner}>
         <TripPhoto uri={user.lastItinerary?.photoUrl} style={styles.userCardBannerImg} />

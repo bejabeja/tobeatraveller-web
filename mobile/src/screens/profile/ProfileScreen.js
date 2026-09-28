@@ -15,6 +15,7 @@ import {
   PASSPORT_SHARE_SOURCES, RECAP_SOURCES, setUserInfo, unfollowUser, formatDate, selectMyItinerariesLoaded,
   getMyReferralInfo, profileShareUrl, ANALYTICS_EVENTS, PLAN_COMPARISON,
 } from '@tobeatraveller/shared';
+import { cardInnerActions } from '../../utils/accessibility';
 import { trackEvent } from '../../utils/analytics';
 import ItineraryCard from '../../components/ItineraryCard';
 import { ItineraryCardSkeleton, ProfileSkeleton } from '../../components/Skeleton';
@@ -338,6 +339,7 @@ const ProfileScreen = ({ route, navigation }) => {
               onPress={() => navigation.navigate('Passport', { userId: passportUserId })}
               accessibilityRole="button"
               accessibilityLabel={t('passport.view')}
+              {...cardInnerActions([isOwnProfile && { name: 'share', label: t('passport.share'), onPress: () => setIsPassportShareOpen(true) }])}
             >
               <Text style={styles.passportCardIcon}>🛂</Text>
               <View style={styles.passportCardBody}>

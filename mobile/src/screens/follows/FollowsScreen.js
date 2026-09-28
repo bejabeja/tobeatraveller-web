@@ -10,6 +10,7 @@ import {
   followUser, getAllFollowers, getAllFollowing, unfollowUser,
   selectIsAuthenticated, selectMe, selectAuthUser, setUserInfo, ANALYTICS_EVENTS,
 } from '@tobeatraveller/shared';
+import { cardInnerActions } from '../../utils/accessibility';
 import { trackEvent } from '../../utils/analytics';
 import { UserRowSkeleton } from '../../components/Skeleton';
 import { shadow } from '../../utils/styles';
@@ -118,7 +119,15 @@ const UserRow = ({ user, me, dispatch, onPress }) => {
   };
 
   return (
-    <TouchableOpacity style={styles.row} onPress={onPress} activeOpacity={0.8}>
+    <TouchableOpacity
+      style={styles.row}
+      onPress={onPress}
+      activeOpacity={0.8}
+      accessibilityRole="button"
+      {...cardInnerActions([!isMe && {
+        name: 'follow', label: following ? t('followers.unfollow') : t('followers.follow'), onPress: handleFollow,
+      }])}
+    >
       {/* Avatar */}
       {user.avatarUrl ? (
         <Image source={{ uri: user.avatarUrl }} style={styles.avatar} />

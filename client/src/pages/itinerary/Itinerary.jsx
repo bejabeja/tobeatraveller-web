@@ -52,7 +52,7 @@ import Error from "../error/Error.jsx";
 const OTHER_CATEGORY_KEY = "tripCategories.other";
 
 const Itinerary = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { id } = useParams();
@@ -218,6 +218,7 @@ const Hero = ({
   setIsModalOpen,
   t,
 }) => {
+  const { i18n } = useTranslation();
   const { isLiked, likesCount, handleToggleLike } = useLike(itinerary.id, itinerary.likesCount);
 
   const handleShare = async () => {

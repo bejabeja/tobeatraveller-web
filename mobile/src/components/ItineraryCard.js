@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { checkIsLiked, formatBudgetAmount, toggleLike, selectIsAuthenticated, ANALYTICS_EVENTS } from '@tobeatraveller/shared';
+import { cardInnerActions } from '../utils/accessibility';
 import { trackEvent } from '../utils/analytics';
 import TripPhoto from './TripPhoto';
 import { COLORS, shadow } from '../utils/styles';
@@ -43,6 +44,8 @@ const ItineraryCard = ({ itinerary, onPress, onRequestLogin, compact = false }) 
       style={[styles.card, compact && styles.cardCompact]}
       onPress={onPress}
       activeOpacity={0.88}
+      accessibilityRole="button"
+      {...cardInnerActions([{ name: 'like', label: t('itinerary.like'), onPress: handleLike }])}
     >
       <TripPhoto uri={itinerary.photoUrl} style={StyleSheet.absoluteFillObject} />
       <LinearGradient
