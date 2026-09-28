@@ -40,7 +40,7 @@ export class PushNotificationsService {
         return deletedCount;
     }
 
-    async sendNotificationPush({ userId, actorId, type, itineraryId, commentId, badgeId, countryCode }) {
+    async sendNotificationPush({ userId, actorId, type, itineraryId, commentId, badgeId, countryCode, remainingCount }) {
         const devices = await this.pushTokensRepository.findByUserId(userId);
         if (devices.length === 0) return;
 
@@ -50,7 +50,7 @@ export class PushNotificationsService {
         ]);
         if (!actor || (itineraryId && !itinerary)) return;
 
-        const context = { actorUsername: actor.username, itineraryTitle: itinerary?.title, countryCode };
+        const context = { actorUsername: actor.username, itineraryTitle: itinerary?.title, countryCode, remainingCount };
         // badgeId / countryCode let a tap open that very badge or country, ready to share.
         const data = {
             type, actorId,

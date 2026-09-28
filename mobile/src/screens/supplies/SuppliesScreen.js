@@ -20,7 +20,7 @@ import {
   applyPendingSupplyChanges, CHANGE_KINDS, COLLECTIONS, isDerivedItem,
 } from '../../offline/pendingChanges';
 import { useOutbox, useRefetchAfterSync } from '../../offline/useOutbox';
-import { cacheGet, cacheSet } from '../../utils/offlineCache';
+import { cacheGet, cacheSet, suppliesCacheKey } from '../../utils/offlineCache';
 import { shadow } from '../../utils/styles';
 
 const CATEGORY_EMOJI = { food: '🍎', hygiene: '🧴', cleaning: '🧽', vehicle: '🚗', other: '📦' };
@@ -32,7 +32,7 @@ const SuppliesScreen = ({ navigation }) => {
   // The session user rather than the full profile: it is restored even when
   // the app opens offline, so the cached data can still be found.
   const authUser = useSelector(selectAuthUser);
-  const cacheKey = `supplies:${authUser?.id}`;
+  const cacheKey = suppliesCacheKey(authUser?.id);
 
   const [tab, setTab] = useState('shopping');
   const [search, setSearch] = useState('');

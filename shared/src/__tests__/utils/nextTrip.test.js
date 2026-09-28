@@ -21,10 +21,14 @@ describe('findNextTrip', () => {
         expect(findNextTrip([trip('b', '2026-09-20', '2026-09-27')], '2026-09-27')).toMatchObject({ isOngoing: true, dayOfTrip: 8 });
     });
 
-    // Regression: an experience is dated from the day it was saved, so one
-    // made today showed as a trip under way.
-    it('leaves out experiences, whose dates are not when the trip happens', () => {
-        const experience = { ...trip('lisbon', '2026-09-27', '2026-09-30'), source: 'experience' };
+    it('counts an experience with a date like any other trip', () => {
+        const experience = { ...trip('lisbon', '2026-10-01', '2026-10-04'), source: 'experience' };
+
+        expect(findNextTrip([experience], '2026-09-27')).toMatchObject({ itinerary: experience, daysUntil: 4 });
+    });
+
+    it('leaves out an experience planned without a date', () => {
+        const experience = { id: 'lisbon', source: 'experience', startDate: null, endDate: null, tripTotalDays: 4 };
 
         expect(findNextTrip([experience], '2026-09-27')).toBeNull();
     });

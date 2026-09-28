@@ -39,6 +39,8 @@ export const isShoppingListCapReachedError = (error) => error?.status === 403 &&
 
 export const isInventoryCapReachedError = (error) => error?.status === 403 && error?.field === 'inventoryCap';
 
+export const isPackingListCapReachedError = (error) => error?.status === 403 && error?.field === 'packingListCap';
+
 // Marked by authFetch when the raw fetch() call itself rejects (no network),
 // as opposed to a resolved Response with a non-2xx status. The message match
 // is a fallback for call sites using plain fetch() instead of authFetch.

@@ -26,7 +26,7 @@ import {
 } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { aiPaceOptions, DEFAULT_AI_PACE, isPremiumRequiredError, stepNameHintKey } from "@tobeatraveller/shared";
+import { aiPaceOptions, DEFAULT_AI_PACE, experienceDates, isPremiumRequiredError, stepNameHintKey } from "@tobeatraveller/shared";
 import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState";
 import Modal from "../../components/modal/Modal";
 import ImageUpload from "../itinerary/sectionsForm/ImageUpload";
@@ -42,6 +42,7 @@ import UseCurrentLocationButton from "../../components/form/UseCurrentLocationBu
 import { NEW_ITINERARY_DEFAULT_VISIBILITY } from "../../utils/schemasValidation";
 import { trackEvent } from "../../utils/analytics";
 import { ANALYTICS_EVENTS, TRIP_KINDS, tripCreatedProperties } from "../../utils/analyticsEvents";
+import ExperienceStartDate from "./ExperienceStartDate";
 import "./CreateExperience.scss";
 
 // ─── Step config (icons + colors) ────────────────────────────────────────────
@@ -142,6 +143,7 @@ const CreateExperience = () => {
   const [destResults, setDestResults]   = useState([]);
   const [destSearching, setDestSearching] = useState(false);
   const [days, setDays]                 = useState(7);
+  const [startDate, setStartDate]       = useState(null);
   const [category, setCategory]         = useState("adventure");
   const [travelers, setTravelers]       = useState(1);
   const [pace, setPace]                 = useState(DEFAULT_AI_PACE);
@@ -315,15 +317,12 @@ const CreateExperience = () => {
   const handleSave = async () => {
     if (!title.trim()) { toast.error(ce("addTitleError")); return; }
     setSaving(true);
-    const today  = new Date().toISOString().split("T")[0];
-    const endObj = new Date(today);
-    endObj.setDate(endObj.getDate() + days - 1);
     try {
       const body = {
         userId: userMe?.id, title: title.trim(),
         description: ce("autoDescription", { count: days, destination: destination.name }),
         location: { name: destination.name, label: destination.label ?? destination.name, lat: destination.coordinates?.lat ?? 0, lon: destination.coordinates?.lon ?? 0 },
-        startDate: today, endDate: endObj.toISOString().split("T")[0],
+        ...experienceDates(startDate, days),
         budget: 0, currency: "EUR", numberOfPeople: travelers, category, isPublic, source: "experience",
         places: steps.filter(s => s.name.trim()).map((s, i) => ({
           description: s.personalNote?.trim()
@@ -339,7 +338,7 @@ const CreateExperience = () => {
       formData.append("itinerary", JSON.stringify(body));
       await createItinerary(formData);
       trackEvent(ANALYTICS_EVENTS.TRIP_CREATED, tripCreatedProperties({
-        kind: TRIP_KINDS.EXPERIENCE, isPublic, places: body.places.length, days,
+        kind: TRIP_KINDS.EXPERIENCE, isPublic, places: body.places.length, days, hasDate: Boolean(body.startDate),
       }));
       toast.success(ce("savedSuccess"));
       dispatch(setUserInfo(userMe.id));
@@ -463,6 +462,8 @@ const CreateExperience = () => {
               </div>
             </div>
           </div>
+
+          <ExperienceStartDate startDate={startDate} days={days} onChange={setStartDate} />
 
           {/* Category: visual grid */}
           <div className="cexp__section">

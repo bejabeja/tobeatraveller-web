@@ -1,7 +1,7 @@
 import {
   applyPendingChanges, applyPendingSupplyChanges, CHANGE_KINDS, CHANGE_STATUS, COLLECTIONS,
   discardChangeFromQueue, enqueueChange, filterVanLogEntries, isDerivedItem, nextChangeToSync,
-  remapEntityId, sortByEntryDateDesc,
+  remapEntityId, sortByEntryDateDesc, packingListProgress,
 } from '../../offline/pendingChanges';
 
 let changeCounter = 0;
@@ -195,13 +195,17 @@ describe('applyPendingChanges', () => {
     expect(entry.keepImageIds).toBeUndefined();
   });
 
-  it('unchecks every item for a pending "new trip"', () => {
-    const items = [{ id: 'a', checked: true }, { id: 'b', checked: false }];
-    const reset = change({ collection: COLLECTIONS.PACKING_CHECKLIST, kind: CHANGE_KINDS.RESET_TRIP, entityId: null });
+  it('unticks the items of the list a pending "start again" is for, and only those', () => {
+    const items = [
+      { id: 'a', listId: 'departure', checked: true },
+      { id: 'b', listId: 'departure', checked: false },
+      { id: 'c', listId: 'winter', checked: true },
+    ];
+    const restart = change({ collection: COLLECTIONS.PACKING_CHECKLIST, kind: CHANGE_KINDS.RESTART_LIST, entityId: 'departure' });
 
-    const result = applyPendingChanges(items, [reset], COLLECTIONS.PACKING_CHECKLIST);
+    const result = applyPendingChanges(items, [restart], COLLECTIONS.PACKING_CHECKLIST);
 
-    expect(result.map(item => item.checked)).toEqual([false, false]);
+    expect(result.map(item => item.checked)).toEqual([false, false, true]);
   });
 });
 
@@ -321,3 +325,16 @@ describe('filterVanLogEntries', () => {
     expect(filterVanLogEntries(entries, { category: '', country: '', currency: '', dateFrom: '', dateTo: '' })).toHaveLength(3);
   });
 });
+
+describe('packingListProgress', () => {
+  it('counts a list\'s things and what\'s ticked, with what is waiting to sync on top', () => {
+    const items = [{ id: 'a', listId: 'l1', checked: false }, { id: 'b', listId: 'l1', checked: false }, { id: 'c', listId: 'l2', checked: true }];
+    const pending = [
+      change({ collection: COLLECTIONS.PACKING_CHECKLIST, kind: CHANGE_KINDS.UPDATE, entityId: 'a', payload: { checked: true } }),
+      change({ collection: COLLECTIONS.PACKING_CHECKLIST, kind: CHANGE_KINDS.CREATE, entityId: 'd', payload: { id: 'd', listId: 'l1', name: 'Botas', category: 'clothing' } }),
+    ];
+
+    expect(packingListProgress(items, pending, 'l1')).toEqual({ itemCount: 3, checkedCount: 1 });
+  });
+});
+

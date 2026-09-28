@@ -12,6 +12,7 @@ import { ItineraryRepository } from "../repositories/itineraryRepository.js";
 import { NotificationsRepository } from "../repositories/notificationsRepository.js";
 import { LifeDiaryRepository } from "../repositories/lifeDiaryRepository.js";
 import { PackingChecklistRepository } from "../repositories/packingChecklistRepository.js";
+import { PackingListRepository } from "../repositories/packingListRepository.js";
 import { ShoppingListRepository } from "../repositories/shoppingListRepository.js";
 import { SubscriptionRepository } from "../repositories/subscriptionRepository.js";
 import { PushTokensRepository } from "../repositories/pushTokensRepository.js";
@@ -37,6 +38,7 @@ export const createUsersRouter = () => {
     const inventoryRepository = new InventoryRepository();
     const shoppingListRepository = new ShoppingListRepository();
     const packingChecklistRepository = new PackingChecklistRepository();
+    const packingListRepository = new PackingListRepository();
     const subscriptionRepository = new SubscriptionRepository();
     const emailService = new EmailService();
     const badgeRepository = new BadgeRepository();
@@ -51,7 +53,7 @@ export const createUsersRouter = () => {
         lifeDiaryRepository, auditLogService, vanLogRepository,
         inventoryRepository, shoppingListRepository, packingChecklistRepository,
         subscriptionRepository, new ReferralService(new ReferralRepository(), userRepository, auditLogService),
-        pushTokensRepository, badgeRepository
+        pushTokensRepository, badgeRepository, packingListRepository
     );
     const cloudinaryService = new CloudinaryService();
     const userController = new UserController(userService, cloudinaryService);

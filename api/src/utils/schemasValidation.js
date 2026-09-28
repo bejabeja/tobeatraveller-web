@@ -5,6 +5,7 @@ import { PACKING_CATEGORIES } from "./packingConstants.js";
 import { ROLES } from "./roles.js";
 import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from "./languages.js";
 import { ISO_COUNTRY_CODES } from "./countryCodes.js";
+import { EXPERIENCE_MAX_DAYS, ITINERARY_SOURCES } from "./itinerarySources.js";
 
 // Messages a person can run into are the translation keys the apps share
 // (`validation.*` in shared/src/locales), shown in their language; checks
@@ -163,8 +164,10 @@ const itineraryDataFields = {
     title: z.string().min(2, "validation.titleRequired").max(255, "validation.tooLong"),
     description: z.string().max(500, "validation.tooLong").nullable().optional(),
     location: itineraryLocationSchema,
-    startDate: z.string().min(1, "validation.dateRequired"),
-    endDate: z.string().min(1, "validation.dateRequired"),
+    startDate: z.string().min(1, "validation.dateRequired").nullable().optional(),
+    endDate: z.string().min(1, "validation.dateRequired").nullable().optional(),
+    // How long a trip without dates lasts; a dated one's comes from its dates.
+    totalDays: z.number().int().min(1).max(EXPERIENCE_MAX_DAYS).optional(),
     numberOfPeople: z.number().int().positive("validation.travellersMin"),
     budget: itineraryBudgetSchema,
     currency: z.string().max(3, "validation.currencyInvalid").nullable().optional(),
@@ -173,19 +176,30 @@ const itineraryDataFields = {
     places: z.array(itineraryPlaceSchema).optional().default([]),
 };
 
-const validateItineraryDateRange = (data) => data.endDate >= data.startDate;
-const itineraryDateRangeIssue = { message: "validation.endBeforeStart", path: ["endDate"] };
+// Either both dates, the end not before the start, or none and how many days
+// it lasts (only an experience may go without dates; the service checks
+// that on update, where the source isn't sent).
+const validateItineraryDates = (data, context) => {
+    if (data.startDate && data.endDate) {
+        if (data.endDate < data.startDate) context.addIssue({ code: z.ZodIssueCode.custom, message: "validation.endBeforeStart", path: ["endDate"] });
+        return;
+    }
+    if (data.startDate || data.endDate || !data.totalDays) {
+        context.addIssue({ code: z.ZodIssueCode.custom, message: "validation.dateRequired", path: [data.startDate ? "endDate" : "startDate"] });
+    }
+};
 
 export const createItineraryDataSchema = z.object({
     ...itineraryDataFields,
-    source: z.enum(["itinerary", "experience"]).optional(),
+    source: z.enum([ITINERARY_SOURCES.ITINERARY, ITINERARY_SOURCES.EXPERIENCE]).optional(),
 })
-    .refine(validateItineraryDateRange, itineraryDateRangeIssue);
+    .superRefine(validateItineraryDates)
+    .refine((data) => data.startDate || data.source === ITINERARY_SOURCES.EXPERIENCE, { message: "validation.dateRequired", path: ["startDate"] });
 
 export const updateItineraryDataSchema = z.object({
     ...itineraryDataFields,
     keepImageIds: z.array(z.string()).optional(),
-}).refine(validateItineraryDateRange, itineraryDateRangeIssue);
+}).superRefine(validateItineraryDates);
 
 // Keep in sync with shared/src/utils/schemasValidation.js's contactSchema and
 // shared/src/utils/constants/constants.js#MAX_COMMENT_LENGTH (api/ has no dependency on
@@ -295,10 +309,15 @@ export const consumeAmountSchema = z.object({
     consumedAmount: z.number().positive("validation.amountPositive").optional(),
 });
 
+// How many of one thing a list can ask for; more is a typo, not a plan.
+const PACKING_ITEM_MAX_QUANTITY = 99;
+
 export const packingItemSchema = z.object({
     category: z.enum(PACKING_CATEGORIES, { errorMap: () => ({ message: "validation.chooseCategory" }) }),
-    name: z.string().min(1, "validation.nameRequired").max(255, "validation.tooLong"),
+    name: z.string().trim().min(1, "validation.nameRequired").max(255, "validation.tooLong"),
+    quantity: z.number().int().min(1, "validation.amountPositive").max(PACKING_ITEM_MAX_QUANTITY, "validation.tooLong").nullable().optional(),
     checked: z.boolean().optional(),
+    position: z.number().int().min(1).optional(),
 });
 
 export const createPackingItemSchema = packingItemSchema.extend(clientGeneratedIdField);
@@ -318,6 +337,7 @@ export const updateNotificationPreferencesSchema = z.object({
     notifyOnLike: z.boolean().optional(),
     notifyOnFollow: z.boolean().optional(),
     notifyOnFriendStamps: z.boolean().optional(),
+    notifyOnTripReminders: z.boolean().optional(),
     pushEnabled: z.boolean().optional(),
 }).refine((data) => Object.keys(data).length > 0, {
     message: "At least one preference must be provided",
@@ -333,9 +353,26 @@ export const unregisterPushTokenSchema = z.object({
     token: z.string().min(1, "Push token is required").max(PUSH_TOKEN_MAX_LENGTH),
 });
 
-export const packingSeedSchema = z.object({
+// Matches packing_lists.name VARCHAR(60).
+const PACKING_LIST_NAME_MAX_LENGTH = 60;
+// The longest template has under a hundred things; this only stops abuse.
+const PACKING_LIST_MAX_TEMPLATE_ITEMS = 200;
+
+export const packingListSchema = z.object({
+    name: z.string().trim().min(1, "validation.nameRequired").max(PACKING_LIST_NAME_MAX_LENGTH, "validation.tooLong"),
+});
+
+// The trip a list is for; null takes it off the trip.
+const packingListItineraryField = z.string().uuid("validation.invalid").nullable().optional();
+
+export const updatePackingListSchema = packingListSchema.partial().extend({
+    itineraryId: packingListItineraryField,
+}).refine((data) => data.name !== undefined || data.itineraryId !== undefined, "Nothing to update");
+
+export const createPackingListSchema = packingListSchema.extend({
+    itineraryId: packingListItineraryField,
     items: z.array(z.object({
         category: z.enum(PACKING_CATEGORIES, { errorMap: () => ({ message: "validation.chooseCategory" }) }),
-        name: z.string().min(1).max(255),
-    })).min(1, "At least one item is required").max(200, "Too many items"),
+        name: z.string().trim().min(1).max(255),
+    })).max(PACKING_LIST_MAX_TEMPLATE_ITEMS, "Too many items").default([]),
 });

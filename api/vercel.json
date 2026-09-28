@@ -32,6 +32,10 @@
         {
             "path": "/referrals/scheduled-purge",
             "schedule": "0 5 * * *"
+        },
+        {
+            "path": "/packing-checklist/scheduled-remind",
+            "schedule": "0 8 * * *"
         }
     ]
 }

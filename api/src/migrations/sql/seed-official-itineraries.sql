@@ -7,7 +7,7 @@
 -- ── 1. KYOTO, JAPAN ─────────────────────────────────────────
 -- Account: tobeatraveller+1@gmail.com  |  7 days  |  Culture
 
-INSERT INTO itineraries (id, user_id, title, description, location_name, location_label, latitude, longitude, start_date, end_date, photo_url, budget, currency, number_of_people, category, is_public)
+INSERT INTO itineraries (id, user_id, title, description, location_name, location_label, latitude, longitude, start_date, end_date, photo_url, budget, currency, number_of_people, category, is_public, total_days)
 VALUES (
   'a0000001-0000-0000-0000-000000000001',
   (SELECT id FROM users WHERE email = 'tobeatraveller+1@gmail.com'),
@@ -16,7 +16,7 @@ VALUES (
   'Kyoto', 'Kyoto, Japan', 35.011636, 135.768029,
   '2025-03-28', '2025-04-03',
   'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800&auto=format&fit=crop',
-  1800.00, 'EUR', 2, 'culture', true
+  1800.00, 'EUR', 2, 'culture', true, 7
 );
 
 INSERT INTO places (id, title, description, label, latitude, longitude, category) VALUES
@@ -58,7 +58,7 @@ INSERT INTO itinerary_places (id, itinerary_id, place_id, order_index, day_numbe
 -- ── 2. LISBON, PORTUGAL ─────────────────────────────────────
 -- Account: tobeatraveller+1@gmail.com  |  5 days  |  Culture + City
 
-INSERT INTO itineraries (id, user_id, title, description, location_name, location_label, latitude, longitude, start_date, end_date, photo_url, budget, currency, number_of_people, category, is_public)
+INSERT INTO itineraries (id, user_id, title, description, location_name, location_label, latitude, longitude, start_date, end_date, photo_url, budget, currency, number_of_people, category, is_public, total_days)
 VALUES (
   'a0000001-0000-0000-0000-000000000002',
   (SELECT id FROM users WHERE email = 'tobeatraveller+1@gmail.com'),
@@ -67,7 +67,7 @@ VALUES (
   'Lisbon', 'Lisbon, Portugal', 38.736946, -9.142685,
   '2025-09-10', '2025-09-14',
   'https://images.unsplash.com/photo-1555881400-74d7acaacd8b?w=800&auto=format&fit=crop',
-  900.00, 'EUR', 1, 'culture', true
+  900.00, 'EUR', 1, 'culture', true, 5
 );
 
 INSERT INTO places (id, title, description, label, latitude, longitude, category) VALUES
@@ -105,7 +105,7 @@ INSERT INTO itinerary_places (id, itinerary_id, place_id, order_index, day_numbe
 -- ── 3. SANTORINI, GREECE ────────────────────────────────────
 -- Account: tobeatraveller+2@gmail.com  |  5 days  |  Romantic
 
-INSERT INTO itineraries (id, user_id, title, description, location_name, location_label, latitude, longitude, start_date, end_date, photo_url, budget, currency, number_of_people, category, is_public)
+INSERT INTO itineraries (id, user_id, title, description, location_name, location_label, latitude, longitude, start_date, end_date, photo_url, budget, currency, number_of_people, category, is_public, total_days)
 VALUES (
   'a0000001-0000-0000-0000-000000000003',
   (SELECT id FROM users WHERE email = 'tobeatraveller+2@gmail.com'),
@@ -114,7 +114,7 @@ VALUES (
   'Santorini', 'Santorini, Greece', 36.393155, 25.461500,
   '2025-06-12', '2025-06-16',
   'https://images.unsplash.com/photo-1533105079780-92b9be482077?w=800&auto=format&fit=crop',
-  2200.00, 'EUR', 2, 'romantic', true
+  2200.00, 'EUR', 2, 'romantic', true, 5
 );
 
 INSERT INTO places (id, title, description, label, latitude, longitude, category) VALUES
@@ -148,7 +148,7 @@ INSERT INTO itinerary_places (id, itinerary_id, place_id, order_index, day_numbe
 -- ── 4. BALI, INDONESIA ──────────────────────────────────────
 -- Account: tobeatraveller+3@gmail.com  |  8 days  |  Adventure
 
-INSERT INTO itineraries (id, user_id, title, description, location_name, location_label, latitude, longitude, start_date, end_date, photo_url, budget, currency, number_of_people, category, is_public)
+INSERT INTO itineraries (id, user_id, title, description, location_name, location_label, latitude, longitude, start_date, end_date, photo_url, budget, currency, number_of_people, category, is_public, total_days)
 VALUES (
   'a0000001-0000-0000-0000-000000000004',
   (SELECT id FROM users WHERE email = 'tobeatraveller+3@gmail.com'),
@@ -157,7 +157,7 @@ VALUES (
   'Bali', 'Bali, Indonesia', -8.340539, 115.091949,
   '2025-07-05', '2025-07-12',
   'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800&auto=format&fit=crop',
-  1200.00, 'USD', 2, 'adventure', true
+  1200.00, 'USD', 2, 'adventure', true, 8
 );
 
 INSERT INTO places (id, title, description, label, latitude, longitude, category) VALUES
@@ -195,7 +195,7 @@ INSERT INTO itinerary_places (id, itinerary_id, place_id, order_index, day_numbe
 -- ── 5. CHIANG MAI, THAILAND ─────────────────────────────────
 -- Account: tobeatraveller+4@gmail.com  |  6 days  |  Backpacking
 
-INSERT INTO itineraries (id, user_id, title, description, location_name, location_label, latitude, longitude, start_date, end_date, photo_url, budget, currency, number_of_people, category, is_public)
+INSERT INTO itineraries (id, user_id, title, description, location_name, location_label, latitude, longitude, start_date, end_date, photo_url, budget, currency, number_of_people, category, is_public, total_days)
 VALUES (
   'a0000001-0000-0000-0000-000000000005',
   (SELECT id FROM users WHERE email = 'tobeatraveller+4@gmail.com'),
@@ -204,7 +204,7 @@ VALUES (
   'Chiang Mai', 'Chiang Mai, Thailand', 18.796143, 98.979263,
   '2025-11-03', '2025-11-08',
   'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=800&auto=format&fit=crop',
-  550.00, 'USD', 1, 'backpacking', true
+  550.00, 'USD', 1, 'backpacking', true, 6
 );
 
 INSERT INTO places (id, title, description, label, latitude, longitude, category) VALUES
@@ -238,7 +238,7 @@ INSERT INTO itinerary_places (id, itinerary_id, place_id, order_index, day_numbe
 -- ── 6. FAROE ISLANDS ────────────────────────────────────────
 -- Account: tobeatraveller+5@gmail.com  |  5 days  |  Nature
 
-INSERT INTO itineraries (id, user_id, title, description, location_name, location_label, latitude, longitude, start_date, end_date, photo_url, budget, currency, number_of_people, category, is_public)
+INSERT INTO itineraries (id, user_id, title, description, location_name, location_label, latitude, longitude, start_date, end_date, photo_url, budget, currency, number_of_people, category, is_public, total_days)
 VALUES (
   'a0000001-0000-0000-0000-000000000006',
   (SELECT id FROM users WHERE email = 'tobeatraveller+5@gmail.com'),
@@ -247,7 +247,7 @@ VALUES (
   'Faroe Islands', 'Faroe Islands, Denmark', 61.892635, -6.911806,
   '2025-08-18', '2025-08-22',
   'https://images.unsplash.com/photo-1516015987313-6e68b67c1d79?w=800&auto=format&fit=crop',
-  2500.00, 'EUR', 2, 'nature', true
+  2500.00, 'EUR', 2, 'nature', true, 5
 );
 
 INSERT INTO places (id, title, description, label, latitude, longitude, category) VALUES
@@ -284,7 +284,7 @@ INSERT INTO itinerary_places (id, itinerary_id, place_id, order_index, day_numbe
 -- ── 7. NEW YORK CITY, USA ───────────────────────────────────
 -- Account: tobeatraveller+5@gmail.com  |  5 days  |  Culture
 
-INSERT INTO itineraries (id, user_id, title, description, location_name, location_label, latitude, longitude, start_date, end_date, photo_url, budget, currency, number_of_people, category, is_public)
+INSERT INTO itineraries (id, user_id, title, description, location_name, location_label, latitude, longitude, start_date, end_date, photo_url, budget, currency, number_of_people, category, is_public, total_days)
 VALUES (
   'a0000001-0000-0000-0000-000000000007',
   (SELECT id FROM users WHERE email = 'tobeatraveller+5@gmail.com'),
@@ -293,7 +293,7 @@ VALUES (
   'New York City', 'New York City, USA', 40.712776, -74.005974,
   '2025-10-10', '2025-10-14',
   'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=800&auto=format&fit=crop',
-  2400.00, 'USD', 2, 'culture', true
+  2400.00, 'USD', 2, 'culture', true, 5
 );
 
 INSERT INTO places (id, title, description, label, latitude, longitude, category) VALUES
@@ -331,7 +331,7 @@ INSERT INTO itinerary_places (id, itinerary_id, place_id, order_index, day_numbe
 -- ── 8. MARRAKECH, MOROCCO ────────────────────────────────────
 -- Account: tobeatraveller+4@gmail.com  |  4 days  |  Gastronomic
 
-INSERT INTO itineraries (id, user_id, title, description, location_name, location_label, latitude, longitude, start_date, end_date, photo_url, budget, currency, number_of_people, category, is_public)
+INSERT INTO itineraries (id, user_id, title, description, location_name, location_label, latitude, longitude, start_date, end_date, photo_url, budget, currency, number_of_people, category, is_public, total_days)
 VALUES (
   'a0000001-0000-0000-0000-000000000008',
   (SELECT id FROM users WHERE email = 'tobeatraveller+4@gmail.com'),
@@ -340,7 +340,7 @@ VALUES (
   'Marrakech', 'Marrakech, Morocco', 31.629472, -7.981084,
   '2025-04-15', '2025-04-18',
   'https://images.unsplash.com/photo-1539020140153-e479b8c22e70?w=800&auto=format&fit=crop',
-  750.00, 'EUR', 2, 'gastronomic', true
+  750.00, 'EUR', 2, 'gastronomic', true, 4
 );
 
 INSERT INTO places (id, title, description, label, latitude, longitude, category) VALUES
@@ -378,7 +378,7 @@ INSERT INTO itinerary_places (id, itinerary_id, place_id, order_index, day_numbe
 -- ── 9. COSTA RICA ────────────────────────────────────────────
 -- Account: tobeatraveller+3@gmail.com  |  7 days  |  Adventure
 
-INSERT INTO itineraries (id, user_id, title, description, location_name, location_label, latitude, longitude, start_date, end_date, photo_url, budget, currency, number_of_people, category, is_public)
+INSERT INTO itineraries (id, user_id, title, description, location_name, location_label, latitude, longitude, start_date, end_date, photo_url, budget, currency, number_of_people, category, is_public, total_days)
 VALUES (
   'a0000001-0000-0000-0000-000000000009',
   (SELECT id FROM users WHERE email = 'tobeatraveller+3@gmail.com'),
@@ -387,7 +387,7 @@ VALUES (
   'Costa Rica', 'Costa Rica', 9.748917, -83.753428,
   '2025-12-26', '2026-01-01',
   'https://images.unsplash.com/photo-1518182170546-07661fd94144?w=800&auto=format&fit=crop',
-  1600.00, 'USD', 2, 'adventure', true
+  1600.00, 'USD', 2, 'adventure', true, 7
 );
 
 INSERT INTO places (id, title, description, label, latitude, longitude, category) VALUES
@@ -429,7 +429,7 @@ INSERT INTO itinerary_places (id, itinerary_id, place_id, order_index, day_numbe
 -- ── 10. AMSTERDAM, NETHERLANDS ──────────────────────────────
 -- Account: tobeatraveller+2@gmail.com  |  4 days  |  Backpacking
 
-INSERT INTO itineraries (id, user_id, title, description, location_name, location_label, latitude, longitude, start_date, end_date, photo_url, budget, currency, number_of_people, category, is_public)
+INSERT INTO itineraries (id, user_id, title, description, location_name, location_label, latitude, longitude, start_date, end_date, photo_url, budget, currency, number_of_people, category, is_public, total_days)
 VALUES (
   'a0000001-0000-0000-0000-000000000010',
   (SELECT id FROM users WHERE email = 'tobeatraveller+2@gmail.com'),
@@ -438,7 +438,7 @@ VALUES (
   'Amsterdam', 'Amsterdam, Netherlands', 52.370216, 4.895168,
   '2026-04-14', '2026-04-17',
   'https://images.unsplash.com/photo-1534351590666-13e3e96b5017?w=800&auto=format&fit=crop',
-  700.00, 'EUR', 1, 'backpacking', true
+  700.00, 'EUR', 1, 'backpacking', true, 4
 );
 
 INSERT INTO places (id, title, description, label, latitude, longitude, category) VALUES
@@ -476,7 +476,7 @@ INSERT INTO itinerary_places (id, itinerary_id, place_id, order_index, day_numbe
 -- ── 11. TOKYO, JAPAN ────────────────────────────────────────
 -- Account: tobeatraveller+3@gmail.com  |  6 days  |  Culture
 
-INSERT INTO itineraries (id, user_id, title, description, location_name, location_label, latitude, longitude, start_date, end_date, photo_url, budget, currency, number_of_people, category, is_public)
+INSERT INTO itineraries (id, user_id, title, description, location_name, location_label, latitude, longitude, start_date, end_date, photo_url, budget, currency, number_of_people, category, is_public, total_days)
 VALUES (
   'a0000001-0000-0000-0000-000000000011',
   (SELECT id FROM users WHERE email = 'tobeatraveller+3@gmail.com'),
@@ -485,7 +485,7 @@ VALUES (
   'Tokyo', 'Tokyo, Japan', 35.689487, 139.691711,
   '2026-03-25', '2026-03-30',
   'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800&auto=format&fit=crop',
-  2800.00, 'EUR', 2, 'culture', true
+  2800.00, 'EUR', 2, 'culture', true, 6
 );
 
 INSERT INTO places (id, title, description, label, latitude, longitude, category) VALUES
@@ -523,7 +523,7 @@ INSERT INTO itinerary_places (id, itinerary_id, place_id, order_index, day_numbe
 -- ── 12. BARCELONA, SPAIN ─────────────────────────────────────
 -- Account: tobeatraveller+6@gmail.com  |  4 days  |  Culture
 
-INSERT INTO itineraries (id, user_id, title, description, location_name, location_label, latitude, longitude, start_date, end_date, photo_url, budget, currency, number_of_people, category, is_public)
+INSERT INTO itineraries (id, user_id, title, description, location_name, location_label, latitude, longitude, start_date, end_date, photo_url, budget, currency, number_of_people, category, is_public, total_days)
 VALUES (
   'a0000001-0000-0000-0000-000000000012',
   (SELECT id FROM users WHERE email = 'tobeatraveller+6@gmail.com'),
@@ -532,7 +532,7 @@ VALUES (
   'Barcelona', 'Barcelona, Spain', 41.385063, 2.173404,
   '2026-07-10', '2026-07-13',
   'https://images.unsplash.com/photo-1583422409516-2895a77efded?w=800&auto=format&fit=crop',
-  900.00, 'EUR', 2, 'culture', true
+  900.00, 'EUR', 2, 'culture', true, 4
 );
 
 INSERT INTO places (id, title, description, label, latitude, longitude, category) VALUES
@@ -570,7 +570,7 @@ INSERT INTO itinerary_places (id, itinerary_id, place_id, order_index, day_numbe
 -- ── 13. ICELAND ──────────────────────────────────────────────
 -- Account: tobeatraveller+5@gmail.com  |  6 days  |  Roadtrip
 
-INSERT INTO itineraries (id, user_id, title, description, location_name, location_label, latitude, longitude, start_date, end_date, photo_url, budget, currency, number_of_people, category, is_public)
+INSERT INTO itineraries (id, user_id, title, description, location_name, location_label, latitude, longitude, start_date, end_date, photo_url, budget, currency, number_of_people, category, is_public, total_days)
 VALUES (
   'a0000001-0000-0000-0000-000000000013',
   (SELECT id FROM users WHERE email = 'tobeatraveller+5@gmail.com'),
@@ -579,7 +579,7 @@ VALUES (
   'Iceland', 'Iceland', 64.963051, -19.020836,
   '2026-02-08', '2026-02-13',
   'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=800&auto=format&fit=crop',
-  3200.00, 'EUR', 2, 'roadtrip', true
+  3200.00, 'EUR', 2, 'roadtrip', true, 6
 );
 
 INSERT INTO places (id, title, description, label, latitude, longitude, category) VALUES
@@ -617,7 +617,7 @@ INSERT INTO itinerary_places (id, itinerary_id, place_id, order_index, day_numbe
 -- ── 14. TUSCANY, ITALY ───────────────────────────────────────
 -- Account: tobeatraveller+2@gmail.com  |  5 days  |  Relax
 
-INSERT INTO itineraries (id, user_id, title, description, location_name, location_label, latitude, longitude, start_date, end_date, photo_url, budget, currency, number_of_people, category, is_public)
+INSERT INTO itineraries (id, user_id, title, description, location_name, location_label, latitude, longitude, start_date, end_date, photo_url, budget, currency, number_of_people, category, is_public, total_days)
 VALUES (
   'a0000001-0000-0000-0000-000000000014',
   (SELECT id FROM users WHERE email = 'tobeatraveller+2@gmail.com'),
@@ -626,7 +626,7 @@ VALUES (
   'Tuscany', 'Tuscany, Italy', 43.771033, 11.248001,
   '2026-09-16', '2026-09-20',
   'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=800&auto=format&fit=crop',
-  1500.00, 'EUR', 2, 'relax', true
+  1500.00, 'EUR', 2, 'relax', true, 5
 );
 
 INSERT INTO places (id, title, description, label, latitude, longitude, category) VALUES

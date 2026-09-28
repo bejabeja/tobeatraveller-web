@@ -26,7 +26,7 @@ import {
 } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
-import { aiPaceOptions, DEFAULT_AI_PACE, isPremiumRequiredError, stepNameHintKey } from "@tobeatraveller/shared";
+import { aiPaceOptions, DEFAULT_AI_PACE, experienceDates, isPremiumRequiredError, stepNameHintKey } from "@tobeatraveller/shared";
 import AiGenerationUpsell from "../../components/aiGenerationUpsell/AiGenerationUpsell";
 import Modal from "../../components/modal/Modal";
 import ImageUpload from "../itinerary/sectionsForm/ImageUpload";
@@ -42,6 +42,7 @@ import UseCurrentLocationButton from "../../components/form/UseCurrentLocationBu
 import { EXISTING_ITINERARY_VISIBILITY_FALLBACK } from "../../utils/schemasValidation";
 import { trackEvent } from "../../utils/analytics";
 import { ANALYTICS_EVENTS, TRIP_KINDS } from "../../utils/analyticsEvents";
+import ExperienceStartDate from "./ExperienceStartDate";
 import "./CreateExperience.scss"; // reuse same styles
 
 const STEP_CONFIG = {
@@ -145,6 +146,7 @@ const EditExperience = () => {
   const [destResults, setDestResults]   = useState([]);
   const [destSearching, setDestSearching] = useState(false);
   const [days, setDays]                 = useState(7);
+  const [startDate, setStartDate]       = useState(null);
   const [category, setCategory]         = useState("adventure");
   const [travelers, setTravelers]       = useState(1);
   const [pace, setPace]                 = useState(DEFAULT_AI_PACE);
@@ -173,6 +175,7 @@ const EditExperience = () => {
       setTitle(data.title ?? "");
       setPhotoUrl(data.photoUrl ?? "");
       setDays(data.tripTotalDays ?? 7);
+      setStartDate(data.startDate ?? null);
       setCategory((data.category || "adventure").split(",")[0]);
       setTravelers(data.numberOfPeople ?? 1);
       setIsPublic(data.isPublic ?? EXISTING_ITINERARY_VISIBILITY_FALLBACK);
@@ -319,9 +322,6 @@ const EditExperience = () => {
   const handleSave = async () => {
     if (!title.trim()) { toast.error(ce("addTitleError")); return; }
     setSaving(true);
-    const today  = new Date().toISOString().split("T")[0];
-    const endObj = new Date(today);
-    endObj.setDate(endObj.getDate() + days - 1);
     try {
       const body = {
         title: title.trim(),
@@ -332,7 +332,7 @@ const EditExperience = () => {
           lat: destination.coordinates?.lat ?? 0,
           lon: destination.coordinates?.lon ?? 0,
         },
-        startDate: today, endDate: endObj.toISOString().split("T")[0],
+        ...experienceDates(startDate, days),
         budget: 0, currency: "EUR", numberOfPeople: travelers, category, isPublic,
         places: steps.filter(s => s.name.trim()).map((s, i) => ({
           id: s._id,
@@ -455,6 +455,8 @@ const EditExperience = () => {
               </div>
             </div>
           </div>
+
+          <ExperienceStartDate startDate={startDate} days={days} onChange={setStartDate} />
 
           <div className="cexp__section">
             <label className="cexp__label">{ce("soulOfTrip")}</label>

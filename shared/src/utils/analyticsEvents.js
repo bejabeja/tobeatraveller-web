@@ -22,17 +22,21 @@ export const ANALYTICS_EVENTS = Object.freeze({
     COMMENT_POSTED: 'comment_posted',
     USER_FOLLOWED: 'user_followed',
     CHECKOUT_STARTED: 'checkout_started',
+    PACKING_LIST_CREATED: 'packing_list_created',
+    PACKING_LIST_LINKED_TO_TRIP: 'packing_list_linked_to_trip',
 });
 
-// A regular trip, or an experience (planned by day count, without dates).
+// A regular trip, or an experience (planned by day count, with a start date
+// only if its traveller gives one).
 export const TRIP_KINDS = Object.freeze({
     ITINERARY: 'itinerary',
     EXPERIENCE: 'experience',
 });
 
 // What a trip was like when created: counts and flags, nothing it says.
-export const tripCreatedProperties = ({ kind, isPublic, places, days }) => ({
-    kind, is_public: Boolean(isPublic), places, days,
+// Only an experience can go without a date.
+export const tripCreatedProperties = ({ kind, isPublic, places, days, hasDate = true }) => ({
+    kind, is_public: Boolean(isPublic), places, days, has_date: hasDate,
 });
 
 export const PASSPORT_SHARE_SOURCES = Object.freeze({

@@ -10,6 +10,7 @@ const DEFAULT_NOTIFICATION_PREFERENCES = {
     notifyOnLike: true,
     notifyOnFollow: true,
     notifyOnFriendStamps: true,
+    notifyOnTripReminders: true,
     pushEnabled: true,
 };
 
@@ -18,6 +19,7 @@ const mapPreferencesRow = (row) => ({
     notifyOnLike: row.notify_on_like,
     notifyOnFollow: row.notify_on_follow,
     notifyOnFriendStamps: row.notify_on_friend_stamps,
+    notifyOnTripReminders: row.notify_on_trip_reminders,
     pushEnabled: row.push_enabled,
 });
 
@@ -139,7 +141,7 @@ export class NotificationsRepository {
 
     async getPreferences(userId) {
         const result = await client.query(
-            `SELECT notify_on_comment, notify_on_like, notify_on_follow, notify_on_friend_stamps, push_enabled
+            `SELECT notify_on_comment, notify_on_like, notify_on_follow, notify_on_friend_stamps, notify_on_trip_reminders, push_enabled
              FROM notification_preferences WHERE user_id = $1`,
             [userId]
         );
@@ -148,19 +150,20 @@ export class NotificationsRepository {
         return mapPreferencesRow(result.rows[0]);
     }
 
-    async upsertPreferences(userId, { notifyOnComment, notifyOnLike, notifyOnFollow, notifyOnFriendStamps, pushEnabled }) {
+    async upsertPreferences(userId, { notifyOnComment, notifyOnLike, notifyOnFollow, notifyOnFriendStamps, notifyOnTripReminders, pushEnabled }) {
         const result = await client.query(
-            `INSERT INTO notification_preferences (user_id, notify_on_comment, notify_on_like, notify_on_follow, notify_on_friend_stamps, push_enabled)
-             VALUES ($1, COALESCE($2, true), COALESCE($3, true), COALESCE($4, true), COALESCE($5, true), COALESCE($6, true))
+            `INSERT INTO notification_preferences (user_id, notify_on_comment, notify_on_like, notify_on_follow, notify_on_friend_stamps, notify_on_trip_reminders, push_enabled)
+             VALUES ($1, COALESCE($2, true), COALESCE($3, true), COALESCE($4, true), COALESCE($5, true), COALESCE($6, true), COALESCE($7, true))
              ON CONFLICT (user_id) DO UPDATE SET
                  notify_on_comment = COALESCE($2, notification_preferences.notify_on_comment),
                  notify_on_like = COALESCE($3, notification_preferences.notify_on_like),
                  notify_on_follow = COALESCE($4, notification_preferences.notify_on_follow),
                  notify_on_friend_stamps = COALESCE($5, notification_preferences.notify_on_friend_stamps),
-                 push_enabled = COALESCE($6, notification_preferences.push_enabled),
+                 notify_on_trip_reminders = COALESCE($6, notification_preferences.notify_on_trip_reminders),
+                 push_enabled = COALESCE($7, notification_preferences.push_enabled),
                  updated_at = NOW()
-             RETURNING notify_on_comment, notify_on_like, notify_on_follow, notify_on_friend_stamps, push_enabled`,
-            [userId, notifyOnComment ?? null, notifyOnLike ?? null, notifyOnFollow ?? null, notifyOnFriendStamps ?? null, pushEnabled ?? null]
+             RETURNING notify_on_comment, notify_on_like, notify_on_follow, notify_on_friend_stamps, notify_on_trip_reminders, push_enabled`,
+            [userId, notifyOnComment ?? null, notifyOnLike ?? null, notifyOnFollow ?? null, notifyOnFriendStamps ?? null, notifyOnTripReminders ?? null, pushEnabled ?? null]
         );
 
         return mapPreferencesRow(result.rows[0]);

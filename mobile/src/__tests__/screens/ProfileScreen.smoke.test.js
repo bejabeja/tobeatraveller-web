@@ -180,11 +180,11 @@ it('has a back arrow when opened over another screen', async () => {
 });
 
 // Regression: Expenses, the shopping list and the diary were marked Premium,
-// when the free plan has them up to 10 entries.
-it('marks as Premium only the tools the free plan does not have', async () => {
+// when the free plan has them up to a limit; now the packing lists too.
+it('marks no tool as Premium, all of them being free up to a limit', async () => {
   await renderOwnProfile({ me: { ...ME, isPremium: false } });
 
-  expect(screen.getAllByText('admin.premium')).toHaveLength(1);
+  expect(screen.queryByText('admin.premium')).toBeNull();
   expect(screen.getByText('🎒 packingChecklist.title')).toBeTruthy();
 });
 

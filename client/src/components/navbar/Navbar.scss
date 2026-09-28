@@ -532,19 +532,6 @@
     flex-shrink: 0;
   }
 
-  &__premium-badge {
-    width: fit-content;
-    margin-left: auto;
-    font-size: 0.6rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--primary-color);
-    background: var(--primary-light);
-    padding: 2px 7px;
-    border-radius: 999px;
-    flex-shrink: 0;
-  }
 }
 
 .nav-create {

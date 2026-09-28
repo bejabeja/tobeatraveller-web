@@ -119,7 +119,7 @@
     "yourTools": "Your tools",
     "vanLog": "Expenses",
     "supplies": "Shopping list",
-    "packingChecklist": "Packing checklist",
+    "packingChecklist": "Trip lists",
     "lifeDiary": "Life diary",
     "subscription": "Subscription",
     "collapse": "Collapse",
@@ -185,7 +185,9 @@
     "onTripDay": "Day {{day}} of {{total}}",
     "noNextTrip": "Where are you heading next?",
     "planTrip": "Plan a trip",
-    "openTrip": "View trip"
+    "openTrip": "View trip",
+    "prepareTrip": "Get packing",
+    "tripListProgress": "{{name}}: {{checked}} of {{total}} done"
   },
   "explore": {
     "clearSearch": "Clear search",
@@ -293,8 +295,8 @@
     "featureVanLogDesc": "Track fuel, repairs, and every expense of life on the road.",
     "featureSuppliesTitle": "Shopping list",
     "featureSuppliesDesc": "Keep your inventory and shopping list in sync as you go.",
-    "featurePackingChecklistTitle": "Packing checklist",
-    "featurePackingChecklistDesc": "Never forget anything with checklists organized by category.",
+    "featurePackingChecklistTitle": "Trip lists",
+    "featurePackingChecklistDesc": "Lists for your packing and for before driving off, by category.",
     "featureLifeDiaryTitle": "Life diary",
     "featureLifeDiaryDesc": "Save memories, photos, and highlights from every stop.",
     "featureOfflineEditingTitle": "Save while offline",
@@ -751,19 +753,13 @@
     }
   },
   "packingChecklist": {
-    "title": "Packing checklist",
-    "progress": "{{checked}}/{{total}} packed",
+    "title": "Trip lists",
+    "progress": "{{checked}}/{{total}} done",
     "saveError": "Could not save. Please try again.",
     "deleteError": "Could not delete the item. Please try again.",
-    "addItemPlaceholder": "Add item...",
+    "addItemPlaceholder": "Add something…",
     "addToShoppingList": "Add to shopping list",
     "addedToShoppingList": "{{name}} added to the shopping list",
-    "restoreDefaults": "Restore defaults",
-    "defaultsRestored_one": "{{count}} item restored",
-    "defaultsRestored_other": "{{count}} items restored",
-    "nothingToRestore": "You already have every default item",
-    "startNewTrip": "Start new trip",
-    "tripReset": "Checklist reset, nothing was deleted",
     "searchPlaceholder": "Search by name...",
     "noSearchResults": "No items match \"{{query}}\".",
     "itemDeleted": "{{name}} deleted",
@@ -777,9 +773,77 @@
       "toiletries": "Toiletries",
       "first_aid": "First aid kit",
       "cleaning": "Cleaning supplies",
-      "other": "Other"
+      "other": "Other",
+      "van": "Van"
     },
-    "itemAlreadyInCategory": "You already have this item in this category."
+    "itemAlreadyInCategory": "You already have this item in this category.",
+    "categoryLabel": "Category",
+    "add": "Add",
+    "newList": "New list",
+    "listName": "List name",
+    "startWith": "Start with",
+    "createList": "Create list",
+    "templates": {
+      "empty": {
+        "name": "Empty",
+        "desc": "Start from scratch"
+      },
+      "departure": {
+        "name": "Before driving off",
+        "desc": "What you check every time the van moves"
+      },
+      "weekend": {
+        "name": "Weekend",
+        "desc": "The basics for two or three days"
+      },
+      "longTrip": {
+        "name": "Long trip",
+        "desc": "Everything for weeks on the road"
+      },
+      "winter": {
+        "name": "Winter",
+        "desc": "Cold, snow and a van ready for both"
+      }
+    },
+    "listProgress": "{{checked}} of {{total}} done",
+    "listEmpty": "Nothing yet",
+    "noLists": "You don't have any lists yet. Make your first one, from scratch or from a template.",
+    "noItems": "This list is empty. Add the first thing above.",
+    "freeTierUsage": "{{used}} of {{limit}} free lists used",
+    "restart": "Start again",
+    "restartDone": "Everything unticked, nothing deleted",
+    "rename": "Rename",
+    "duplicate": "Duplicate",
+    "copyName": "{{name}} (copy)",
+    "deleteList": "Delete list",
+    "deleteListTitle": "Delete “{{name}}”?",
+    "deleteListDesc": "Everything on it goes too. This can't be undone.",
+    "listDeleted": "List deleted",
+    "allLists": "All lists",
+    "listCapTitle": "You have {{limit}} lists, the free plan's limit",
+    "listCapDesc": "With Premium, as many as you like.",
+    "listNotFound": "This list doesn't exist any more.",
+    "editItem": "Edit",
+    "itemName": "Name",
+    "quantity": "How many",
+    "quantityHint": "Leave it at 1 if it's just one",
+    "quantityBadge": "×{{count}}",
+    "reorder": "Reorder",
+    "reorderDone": "Done",
+    "moveUp": "Move {{name}} up",
+    "moveDown": "Move {{name}} down",
+    "onShoppingList": "Already on the shopping list",
+    "quantityLess": "One fewer",
+    "quantityMore": "One more",
+    "forTrip": "For: {{title}}",
+    "tripLabel": "Which trip is it for?",
+    "noTrip": "None",
+    "linkToTrip": "Link to a trip",
+    "changeTrip": "Change trip",
+    "unlinkTrip": "Take off the trip",
+    "noTripsToLink": "You don't have any trips yet. Create one and you can prepare its list from here.",
+    "tripLists": "Lists for this trip",
+    "newListForTrip": "New list for this trip"
   },
   "lifeDiary": {
     "title": "Life diary",
@@ -844,7 +908,8 @@
     "friendAddedCountry": " added to their passport ",
     "friendAddedCountryPlural": " added to their passports ",
     "friendEarnedBadge": " earned the stamp ",
-    "friendEarnedBadgePlural": " earned the stamp "
+    "friendEarnedBadgePlural": " earned the stamp ",
+    "tripPacking": " is about to start: check what's left to pack"
   },
   "comments": {
     "title": "Comments",
@@ -1042,7 +1107,8 @@
     "notifyOnFriendStamps": "Stamps and countries from people I follow",
     "yourData": "Your data",
     "legal": "Legal",
-    "dangerZone": "Danger zone"
+    "dangerZone": "Danger zone",
+    "notifyOnTripReminders": "Packing reminder before a trip"
   },
   "validation": {
     "required": "This field is required",
@@ -1234,7 +1300,11 @@
       "indulgent": "Indulgent"
     },
     "defaultTitle": "My trip to {{destination}}",
-    "loadError": "Couldn't load the experience."
+    "loadError": "Couldn't load the experience.",
+    "whenLeaving": "When are you leaving?",
+    "whenLeavingHint": "Optional. With a date it shows as your next trip and, if you make it a packing list, we remind you before you go.",
+    "notSureYet": "Not sure yet",
+    "invalidDate": "Write the date as YYYY-MM-DD"
   },
   "legalTerms": {
     "documentTitle": "Terms of Service",
@@ -1468,7 +1538,7 @@
     "collection": {
       "vanLog": "Expenses",
       "lifeDiary": "Life diary",
-      "packingChecklist": "Packing checklist",
+      "packingChecklist": "Trip lists",
       "shoppingList": "Shopping list",
       "inventory": "Inventory"
     },
@@ -1478,7 +1548,7 @@
       "delete": "Deleted",
       "purchase": "Bought",
       "useUp": "Used",
-      "resetTrip": "New trip"
+      "restartList": "Start again"
     },
     "actionUnconfirmed": "We couldn't confirm it was saved: the connection took too long. Check the list before trying again.",
     "editingIsPremium": "You're offline. Saving changes offline is a Premium feature; try again once you're back online."

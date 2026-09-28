@@ -53,7 +53,7 @@ export class ItineraryRepository {
 
   async create(itineraryData) {
     const {
-      userId, title, description, location, startDate, endDate,
+      userId, title, description, location, startDate, endDate, totalDays,
       numberOfPeople, category, budget, currency, photoUrl, photoPublicId, isPublic,
       source, clonedFromItineraryId
     } = itineraryData;
@@ -65,9 +65,9 @@ export class ItineraryRepository {
                 location_name, location_label, latitude, longitude,
                 start_date, end_date, number_of_people,
                 category, budget, currency, photo_url, photo_public_id, is_public, source,
-                cloned_from_itinerary_id, location_country_code
+                cloned_from_itinerary_id, location_country_code, total_days
             )
-            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)
             RETURNING *;
         `;
 
@@ -75,7 +75,7 @@ export class ItineraryRepository {
       id, userId, title, description,
       location.name, location.label, location.lat, location.lon,
       startDate, endDate, numberOfPeople, category, budget, currency, photoUrl, photoPublicId,
-      isPublic ?? true, source ?? 'itinerary', clonedFromItineraryId ?? null, countryCodeFromLabel(location.label)
+      isPublic ?? true, source ?? 'itinerary', clonedFromItineraryId ?? null, countryCodeFromLabel(location.label), totalDays
     ]);
 
     return Itinerary.fromDb(result.rows[0]);
@@ -83,7 +83,7 @@ export class ItineraryRepository {
 
   async update(itineraryId, itineraryData) {
     const {
-      title, description, location, startDate, endDate,
+      title, description, location, startDate, endDate, totalDays,
       numberOfPeople, budget, currency, category, photoUrl, photoPublicId, isPublic, clonedFromItineraryId
     } = itineraryData;
 
@@ -99,6 +99,7 @@ export class ItineraryRepository {
                 is_public = $16,
                 location_country_code = $17,
                 cloned_from_itinerary_id = $18,
+                total_days = $19,
                 updated_at = NOW()
             WHERE id = $1 RETURNING *;
         `;
@@ -108,7 +109,7 @@ export class ItineraryRepository {
       location.name, location.label, location.lat, location.lon,
       startDate, endDate, numberOfPeople,
       budget, currency, category, photoUrl, photoPublicId,
-      isPublic ?? true, countryCodeFromLabel(location.label), clonedFromItineraryId ?? null
+      isPublic ?? true, countryCodeFromLabel(location.label), clonedFromItineraryId ?? null, totalDays
     ]);
     return Itinerary.fromDb(result.rows[0]);
   }
@@ -285,12 +286,12 @@ export class ItineraryRepository {
     }
 
     if (filters.durationMin !== undefined) {
-      conditions.push(`(end_date - start_date + 1) >= $${i++}`);
+      conditions.push(`total_days >= $${i++}`);
       values.push(filters.durationMin);
     }
 
     if (filters.durationMax !== undefined) {
-      conditions.push(`(end_date - start_date + 1) <= $${i++}`);
+      conditions.push(`total_days <= $${i++}`);
       values.push(filters.durationMax);
     }
 

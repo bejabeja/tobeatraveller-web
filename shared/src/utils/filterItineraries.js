@@ -38,6 +38,8 @@ export const filterItineraries = (itineraries, filters) => {
         const start = new Date(itinerary.startDate);
         const startDateMin = filters.startDateMin ? new Date(filters.startDateMin) : null;
         const startDateMax = filters.startDateMax ? new Date(filters.startDateMax) : null;
+        // A trip without a date can't be said to start in the range asked for.
+        if ((startDateMin || startDateMax) && !itinerary.startDate) return false;
         if (startDateMin && start < startDateMin) return false;
         if (startDateMax && start > startDateMax) return false;
 

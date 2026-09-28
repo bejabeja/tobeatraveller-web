@@ -46,7 +46,7 @@ describe('NotificationsService.createNotification()', () => {
         notificationsRepository = {
             create: vi.fn().mockResolvedValue(undefined),
             getPreferences: vi.fn().mockResolvedValue({
-                notifyOnComment: true, notifyOnLike: true, notifyOnFollow: true,
+                notifyOnComment: true, notifyOnLike: true, notifyOnFollow: true, notifyOnTripReminders: true,
             }),
         };
         service = new NotificationsService(notificationsRepository);
@@ -72,6 +72,20 @@ describe('NotificationsService.createNotification()', () => {
         await service.createNotification({ userId: 'u1', actorId: 'u1', type: 'recap_ready' });
 
         expect(notificationsRepository.create).toHaveBeenCalledWith(expect.objectContaining({ userId: 'u1', type: 'recap_ready' }));
+    });
+
+    it('creates a trip reminder for the trip\'s own owner', async () => {
+        await service.createNotification({ userId: 'u1', actorId: 'u1', type: 'trip_packing', itineraryId: 't1' });
+
+        expect(notificationsRepository.create).toHaveBeenCalledWith(expect.objectContaining({ userId: 'u1', type: 'trip_packing', itineraryId: 't1' }));
+    });
+
+    it('skips a trip reminder for someone who turned them off', async () => {
+        notificationsRepository.getPreferences.mockResolvedValue({ notifyOnTripReminders: false });
+
+        await service.createNotification({ userId: 'u1', actorId: 'u1', type: 'trip_packing', itineraryId: 't1' });
+
+        expect(notificationsRepository.create).not.toHaveBeenCalled();
     });
 
     it('does not create a notification when the actor is the recipient', async () => {
@@ -106,7 +120,7 @@ describe('NotificationsService.createNotification() push delivery', () => {
     let pushNotificationsService;
 
     const preferences = (overrides = {}) => ({
-        notifyOnComment: true, notifyOnLike: true, notifyOnFollow: true, pushEnabled: true, ...overrides,
+        notifyOnComment: true, notifyOnLike: true, notifyOnFollow: true, notifyOnTripReminders: true, pushEnabled: true, ...overrides,
     });
 
     beforeEach(() => {
@@ -124,6 +138,12 @@ describe('NotificationsService.createNotification() push delivery', () => {
         expect(pushNotificationsService.sendNotificationPush).toHaveBeenCalledWith(
             { userId: 'u1', actorId: 'u2', type: 'like', itineraryId: 'i1', commentId: undefined }
         );
+    });
+
+    it('tells a trip reminder\'s push how much is left to pack', async () => {
+        await service.createNotification({ userId: 'u1', actorId: 'u1', type: 'trip_packing', itineraryId: 't1', remainingCount: 8 });
+
+        expect(pushNotificationsService.sendNotificationPush).toHaveBeenCalledWith(expect.objectContaining({ type: 'trip_packing', remainingCount: 8 }));
     });
 
     it('tells the push which badge or country it is about', async () => {
@@ -208,7 +228,7 @@ describe('NotificationsService.getPreferences() / updatePreferences()', () => {
     beforeEach(() => {
         notificationsRepository = {
             getPreferences: vi.fn().mockResolvedValue({
-                notifyOnComment: true, notifyOnLike: true, notifyOnFollow: true,
+                notifyOnComment: true, notifyOnLike: true, notifyOnFollow: true, notifyOnTripReminders: true,
             }),
             upsertPreferences: vi.fn().mockResolvedValue({
                 notifyOnComment: false, notifyOnLike: true, notifyOnFollow: true,

@@ -119,7 +119,7 @@
     "yourTools": "Deine Tools",
     "vanLog": "Ausgaben",
     "supplies": "Einkaufsliste",
-    "packingChecklist": "Packliste",
+    "packingChecklist": "Reiselisten",
     "lifeDiary": "Tagebuch",
     "subscription": "Abo",
     "collapse": "Einklappen",
@@ -185,7 +185,9 @@
     "onTripDay": "Tag {{day}} von {{total}}",
     "noNextTrip": "Wohin geht es als Nächstes?",
     "planTrip": "Reise planen",
-    "openTrip": "Reise ansehen"
+    "openTrip": "Reise ansehen",
+    "prepareTrip": "Packen",
+    "tripListProgress": "{{name}}: {{checked}} von {{total}} erledigt"
   },
   "explore": {
     "clearSearch": "Suche löschen",
@@ -293,8 +295,8 @@
     "featureVanLogDesc": "Behalte Sprit, Reparaturen und alle Ausgaben des Lebens unterwegs im Blick.",
     "featureSuppliesTitle": "Einkaufsliste",
     "featureSuppliesDesc": "Halte Vorrat und Einkaufsliste unterwegs immer synchron.",
-    "featurePackingChecklistTitle": "Packliste",
-    "featurePackingChecklistDesc": "Vergiss nie wieder etwas, dank Checklisten nach Kategorien.",
+    "featurePackingChecklistTitle": "Reiselisten",
+    "featurePackingChecklistDesc": "Listen fürs Packen und für vor der Abfahrt, nach Kategorie.",
     "featureLifeDiaryTitle": "Tagebuch",
     "featureLifeDiaryDesc": "Halte Erinnerungen, Fotos und Highlights von jedem Stopp fest.",
     "featureOfflineEditingTitle": "Offline speichern",
@@ -751,19 +753,13 @@
     }
   },
   "packingChecklist": {
-    "title": "Packliste",
-    "progress": "{{checked}}/{{total}} gepackt",
+    "title": "Reiselisten",
+    "progress": "{{checked}}/{{total}} erledigt",
     "saveError": "Speichern fehlgeschlagen. Bitte versuch es erneut.",
     "deleteError": "Der Artikel konnte nicht gelöscht werden. Bitte versuch es erneut.",
-    "addItemPlaceholder": "Artikel hinzufügen...",
+    "addItemPlaceholder": "Etwas hinzufügen…",
     "addToShoppingList": "Zur Einkaufsliste hinzufügen",
     "addedToShoppingList": "{{name}} zur Einkaufsliste hinzugefügt",
-    "restoreDefaults": "Standardartikel wiederherstellen",
-    "defaultsRestored_one": "{{count}} Artikel wiederhergestellt",
-    "defaultsRestored_other": "{{count}} Artikel wiederhergestellt",
-    "nothingToRestore": "Du hast bereits alle Standardartikel",
-    "startNewTrip": "Neue Reise starten",
-    "tripReset": "Packliste zurückgesetzt, nichts wurde gelöscht",
     "searchPlaceholder": "Nach Name suchen...",
     "noSearchResults": "Keine Artikel passen zu „{{query}}“.",
     "itemDeleted": "{{name}} gelöscht",
@@ -777,9 +773,77 @@
       "toiletries": "Kulturbeutel",
       "first_aid": "Erste-Hilfe-Set",
       "cleaning": "Putzmittel",
-      "other": "Sonstiges"
+      "other": "Sonstiges",
+      "van": "Camper"
     },
-    "itemAlreadyInCategory": "Diesen Artikel hast du in dieser Kategorie schon."
+    "itemAlreadyInCategory": "Diesen Artikel hast du in dieser Kategorie schon.",
+    "categoryLabel": "Kategorie",
+    "add": "Hinzufügen",
+    "newList": "Neue Liste",
+    "listName": "Name der Liste",
+    "startWith": "Beginnen mit",
+    "createList": "Liste erstellen",
+    "templates": {
+      "empty": {
+        "name": "Leer",
+        "desc": "Von vorn anfangen"
+      },
+      "departure": {
+        "name": "Vor der Abfahrt",
+        "desc": "Was du bei jeder Abfahrt prüfst"
+      },
+      "weekend": {
+        "name": "Wochenende",
+        "desc": "Das Nötigste für zwei, drei Tage"
+      },
+      "longTrip": {
+        "name": "Lange Reise",
+        "desc": "Alles für Wochen unterwegs"
+      },
+      "winter": {
+        "name": "Winter",
+        "desc": "Kälte, Schnee und ein startklarer Camper"
+      }
+    },
+    "listProgress": "{{checked}} von {{total}} erledigt",
+    "listEmpty": "Noch leer",
+    "noLists": "Du hast noch keine Listen. Erstelle deine erste, leer oder aus einer Vorlage.",
+    "noItems": "Diese Liste ist leer. Füge oben das Erste hinzu.",
+    "freeTierUsage": "{{used}} von {{limit}} kostenlosen Listen genutzt",
+    "restart": "Neu beginnen",
+    "restartDone": "Alle Häkchen entfernt, nichts gelöscht",
+    "rename": "Umbenennen",
+    "duplicate": "Duplizieren",
+    "copyName": "{{name}} (Kopie)",
+    "deleteList": "Liste löschen",
+    "deleteListTitle": "„{{name}}“ löschen?",
+    "deleteListDesc": "Alles darauf wird mitgelöscht. Das lässt sich nicht rückgängig machen.",
+    "listDeleted": "Liste gelöscht",
+    "allLists": "Alle Listen",
+    "listCapTitle": "Du hast {{limit}} Listen, das Limit des kostenlosen Plans",
+    "listCapDesc": "Mit Premium so viele du willst.",
+    "listNotFound": "Diese Liste gibt es nicht mehr.",
+    "editItem": "Bearbeiten",
+    "itemName": "Name",
+    "quantity": "Anzahl",
+    "quantityHint": "Lass 1 stehen, wenn es nur eins ist",
+    "quantityBadge": "×{{count}}",
+    "reorder": "Sortieren",
+    "reorderDone": "Fertig",
+    "moveUp": "{{name}} nach oben",
+    "moveDown": "{{name}} nach unten",
+    "onShoppingList": "Schon auf der Einkaufsliste",
+    "quantityLess": "Eins weniger",
+    "quantityMore": "Eins mehr",
+    "forTrip": "Für: {{title}}",
+    "tripLabel": "Für welche Reise?",
+    "noTrip": "Keine",
+    "linkToTrip": "Mit einer Reise verknüpfen",
+    "changeTrip": "Reise ändern",
+    "unlinkTrip": "Von der Reise lösen",
+    "noTripsToLink": "Du hast noch keine Reisen. Erstelle eine, dann kannst du ihre Liste hier vorbereiten.",
+    "tripLists": "Listen für diese Reise",
+    "newListForTrip": "Neue Liste für diese Reise"
   },
   "lifeDiary": {
     "title": "Tagebuch",
@@ -844,7 +908,8 @@
     "friendAddedCountry": " hat ein neues Land im Pass: ",
     "friendAddedCountryPlural": " haben ein neues Land im Pass: ",
     "friendEarnedBadge": " hat einen neuen Stempel: ",
-    "friendEarnedBadgePlural": " haben einen neuen Stempel: "
+    "friendEarnedBadgePlural": " haben einen neuen Stempel: ",
+    "tripPacking": " geht bald los: schau, was du noch packen musst"
   },
   "comments": {
     "title": "Kommentare",
@@ -1042,7 +1107,8 @@
     "notifyOnFriendStamps": "Stempel und Länder von Leuten, denen ich folge",
     "yourData": "Deine Daten",
     "legal": "Rechtliches",
-    "dangerZone": "Gefahrenzone"
+    "dangerZone": "Gefahrenzone",
+    "notifyOnTripReminders": "Packerinnerung vor einer Reise"
   },
   "validation": {
     "required": "Dieses Feld ist erforderlich",
@@ -1234,7 +1300,11 @@
       "indulgent": "Genussvoll"
     },
     "defaultTitle": "Meine Reise nach {{destination}}",
-    "loadError": "Das Erlebnis konnte nicht geladen werden."
+    "loadError": "Das Erlebnis konnte nicht geladen werden.",
+    "whenLeaving": "Wann geht es los?",
+    "whenLeavingHint": "Optional. Mit Datum erscheint es als deine nächste Reise und, wenn du eine Packliste dafür anlegst, erinnern wir dich vor der Abfahrt.",
+    "notSureYet": "Weiß ich noch nicht",
+    "invalidDate": "Schreib das Datum als JJJJ-MM-TT"
   },
   "legalTerms": {
     "documentTitle": "Nutzungsbedingungen",
@@ -1468,7 +1538,7 @@
     "collection": {
       "vanLog": "Ausgaben",
       "lifeDiary": "Tagebuch",
-      "packingChecklist": "Packliste",
+      "packingChecklist": "Reiselisten",
       "shoppingList": "Einkaufsliste",
       "inventory": "Vorrat"
     },
@@ -1478,7 +1548,7 @@
       "delete": "Gelöscht",
       "purchase": "Gekauft",
       "useUp": "Verbraucht",
-      "resetTrip": "Neue Reise"
+      "restartList": "Neu beginnen"
     },
     "actionUnconfirmed": "Wir konnten nicht bestätigen, dass es gespeichert wurde: Die Verbindung hat zu lange gedauert. Prüfe die Liste, bevor du es erneut versuchst.",
     "editingIsPremium": "Du bist offline. Änderungen offline zu speichern ist eine Premium-Funktion; versuch es erneut, sobald du wieder online bist."

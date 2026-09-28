@@ -42,7 +42,7 @@ const Account = () => {
       items: [
         { to: "/van-log", Icon: IoBookOutline, label: t("nav.vanLog") },
         { to: "/supplies", Icon: IoCartOutline, label: t("nav.supplies") },
-        { to: "/packing-checklist", Icon: IoBriefcaseOutline, label: t("nav.packingChecklist"), premium: true },
+        { to: "/packing-checklist", Icon: IoBriefcaseOutline, label: t("nav.packingChecklist") },
         { to: "/life-diary", Icon: IoJournalOutline, label: t("nav.lifeDiary") },
       ],
     },
@@ -61,14 +61,11 @@ const Account = () => {
     >
       {section.title && <h3 className="account__section-title">{section.title}</h3>}
       <ul className="account__links">
-        {section.items.map(({ to, Icon, label, premium, mobileOnly, danger }) => (
+        {section.items.map(({ to, Icon, label, mobileOnly, danger }) => (
           <li key={to} className={mobileOnly ? "account__link-item--mobile-only" : undefined}>
             <Link to={to} className={`account__link${danger ? " account__link--danger" : ""}`}>
               <Icon className="account__link-icon" aria-hidden="true" />
               <span className="account__link-label">{label}</span>
-              {premium && !isPremium && (
-                <span className="account__link-badge">{t("admin.premium")}</span>
-              )}
               <IoChevronForward className="account__link-arrow" aria-hidden="true" />
             </Link>
           </li>

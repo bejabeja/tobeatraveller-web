@@ -119,7 +119,7 @@
     "yourTools": "Tes outils",
     "vanLog": "Dépenses",
     "supplies": "Liste de courses",
-    "packingChecklist": "Liste des affaires",
+    "packingChecklist": "Listes de voyage",
     "lifeDiary": "Journal de vie",
     "subscription": "Abonnement",
     "collapse": "Réduire",
@@ -188,7 +188,9 @@
     "onTripDay": "Jour {{day}} sur {{total}}",
     "noNextTrip": "Quelle est ta prochaine destination ?",
     "planTrip": "Planifier un voyage",
-    "openTrip": "Voir le voyage"
+    "openTrip": "Voir le voyage",
+    "prepareTrip": "Préparer les bagages",
+    "tripListProgress": "{{name}} : {{checked}} sur {{total}} prêts"
   },
   "explore": {
     "clearSearch": "Effacer la recherche",
@@ -297,8 +299,8 @@
     "featureVanLogDesc": "Suis le carburant, les réparations et chaque dépense de la vie sur la route.",
     "featureSuppliesTitle": "Liste de courses",
     "featureSuppliesDesc": "Garde ton inventaire et ta liste de courses synchronisés au fil de la route.",
-    "featurePackingChecklistTitle": "Liste des affaires",
-    "featurePackingChecklistDesc": "N'oublie plus rien grâce à des listes organisées par catégorie.",
+    "featurePackingChecklistTitle": "Listes de voyage",
+    "featurePackingChecklistDesc": "Des listes pour tes bagages et pour avant de démarrer, par catégorie.",
     "featureLifeDiaryTitle": "Journal de vie",
     "featureLifeDiaryDesc": "Garde tes souvenirs, photos et meilleurs moments de chaque étape.",
     "featureOfflineEditingTitle": "Enregistre hors ligne",
@@ -761,20 +763,13 @@
     }
   },
   "packingChecklist": {
-    "title": "Liste des affaires",
-    "progress": "{{checked}}/{{total}} cochés",
+    "title": "Listes de voyage",
+    "progress": "{{checked}}/{{total}} prêts",
     "saveError": "Impossible d'enregistrer. Réessaie.",
     "deleteError": "Impossible de supprimer l'article. Réessaie.",
-    "addItemPlaceholder": "Ajouter un article...",
+    "addItemPlaceholder": "Ajoute quelque chose…",
     "addToShoppingList": "Ajouter à la liste de courses",
     "addedToShoppingList": "{{name}} ajouté à la liste de courses",
-    "restoreDefaults": "Restaurer les articles par défaut",
-    "defaultsRestored_one": "{{count}} article restauré",
-    "defaultsRestored_other": "{{count}} articles restaurés",
-    "defaultsRestored_many": "{{count}} articles restaurés",
-    "nothingToRestore": "Tu as déjà tous les articles par défaut",
-    "startNewTrip": "Nouveau voyage",
-    "tripReset": "Liste réinitialisée, rien n'a été supprimé",
     "searchPlaceholder": "Rechercher par nom...",
     "noSearchResults": "Aucun article ne correspond à « {{query}} ».",
     "itemDeleted": "{{name}} supprimé",
@@ -788,9 +783,77 @@
       "toiletries": "Trousse de toilette",
       "first_aid": "Trousse de secours",
       "cleaning": "Produits d'entretien",
-      "other": "Autre"
+      "other": "Autre",
+      "van": "Fourgon"
     },
-    "itemAlreadyInCategory": "Tu as déjà cet article dans cette catégorie."
+    "itemAlreadyInCategory": "Tu as déjà cet article dans cette catégorie.",
+    "categoryLabel": "Catégorie",
+    "add": "Ajouter",
+    "newList": "Nouvelle liste",
+    "listName": "Nom de la liste",
+    "startWith": "Commence avec",
+    "createList": "Créer la liste",
+    "templates": {
+      "empty": {
+        "name": "Vide",
+        "desc": "Pars de zéro"
+      },
+      "departure": {
+        "name": "Avant de démarrer",
+        "desc": "Ce que tu vérifies à chaque départ"
+      },
+      "weekend": {
+        "name": "Week-end",
+        "desc": "L'essentiel pour deux ou trois jours"
+      },
+      "longTrip": {
+        "name": "Long voyage",
+        "desc": "Tout pour des semaines sur la route"
+      },
+      "winter": {
+        "name": "Hiver",
+        "desc": "Froid, neige et fourgon prêt"
+      }
+    },
+    "listProgress": "{{checked}} sur {{total}} prêts",
+    "listEmpty": "Rien pour l'instant",
+    "noLists": "Tu n'as encore aucune liste. Crée la première, de zéro ou à partir d'un modèle.",
+    "noItems": "Cette liste est vide. Ajoute la première chose ci-dessus.",
+    "freeTierUsage": "{{used}} listes gratuites utilisées sur {{limit}}",
+    "restart": "Recommencer",
+    "restartDone": "Tout est décoché, rien n'a été supprimé",
+    "rename": "Renommer",
+    "duplicate": "Dupliquer",
+    "copyName": "{{name}} (copie)",
+    "deleteList": "Supprimer la liste",
+    "deleteListTitle": "Supprimer « {{name}} » ?",
+    "deleteListDesc": "Elle sera supprimée avec tout ce qu'elle contient. C'est définitif.",
+    "listDeleted": "Liste supprimée",
+    "allLists": "Toutes les listes",
+    "listCapTitle": "Tu as {{limit}} listes, la limite du plan gratuit",
+    "listCapDesc": "Avec Premium, autant que tu veux.",
+    "listNotFound": "Cette liste n'existe plus.",
+    "editItem": "Modifier",
+    "itemName": "Nom",
+    "quantity": "Quantité",
+    "quantityHint": "Laisse 1 s'il n'y en a qu'un",
+    "quantityBadge": "×{{count}}",
+    "reorder": "Réorganiser",
+    "reorderDone": "Terminé",
+    "moveUp": "Monter {{name}}",
+    "moveDown": "Descendre {{name}}",
+    "onShoppingList": "Déjà sur la liste de courses",
+    "quantityLess": "Un de moins",
+    "quantityMore": "Un de plus",
+    "forTrip": "Pour : {{title}}",
+    "tripLabel": "Pour quel voyage ?",
+    "noTrip": "Aucun",
+    "linkToTrip": "Lier à un voyage",
+    "changeTrip": "Changer de voyage",
+    "unlinkTrip": "Retirer du voyage",
+    "noTripsToLink": "Tu n'as encore aucun voyage. Crée-en un et tu pourras préparer sa liste d'ici.",
+    "tripLists": "Listes pour ce voyage",
+    "newListForTrip": "Nouvelle liste pour ce voyage"
   },
   "lifeDiary": {
     "title": "Journal de vie",
@@ -857,7 +920,8 @@
     "friendAddedCountry": " a ajouté à son passeport ",
     "friendAddedCountryPlural": " ont ajouté à leurs passeports ",
     "friendEarnedBadge": " a obtenu le tampon ",
-    "friendEarnedBadgePlural": " ont obtenu le tampon "
+    "friendEarnedBadgePlural": " ont obtenu le tampon ",
+    "tripPacking": " va bientôt commencer : vérifie ce qu'il te reste à préparer"
   },
   "comments": {
     "title": "Commentaires",
@@ -1057,7 +1121,8 @@
     "notifyOnFriendStamps": "Tampons et pays des personnes que je suis",
     "yourData": "Tes données",
     "legal": "Mentions légales",
-    "dangerZone": "Zone de danger"
+    "dangerZone": "Zone de danger",
+    "notifyOnTripReminders": "Rappel des bagages avant un voyage"
   },
   "validation": {
     "required": "Ce champ est obligatoire",
@@ -1250,7 +1315,11 @@
       "indulgent": "Gourmand"
     },
     "defaultTitle": "Mon voyage à {{destination}}",
-    "loadError": "Impossible de charger l'expérience."
+    "loadError": "Impossible de charger l'expérience.",
+    "whenLeaving": "Quand pars-tu ?",
+    "whenLeavingHint": "Facultatif. Avec une date, il apparaît comme ton prochain voyage et, si tu lui fais une liste de bagages, on te prévient avant le départ.",
+    "notSureYet": "Je ne sais pas encore",
+    "invalidDate": "Écris la date au format AAAA-MM-JJ"
   },
   "legalTerms": {
     "documentTitle": "Conditions d'utilisation",
@@ -1489,7 +1558,7 @@
     "collection": {
       "vanLog": "Dépenses",
       "lifeDiary": "Journal de vie",
-      "packingChecklist": "Liste des affaires",
+      "packingChecklist": "Listes de voyage",
       "shoppingList": "Liste de courses",
       "inventory": "Inventaire"
     },
@@ -1499,7 +1568,7 @@
       "delete": "Supprimé",
       "purchase": "Acheté",
       "useUp": "Utilisé",
-      "resetTrip": "Nouveau voyage"
+      "restartList": "Recommencer"
     },
     "actionUnconfirmed": "Impossible de confirmer l'enregistrement : la connexion a pris trop de temps. Vérifie la liste avant de réessayer.",
     "editingIsPremium": "Tu es hors ligne. Enregistrer des modifications hors ligne est une fonctionnalité Premium ; réessaie une fois de retour en ligne."

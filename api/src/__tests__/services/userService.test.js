@@ -562,18 +562,20 @@ describe('UserService.exportUserData()', () => {
         const vanLogRepository = { findByUserId: async () => [{ toDTO: () => ({ id: 'van-1' }) }] };
         const inventoryRepository = { findByUserId: async () => [{ toDTO: () => ({ id: 'inv-1' }) }] };
         const shoppingListRepository = { findByUserId: async () => [{ toDTO: () => ({ id: 'shop-1' }) }] };
-        const packingChecklistRepository = { findByUserId: async () => [{ toDTO: () => ({ id: 'pack-1' }) }] };
+        const packingChecklistRepository = { findByUserId: async () => [{ listId: 'list-1', toDTO: () => ({ id: 'pack-1' }) }] };
+        const packingListRepository = { findByUserId: async () => [{ id: 'list-1', toDTO: () => ({ id: 'list-1', name: 'Invierno' }) }] };
         const service = new UserService(
             userRepository, itinerariesRepository, followRepository, null,
             lifeDiaryRepository, null, vanLogRepository,
-            inventoryRepository, shoppingListRepository, packingChecklistRepository
+            inventoryRepository, shoppingListRepository, packingChecklistRepository,
+            null, null, null, null, packingListRepository
         );
 
         const result = await service.exportUserData('user-1', { id: 'user-1', username: 'jane' });
 
         expect(result.vanLogEntries).toEqual([{ id: 'van-1' }]);
         expect(result.supplies).toEqual({ inventory: [{ id: 'inv-1' }], shoppingList: [{ id: 'shop-1' }] });
-        expect(result.packingChecklist).toEqual([{ id: 'pack-1' }]);
+        expect(result.packingLists).toEqual([{ id: 'list-1', name: 'Invierno', items: [{ id: 'pack-1' }] }]);
         expect(result.lifeDiaryEntries).toEqual([{
             id: 'entry-1', images: [{ id: 'img-1', entryId: 'entry-1', photoUrl: 'https://cloudinary/img.jpg' }],
         }]);
@@ -589,7 +591,7 @@ describe('UserService.exportUserData()', () => {
 
         expect(result.vanLogEntries).toEqual([]);
         expect(result.supplies).toEqual({ inventory: [], shoppingList: [] });
-        expect(result.packingChecklist).toEqual([]);
+        expect(result.packingLists).toEqual([]);
         expect(result.lifeDiaryEntries).toEqual([]);
     });
 

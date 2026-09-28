@@ -15,12 +15,13 @@ import {
   itineraryCategories, placeCategories,
   reverseGeocode, searchDestinations, selectAuthUser, selectMe,
   setUserInfo, setUserInfoItineraries,
-  stepNameHintKey, ANALYTICS_EVENTS, TRIP_KINDS,
+  stepNameHintKey, ANALYTICS_EVENTS, TRIP_KINDS, experienceDates, isCalendarDay,
 } from '@tobeatraveller/shared';
 import { trackEvent } from '../../utils/analytics';
 import { COLORS, shadow } from '../../utils/styles';
 import { getStepConfig } from '../../utils/stepConfig';
 import { GEOAPIFY_KEY } from '../../utils/config';
+import ExperienceStartDate from '../../components/ExperienceStartDate';
 import { PhotoPickerCard } from '../../components/PhotoPickerCard';
 import { useCurrentLocation } from '../../hooks/useCurrentLocation';
 import { UseCurrentLocationButton } from '../../components/UseCurrentLocationButton';
@@ -64,6 +65,7 @@ const EditExperienceScreen = ({ navigation, route }) => {
   const [destResults, setDestResults]   = useState([]);
   const [destSearching, setDestSearching] = useState(false);
   const [days, setDays]                 = useState(7);
+  const [startDateText, setStartDateText] = useState('');
   const [category, setCategory]         = useState('adventure');
   const [travelers, setTravelers]       = useState(1);
   const [pace, setPace]                 = useState(DEFAULT_AI_PACE);
@@ -87,6 +89,7 @@ const EditExperienceScreen = ({ navigation, route }) => {
         setTitle(data.title ?? '');
         setPhotoUri(data.photoUrl || null);
         setDays(data.tripTotalDays ?? 7);
+        setStartDateText(data.startDate ?? '');
         setCategory((data.category || 'adventure').split(',')[0]);
         setTravelers(data.numberOfPeople ?? 1);
         setIsPublic(data.isPublic ?? EXISTING_ITINERARY_VISIBILITY_FALLBACK);
@@ -224,16 +227,14 @@ const EditExperienceScreen = ({ navigation, route }) => {
   // ─── Save ────────────────────────────────────────────────────────────────
   const handleSave = async () => {
     if (!title.trim()) { Alert.alert(ce('addTitleError'), ce('namePlaceholder')); return; }
+    if (startDateText && !isCalendarDay(startDateText)) { Alert.alert(ce('invalidDate')); return; }
     setSaving(true);
-    const today = new Date().toISOString().split('T')[0];
-    const endObj = new Date(today);
-    endObj.setDate(endObj.getDate() + days - 1);
     try {
       const body = {
         title: title.trim(),
         description: ce('autoDescription', { count: days, destination: destination.name }),
         location: { name: destination.name, label: destination.label ?? destination.name, lat: destination.coordinates?.lat ?? 0, lon: destination.coordinates?.lon ?? 0 },
-        startDate: today, endDate: endObj.toISOString().split('T')[0],
+        ...experienceDates(startDateText || null, days),
         budget: 0, currency: 'EUR', numberOfPeople: travelers, category, isPublic,
         places: steps.filter(s => s.name.trim()).map((s, i) => ({
           id: s._id,
@@ -362,6 +363,8 @@ const EditExperienceScreen = ({ navigation, route }) => {
                 </View>
               </View>
             </View>
+
+            <ExperienceStartDate value={startDateText} days={days} onChange={setStartDateText} />
 
             {/* Category */}
             <View style={ls.section}>

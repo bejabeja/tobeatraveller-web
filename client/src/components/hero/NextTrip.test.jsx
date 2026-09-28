@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 
 let mockTrips = [];
@@ -12,6 +12,9 @@ jest.mock("../../store/user/userInfoSelectors", () => ({
   selectMyItinerariesLoaded: () => mockTripsLoaded,
 }));
 
+jest.mock("../../services/packingChecklist", () => ({ getPackingLists: jest.fn(() => Promise.resolve({ lists: [] })) }));
+
+import { getPackingLists } from "../../services/packingChecklist";
 import NextTrip from "./NextTrip";
 
 const renderNextTrip = () => render(<MemoryRouter><NextTrip /></MemoryRouter>);
@@ -58,4 +61,34 @@ it("waits for the trips before inviting to plan one", () => {
   const { container } = renderNextTrip();
 
   expect(container).toBeEmptyDOMElement();
+});
+
+it("offers to get packing for the next trip when it has no list", async () => {
+  mockTrips = [{ id: "t2", title: "Lisboa", startDate: "2026-10-02", endDate: "2026-10-05" }];
+
+  renderNextTrip();
+
+  expect(await screen.findByRole("link", { name: /home.prepareTrip/ })).toHaveAttribute("href", "/packing-checklist?forTrip=t2");
+});
+
+it("shows how far along the next trip's list is", async () => {
+  mockTrips = [{ id: "t2", title: "Lisboa", startDate: "2026-10-02", endDate: "2026-10-05" }];
+  getPackingLists.mockResolvedValue({ lists: [{ id: "l1", name: "Equipaje", itemCount: 12, checkedCount: 4, itinerary: { id: "t2", title: "Lisboa" } }] });
+
+  renderNextTrip();
+
+  expect(await screen.findByRole("link", { name: /home.tripListProgress:Equipaje\/4\/12/ })).toHaveAttribute("href", "/packing-checklist/l1");
+});
+
+
+// Offering to start a list when the lists couldn't be loaded could make a
+// second list for a trip that already has one.
+it("doesn't offer to start a list when the lists couldn't be loaded", async () => {
+  mockTrips = [{ id: "t2", title: "Lisboa", startDate: "2099-10-02", endDate: "2099-10-05" }];
+  getPackingLists.mockRejectedValueOnce(new Error("offline"));
+
+  renderNextTrip();
+
+  await waitFor(() => expect(getPackingLists).toHaveBeenCalled());
+  expect(screen.queryByText(/home.prepareTrip/)).not.toBeInTheDocument();
 });

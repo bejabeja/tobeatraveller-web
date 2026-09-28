@@ -1,16 +1,32 @@
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { findNextTrip, localCalendarDay } from "@tobeatraveller/shared";
+import { findNextTrip, listsForTrip, localCalendarDay } from "@tobeatraveller/shared";
+import { getPackingLists } from "../../services/packingChecklist";
 import { selectMyItineraries, selectMyItinerariesLoaded } from "../../store/user/userInfoSelectors";
 
 const NextTrip = () => {
   const { t } = useTranslation();
   const itineraries = useSelector(selectMyItineraries);
   const loaded = useSelector(selectMyItinerariesLoaded);
+  const next = loaded ? findNextTrip(itineraries, localCalendarDay()) : null;
+  const nextTripId = next?.itinerary.id;
+  // Undefined until its lists are known: offering to start one before (or
+  // when they can't be loaded) could make a second list for the same trip.
+  const [tripList, setTripList] = useState(undefined);
+
+  // Its packing list, to show how far along it is (or offer to start one).
+  useEffect(() => {
+    setTripList(undefined);
+    if (!nextTripId) return;
+    getPackingLists()
+      .then(({ lists }) => setTripList(listsForTrip(lists, nextTripId)[0] ?? null))
+      .catch(() => {});
+  }, [nextTripId]);
+
   if (!loaded) return null;
 
-  const next = findNextTrip(itineraries, localCalendarDay());
   const planTrip = (
     <Link to="/create-itinerary" className={next ? "hero__plan-link" : "btn btn--primary"}>
       {t("home.planTrip")}
@@ -39,7 +55,18 @@ const NextTrip = () => {
           {[when, itinerary.location?.name].filter(Boolean).join(" · ")}
         </span>
       </Link>
-      {planTrip}
+      <div className="hero__next-trip-links">
+        {tripList === undefined ? null : tripList ? (
+          <Link to={`/packing-checklist/${tripList.id}`} className="hero__plan-link">
+            🎒 {t("home.tripListProgress", { name: tripList.name, checked: tripList.checkedCount, total: tripList.itemCount })}
+          </Link>
+        ) : (
+          <Link to={`/packing-checklist?forTrip=${itinerary.id}`} className="hero__plan-link">
+            🎒 {t("home.prepareTrip")}
+          </Link>
+        )}
+        {planTrip}
+      </div>
     </div>
   );
 };

@@ -17,6 +17,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { getCategoryIcon } from "../../assets/icons.js";
 import Modal from "../../components/modal/Modal.jsx";
 import TripActionsMenu from "../../components/itineraries/TripActionsMenu.jsx";
+import TripLists from "../../components/itineraries/TripLists.jsx";
 import Spinner from "../../components/spinner/Spinner.jsx";
 import { useLike } from "../../hooks/useLike.js";
 import {
@@ -163,6 +164,7 @@ const Itinerary = () => {
             )}
 
             <Stats itinerary={itinerary} hasDescription={!!itinerary.description} t={t} />
+            {isMyItinerary && <TripLists itineraryId={itinerary.id} />}
             <Places itinerary={itinerary} onHoverPlace={setHoveredPlaceIndex} onPlaceClick={handlePlaceClick} selectedPlaceIndex={selectedPlaceIndex} t={t} />
           </div>
 

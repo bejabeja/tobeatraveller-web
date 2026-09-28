@@ -4,6 +4,7 @@ import {
     createItineraryDataSchema, updateItineraryDataSchema,
     registerPushTokenSchema, createVanLogEntrySchema, vanLogEntrySchema as vanLogUpdateSchema,
     declaredCountriesSchema, contactSchema, updateLanguageSchema, updateUserTierSchema,
+    createPackingListSchema, packingListSchema, updatePackingListSchema,
 } from '../../utils/schemasValidation.js';
 
 const validSignupData = {
@@ -71,6 +72,31 @@ describe('createItineraryDataSchema', () => {
         category: 'roadtrip',
         currency: 'EUR',
     };
+
+    it('accepts an experience without dates when it says how many days it lasts', () => {
+        const result = createItineraryDataSchema.safeParse({ ...baseItinerary, source: 'experience', startDate: null, endDate: null, totalDays: 5 });
+
+        expect(result.success).toBe(true);
+    });
+
+    it('rejects an experience with neither dates nor how many days it lasts', () => {
+        const result = createItineraryDataSchema.safeParse({ ...baseItinerary, source: 'experience', startDate: null, endDate: null });
+
+        expect(result.success).toBe(false);
+    });
+
+    it('rejects a regular trip without dates', () => {
+        const result = createItineraryDataSchema.safeParse({ ...baseItinerary, startDate: null, endDate: null, totalDays: 5 });
+
+        expect(result.success).toBe(false);
+        expect(result.error.errors[0].message).toBe('validation.dateRequired');
+    });
+
+    it('rejects a start date without an end date', () => {
+        const result = createItineraryDataSchema.safeParse({ ...baseItinerary, source: 'experience', endDate: null, totalDays: 5 });
+
+        expect(result.success).toBe(false);
+    });
 
     it('accepts a well-formed itinerary with no places', () => {
         const result = createItineraryDataSchema.safeParse(baseItinerary);
@@ -350,3 +376,33 @@ describe('messages a person can run into', () => {
         expect(result.error.errors[0].message).toBe('validation.required');
     });
 });
+
+describe('packing list schemas', () => {
+    it('starts a list with no template when none is given', () => {
+        expect(createPackingListSchema.parse({ name: '  Invierno  ' })).toEqual({ name: 'Invierno', items: [] });
+    });
+
+    it('asks for a name', () => {
+        expect(packingListSchema.safeParse({ name: '   ' }).error.errors[0].message).toBe('validation.nameRequired');
+    });
+
+    it('keeps the name within what the database holds', () => {
+        expect(packingListSchema.safeParse({ name: 'a'.repeat(61) }).success).toBe(false);
+    });
+
+    it('only takes the packing categories for a template', () => {
+        expect(createPackingListSchema.safeParse({ name: 'Surf', items: [{ category: 'surf', name: 'Tabla' }] }).success).toBe(false);
+    });
+
+    it('links a list to a trip, or takes it off with null', () => {
+        const tripId = '8a6e0804-2bd0-4672-b79d-d97027f9071a';
+        expect(updatePackingListSchema.parse({ itineraryId: tripId })).toEqual({ itineraryId: tripId });
+        expect(updatePackingListSchema.parse({ itineraryId: null })).toEqual({ itineraryId: null });
+        expect(updatePackingListSchema.safeParse({ itineraryId: 'not-a-trip' }).success).toBe(false);
+    });
+
+    it('asks for something to change', () => {
+        expect(updatePackingListSchema.safeParse({}).success).toBe(false);
+    });
+});
+

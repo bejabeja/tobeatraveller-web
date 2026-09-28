@@ -41,7 +41,8 @@ import VanLogScreen from '../screens/vanLog/VanLogScreen';
 import VanLogEntryFormScreen from '../screens/vanLog/VanLogEntryFormScreen';
 import SuppliesScreen from '../screens/supplies/SuppliesScreen';
 import SupplyFormScreen from '../screens/supplies/SupplyFormScreen';
-import PackingChecklistScreen from '../screens/packingChecklist/PackingChecklistScreen';
+import PackingListsScreen from '../screens/packingChecklist/PackingListsScreen';
+import PackingListScreen from '../screens/packingChecklist/PackingListScreen';
 import LifeDiaryScreen from '../screens/lifeDiary/LifeDiaryScreen';
 import LifeDiaryEntryFormScreen from '../screens/lifeDiary/LifeDiaryEntryFormScreen';
 import OnboardingScreen from '../screens/auth/OnboardingScreen';
@@ -280,7 +281,8 @@ const Navigation = () => {
         <Stack.Screen name="VanLogEntryForm" component={VanLogEntryFormScreen} />
         <Stack.Screen name="Supplies" component={SuppliesScreen} />
         <Stack.Screen name="SupplyForm" component={SupplyFormScreen} />
-        <Stack.Screen name="PackingChecklist" component={PackingChecklistScreen} />
+        <Stack.Screen name="PackingChecklist" component={PackingListsScreen} />
+        <Stack.Screen name="PackingList" component={PackingListScreen} />
         <Stack.Screen name="LifeDiary" component={LifeDiaryScreen} />
         <Stack.Screen name="LifeDiaryEntryForm" component={LifeDiaryEntryFormScreen} />
         <Stack.Screen name="Contact" component={ContactScreen} />

@@ -12,7 +12,8 @@ export const CHANGE_KINDS = Object.freeze({
   DELETE: 'delete',
   PURCHASE: 'purchase',
   USE_UP: 'useUp',
-  RESET_TRIP: 'resetTrip',
+  // Unticks a whole packing list; its entityId is the list's.
+  RESTART_LIST: 'restartList',
 });
 
 export const CHANGE_STATUS = Object.freeze({
@@ -135,12 +136,22 @@ export const applyPendingChanges = (items, changes, collection) => changes
           : item);
       case CHANGE_KINDS.DELETE:
         return current.filter(item => item.id !== change.entityId);
-      case CHANGE_KINDS.RESET_TRIP:
-        return current.map(item => item.checked ? markPending({ ...item, checked: false }, change) : item);
+      case CHANGE_KINDS.RESTART_LIST:
+        return current.map(item => item.checked && item.listId === change.entityId
+          ? markPending({ ...item, checked: false }, change)
+          : item);
       default:
         return current;
     }
   }, items);
+
+// How far along a packing list is once what's still waiting to sync is
+// counted, from the items last loaded for it.
+export const packingListProgress = (items, changes, listId) => {
+  const current = applyPendingChanges(items, changes, COLLECTIONS.PACKING_CHECKLIST)
+    .filter(item => item.listId === listId);
+  return { itemCount: current.length, checkedCount: current.filter(item => item.checked).length };
+};
 
 const sameSupply = (a, b) => a.name.toLowerCase() === b.name.toLowerCase() && a.unit === b.unit;
 

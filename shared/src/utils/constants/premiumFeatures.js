@@ -12,10 +12,11 @@ export const PREMIUM_FEATURES = [
   { id: "noAds", titleKey: "subscription.featureNoAdsTitle", descriptionKey: "subscription.featureNoAdsDesc", emoji: "🚫", color: "#546E7A" },
 ];
 
-// What the free plan allows before asking for Premium. The API enforces
-// them (FREE_ENTRY_LIMIT / FREE_ITEM_LIMIT in api/src/services/vanLogService.js,
-// suppliesService.js and lifeDiaryService.js); a test keeps both in step.
-export const FREE_PLAN_LIMITS = Object.freeze({ vanLog: 10, supplies: 10, lifeDiary: 10 });
+// What the free plan allows before asking for Premium: entries, items or,
+// for packing, lists. The API enforces them (FREE_ENTRY_LIMIT, FREE_ITEM_LIMIT
+// and FREE_LIST_LIMIT in api/src/services/vanLogService.js, suppliesService.js,
+// lifeDiaryService.js and packingChecklistService.js); a test keeps both in step.
+export const FREE_PLAN_LIMITS = Object.freeze({ vanLog: 10, supplies: 10, lifeDiary: 10, packingLists: 2 });
 
 // The pricing page's free/Premium comparison, row by row. `free` is true
 // (included), false (Premium only) or the free limit; Premium has it all,
@@ -26,7 +27,7 @@ export const PLAN_COMPARISON = Object.freeze([
   { id: "vanLog", titleKey: "subscription.featureVanLogTitle", descriptionKey: "subscription.featureVanLogDesc", free: FREE_PLAN_LIMITS.vanLog },
   { id: "supplies", titleKey: "subscription.featureSuppliesTitle", descriptionKey: "subscription.featureSuppliesDesc", free: FREE_PLAN_LIMITS.supplies },
   { id: "lifeDiary", titleKey: "subscription.featureLifeDiaryTitle", descriptionKey: "subscription.featureLifeDiaryDesc", free: FREE_PLAN_LIMITS.lifeDiary },
-  { id: "packingChecklist", titleKey: "subscription.featurePackingChecklistTitle", descriptionKey: "subscription.featurePackingChecklistDesc", free: false },
+  { id: "packingChecklist", titleKey: "subscription.featurePackingChecklistTitle", descriptionKey: "subscription.featurePackingChecklistDesc", free: FREE_PLAN_LIMITS.packingLists },
   { id: "aiItineraries", titleKey: "subscription.featureAiItineraries", descriptionKey: "subscription.featureAiItinerariesDesc", free: false },
   { id: "offlineEditing", titleKey: "subscription.featureOfflineEditingTitle", descriptionKey: "subscription.featureOfflineEditingDesc", free: false },
 ]);

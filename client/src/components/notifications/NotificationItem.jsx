@@ -21,6 +21,7 @@ const NotificationItem = ({ notification: n, onClick }) => {
     referral_reward: () => <>🎁 {t("notifications.referralRewardPrefix")} <strong>@{n.actor?.username}</strong> {t("notifications.referralRewardSuffix")}</>,
     badge_earned: () => <>{BADGE_EMOJI[n.badgeId]} {t("notifications.badgeEarned")}<strong>{t(`badges.${n.badgeId}.name`)}</strong></>,
     recap_ready: () => <>{t("notifications.recapReady")}<strong>{t("notifications.recapReadyCta")}</strong></>,
+    trip_packing: () => <>🎒 <strong>{n.itinerary?.title}</strong>{t("notifications.tripPacking")}</>,
     country_stamp: () => <>{t("notifications.countryStamp")}<strong>{countryFlag(n.countryCode)} {countryName(n.countryCode, i18n.language)}</strong></>,
     friend_stamp: () => (n.countryCode
       ? <><strong>@{n.actor?.username}</strong>{others}{verb("friendAddedCountry")}<strong>{countryFlag(n.countryCode)} {countryName(n.countryCode, i18n.language)}</strong></>

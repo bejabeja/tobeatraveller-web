@@ -28,18 +28,14 @@ import { optimizedCloudinaryUrl } from "../../utils/cloudinaryUrl";
 import "./Navbar.scss";
 
 
-// The four tools the subscription page itself sells as the reason to go
-// Premium (see PREMIUM_FEATURES in @tobeatraveller/shared); showing them here too
-// (not just buried inside Mi cuenta) so a free user keeps seeing exactly
-// what they're missing, badge and all, wherever they look for the nav.
-// Van Log, Life Diary and Supplies are free to browse (capped at 10 entries/
-// items each), so they're excluded from the "PREMIUM" badge below; Packing
-// Checklist stays fully gated until/unless it gets its own cap.
+// The four tools the subscription page sells (see PREMIUM_FEATURES in
+// @tobeatraveller/shared), shown here too and not just inside Mi cuenta. All
+// of them are free up to a limit, so none carries a "Premium" badge.
 const PREMIUM_TOOLS = [
-  { to: "/van-log", Icon: IoBookOutline, labelKey: "nav.vanLog", premiumOnly: false },
-  { to: "/supplies", Icon: IoCartOutline, labelKey: "nav.supplies", premiumOnly: false },
+  { to: "/van-log", Icon: IoBookOutline, labelKey: "nav.vanLog" },
+  { to: "/supplies", Icon: IoCartOutline, labelKey: "nav.supplies" },
   { to: "/packing-checklist", Icon: IoBriefcaseOutline, labelKey: "nav.packingChecklist", iconClassName: "nav-icon--briefcase" },
-  { to: "/life-diary", Icon: IoJournalOutline, labelKey: "nav.lifeDiary", premiumOnly: false },
+  { to: "/life-diary", Icon: IoJournalOutline, labelKey: "nav.lifeDiary" },
 ];
 
 // Self-contained (not lifted into Navbar's own state) so it can be mounted
@@ -260,14 +256,11 @@ const Navbar = ({ onOpenSearch }) => {
           <div className="nav-section">
             <h3>{t("nav.yourTools")}</h3>
             {PREMIUM_TOOLS.map((tool) => {
-              const { to, Icon, labelKey, iconClassName, premiumOnly = true } = tool;
+              const { to, Icon, labelKey, iconClassName } = tool;
               return (
                 <NavLink key={to} to={to} className="nav-item" title={t(labelKey)}>
                   <Icon className={iconClassName ? `nav-icon ${iconClassName}` : "nav-icon"} />
                   <span>{t(labelKey)}</span>
-                  {premiumOnly && !userMe?.isPremium && (
-                    <span className="nav-item__premium-badge">{t("admin.premium")}</span>
-                  )}
                 </NavLink>
               );
             })}

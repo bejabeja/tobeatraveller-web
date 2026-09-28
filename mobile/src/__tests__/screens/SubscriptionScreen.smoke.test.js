@@ -47,7 +47,9 @@ it('compares the plans with the free limits', () => {
   renderScreen();
 
   expect(screen.getAllByText('subscription.compareUpTo:10')).toHaveLength(3);
-  expect(screen.getAllByText('subscription.compareUnlimited')).toHaveLength(3);
+  // The packing lists are free up to two lists.
+  expect(screen.getByText('subscription.compareUpTo:2')).toBeTruthy();
+  expect(screen.getAllByText('subscription.compareUnlimited')).toHaveLength(4);
   expect(screen.getByText('subscription.featurePackingChecklistTitle')).toBeTruthy();
   expect(screen.queryByText('subscription.featureNoAdsTitle')).toBeNull();
 });

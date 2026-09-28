@@ -1,0 +1,74 @@
+.packing-lists {
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  &__card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    height: 100%;
+    padding: 1.1rem 1.25rem;
+    background: var(--white-color);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    color: var(--text-color);
+    text-decoration: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+    &:hover,
+    &:focus-visible {
+      border-color: var(--primary-color);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+    }
+
+    &--done .packing-lists__card-bar span {
+      background: #16a34a;
+    }
+  }
+
+  &__card-name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+
+  &__card-trip {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    overflow-wrap: anywhere;
+  }
+
+  &__card-meta {
+    font-size: 0.85rem;
+    color: var(--text-secondary-color);
+  }
+
+  &__card-bar {
+    display: block;
+    height: 6px;
+    margin-top: 0.4rem;
+    border-radius: 999px;
+    background: var(--surface-color, #f1f5f9);
+    overflow: hidden;
+
+    span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--primary-color);
+    }
+  }
+
+  &__card-skeleton {
+    height: 96px;
+    border-radius: 14px;
+  }
+}

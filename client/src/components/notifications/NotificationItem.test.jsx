@@ -38,6 +38,14 @@ describe("NotificationItem", () => {
     expect(container.textContent).toContain("notifications.referralRewardPrefix @jane notifications.referralRewardSuffix");
   });
 
+  it("reminds of a trip about to start by its title, and opens the trip", () => {
+    renderItem(notification({ type: "trip_packing", itinerary: { id: "trip-1", title: "Costa Vicentina" } }));
+
+    expect(screen.getByText("Costa Vicentina")).toBeInTheDocument();
+    expect(screen.getByText("notifications.tripPacking", { exact: false })).toBeInTheDocument();
+    expect(screen.getByRole("link")).toHaveAttribute("href", "/itinerary/trip-1");
+  });
+
   it("opens the card of the new badge ready to share", () => {
     renderItem(notification({ type: "badge_earned", badgeId: "explorer" }));
 

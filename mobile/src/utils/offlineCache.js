@@ -19,6 +19,10 @@ export const cacheSet = async (key, value) => {
   }
 };
 
+// Shared by the screens that write a cache and those that read it.
+export const suppliesCacheKey = (userId) => `supplies:${userId}`;
+export const packingListItemsCacheKey = (userId, listId) => `packinglist:${userId}:${listId}`;
+
 // Cached lists are personal data, so they go away on logout instead of
 // staying readable on a device someone else may use next.
 export const cacheClearAll = async () => {

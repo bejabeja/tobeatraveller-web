@@ -29,6 +29,7 @@ const NOTIFICATION_PREFERENCE_TOGGLES = [
   { key: 'notifyOnLike', labelKey: 'settings.notifyOnLike' },
   { key: 'notifyOnFollow', labelKey: 'settings.notifyOnFollow' },
   { key: 'notifyOnFriendStamps', labelKey: 'settings.notifyOnFriendStamps' },
+  { key: 'notifyOnTripReminders', labelKey: 'settings.notifyOnTripReminders' },
 ];
 
 // One row per setting, the same shape whatever it is: its name (and a line

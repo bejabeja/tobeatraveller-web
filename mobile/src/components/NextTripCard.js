@@ -1,15 +1,37 @@
+import { useCallback, useEffect, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { findNextTrip, localCalendarDay, selectMyItineraries, selectMyItinerariesLoaded } from '@tobeatraveller/shared';
+import {
+  findNextTrip, getPackingLists, listsForTrip, localCalendarDay, selectMyItineraries, selectMyItinerariesLoaded,
+} from '@tobeatraveller/shared';
 
 const NextTripCard = ({ navigation }) => {
   const { t } = useTranslation();
   const itineraries = useSelector(selectMyItineraries);
   const loaded = useSelector(selectMyItinerariesLoaded);
+  const next = loaded ? findNextTrip(itineraries, localCalendarDay()) : null;
+  const nextTripId = next?.itinerary.id;
+  // Undefined until its lists are known: offering to start one before (or
+  // when they can't be loaded) could make a second list for the same trip.
+  const [tripList, setTripList] = useState(undefined);
+
+  // Its packing list, to show how far along it is (or offer to start one).
+  // Home stays mounted behind the other screens, so it's fetched again each
+  // time it comes back into view: a list just made or ticked shows up.
+  useEffect(() => setTripList(undefined), [nextTripId]);
+  useFocusEffect(
+    useCallback(() => {
+      if (!nextTripId) return;
+      getPackingLists()
+        .then(({ lists }) => setTripList(listsForTrip(lists, nextTripId)[0] ?? null))
+        .catch(() => {});
+    }, [nextTripId])
+  );
+
   if (!loaded) return null;
 
-  const next = findNextTrip(itineraries, localCalendarDay());
   const planTrip = () => navigation.navigate('CreateItinerary');
 
   if (!next) {
@@ -39,9 +61,28 @@ const NextTripCard = ({ navigation }) => {
         <Text style={styles.title} numberOfLines={1}>{itinerary.title}</Text>
         <Text style={styles.when} numberOfLines={1}>{[when, itinerary.location?.name].filter(Boolean).join(' · ')}</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={planTrip} accessibilityRole="button" hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-        <Text style={styles.planLink}>{t('home.planTrip')}</Text>
-      </TouchableOpacity>
+      <View style={styles.links}>
+        {tripList === undefined ? null : tripList ? (
+          <TouchableOpacity
+            onPress={() => navigation.navigate('PackingList', { listId: tripList.id, name: tripList.name, itinerary: tripList.itinerary })}
+            accessibilityRole="button"
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Text style={styles.planLink}>🎒 {t('home.tripListProgress', { name: tripList.name, checked: tripList.checkedCount, total: tripList.itemCount })}</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            onPress={() => navigation.navigate('PackingChecklist', { forTripId: itinerary.id })}
+            accessibilityRole="button"
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Text style={styles.planLink}>🎒 {t('home.prepareTrip')}</Text>
+          </TouchableOpacity>
+        )}
+        <TouchableOpacity onPress={planTrip} accessibilityRole="button" hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+          <Text style={styles.planLink}>{t('home.planTrip')}</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -56,6 +97,7 @@ const styles = StyleSheet.create({
   label: { fontSize: 11, fontWeight: '700', letterSpacing: 0.6, textTransform: 'uppercase', color: 'rgba(255,255,255,0.85)' },
   title: { fontSize: 17, fontWeight: '700', color: '#fff', marginTop: 2 },
   when: { fontSize: 13, color: 'rgba(255,255,255,0.9)', marginTop: 2 },
+  links: { flexDirection: 'row', flexWrap: 'wrap', gap: 16 },
   planLink: { fontSize: 13, fontWeight: '600', color: '#fff', textDecorationLine: 'underline' },
 
   none: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingBottom: 16 },

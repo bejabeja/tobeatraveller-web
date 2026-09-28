@@ -169,18 +169,6 @@
     font-weight: 500;
   }
 
-  &__link-badge {
-    width: fit-content;
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--primary-color);
-    background: var(--primary-light);
-    padding: 2px 7px;
-    border-radius: 999px;
-  }
-
   &__link-arrow {
     width: 1em;
     height: 1em;

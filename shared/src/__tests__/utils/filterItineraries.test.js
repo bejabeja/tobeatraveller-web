@@ -51,4 +51,12 @@ describe('filterItineraries', () => {
         expect(filterItineraries(itineraries, { destination: 'bali' })).toHaveLength(1);
         expect(filterItineraries(itineraries, { destination: 'tokyo' })).toHaveLength(0);
     });
+
+    // new Date(null) is 1970: an undated experience used to pass any "until" date.
+    it('leaves out an experience without a date when filtering by start date', () => {
+        const undated = makeItinerary({ startDate: null });
+
+        expect(filterItineraries([undated], { startDateMax: '2026-12-31' })).toHaveLength(0);
+        expect(filterItineraries([undated], {})).toHaveLength(1);
+    });
 });

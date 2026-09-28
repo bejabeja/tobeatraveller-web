@@ -1,0 +1,59 @@
+.trip-lists {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  &__items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color, #e8ecf0);
+    border-radius: 12px;
+    background: var(--white-color);
+    color: var(--text-color);
+    text-decoration: none;
+
+    &:hover,
+    &:focus-visible { border-color: var(--primary-color); }
+  }
+
+  &__item-emoji {
+    width: auto;
+    font-size: 1.3rem;
+  }
+
+  &__item-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+
+    span {
+      font-size: 0.85rem;
+      color: var(--text-secondary-color);
+    }
+  }
+
+  &__item-arrow {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+    color: var(--text-secondary-color);
+  }
+
+  &__new {
+    width: fit-content;
+    gap: 0.4rem;
+
+    svg { width: 1em; height: 1em; }
+  }
+}

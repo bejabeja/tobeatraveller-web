@@ -1,7 +1,7 @@
 import {
-  addInventoryItem, addPackingChecklistItem, addShoppingListItem, createLifeDiaryEntry, createVanLogEntry,
+  addInventoryItem, addPackingListItem, addShoppingListItem, createLifeDiaryEntry, createVanLogEntry,
   deleteInventoryItem, deleteLifeDiaryEntry, deletePackingChecklistItem, deleteShoppingListItem, deleteVanLogEntry,
-  markInventoryItemUsedUp, markShoppingListItemPurchased, resetPackingChecklistTrip, updateInventoryItem,
+  markInventoryItemUsedUp, markShoppingListItemPurchased, restartPackingList, updateInventoryItem,
   updateLifeDiaryEntry, updatePackingChecklistItem, updateShoppingListItem, updateVanLogEntry,
 } from '@tobeatraveller/shared';
 import { CHANGE_KINDS, COLLECTIONS } from './pendingChanges';
@@ -26,10 +26,11 @@ const EXECUTORS = {
     [CHANGE_KINDS.DELETE]: ({ entityId }) => deleteLifeDiaryEntry(entityId),
   },
   [COLLECTIONS.PACKING_CHECKLIST]: {
-    [CHANGE_KINDS.CREATE]: ({ payload }) => addPackingChecklistItem(payload),
+    // The list travels with the queued item, for the address it's added to.
+    [CHANGE_KINDS.CREATE]: ({ payload: { listId, ...item } }) => addPackingListItem(listId, item),
     [CHANGE_KINDS.UPDATE]: ({ entityId, payload }) => updatePackingChecklistItem(entityId, payload),
     [CHANGE_KINDS.DELETE]: ({ entityId }) => deletePackingChecklistItem(entityId),
-    [CHANGE_KINDS.RESET_TRIP]: () => resetPackingChecklistTrip(),
+    [CHANGE_KINDS.RESTART_LIST]: ({ entityId }) => restartPackingList(entityId),
   },
   [COLLECTIONS.SHOPPING_LIST]: {
     [CHANGE_KINDS.CREATE]: ({ payload }) => addShoppingListItem(payload),

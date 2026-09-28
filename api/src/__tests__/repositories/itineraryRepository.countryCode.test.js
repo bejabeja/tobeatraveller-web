@@ -28,7 +28,7 @@ describe('ItineraryRepository country code', () => {
 
         const [query, params] = client.query.mock.calls[0];
         expect(query).toMatch(/location_country_code/);
-        expect(params.at(-1)).toBe('IT');
+        expect(params[19]).toBe('IT');
     });
 
     it('updates the ISO code when the destination changes', async () => {

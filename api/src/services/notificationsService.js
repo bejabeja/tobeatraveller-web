@@ -5,6 +5,7 @@ const NOTIFICATION_TYPE_PREFERENCE_KEY = {
     like: 'notifyOnLike',
     follow: 'notifyOnFollow',
     friend_stamp: 'notifyOnFriendStamps',
+    trip_packing: 'notifyOnTripReminders',
 };
 
 // Followers are told a few at a time, not to exhaust the database connection
@@ -19,7 +20,7 @@ const PUSH_ON_EVERY_EVENT_TYPES = new Set(['comment']);
 
 // Notifications about the user's own progress, where the recipient is also
 // the "actor", instead of someone else acting on their content.
-const SELF_NOTIFICATION_TYPES = new Set(['badge_earned', 'country_stamp', 'recap_ready']);
+const SELF_NOTIFICATION_TYPES = new Set(['badge_earned', 'country_stamp', 'recap_ready', 'trip_packing']);
 
 export class NotificationsService {
     constructor(notificationsRepository, pushNotificationsService = null) {
@@ -27,7 +28,9 @@ export class NotificationsService {
         this.pushNotificationsService = pushNotificationsService;
     }
 
-    async createNotification({ userId, actorId, type, itineraryId, commentId, badgeId, countryCode }) {
+    // `remainingCount` only goes into the push (a trip reminder's things
+    // still to pack); the notification itself doesn't keep it.
+    async createNotification({ userId, actorId, type, itineraryId, commentId, badgeId, countryCode, remainingCount }) {
         if (userId === actorId && !SELF_NOTIFICATION_TYPES.has(type)) return;
 
         const preferences = await this.notificationsRepository.getPreferences(userId);
@@ -40,7 +43,7 @@ export class NotificationsService {
         // Callers fire this with .catch(() => {}), so a push failure would
         // otherwise vanish without a trace.
         await this.pushNotificationsService
-            .sendNotificationPush({ userId, actorId, type, itineraryId, commentId, badgeId, countryCode })
+            .sendNotificationPush({ userId, actorId, type, itineraryId, commentId, badgeId, countryCode, remainingCount })
             .catch(err => logger.error('[push] failed to send notification push:', err));
     }
 

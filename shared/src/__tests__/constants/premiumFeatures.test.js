@@ -5,7 +5,7 @@ import { FREE_PLAN_LIMITS, PLAN_COMPARISON } from '../../utils/constants/premium
 // The pricing page promises these limits; the API is what enforces them.
 const apiLimit = (service) => {
     const source = readFileSync(new URL(`../../../../api/src/services/${service}`, import.meta.url), 'utf8');
-    return Number(source.match(/const FREE_(?:ENTRY|ITEM)_LIMIT = (\d+);/)[1]);
+    return Number(source.match(/const FREE_(?:ENTRY|ITEM|LIST)_LIMIT = (\d+);/)[1]);
 };
 
 describe('FREE_PLAN_LIMITS', () => {
@@ -14,6 +14,7 @@ describe('FREE_PLAN_LIMITS', () => {
             vanLog: apiLimit('vanLogService.js'),
             supplies: apiLimit('suppliesService.js'),
             lifeDiary: apiLimit('lifeDiaryService.js'),
+            packingLists: apiLimit('packingChecklistService.js'),
         });
     });
 });
@@ -27,6 +28,6 @@ describe('PLAN_COMPARISON', () => {
     it('shows the free limit for the tools free accounts can use a little', () => {
         const byId = Object.fromEntries(PLAN_COMPARISON.map(row => [row.id, row.free]));
 
-        expect(byId).toMatchObject({ vanLog: 10, supplies: 10, lifeDiary: 10, packingChecklist: false, aiItineraries: false, core: true });
+        expect(byId).toMatchObject({ vanLog: 10, supplies: 10, lifeDiary: 10, packingChecklist: 2, aiItineraries: false, core: true });
     });
 });

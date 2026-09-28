@@ -15,20 +15,38 @@ const jsonRequest = async (path, options, errorMessage) => {
     return response.status === 204 ? null : response.json();
 };
 
-export const getPackingChecklist = () =>
-    jsonRequest("", { method: "GET" }, "Failed to get packing checklist");
+// { lists, freeTierUsage }: each list with how many things it has and how
+// many are ticked off, and how many the free plan allows.
+export const getPackingLists = () =>
+    jsonRequest("/lists", { method: "GET" }, "Failed to get packing lists");
 
-export const addPackingChecklistItem = (item) =>
-    jsonRequest("", { method: "POST", body: JSON.stringify(item) }, "Failed to add item");
+// `items` is what the chosen template starts it with (packingTemplateItems);
+// `itineraryId`, the trip it's for, if any.
+export const createPackingList = ({ name, items, itineraryId = null }) =>
+    jsonRequest("/lists", { method: "POST", body: JSON.stringify({ name, items, itineraryId }) }, "Failed to create the list");
 
-export const seedPackingChecklistDefaults = (items) =>
-    jsonRequest("/seed", { method: "POST", body: JSON.stringify({ items }) }, "Failed to load the default checklist");
+// `{ name }`, `{ itineraryId }` (null takes it off its trip) or both.
+export const updatePackingList = (listId, changes) =>
+    jsonRequest(`/lists/${listId}`, { method: "PATCH", body: JSON.stringify(changes) }, "Failed to update the list");
 
-export const resetPackingChecklistTrip = () =>
-    jsonRequest("/reset", { method: "POST" }, "Failed to reset the checklist");
+export const duplicatePackingList = (listId, name) =>
+    jsonRequest(`/lists/${listId}/duplicate`, { method: "POST", body: JSON.stringify({ name }) }, "Failed to copy the list");
+
+export const deletePackingList = (listId) =>
+    jsonRequest(`/lists/${listId}`, { method: "DELETE" }, "Failed to delete the list");
+
+export const getPackingListItems = (listId) =>
+    jsonRequest(`/lists/${listId}/items`, { method: "GET" }, "Failed to get the list");
+
+export const addPackingListItem = (listId, item) =>
+    jsonRequest(`/lists/${listId}/items`, { method: "POST", body: JSON.stringify(item) }, "Failed to add item");
+
+// Unticks everything for the next trip; nothing is deleted.
+export const restartPackingList = (listId) =>
+    jsonRequest(`/lists/${listId}/restart`, { method: "POST" }, "Failed to restart the list");
 
 export const updatePackingChecklistItem = (id, item) =>
-    jsonRequest(`/${id}`, { method: "PATCH", body: JSON.stringify(item) }, "Failed to update item");
+    jsonRequest(`/items/${id}`, { method: "PATCH", body: JSON.stringify(item) }, "Failed to update item");
 
 export const deletePackingChecklistItem = (id) =>
-    jsonRequest(`/${id}`, { method: "DELETE" }, "Failed to delete item");
+    jsonRequest(`/items/${id}`, { method: "DELETE" }, "Failed to delete item");

@@ -13,6 +13,13 @@ export function toCalendarDay(value) {
     return `${date.getFullYear()}-${month}-${day}`;
 }
 
+const DAY_MS = 86_400_000;
+
+// How many days a trip lasts, counting both its first and last day.
+export function tripLengthInDays(startDate, endDate) {
+    return Math.round((Date.parse(toCalendarDay(endDate)) - Date.parse(toCalendarDay(startDate))) / DAY_MS) + 1;
+}
+
 export function formatDate(date) {
     const options = { year: "numeric", month: "long" };
     return new Date(date).toLocaleDateString("en-US", options);

@@ -12,6 +12,7 @@ const baseRow = {
   longitude: 139.6917,
   start_date: new Date('2025-04-01'),
   end_date: new Date('2025-04-10'),
+  total_days: 10,
   created_at: new Date('2025-01-01'),
   updated_at: new Date('2025-01-02'),
   photo_url: 'https://example.com/photo.jpg',
@@ -84,22 +85,6 @@ describe('Itinerary model', () => {
     });
   });
 
-  describe('getTotalDays()', () => {
-    it('calculates days correctly (inclusive)', () => {
-      const itinerary = Itinerary.fromDb(baseRow); // Apr 1 - Apr 10 = 10 days
-      expect(itinerary.getTotalDays()).toBe(10);
-    });
-
-    it('returns 1 for a single-day trip', () => {
-      const itinerary = Itinerary.fromDb({
-        ...baseRow,
-        start_date: new Date('2025-06-15'),
-        end_date: new Date('2025-06-15'),
-      });
-      expect(itinerary.getTotalDays()).toBe(1);
-    });
-  });
-
   describe('toDTO()', () => {
     // Postgres gives a DATE as local midnight: serialized as a timestamp, a
     // server east of Greenwich sent the day before ("2026-04-30T22:00:00Z"),
@@ -108,6 +93,12 @@ describe('Itinerary model', () => {
       const itinerary = Itinerary.fromDb({ ...baseRow, start_date: new Date(2026, 4, 1), end_date: new Date(2026, 4, 10) });
 
       expect(JSON.parse(JSON.stringify(itinerary.toDTO()))).toMatchObject({ startDate: '2026-05-01', endDate: '2026-05-10' });
+    });
+
+    it('sends an experience planned without a date by its days alone', () => {
+      const itinerary = Itinerary.fromDb({ ...baseRow, source: 'experience', start_date: null, end_date: null, total_days: 5 });
+
+      expect(itinerary.toDTO()).toMatchObject({ startDate: null, endDate: null, tripDates: null, tripTotalDays: 5 });
     });
 
     it('returns the expected shape', () => {

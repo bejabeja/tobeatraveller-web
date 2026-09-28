@@ -25,7 +25,7 @@ const PLACEHOLDER_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80
 const PLACEHOLDER_IMAGE = `data:image/svg+xml;base64,${Buffer.from(PLACEHOLDER_SVG).toString('base64')}`;
 
 export class Itinerary {
-    constructor({ id, userId, title, description, location, startDate, endDate, createdAt, updatedAt, photoUrl, photoPublicId, budget, numberOfPeople, likesCount, commentsCount, category, currency, isPublic, source, clonedFromItineraryId }) {
+    constructor({ id, userId, title, description, location, startDate, endDate, totalDays, createdAt, updatedAt, photoUrl, photoPublicId, budget, numberOfPeople, likesCount, commentsCount, category, currency, isPublic, source, clonedFromItineraryId }) {
         this.id = id;
         this.userId = userId;
         this.title = title;
@@ -33,6 +33,7 @@ export class Itinerary {
         this.location = location || {};
         this.startDate = startDate;
         this.endDate = endDate;
+        this.totalDays = totalDays;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.photoUrl = photoUrl || this.getPlaceholderImage();
@@ -65,6 +66,7 @@ export class Itinerary {
             },
             startDate: row.start_date,
             endDate: row.end_date,
+            totalDays: row.total_days,
             createdAt: row.created_at,
             updatedAt: row.updated_at,
             photoUrl: row.photo_url,
@@ -101,7 +103,7 @@ export class Itinerary {
             description: this.description,
             location: this.location,
             places: this.places.map(place => place.toDTO()),
-            tripTotalDays: this.getTotalDays(),
+            tripTotalDays: this.totalDays,
             photoUrl: this.photoUrl,
             photoPublicId: this.photoPublicId,
             images: this.images,
@@ -113,7 +115,7 @@ export class Itinerary {
             currency: this.currency,
             isPublic: this.isPublic,
             source: this.source,
-            tripDates: formatDateRange(this.startDate, this.endDate),
+            tripDates: this.startDate ? formatDateRange(this.startDate, this.endDate) : null,
             startDate: toCalendarDay(this.startDate),
             endDate: toCalendarDay(this.endDate),
         };
@@ -125,20 +127,13 @@ export class Itinerary {
             title: this.title,
             description: this.description,
             location: this.location,
-            tripTotalDays: this.getTotalDays(),
+            tripTotalDays: this.totalDays,
             photoUrl: this.photoUrl,
             category: this.category,
             likesCount: this.likesCount,
             commentsCount: this.commentsCount,
             user: this.user
         };
-    }
-
-    getTotalDays() {
-        const start = new Date(this.startDate);
-        const end = new Date(this.endDate);
-        const diffTime = Math.abs(end - start);
-        return Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
     }
 
     getPlaceholderImage() {

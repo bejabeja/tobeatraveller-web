@@ -37,7 +37,7 @@ export class UserService {
         lifeDiaryRepository = null, auditLogService = null, vanLogRepository = null,
         inventoryRepository = null, shoppingListRepository = null, packingChecklistRepository = null,
         subscriptionRepository = null, referralService = null, pushTokensRepository = null,
-        badgeRepository = null
+        badgeRepository = null, packingListRepository = null
     ) {
         this.userRepository = userRepository;
         this.itinerariesRepository = itinerariesRepository;
@@ -53,6 +53,7 @@ export class UserService {
         this.referralService = referralService;
         this.pushTokensRepository = pushTokensRepository;
         this.badgeRepository = badgeRepository;
+        this.packingListRepository = packingListRepository;
     }
 
     async create(userData, { ip, userAgent } = {}) {
@@ -390,7 +391,7 @@ export class UserService {
 
         const [
             itineraries, followers, following, commentsResult, likesResult, favoritesResult,
-            lifeDiaryEntries, vanLogEntries, inventoryItems, shoppingListItems, packingChecklistItems,
+            lifeDiaryEntries, vanLogEntries, inventoryItems, shoppingListItems, packingChecklistItems, packingLists,
             pushDevices, badges, countryStamps, declaredCountries, previousReferralCodes,
         ] = await Promise.all([
             this.itinerariesRepository.findByUserId(id),
@@ -419,6 +420,7 @@ export class UserService {
             this.inventoryRepository ? this.inventoryRepository.findByUserId(id) : [],
             this.shoppingListRepository ? this.shoppingListRepository.findByUserId(id) : [],
             this.packingChecklistRepository ? this.packingChecklistRepository.findByUserId(id) : [],
+            this.packingListRepository ? this.packingListRepository.findByUserId(id) : [],
             this.pushTokensRepository ? this.pushTokensRepository.findByUserId(id) : [],
             this.badgeRepository ? this.badgeRepository.findEarnedByUserId(id) : [],
             this.badgeRepository ? this.badgeRepository.findStampedCountries(id) : [],
@@ -471,7 +473,10 @@ export class UserService {
                 inventory: inventoryItems.map(item => item.toDTO()),
                 shoppingList: shoppingListItems.map(item => item.toDTO()),
             },
-            packingChecklist: packingChecklistItems.map(item => item.toDTO()),
+            packingLists: packingLists.map(list => ({
+                ...list.toDTO(),
+                items: packingChecklistItems.filter(item => item.listId === list.id).map(item => item.toDTO()),
+            })),
             pushDevices,
             badges,
             countryStamps,

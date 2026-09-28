@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthError } from '../../errors/AuthError.js';
 import { ConflictError } from '../../errors/ConflictError.js';
 import { NotFoundError } from '../../errors/NotFoundError.js';
+import { ValidationError } from '../../errors/ValidationError.js';
 import { ItineraryService } from '../../services/itineraryService.js';
 
 const makePlace = (id, orderIndex = 0) => ({
@@ -253,6 +254,22 @@ describe('ItineraryService', () => {
       expect(badgeService.evaluateUserInBackground).toHaveBeenCalledWith('user-1');
     });
 
+    it('keeps how long a dated trip lasts from its dates, whatever else was sent', async () => {
+      itinerariesRepository.create.mockResolvedValue(makeItinerary());
+
+      await service.createItinerary({ ...baseData, startDate: '2026-10-30', endDate: '2026-11-02', totalDays: 9 }, null, [], 'user-1');
+
+      expect(itinerariesRepository.create).toHaveBeenCalledWith(expect.objectContaining({ totalDays: 4 }));
+    });
+
+    it('saves an experience without a date by its days alone', async () => {
+      itinerariesRepository.create.mockResolvedValue(makeItinerary());
+
+      await service.createItinerary({ ...baseData, source: 'experience', totalDays: 5 }, null, [], 'user-1');
+
+      expect(itinerariesRepository.create).toHaveBeenCalledWith(expect.objectContaining({ startDate: null, endDate: null, totalDays: 5 }));
+    });
+
     it('creates itinerary without image when no file provided', async () => {
       const itinerary = makeItinerary();
       itinerariesRepository.create.mockResolvedValue(itinerary);
@@ -449,6 +466,8 @@ describe('ItineraryService', () => {
   describe('updateItinerary()', () => {
     const baseUpdateData = {
       title: 'Updated Trip',
+      startDate: '2026-05-01',
+      endDate: '2026-05-10',
       places: [],
     };
 
@@ -460,6 +479,22 @@ describe('ItineraryService', () => {
       await service.updateItinerary('itin-1', { ...baseUpdateData }, null, [], 'user-1');
 
       expect(badgeService.evaluateUserInBackground).toHaveBeenCalledWith('user-1');
+    });
+
+    it('lets an experience drop its date', async () => {
+      itinerariesRepository.findById.mockResolvedValue(makeItinerary({ source: 'experience' }));
+
+      await service.updateItinerary('itin-1', { ...baseUpdateData, startDate: null, endDate: null, totalDays: 6 }, null, [], 'user-1');
+
+      expect(itinerariesRepository.update).toHaveBeenCalledWith('itin-1', expect.objectContaining({ startDate: null, endDate: null, totalDays: 6 }));
+    });
+
+    it('refuses to leave a regular trip without dates', async () => {
+      itinerariesRepository.findById.mockResolvedValue(makeItinerary({ source: 'itinerary' }));
+
+      await expect(service.updateItinerary('itin-1', { ...baseUpdateData, startDate: null, endDate: null, totalDays: 6 }, null, [], 'user-1'))
+        .rejects.toThrow(ValidationError);
+      expect(itinerariesRepository.update).not.toHaveBeenCalled();
     });
 
     describe('a cloned itinerary', () => {

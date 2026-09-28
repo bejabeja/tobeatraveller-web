@@ -15,7 +15,7 @@ import {
 import { UserRowSkeleton } from '../../components/Skeleton';
 import { shadow } from '../../utils/styles';
 
-const TYPE_ICON = { follow: '👤', like: '❤️', comment: '💬', referral_reward: '🎁', badge_earned: '🏅', country_stamp: '🛂', recap_ready: '🎉', friend_stamp: '🛂' };
+const TYPE_ICON = { follow: '👤', like: '❤️', comment: '💬', referral_reward: '🎁', badge_earned: '🏅', country_stamp: '🛂', recap_ready: '🎉', friend_stamp: '🛂', trip_packing: '🎒' };
 
 const NotificationsScreen = ({ navigation }) => {
   const { t, i18n } = useTranslation();
@@ -132,6 +132,8 @@ const NotificationsScreen = ({ navigation }) => {
                     <Text>{BADGE_EMOJI[n.badgeId]} {t('notifications.badgeEarned')}<Text style={styles.bold}>{t(`badges.${n.badgeId}.name`)}</Text></Text>
                   ) : n.type === 'recap_ready' ? (
                     <Text>{t('notifications.recapReady')}<Text style={styles.bold}>{t('notifications.recapReadyCta')}</Text></Text>
+                  ) : n.type === 'trip_packing' ? (
+                    <Text><Text style={styles.bold}>{n.itinerary?.title}</Text>{t('notifications.tripPacking')}</Text>
                   ) : n.type === 'country_stamp' ? (
                     <Text>{t('notifications.countryStamp')}<Text style={styles.bold}>{countryFlag(n.countryCode)} {countryName(n.countryCode, i18n.language)}</Text></Text>
                   ) : (

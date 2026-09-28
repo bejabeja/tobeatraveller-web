@@ -5,6 +5,7 @@ jest.mock('@expo/vector-icons', () => ({ Ionicons: () => null }));
 jest.mock('react-native-maps', () => ({ __esModule: true, default: () => null, Marker: () => null, Polyline: () => null }));
 jest.mock('expo-linear-gradient', () => ({ LinearGradient: ({ children }) => children }));
 jest.mock('../../utils/analytics', () => ({ trackEvent: jest.fn() }));
+jest.mock('../../components/TripListsSection', () => () => null);
 jest.mock('../../utils/config', () => ({ WEB_URL: 'https://example.com' }));
 jest.mock('@tobeatraveller/shared', () => ({
   addComment: jest.fn(), addFavorite: jest.fn(), checkIsFavorite: jest.fn(() => Promise.resolve(false)),

@@ -112,14 +112,14 @@ describe('ItineraryRepository.buildFilters()', () => {
     it('adds durationMin condition', () => {
         const { conditions, values } = repo.buildFilters({ durationMin: 3 });
 
-        expect(conditions.some(c => c.includes('end_date - start_date') && c.includes('>= $'))).toBe(true);
+        expect(conditions.some(c => c.includes('total_days >= $'))).toBe(true);
         expect(values).toContain(3);
     });
 
     it('adds durationMax condition', () => {
         const { conditions, values } = repo.buildFilters({ durationMax: 14 });
 
-        expect(conditions.some(c => c.includes('end_date - start_date') && c.includes('<= $'))).toBe(true);
+        expect(conditions.some(c => c.includes('total_days <= $'))).toBe(true);
         expect(values).toContain(14);
     });
 

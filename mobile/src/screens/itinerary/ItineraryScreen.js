@@ -14,6 +14,7 @@ const MapView = Platform.OS !== 'web' ? require('react-native-maps').default : n
 const Marker  = Platform.OS !== 'web' ? require('react-native-maps').Marker  : null;
 import { ItineraryDetailSkeleton } from '../../components/Skeleton';
 import TripPhoto from '../../components/TripPhoto';
+import TripListsSection from '../../components/TripListsSection';
 import { COLORS, shadow, textShadow } from '../../utils/styles';
 import { getStepConfig } from '../../utils/stepConfig';
 import { WEB_URL } from '../../utils/config';
@@ -351,6 +352,8 @@ const ItineraryScreen = ({ route, navigation }) => {
             value={`${itinerary.numberOfPeople} ${itinerary.numberOfPeople === 1 ? t('itinerary.person') : t('itinerary.people')}`}
           />
         </View>
+
+        {isMyItinerary && <TripListsSection itineraryId={itinerary.id} navigation={navigation} />}
 
         {/* Places: timeline */}
         {itinerary.places?.length > 0 && (() => {

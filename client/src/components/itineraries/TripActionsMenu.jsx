@@ -6,7 +6,9 @@ import "./TripActionsMenu.scss";
 
 // The trip's less frequent actions (edit, clone, delete) behind "⋯", so the
 // header keeps what people tap most and delete isn't one slip from "like".
-const TripActionsMenu = ({ items }) => {
+// Also used for a packing list's; `toggleClassName` fits the button to where
+// it sits (the trip's dark header by default).
+const TripActionsMenu = ({ items, toggleClassName = "action-icon-btn" }) => {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const rootRef = useRef(null);
@@ -40,7 +42,7 @@ const TripActionsMenu = ({ items }) => {
       <button
         ref={toggleRef}
         type="button"
-        className="action-icon-btn"
+        className={toggleClassName}
         onClick={() => setOpen((isOpen) => !isOpen)}
         aria-haspopup="menu"
         aria-expanded={open}

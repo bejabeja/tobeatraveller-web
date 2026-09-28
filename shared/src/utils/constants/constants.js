@@ -110,6 +110,7 @@ export const supplyUnits = [
 // Keep values in sync with api/src/utils/packingConstants.js
 // (api/ doesn't depend on shared/, so this list is duplicated by necessity).
 export const packingCategories = [
+  { value: "van", label: "Van" },
   { value: "clothing", label: "Clothing" },
   { value: "accessories", label: "Accessories" },
   { value: "textiles", label: "Textiles" },
@@ -121,8 +122,8 @@ export const packingCategories = [
   { value: "other", label: "Other" },
 ];
 
-// Seeded once per user (only when their checklist is empty, see PackingChecklist.jsx)
-// as a starting point for the standard van-life packing list; freely editable afterwards.
+// What the packing list templates start with, per language (see
+// constants/packingTemplates.js); freely editable afterwards.
 export const defaultPackingItems = {
   en: {
     clothing: ["Waterproof jacket", "Fleece / warm jacket", "T-shirts", "Long trousers", "Shorts", "Underwear", "Socks", "Pyjamas", "Swimsuit", "Hiking shoes", "Flip-flops", "Cap or hat"],

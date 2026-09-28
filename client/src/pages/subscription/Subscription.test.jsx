@@ -55,7 +55,9 @@ describe("Subscription", () => {
     const table = screen.getByRole("table");
     expect(table).toHaveTextContent("subscription.featureVanLogTitle");
     expect(screen.getAllByText("subscription.compareUpTo:10")).toHaveLength(3);
-    expect(screen.getAllByLabelText("subscription.compareNotIncluded")).toHaveLength(3);
+    // The packing lists are free up to two lists.
+    expect(screen.getByText("subscription.compareUpTo:2")).toBeInTheDocument();
+    expect(screen.getAllByLabelText("subscription.compareNotIncluded")).toHaveLength(2);
     expect(screen.queryByText("subscription.featureNoAdsTitle")).not.toBeInTheDocument();
   });
 });

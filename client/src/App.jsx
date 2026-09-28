@@ -64,7 +64,8 @@ const Referral = lazy(() => import("./pages/referral/Referral"));
 const Account = lazy(() => import("./pages/account/Account"));
 const VanLog = lazy(() => import("./pages/vanLog/VanLog"));
 const Supplies = lazy(() => import("./pages/supplies/Supplies"));
-const PackingChecklist = lazy(() => import("./pages/packingChecklist/PackingChecklist"));
+const PackingLists = lazy(() => import("./pages/packingChecklist/PackingLists"));
+const PackingList = lazy(() => import("./pages/packingChecklist/PackingList"));
 const LifeDiary = lazy(() => import("./pages/lifeDiary/LifeDiary"));
 const CreateItinerary = lazy(() => import("./pages/itinerary/create/CreateItinerary"));
 const CreateExperience = lazy(() => import("./pages/experience/CreateExperience"));
@@ -216,7 +217,8 @@ const App = () => {
                 />
                 <Route path="/van-log" element={<VanLog />} />
                 <Route path="/supplies" element={<Supplies />} />
-                <Route path="/packing-checklist" element={<PackingChecklist />} />
+                <Route path="/packing-checklist" element={<PackingLists />} />
+                <Route path="/packing-checklist/:listId" element={<PackingList />} />
                 <Route path="/life-diary" element={<LifeDiary />} />
                 <Route path="/profile/:id" element={<Profile />} />
                 <Route path="/profile/edit/:id" element={<EditProfile />} />

@@ -1,5 +1,6 @@
 import { countryFlag } from './countryCodes.js';
 import { DEFAULT_LANGUAGE } from './languages.js';
+import { TRIP_REMINDER_DAYS_BEFORE } from './tripReminders.js';
 
 const countryNameIn = (locale, code) => new Intl.DisplayNames([locale], { type: 'region', fallback: 'code' }).of(code);
 
@@ -27,6 +28,10 @@ const PUSH_MESSAGES = {
         badge_earned: () => ({
             title: 'New badge',
             body: 'You earned a new badge. Tap to see it and share it.',
+        }),
+        trip_packing: ({ itineraryTitle, remainingCount }) => ({
+            title: `${itineraryTitle} starts in ${TRIP_REMINDER_DAYS_BEFORE} days`,
+            body: remainingCount === 1 ? 'You have 1 thing left to pack.' : `You have ${remainingCount} things left to pack.`,
         }),
         recap_ready: () => ({
             title: 'Your year on the road is ready',
@@ -62,6 +67,10 @@ const PUSH_MESSAGES = {
             title: 'Nuevo logro',
             body: 'Has conseguido un logro nuevo. Tócalo para verlo y compartirlo.',
         }),
+        trip_packing: ({ itineraryTitle, remainingCount }) => ({
+            title: `${itineraryTitle} empieza en ${TRIP_REMINDER_DAYS_BEFORE} días`,
+            body: remainingCount === 1 ? 'Te queda 1 cosa por preparar.' : `Te quedan ${remainingCount} cosas por preparar.`,
+        }),
         recap_ready: () => ({
             title: 'Tu año en ruta ya está listo',
             body: 'Países, noches en la furgo, sellos... Descubre tu año y compártelo.',
@@ -94,6 +103,10 @@ const PUSH_MESSAGES = {
         badge_earned: () => ({
             title: 'Nouveau badge',
             body: 'Tu as obtenu un nouveau badge. Touche pour le voir et le partager.',
+        }),
+        trip_packing: ({ itineraryTitle, remainingCount }) => ({
+            title: `${itineraryTitle} commence dans ${TRIP_REMINDER_DAYS_BEFORE} jours`,
+            body: remainingCount === 1 ? 'Il te reste 1 chose à préparer.' : `Il te reste ${remainingCount} choses à préparer.`,
         }),
         recap_ready: () => ({
             title: 'Ton année sur la route est prête',
@@ -128,6 +141,10 @@ const PUSH_MESSAGES = {
             title: 'Nuovo badge',
             body: 'Hai ottenuto un nuovo badge. Tocca per vederlo e condividerlo.',
         }),
+        trip_packing: ({ itineraryTitle, remainingCount }) => ({
+            title: `${itineraryTitle} inizia tra ${TRIP_REMINDER_DAYS_BEFORE} giorni`,
+            body: remainingCount === 1 ? 'Ti resta 1 cosa da preparare.' : `Ti restano ${remainingCount} cose da preparare.`,
+        }),
         recap_ready: () => ({
             title: 'Il tuo anno in viaggio è pronto',
             body: 'Paesi, notti in van, timbri... Scopri il tuo anno e condividilo.',
@@ -160,6 +177,10 @@ const PUSH_MESSAGES = {
         badge_earned: () => ({
             title: 'Neues Abzeichen',
             body: 'Du hast ein neues Abzeichen bekommen. Tippe, um es anzusehen und zu teilen.',
+        }),
+        trip_packing: ({ itineraryTitle, remainingCount }) => ({
+            title: `${itineraryTitle} beginnt in ${TRIP_REMINDER_DAYS_BEFORE} Tagen`,
+            body: remainingCount === 1 ? 'Dir bleibt 1 Sache zu packen.' : `Dir bleiben ${remainingCount} Sachen zu packen.`,
         }),
         recap_ready: () => ({
             title: 'Dein Jahr unterwegs ist fertig',

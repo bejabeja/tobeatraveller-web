@@ -1,9 +1,11 @@
 import { ConflictError } from "../errors/ConflictError.js";
 import { NotFoundError } from "../errors/NotFoundError.js";
 import { TooManyRequestsError } from "../errors/TooManyRequestsError.js";
+import { ValidationError } from "../errors/ValidationError.js";
 import { assertItineraryOwner, assertItineraryVisible } from "../utils/itineraryAccess.js";
 import { AUDIT_EVENTS } from "../utils/auditEvents.js";
-import { toCalendarDay } from "../utils/date.js";
+import { toCalendarDay, tripLengthInDays } from "../utils/date.js";
+import { ITINERARY_SOURCES } from "../utils/itinerarySources.js";
 
 // Each generation call costs real money (Groq). Not a real bill risk at
 // current usage (well under a cent each), but with no other cap on this
@@ -11,6 +13,12 @@ import { toCalendarDay } from "../utils/date.js";
 // this is a generous ceiling no genuine trip-planning user would hit, even
 // while iterating on a trip (regenerating with different dates/budget/pace).
 const MONTHLY_AI_GENERATION_LIMIT = 50;
+
+// Only a trip without dates says how long it lasts; a dated one's length
+// comes from its dates, whatever else was sent.
+const withTripLength = (data) => (data.startDate
+    ? { ...data, totalDays: tripLengthInDays(data.startDate, data.endDate) }
+    : { ...data, startDate: null, endDate: null });
 
 export class ItineraryService {
     constructor(
@@ -69,7 +77,7 @@ export class ItineraryService {
         }
 
         const itineraryData = {
-            ...data,
+            ...withTripLength(data),
             userId,
             photoUrl: imageUrl,
             photoPublicId: imagePublicId,
@@ -126,6 +134,7 @@ export class ItineraryService {
             location: source.location,
             startDate: source.startDate,
             endDate: source.endDate,
+            totalDays: source.totalDays,
             numberOfPeople: source.numberOfPeople,
             category: source.category,
             budget: source.budget,
@@ -188,6 +197,10 @@ export class ItineraryService {
             throw new NotFoundError("Itinerary not found");
         }
         assertItineraryOwner(itinerary, userId);
+        if (!itineraryData.startDate && itinerary.source !== ITINERARY_SOURCES.EXPERIENCE) {
+            throw new ValidationError("validation.dateRequired");
+        }
+        Object.assign(itineraryData, withTripLength(itineraryData));
         itineraryData.clonedFromItineraryId = this._keepsClonedDates(itinerary, itineraryData) ? itinerary.clonedFromItineraryId : null;
 
         if (file) {

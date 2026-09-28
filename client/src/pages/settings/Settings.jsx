@@ -25,6 +25,7 @@ const NOTIFICATION_PREFERENCE_TOGGLES = [
   { key: "notifyOnLike", labelKey: "settings.notifyOnLike" },
   { key: "notifyOnFollow", labelKey: "settings.notifyOnFollow" },
   { key: "notifyOnFriendStamps", labelKey: "settings.notifyOnFriendStamps" },
+  { key: "notifyOnTripReminders", labelKey: "settings.notifyOnTripReminders" },
 ];
 
 // Every setting that opens or does something: a full-width row with its

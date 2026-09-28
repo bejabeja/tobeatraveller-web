@@ -172,17 +172,17 @@ describe('NotificationsRepository.getPreferences()', () => {
 
         const preferences = await repo.getPreferences('u1');
 
-        expect(preferences).toEqual({ notifyOnComment: true, notifyOnLike: true, notifyOnFollow: true, notifyOnFriendStamps: true, pushEnabled: true });
+        expect(preferences).toEqual({ notifyOnComment: true, notifyOnLike: true, notifyOnFollow: true, notifyOnFriendStamps: true, notifyOnTripReminders: true, pushEnabled: true });
     });
 
     it('maps the stored row to camelCase', async () => {
         client.query.mockResolvedValueOnce({
-            rows: [{ notify_on_comment: false, notify_on_like: true, notify_on_follow: false, notify_on_friend_stamps: false, push_enabled: false }],
+            rows: [{ notify_on_comment: false, notify_on_like: true, notify_on_follow: false, notify_on_friend_stamps: false, notify_on_trip_reminders: false, push_enabled: false }],
         });
 
         const preferences = await repo.getPreferences('u1');
 
-        expect(preferences).toEqual({ notifyOnComment: false, notifyOnLike: true, notifyOnFollow: false, notifyOnFriendStamps: false, pushEnabled: false });
+        expect(preferences).toEqual({ notifyOnComment: false, notifyOnLike: true, notifyOnFollow: false, notifyOnFriendStamps: false, notifyOnTripReminders: false, pushEnabled: false });
     });
 });
 
@@ -202,7 +202,7 @@ describe('NotificationsRepository.upsertPreferences()', () => {
 
         const [query, params] = client.query.mock.calls[0];
         expect(query).toMatch(/ON CONFLICT \(user_id\) DO UPDATE/);
-        expect(params).toEqual(['u1', false, null, null, null, null]);
+        expect(params).toEqual(['u1', false, null, null, null, null, null]);
     });
 
     it('returns the resulting preferences mapped to camelCase', async () => {

@@ -13,15 +13,12 @@ export const localCalendarDay = (date = new Date()) => {
     return `${date.getFullYear()}-${month}-${day}`;
 };
 
-// An experience's dates only count its days from when it was saved, so
-// they don't say when the trip happens.
-const EXPERIENCE_SOURCE = 'experience';
-
 // The trip someone is on today or, failing that, the next one to start.
+// Experiences planned without a date don't count: nobody knows when they are.
 export const findNextTrip = (itineraries, today) => {
     const todayNumber = dayNumber(today);
     const dated = (itineraries ?? [])
-        .filter((itinerary) => itinerary.source !== EXPERIENCE_SOURCE && itinerary.startDate && itinerary.endDate)
+        .filter((itinerary) => itinerary.startDate && itinerary.endDate)
         .map((itinerary) => ({ itinerary, start: dayNumber(itinerary.startDate), end: dayNumber(itinerary.endDate) }));
 
     const [ongoing] = dated

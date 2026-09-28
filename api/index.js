@@ -5,10 +5,8 @@ import config from "./src/config/config.js";
 import './src/config/instrument.js';
 import { testConnection } from "./src/db/clientPostgres.js";
 import { authenticate } from "./src/middlewares/authenticate.js";
-import { requirePremium } from './src/middlewares/requirePremium.js';
 import { corsMiddleware } from './src/middlewares/cors.js';
 import { errorHandler } from './src/middlewares/errorHandler.js';
-import { UserRepository } from './src/repositories/userRepository.js';
 import { createAuthRouter } from './src/routes/authRouter.js';
 import { createAuditLogRouter } from './src/routes/auditLogRouter.js';
 
@@ -35,7 +33,6 @@ import { createReferralRouter } from './src/routes/referralRouter.js';
 import { createPushTokensRouter } from './src/routes/pushTokensRouter.js';
 
 const app = express();
-const premiumOnly = requirePremium(new UserRepository());
 
 // Behind Vercel's edge network, so req.ip needs the first X-Forwarded-For hop
 // to reflect the real visitor instead of Vercel's own infra address.
@@ -57,15 +54,14 @@ app.use('/favorites', authenticate, createFavoritesRouter());
 app.use('/likes', authenticate, createLikesRouter());
 app.use('/comments', createCommentsRouter());
 app.use('/notifications', authenticate, createNotificationsRouter());
-// Not premium-gated at the mount point (unlike packing-checklist below):
-// Van Log, Life Diary and Supplies are free to browse and to add
-// entries/items up to a cap enforced in their own service, so the gate lives
-// there instead of blocking the whole route tree. Packing Checklist stays
-// fully gated: it seeds ~65 default items on first use, so a small per-item
-// free cap would break immediately rather than act as a real limit.
+// Not premium-gated at the mount point: Van Log, Life Diary, Supplies and
+// the packing lists are free up to a cap enforced in their own service
+// (entries, items or, for packing, how many lists), so the gate lives there
+// instead of blocking the whole route tree.
 app.use('/van-logs', authenticate, createVanLogsRouter());
 app.use('/supplies', authenticate, createSuppliesRouter());
-app.use('/packing-checklist', authenticate, premiumOnly, createPackingChecklistRouter());
+// Auth lives inside the router: its scheduled reminders run on the cron secret.
+app.use('/packing-checklist', createPackingChecklistRouter());
 app.use('/life-diary', authenticate, createLifeDiaryRouter());
 app.use('/subscription', authenticate, createSubscriptionRouter());
 // Same again: the purge of earlier invite codes runs on the cron secret.

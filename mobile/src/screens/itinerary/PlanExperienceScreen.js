@@ -14,12 +14,13 @@ import {
   isPremiumRequiredError, itineraryCategories, NEW_ITINERARY_DEFAULT_VISIBILITY, placeCategories,
   reverseGeocode, searchDestinations, selectAuthUser, selectMe,
   setUserInfo, setUserInfoItineraries,
-  stepNameHintKey, ANALYTICS_EVENTS, TRIP_KINDS, tripCreatedProperties,
+  stepNameHintKey, ANALYTICS_EVENTS, TRIP_KINDS, experienceDates, isCalendarDay, tripCreatedProperties,
 } from '@tobeatraveller/shared';
 import { trackEvent } from '../../utils/analytics';
 import { COLORS, shadow } from '../../utils/styles';
 import { getStepConfig } from '../../utils/stepConfig';
 import { GEOAPIFY_KEY } from '../../utils/config';
+import ExperienceStartDate from '../../components/ExperienceStartDate';
 import { PhotoPickerCard } from '../../components/PhotoPickerCard';
 import { useCurrentLocation } from '../../hooks/useCurrentLocation';
 import { UseCurrentLocationButton } from '../../components/UseCurrentLocationButton';
@@ -58,6 +59,7 @@ const PlanExperienceScreen = ({ navigation }) => {
   const [destResults, setDestResults]     = useState([]);
   const [destSearching, setDestSearching] = useState(false);
   const [days, setDays]                   = useState(7);
+  const [startDateText, setStartDateText] = useState('');
   const [category, setCategory]           = useState('adventure');
   const [travelers, setTravelers]         = useState(1);
   const [pace, setPace]                   = useState(DEFAULT_AI_PACE);
@@ -245,11 +247,8 @@ const PlanExperienceScreen = ({ navigation }) => {
   // ─── Save ─────────────────────────────────────────────────────────────────
   const handleSave = async () => {
     if (!title.trim()) { Alert.alert(ce('addTitleError'), ce('namePlaceholder')); return; }
+    if (startDateText && !isCalendarDay(startDateText)) { Alert.alert(ce('invalidDate')); return; }
     setSaving(true);
-    const today = new Date().toISOString().split('T')[0];
-    const endObj = new Date(today);
-    endObj.setDate(endObj.getDate() + days - 1);
-    const endDate = endObj.toISOString().split('T')[0];
     try {
       const body = {
         userId: me?.id,
@@ -261,7 +260,7 @@ const PlanExperienceScreen = ({ navigation }) => {
           lat: destination.coordinates?.lat ?? 0,
           lon: destination.coordinates?.lon ?? 0,
         },
-        startDate: today, endDate,
+        ...experienceDates(startDateText || null, days),
         budget: 0, currency: 'EUR',
         numberOfPeople: travelers,
         category, isPublic, source: 'experience',
@@ -284,7 +283,7 @@ const PlanExperienceScreen = ({ navigation }) => {
       formData.append('itinerary', JSON.stringify(body));
       await createItinerary(formData);
       trackEvent(ANALYTICS_EVENTS.TRIP_CREATED, tripCreatedProperties({
-        kind: TRIP_KINDS.EXPERIENCE, isPublic, places: body.places.length, days,
+        kind: TRIP_KINDS.EXPERIENCE, isPublic, places: body.places.length, days, hasDate: Boolean(body.startDate),
       }));
       if (me?.id) { dispatch(setUserInfo(me.id)); dispatch(setUserInfoItineraries()); }
       navigation.navigate('Tabs', { screen: 'Profile' });
@@ -437,6 +436,8 @@ const PlanExperienceScreen = ({ navigation }) => {
                 </View>
               </View>
             </View>
+
+            <ExperienceStartDate value={startDateText} days={days} onChange={setStartDateText} />
 
             {/* Category: visual grid */}
             <View style={ls.section}>

@@ -14,25 +14,6 @@
     }
   }
 
-  &__header-actions {
-    width: fit-content;
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-    }
-
-    @media (max-width: 640px) {
-      width: 100%;
-      justify-content: space-between;
-    }
-  }
-
   &__progress {
     width: fit-content;
     font-size: 0.85rem;
@@ -226,18 +207,79 @@
     }
   }
 
+  &__back {
+    width: fit-content;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-secondary-color);
+    text-decoration: none;
+
+    svg {
+      width: 1em;
+      height: 1em;
+    }
+
+    &:hover { color: var(--primary-color); }
+  }
+
+  &__trip {
+    width: fit-content;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin: -0.5rem 0 1rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    text-decoration: none;
+
+    svg { width: 1em; height: 1em; }
+
+    &:hover { text-decoration: underline; }
+  }
+
+  &__menu-toggle {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    background: var(--white-color);
+    color: var(--text-color);
+    font-size: 1.15rem;
+    cursor: pointer;
+
+    &:hover { border-color: var(--primary-color); color: var(--primary-color); }
+  }
+
   &__add-row {
     width: auto;
     display: flex;
-    gap: 0.4rem;
-    margin-top: 0.5rem;
-    padding-top: 0.6rem;
-    border-top: 1px dashed var(--border-color);
+    align-items: center;
+    gap: 0.5rem;
+
+    &--main {
+      margin-bottom: 1rem;
+      padding: 0.4rem 0.4rem 0.4rem 1rem;
+      background: var(--white-color);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+
+      &:focus-within { border-color: var(--primary-color); }
+    }
   }
 
   &__add-input {
     width: 100%;
-    font-size: 0.82rem;
+    min-width: 0;
+    font-size: 0.95rem;
     font-family: inherit;
     border: none;
     outline: none;
@@ -247,18 +289,62 @@
     &::placeholder { color: var(--text-secondary-color); }
   }
 
+  &__add-category {
+    width: auto;
+    max-width: 45%;
+    flex-shrink: 0;
+    font-size: 0.85rem;
+    font-family: inherit;
+    color: var(--text-color);
+    background: var(--surface-color, #f1f5f9);
+    border: none;
+    border-radius: 8px;
+    padding: 0.45rem 0.5rem;
+    cursor: pointer;
+  }
+
   &__add-btn {
-    width: fit-content;
+    width: 38px;
+    height: 38px;
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: none;
+    background: var(--primary-color);
     border: none;
-    color: var(--primary-color);
-    font-size: 1.1rem;
+    border-radius: 10px;
+    color: var(--white-color);
+    font-size: 1.2rem;
     cursor: pointer;
+  }
+
+  &__restart {
+    width: fit-content;
+    gap: 0.4rem;
+  }
+
+  &__toolbar-actions {
+    width: fit-content;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-left: auto;
+  }
+
+  &__item-quantity {
+    width: fit-content;
+    flex-shrink: 0;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--primary-color);
+  }
+
+  &__item-on-list {
+    width: fit-content;
+    display: inline-flex;
     padding: 0.15rem;
+    color: #16a34a;
+    font-size: 1rem;
   }
 
   &__undo-toast {
@@ -291,35 +377,5 @@
     width: 100%;
     height: 220px;
     border-radius: 14px;
-  }
-}
-
-// Without Premium: the sample list, blurred, with the offer on top of it.
-.packing-checklist__preview {
-  position: relative;
-  min-height: 480px;
-}
-
-.packing-checklist__preview-list {
-  filter: blur(3px);
-  opacity: 0.7;
-  pointer-events: none;
-  user-select: none;
-  // Fades out downwards, so it reads as "more of this below".
-  mask-image: linear-gradient(to bottom, #000 55%, transparent);
-}
-
-.packing-checklist__preview-offer {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: start center;
-  padding: 3rem 1rem 0;
-
-  .feature-load-state {
-    max-width: 420px;
-    border-radius: 16px;
-    background: var(--white-color);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
   }
 }
