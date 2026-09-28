@@ -3,7 +3,9 @@
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 1000;
+  // Above .bottom-nav (z-index 1500) so its Accept/Decline buttons stay
+  // clickable on mobile instead of sitting under the bottom nav bar.
+  z-index: 1600;
   background-color: #0f172a;
   color: #94a3b8;
   font-size: 0.875rem;

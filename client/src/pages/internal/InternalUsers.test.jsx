@@ -8,20 +8,31 @@ jest.mock("react-i18next", () => ({
   }),
 }));
 jest.mock("react-hot-toast", () => ({ __esModule: true, default: { success: jest.fn(), error: jest.fn() } }));
-jest.mock("@tobeatraveller/shared", () => ({ formatDate: (date) => new Date(date).toISOString().slice(0, 10) }));
+jest.mock("@tobeatraveller/shared", () => {
+  const { z } = require("zod");
+  return {
+    formatDate: (date) => new Date(date).toISOString().slice(0, 10),
+    ADMIN_NOTICE_MAX_LENGTH: 500,
+    adminNoticeSchema: z.object({ message: z.string().min(3) }),
+  };
+});
 jest.mock("../../hooks/useDebounced", () => (effect, deps) => require("react").useEffect(effect, deps));
 jest.mock("../../services/users", () => ({
   getAllUsersForAdmin: jest.fn(),
   updateUserTier: jest.fn(),
   updateUserRole: jest.fn(),
   deleteUserById: jest.fn(),
+  sendAdminNotice: jest.fn(),
 }));
+jest.mock("./UserDetailModal", () => ({ user, onClose }) => (
+  user ? <div data-testid="user-detail-modal">{user.username}<button onClick={onClose}>close</button></div> : null
+));
 jest.mock("../../store/auth/authSelectors", () => ({ selectAuthUser: () => ({ id: "admin-1" }) }));
 jest.mock("../../store/user/userInfoSelectors", () => ({ selectMe: () => null }));
 jest.mock("../../utils/constants/constants", () => ({ generateAvatar: () => "avatar.svg" }));
 
 import toast from "react-hot-toast";
-import { getAllUsersForAdmin, updateUserTier } from "../../services/users";
+import { getAllUsersForAdmin, sendAdminNotice, updateUserTier } from "../../services/users";
 import InternalUsers from "./InternalUsers";
 
 const PAID_UNTIL = "2026-12-01T00:00:00.000Z";
@@ -70,4 +81,44 @@ it("only offers to remove premium from someone who has it", async () => {
   const tierSelect = await renderWith(user());
 
   expect(tierSelect.querySelector('option[value="free"]')).toBeNull();
+});
+
+it("reloads with the chosen role and premium filters", async () => {
+  await renderWith(user());
+  getAllUsersForAdmin.mockClear();
+
+  fireEvent.change(screen.getByRole("combobox", { name: "admin.allRoles" }), { target: { value: "admin" } });
+  fireEvent.change(screen.getByRole("combobox", { name: "admin.allTiers" }), { target: { value: "premium" } });
+
+  await waitFor(() => expect(getAllUsersForAdmin).toHaveBeenLastCalledWith(
+    expect.objectContaining({ role: "admin", isPremium: true })
+  ));
+});
+
+it("opens the detail modal for the clicked user", async () => {
+  await renderWith(user());
+
+  fireEvent.click(screen.getByRole("button", { name: "admin.userDetailTitle:jane" }));
+
+  expect(screen.getByTestId("user-detail-modal")).toHaveTextContent("jane");
+});
+
+it("sends an admin notice with the typed message", async () => {
+  sendAdminNotice.mockResolvedValue(undefined);
+  await renderWith(user());
+
+  fireEvent.click(screen.getByRole("button", { name: "admin.sendNotice" }));
+  const textarea = await screen.findByPlaceholderText("admin.sendNoticePlaceholder");
+  fireEvent.change(textarea, { target: { value: "Please review your last trip" } });
+  const [, confirmButton] = screen.getAllByRole("button", { name: "admin.sendNotice" });
+  fireEvent.click(confirmButton);
+
+  await waitFor(() => expect(sendAdminNotice).toHaveBeenCalledWith("u2", "Please review your last trip"));
+  await waitFor(() => expect(toast.success).toHaveBeenCalledWith("admin.noticeSent"));
+});
+
+it("disables sending a notice to yourself", async () => {
+  await renderWith(user({ id: "admin-1" }));
+
+  expect(screen.getByRole("button", { name: "admin.sendNotice" })).toBeDisabled();
 });

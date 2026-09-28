@@ -392,6 +392,7 @@
     "auditShowingCount": "Showing {{shown}} of {{total}}",
     "auditReferralRewardGranted": "Referral reward granted to {{target}} ({{rewardDays}} days of Premium)",
     "auditReferralRewardCapped": "Referral reward for {{target}} withheld: monthly cap of {{monthlyLimit}} reached",
+    "auditNoticeSent": "{{actor}} sent a notice to {{target}}: \"{{message}}\"",
     "referralsTitle": "Referrals",
     "referralsTotalInvited": "Total invites",
     "referralsTotalRewarded": "Total rewarded",
@@ -410,7 +411,19 @@
     "auditPremiumGiftedMonths_one": "{{actor}} gifted {{target}} {{count}} month of Premium",
     "auditPremiumGiftedMonths_other": "{{actor}} gifted {{target}} {{count}} months of Premium",
     "auditPremiumGiftedIndefinite": "{{actor}} gifted {{target}} Premium with no end date",
-    "auditPremiumRemoved": "{{actor}} removed Premium from {{target}}"
+    "auditPremiumRemoved": "{{actor}} removed Premium from {{target}}",
+    "allRoles": "All roles",
+    "allTiers": "All tiers",
+    "userDetailTitle": "{{username}}'s details",
+    "userDetailItinerariesTitle": "Itineraries",
+    "userDetailNoItineraries": "No public itineraries.",
+    "userDetailHistoryTitle": "Role and Premium history",
+    "userDetailNoHistory": "No role or Premium changes yet.",
+    "sendNotice": "Send notice",
+    "sendNoticeTitle": "Send a notice to {{username}}",
+    "sendNoticePlaceholder": "Write the message this user will receive...",
+    "noticeSent": "Notice sent",
+    "noticeSendError": "Could not send the notice. Please try again."
   },
   "profile": {
     "shareProfile": "Share profile",

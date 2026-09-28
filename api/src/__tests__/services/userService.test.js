@@ -265,6 +265,78 @@ describe('UserService.updateUserRole()', () => {
     });
 });
 
+describe('UserService.sendAdminNotice()', () => {
+    let service;
+    let userRepository;
+    let notificationsService;
+    let auditLogService;
+
+    beforeEach(() => {
+        userRepository = { getUserById: async (id) => makeUser({ id, username: 'jane' }) };
+        notificationsService = { createNotification: vi.fn().mockResolvedValue(true) };
+        auditLogService = { log: vi.fn() };
+        service = new UserService(
+            userRepository, {}, {}, null, null, auditLogService,
+            null, null, null, null, null, null, null, null, null, notificationsService
+        );
+    });
+
+    it('throws ForbiddenError when an admin tries to send themselves a notice', async () => {
+        await expect(
+            service.sendAdminNotice('admin-1', 'hello', { id: 'admin-1', username: 'root' })
+        ).rejects.toThrow('You cannot send yourself a notice');
+
+        expect(notificationsService.createNotification).not.toHaveBeenCalled();
+    });
+
+    it('throws NotFoundError when the target user does not exist', async () => {
+        userRepository.getUserById = async () => null;
+
+        await expect(
+            service.sendAdminNotice('missing', 'hello', { id: 'admin-1', username: 'root' })
+        ).rejects.toThrow('User not found');
+    });
+
+    it('throws when the notification was not actually delivered, without logging it as sent', async () => {
+        notificationsService.createNotification.mockResolvedValue(false);
+
+        await expect(
+            service.sendAdminNotice('user-2', 'hello', { id: 'admin-1', username: 'root' })
+        ).rejects.toThrow('Failed to send the notice');
+
+        expect(auditLogService.log).not.toHaveBeenCalled();
+    });
+
+    it('creates an admin_notice notification for the target user', async () => {
+        await service.sendAdminNotice('user-2', 'Please review your trip', { id: 'admin-1', username: 'root' });
+
+        expect(notificationsService.createNotification).toHaveBeenCalledWith({
+            userId: 'user-2',
+            actorId: 'admin-1',
+            type: 'admin_notice',
+            message: 'Please review your trip',
+        });
+    });
+
+    it('logs the notice with the message in the audit metadata', async () => {
+        await service.sendAdminNotice(
+            'user-2', 'Please review your trip', { id: 'admin-1', username: 'root' },
+            { ip: '203.0.113.1', userAgent: 'Mozilla/5.0' }
+        );
+
+        expect(auditLogService.log).toHaveBeenCalledWith({
+            actorId: 'admin-1',
+            actorUsername: 'root',
+            action: AUDIT_EVENTS.ADMIN_NOTICE_SENT,
+            targetUserId: 'user-2',
+            targetUsername: 'jane',
+            metadata: { message: 'Please review your trip' },
+            ipAddress: '203.0.113.1',
+            userAgent: 'Mozilla/5.0',
+        });
+    });
+});
+
 describe('UserService.updateUserTier()', () => {
     let service;
     let userRepository;

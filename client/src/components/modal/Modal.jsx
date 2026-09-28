@@ -8,8 +8,10 @@ const Modal = ({
   onConfirm,
   title,
   description,
+  children,
   confirmText,
   cancelText,
+  hideCancel = false,
   type = "confirm",
   loading = false,
 }) => {
@@ -44,14 +46,18 @@ const Modal = ({
           <p className="modal__description">{description}</p>
         )}
 
+        {children && <div className="modal__body">{children}</div>}
+
         <div className="modal__actions">
-          <button
-            className="btn btn--ghost modal__btn-cancel"
-            onClick={onClose}
-            disabled={loading}
-          >
-            {resolvedCancel}
-          </button>
+          {!hideCancel && (
+            <button
+              className="btn btn--ghost modal__btn-cancel"
+              onClick={onClose}
+              disabled={loading}
+            >
+              {resolvedCancel}
+            </button>
+          )}
           <button
             className={`btn ${type === "danger" ? "btn--danger" : "btn--primary"} modal__btn-confirm`}
             onClick={onConfirm}

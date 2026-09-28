@@ -24,7 +24,7 @@ const mapPreferencesRow = (row) => ({
 });
 
 export class NotificationsRepository {
-    async create({ id, userId, actorId, type, itineraryId, commentId, badgeId, countryCode }) {
+    async create({ id, userId, actorId, type, itineraryId, commentId, badgeId, countryCode, message }) {
         try {
             // Folds into an existing notification of the same (user, type, itinerary)
             // opened within the grouping window. `created_at` is intentionally left out
@@ -40,26 +40,32 @@ export class NotificationsRepository {
             // since a time-window group can't be expressed as a stable unique key; given
             // how rare and low-impact this is (the next event still folds correctly),
             // it's an accepted tradeoff rather than something worth a bigger redesign.
-            const grouped = await client.query(
-                `UPDATE notifications
-                 SET actor_ids = CASE WHEN $1 = ANY(actor_ids) THEN actor_ids ELSE array_append(actor_ids, $1) END,
-                     actor_id = $1, comment_id = $2, is_read = false, last_activity_at = NOW()
-                 WHERE user_id = $3 AND type = $4
-                   AND itinerary_id IS NOT DISTINCT FROM $5
-                   AND badge_id IS NOT DISTINCT FROM $6
-                   AND country_code IS NOT DISTINCT FROM $7
-                   AND created_at > NOW() - INTERVAL '${GROUPING_WINDOW_HOURS} hours'
-                 RETURNING id`,
-                [actorId, commentId ?? null, userId, type, itineraryId ?? null, badgeId ?? null, countryCode ?? null]
-            );
-            if (grouped.rowCount > 0) return { grouped: true };
+            //
+            // Admin notices skip grouping entirely: the UPDATE above never touches
+            // `message`, so folding two distinct notices within the window would
+            // silently discard the first one's text.
+            if (type !== 'admin_notice') {
+                const grouped = await client.query(
+                    `UPDATE notifications
+                     SET actor_ids = CASE WHEN $1 = ANY(actor_ids) THEN actor_ids ELSE array_append(actor_ids, $1) END,
+                         actor_id = $1, comment_id = $2, is_read = false, last_activity_at = NOW()
+                     WHERE user_id = $3 AND type = $4
+                       AND itinerary_id IS NOT DISTINCT FROM $5
+                       AND badge_id IS NOT DISTINCT FROM $6
+                       AND country_code IS NOT DISTINCT FROM $7
+                       AND created_at > NOW() - INTERVAL '${GROUPING_WINDOW_HOURS} hours'
+                     RETURNING id`,
+                    [actorId, commentId ?? null, userId, type, itineraryId ?? null, badgeId ?? null, countryCode ?? null]
+                );
+                if (grouped.rowCount > 0) return { grouped: true };
+            }
 
             const notificationId = id || uuidv4();
             const query = `
-                INSERT INTO notifications (id, user_id, actor_id, type, itinerary_id, comment_id, badge_id, country_code, actor_ids)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, ARRAY[$3]::UUID[])
+                INSERT INTO notifications (id, user_id, actor_id, type, itinerary_id, comment_id, badge_id, country_code, message, actor_ids)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, ARRAY[$3]::UUID[])
             `;
-            await client.query(query, [notificationId, userId, actorId, type, itineraryId ?? null, commentId ?? null, badgeId ?? null, countryCode ?? null]);
+            await client.query(query, [notificationId, userId, actorId, type, itineraryId ?? null, commentId ?? null, badgeId ?? null, countryCode ?? null, message ?? null]);
             return { grouped: false };
         } catch (err) {
             // fire-and-forget: don't let a notification failure break the caller's main flow
@@ -76,6 +82,7 @@ export class NotificationsRepository {
                 n.is_read,
                 n.last_activity_at,
                 n.actor_ids,
+                n.message,
                 n.comment_id,
                 n.badge_id,
                 n.country_code,
@@ -100,6 +107,7 @@ export class NotificationsRepository {
             // English only: kept for app versions from before lastActivityAt.
             postedAgo: timeAgo(row.last_activity_at),
             count: row.actor_ids?.length || 1,
+            message: row.message,
             commentId: row.comment_id,
             badgeId: row.badge_id,
             countryCode: row.country_code,

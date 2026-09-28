@@ -1,6 +1,7 @@
 import db from '../db/clientPostgres.js';
 import { User } from '../models/user.js';
 import { RETIRED_REFERRAL_CODE_RESERVATION } from '../utils/referralCode.js';
+import { ROLES } from '../utils/roles.js';
 
 const FEATURED_USERS_LIMIT = 3;
 
@@ -275,7 +276,7 @@ export class UserRepository {
         return result.rows.map(row => User.fromDb(row));
     }
 
-    async findByFilters({ searchName, offset = 0, limit = 9, sortBy = 'username' }) {
+    async findByFilters({ searchName, offset = 0, limit = 9, sortBy = 'username', role, isPremium }) {
         const searchTerm = `%${searchName}%`;
 
         const ORDER_CLAUSES = {
@@ -285,20 +286,35 @@ export class UserRepository {
         };
         const orderClause = ORDER_CLAUSES[sortBy] ?? ORDER_CLAUSES.username;
 
+        const conditions = ['username ILIKE $1', "role != 'test'"];
+        const values = [searchTerm];
+
+        if (Object.values(ROLES).includes(role)) {
+            values.push(role);
+            conditions.push(`role = $${values.length}`);
+        }
+        if (isPremium === true) {
+            conditions.push('premium_until > NOW()');
+        } else if (isPremium === false) {
+            conditions.push('(premium_until IS NULL OR premium_until <= NOW())');
+        }
+
+        const whereClause = conditions.join(' AND ');
+
         const result = await db.query(
             `
             SELECT users.*, (SELECT COUNT(*) FROM itineraries WHERE itineraries.user_id = users.id) AS total_itineraries
             FROM users
-            WHERE username ILIKE $1 AND role != 'test'
+            WHERE ${whereClause}
             ORDER BY ${orderClause}
-            LIMIT $2 OFFSET $3
+            LIMIT $${values.length + 1} OFFSET $${values.length + 2}
             `,
-            [searchTerm, limit, offset]
+            [...values, limit, offset]
         );
 
         const countResult = await db.query(
-            `SELECT COUNT(*) FROM users WHERE username ILIKE $1 AND role != 'test'`,
-            [searchTerm]
+            `SELECT COUNT(*) FROM users WHERE ${whereClause}`,
+            values
         );
 
         const total = parseInt(countResult.rows[0].count, 10);

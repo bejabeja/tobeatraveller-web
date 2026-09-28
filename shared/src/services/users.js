@@ -164,12 +164,14 @@ export const getAllUsers = async ({ searchName = '', page = 1, limit = 9, sortBy
     return response.json();
 };
 
-export const getAllUsersForAdmin = async ({ searchName = '', page = 1, limit = 20, sortBy = 'username' } = {}) => {
+export const getAllUsersForAdmin = async ({ searchName = '', page = 1, limit = 20, sortBy = 'username', role, isPremium } = {}) => {
     const params = new URLSearchParams();
     if (searchName) params.append("searchName", searchName);
     params.append('page', page);
     params.append('limit', limit);
     params.append('sortBy', sortBy);
+    if (role) params.append('role', role);
+    if (isPremium !== undefined) params.append('isPremium', isPremium);
 
     const response = await authFetch(`${baseUrl()}/admin?${params.toString()}`, {
         method: "GET",
@@ -204,4 +206,15 @@ export const updateUserTier = async (id, tier, months) => {
         await parseError(response, 'Failed to update tier');
     }
     return response.json();
+};
+
+export const sendAdminNotice = async (id, message) => {
+    const response = await authFetch(`${baseUrl()}/${id}/notice`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message }),
+    });
+    if (!response.ok) {
+        await parseError(response, 'Failed to send notice');
+    }
 };

@@ -397,6 +397,7 @@
     "auditShowingCount": "Mostrando {{shown}} de {{total}}",
     "auditReferralRewardGranted": "Recompensa de referido concedida a {{target}} ({{rewardDays}} días de Premium)",
     "auditReferralRewardCapped": "Recompensa de referido para {{target}} retenida: se alcanzó el tope mensual de {{monthlyLimit}}",
+    "auditNoticeSent": "{{actor}} envió un aviso a {{target}}: \"{{message}}\"",
     "referralsTitle": "Referidos",
     "referralsTotalInvited": "Invitaciones totales",
     "referralsTotalRewarded": "Total recompensados",
@@ -417,7 +418,19 @@
     "auditPremiumGiftedMonths_other": "{{actor}} regaló {{count}} meses de Premium a {{target}}",
     "auditPremiumGiftedMonths_many": "{{actor}} regaló {{count}} meses de Premium a {{target}}",
     "auditPremiumGiftedIndefinite": "{{actor}} regaló Premium sin fecha a {{target}}",
-    "auditPremiumRemoved": "{{actor}} quitó Premium a {{target}}"
+    "auditPremiumRemoved": "{{actor}} quitó Premium a {{target}}",
+    "allRoles": "Todos los roles",
+    "allTiers": "Todos los niveles",
+    "userDetailTitle": "Detalle de {{username}}",
+    "userDetailItinerariesTitle": "Itinerarios",
+    "userDetailNoItineraries": "Sin itinerarios públicos.",
+    "userDetailHistoryTitle": "Historial de rol y Premium",
+    "userDetailNoHistory": "Todavía no hay cambios de rol ni de Premium.",
+    "sendNotice": "Enviar aviso",
+    "sendNoticeTitle": "Enviar un aviso a {{username}}",
+    "sendNoticePlaceholder": "Escribe el mensaje que recibirá este usuario...",
+    "noticeSent": "Aviso enviado",
+    "noticeSendError": "No se pudo enviar el aviso. Inténtalo de nuevo."
   },
   "profile": {
     "shareProfile": "Compartir perfil",

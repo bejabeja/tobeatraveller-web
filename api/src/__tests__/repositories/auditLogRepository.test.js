@@ -60,6 +60,23 @@ describe('AuditLogRepository', () => {
             expect(values).toEqual(['admin-1', 'login_success', 'user-1', '2026-01-01', '2026-02-01']);
             expect(nextIndex).toBe(6);
         });
+
+        it('matches any of several actions with a single ANY() condition, given an array', () => {
+            const { conditions, values, nextIndex } = repo.buildFilters({
+                action: ['role_updated', 'tier_updated'],
+            });
+
+            expect(conditions).toEqual(['action = ANY($1)']);
+            expect(values).toEqual([['role_updated', 'tier_updated']]);
+            expect(nextIndex).toBe(2);
+        });
+
+        it('adds no condition for an empty action array', () => {
+            const { conditions, values } = repo.buildFilters({ action: [] });
+
+            expect(conditions).toEqual([]);
+            expect(values).toEqual([]);
+        });
     });
 
     describe('findByFilters()', () => {

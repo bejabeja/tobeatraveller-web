@@ -26,6 +26,9 @@ const NotificationItem = ({ notification: n, onClick }) => {
     friend_stamp: () => (n.countryCode
       ? <><strong>@{n.actor?.username}</strong>{others}{verb("friendAddedCountry")}<strong>{countryFlag(n.countryCode)} {countryName(n.countryCode, i18n.language)}</strong></>
       : <><strong>@{n.actor?.username}</strong>{others}{verb("friendEarnedBadge")}<strong>{BADGE_EMOJI[n.badgeId]} {t(`badges.${n.badgeId}.name`)}</strong></>),
+    // Free text written by staff, not a translated template; the sender's
+    // personal account isn't shown (see the avatar override below either).
+    admin_notice: () => <>📢 {n.message}</>,
   };
   const label = TYPE_LABELS[n.type]?.();
 
@@ -45,15 +48,17 @@ const NotificationItem = ({ notification: n, onClick }) => {
           ? recapPath(RECAP_SOURCES.NOTIFICATION)
           : n.type === "referral_reward"
             ? "/invite"
-            : n.itinerary?.id
-              ? `/itinerary/${n.itinerary.id}${n.type === "comment" && n.commentId ? `#comment-${n.commentId}` : ""}`
-              : "#";
+            : n.type === "admin_notice"
+              ? "#"
+              : n.itinerary?.id
+                ? `/itinerary/${n.itinerary.id}${n.type === "comment" && n.commentId ? `#comment-${n.commentId}` : ""}`
+                : "#";
 
   return (
     <Link to={href} className={`notif-item${n.isRead ? "" : " notif-item--unread"}`} onClick={onClick}>
       <img
-        src={optimizedCloudinaryUrl(n.actor?.avatarUrl, { width: 48 })}
-        alt={n.actor?.username}
+        src={n.type === "admin_notice" ? "/logo-mark.svg" : optimizedCloudinaryUrl(n.actor?.avatarUrl, { width: 48 })}
+        alt={n.type === "admin_notice" ? "" : n.actor?.username}
         loading="lazy"
         className="notif-item__avatar"
         onError={(e) => { e.currentTarget.src = `https://ui-avatars.com/api/?name=${n.actor?.username}&background=random&color=fff`; }}

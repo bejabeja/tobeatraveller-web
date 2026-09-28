@@ -45,6 +45,8 @@ const PUSH_MESSAGES = {
         friend_stamp: ({ actorUsername, countryCode }) => (countryCode
             ? { title: 'New country', body: `${actorUsername} added ${countryFlag(countryCode)} ${countryNameIn('en', countryCode)} to their passport` }
             : { title: 'New stamp', body: `${actorUsername} earned a new stamp in their passport` }),
+        // The body is the admin's own text verbatim, not a translated template.
+        admin_notice: ({ message }) => ({ title: 'Notice from the team', body: message }),
     },
     es: {
         comment: ({ actorUsername, itineraryTitle }) => ({
@@ -82,6 +84,7 @@ const PUSH_MESSAGES = {
         friend_stamp: ({ actorUsername, countryCode }) => (countryCode
             ? { title: 'Nuevo país', body: `${actorUsername} ha añadido ${countryFlag(countryCode)} ${countryNameIn('es', countryCode)} a su pasaporte` }
             : { title: 'Nuevo sello', body: `${actorUsername} ha conseguido un sello nuevo en su pasaporte` }),
+        admin_notice: ({ message }) => ({ title: 'Aviso del equipo', body: message }),
     },
     fr: {
         comment: ({ actorUsername, itineraryTitle }) => ({
@@ -119,6 +122,7 @@ const PUSH_MESSAGES = {
         friend_stamp: ({ actorUsername, countryCode }) => (countryCode
             ? { title: 'Nouveau pays', body: `${actorUsername} a ajouté ${countryFlag(countryCode)} ${countryNameIn('fr', countryCode)} à son passeport` }
             : { title: 'Nouveau tampon', body: `${actorUsername} a obtenu un nouveau tampon dans son passeport` }),
+        admin_notice: ({ message }) => ({ title: "Message de l'équipe", body: message }),
     },
     it: {
         comment: ({ actorUsername, itineraryTitle }) => ({
@@ -156,6 +160,7 @@ const PUSH_MESSAGES = {
         friend_stamp: ({ actorUsername, countryCode }) => (countryCode
             ? { title: 'Nuovo paese', body: `${actorUsername} ha aggiunto ${countryFlag(countryCode)} ${countryNameIn('it', countryCode)} al suo passaporto` }
             : { title: 'Nuovo timbro', body: `${actorUsername} ha ottenuto un nuovo timbro nel suo passaporto` }),
+        admin_notice: ({ message }) => ({ title: 'Avviso dal team', body: message }),
     },
     de: {
         comment: ({ actorUsername, itineraryTitle }) => ({
@@ -193,6 +198,7 @@ const PUSH_MESSAGES = {
         friend_stamp: ({ actorUsername, countryCode }) => (countryCode
             ? { title: 'Neues Land', body: `${actorUsername} hat jetzt ${countryFlag(countryCode)} ${countryNameIn('de', countryCode)} im Pass` }
             : { title: 'Neuer Stempel', body: `${actorUsername} hat einen neuen Stempel im Pass bekommen` }),
+        admin_notice: ({ message }) => ({ title: 'Mitteilung vom Team', body: message }),
     },
 };
 

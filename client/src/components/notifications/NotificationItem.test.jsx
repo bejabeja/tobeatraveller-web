@@ -82,4 +82,13 @@ describe("NotificationItem", () => {
 
     expect(screen.getByRole("link")).toHaveAttribute("href", "/recap?from=notification");
   });
+
+  // The admin's own text, verbatim, not a translated template; and the
+  // sender's personal account isn't shown, so this doesn't link anywhere.
+  it("shows an admin notice's message as written, without the sender's identity", () => {
+    const { container } = renderItem(notification({ type: "admin_notice", message: "Please review your last trip" }));
+
+    expect(screen.getByText("📢 Please review your last trip")).toBeInTheDocument();
+    expect(container.querySelector("img")).toHaveAttribute("src", "/logo-mark.svg");
+  });
 });

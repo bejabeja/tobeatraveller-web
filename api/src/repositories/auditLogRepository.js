@@ -20,7 +20,12 @@ export class AuditLogRepository {
             conditions.push(`actor_id = $${i++}`);
             values.push(actorId);
         }
-        if (action) {
+        if (Array.isArray(action)) {
+            if (action.length) {
+                conditions.push(`action = ANY($${i++})`);
+                values.push(action);
+            }
+        } else if (action) {
             conditions.push(`action = $${i++}`);
             values.push(action);
         }

@@ -230,6 +230,55 @@ describe('UserRepository.findByFilters() sort options', () => {
     });
 });
 
+describe('UserRepository.findByFilters() role and premium filters', () => {
+    const repo = new UserRepository();
+
+    beforeEach(() => {
+        db.query.mockReset();
+        db.query.mockImplementation((query) =>
+            query.includes('ORDER BY') ? { rows: [] } : { rows: [{ count: '0' }] }
+        );
+    });
+
+    it('filters by role when a valid role is given', async () => {
+        await repo.findByFilters({ searchName: '', role: 'admin' });
+
+        const [listQuery, listParams] = db.query.mock.calls.find(([q]) => q.includes('ORDER BY'));
+        expect(listQuery).toMatch(/role = \$2/);
+        expect(listParams).toContain('admin');
+    });
+
+    it('ignores an unrecognized role value', async () => {
+        await repo.findByFilters({ searchName: '', role: 'not-a-role' });
+
+        const [listQuery] = db.query.mock.calls.find(([q]) => q.includes('ORDER BY'));
+        expect(listQuery).not.toMatch(/role = \$/);
+    });
+
+    it('filters premium users with premium_until in the future', async () => {
+        await repo.findByFilters({ searchName: '', isPremium: true });
+
+        const [listQuery] = db.query.mock.calls.find(([q]) => q.includes('ORDER BY'));
+        expect(listQuery).toMatch(/premium_until > NOW\(\)/);
+    });
+
+    it('filters free users with premium_until null or in the past', async () => {
+        await repo.findByFilters({ searchName: '', isPremium: false });
+
+        const [listQuery] = db.query.mock.calls.find(([q]) => q.includes('ORDER BY'));
+        expect(listQuery).toMatch(/premium_until IS NULL OR premium_until <= NOW\(\)/);
+    });
+
+    it('applies the same WHERE clause to the count query', async () => {
+        await repo.findByFilters({ searchName: '', role: 'admin', isPremium: true });
+
+        const [countQuery, countParams] = db.query.mock.calls.find(([q]) => !q.includes('ORDER BY'));
+        expect(countQuery).toMatch(/role = \$2/);
+        expect(countQuery).toMatch(/premium_until > NOW\(\)/);
+        expect(countParams).toContain('admin');
+    });
+});
+
 describe('UserRepository.getFeaturedUsers()', () => {
     const repo = new UserRepository();
 

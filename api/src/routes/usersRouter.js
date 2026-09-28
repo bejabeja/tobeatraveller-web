@@ -53,7 +53,7 @@ export const createUsersRouter = () => {
         lifeDiaryRepository, auditLogService, vanLogRepository,
         inventoryRepository, shoppingListRepository, packingChecklistRepository,
         subscriptionRepository, new ReferralService(new ReferralRepository(), userRepository, auditLogService),
-        pushTokensRepository, badgeRepository, packingListRepository
+        pushTokensRepository, badgeRepository, packingListRepository, notificationsService
     );
     const cloudinaryService = new CloudinaryService();
     const userController = new UserController(userService, cloudinaryService);
@@ -76,6 +76,7 @@ export const createUsersRouter = () => {
     router.get("/check-username", optionalAuthenticate, userController.checkUsernameAvailable.bind(userController));
     router.patch("/:id/role", authenticate, staffOnly, userController.updateUserRole.bind(userController));
     router.patch("/:id/tier", authenticate, staffOnly, userController.updateUserTier.bind(userController));
+    router.post("/:id/notice", authenticate, staffOnly, userController.sendAdminNotice.bind(userController));
     router.get("/by-username/:username", optionalAuthenticate, userController.getUserByUsername.bind(userController));
     router.get("/:id/passport", optionalAuthenticate, badgeController.getUserPassport.bind(badgeController));
     router.get("/:id", optionalAuthenticate, userController.getUserById.bind(userController));

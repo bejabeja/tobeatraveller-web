@@ -47,9 +47,12 @@ const AUDIT_DESCRIPTIONS = {
   referral_reward_capped: (entry, t) => t("admin.auditReferralRewardCapped", {
     target: entry.targetUsername ?? entry.targetUserId, monthlyLimit: entry.metadata?.monthlyLimit,
   }),
+  admin_notice_sent: (entry, t) => t("admin.auditNoticeSent", {
+    actor: entry.actorUsername, target: entry.targetUsername, message: entry.metadata?.message,
+  }),
 };
 
-const describeEntry = (entry, t) => {
+export const describeEntry = (entry, t) => {
   const describe = AUDIT_DESCRIPTIONS[entry.action];
   return describe ? describe(entry, t) : entry.action;
 };

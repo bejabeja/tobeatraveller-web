@@ -15,6 +15,7 @@ export const AUDIT_EVENTS = Object.freeze({
     ACCOUNT_DELETED_BY_ADMIN: 'account_deleted_by_admin',
     ROLE_UPDATED: 'role_updated',
     TIER_UPDATED: 'tier_updated',
+    ADMIN_NOTICE_SENT: 'admin_notice_sent',
     AUDIT_LOG_PURGED: 'audit_log_purged',
     AI_ITINERARY_GENERATED: 'ai_itinerary_generated',
     SUBSCRIPTION_STARTED: 'subscription_started',

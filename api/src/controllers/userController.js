@@ -1,5 +1,5 @@
 import { ValidationError } from "../errors/ValidationError.js";
-import { changePasswordSchema, updateLanguageSchema, updateUserRoleSchema, updateUserSchema, updateUserTierSchema } from "../utils/schemasValidation.js";
+import { adminNoticeSchema, changePasswordSchema, updateLanguageSchema, updateUserRoleSchema, updateUserSchema, updateUserTierSchema } from "../utils/schemasValidation.js";
 import { getRequestContext } from "../utils/requestContext.js";
 
 const MAX_AVATAR_SIZE = 5 * 1024 * 1024; // 5 MB
@@ -216,12 +216,14 @@ export class UserController {
 
     async getAllUsersForAdmin(req, res, next) {
         try {
-            const { searchName = '', page = 1, limit = 20, sortBy = 'username' } = req.query;
+            const { searchName = '', page = 1, limit = 20, sortBy = 'username', role, isPremium } = req.query;
             const filters = {
                 searchName,
                 page: parseInt(page),
                 limit: parseInt(limit),
                 sortBy,
+                role,
+                isPremium: isPremium === undefined ? undefined : isPremium === 'true',
             };
             const { users, totalPages, currentPage, totalCount } = await this.userService.getFilteredAllUsersForAdmin(filters);
             res.status(200).json({ users, totalPages, currentPage, totalCount });
@@ -251,6 +253,19 @@ export class UserController {
         try {
             const user = await this.userService.updateUserTier(req.params.id, result.data, req.user, getRequestContext(req));
             res.status(200).json({ id: user.id, isPremium: user.isPremium(), premiumUntil: user.premiumUntil });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async sendAdminNotice(req, res, next) {
+        const result = adminNoticeSchema.safeParse(req.body);
+        if (!result.success) {
+            return next(new ValidationError(result.error.errors[0]?.message || "Invalid message"));
+        }
+        try {
+            await this.userService.sendAdminNotice(req.params.id, result.data.message, req.user, getRequestContext(req));
+            res.status(204).send();
         } catch (error) {
             next(error);
         }

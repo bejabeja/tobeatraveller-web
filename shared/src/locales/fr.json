@@ -397,6 +397,7 @@
     "auditShowingCount": "{{shown}} sur {{total}} affichés",
     "auditReferralRewardGranted": "Récompense de parrainage accordée à {{target}} ({{rewardDays}} jours de Premium)",
     "auditReferralRewardCapped": "Récompense de parrainage de {{target}} retenue : plafond mensuel de {{monthlyLimit}} atteint",
+    "auditNoticeSent": "{{actor}} a envoyé un avis à {{target}} : « {{message}} »",
     "referralsTitle": "Parrainages",
     "referralsTotalInvited": "Invitations au total",
     "referralsTotalRewarded": "Récompenses au total",
@@ -417,7 +418,19 @@
     "auditPremiumGiftedMonths_other": "{{actor}} a offert {{count}} mois de Premium à {{target}}",
     "auditPremiumGiftedMonths_many": "{{actor}} a offert {{count}} mois de Premium à {{target}}",
     "auditPremiumGiftedIndefinite": "{{actor}} a offert Premium sans date de fin à {{target}}",
-    "auditPremiumRemoved": "{{actor}} a retiré Premium à {{target}}"
+    "auditPremiumRemoved": "{{actor}} a retiré Premium à {{target}}",
+    "allRoles": "Tous les rôles",
+    "allTiers": "Tous les niveaux",
+    "userDetailTitle": "Détails de {{username}}",
+    "userDetailItinerariesTitle": "Itinéraires",
+    "userDetailNoItineraries": "Aucun itinéraire public.",
+    "userDetailHistoryTitle": "Historique du rôle et de Premium",
+    "userDetailNoHistory": "Aucun changement de rôle ou de Premium pour l'instant.",
+    "sendNotice": "Envoyer un avis",
+    "sendNoticeTitle": "Envoyer un avis à {{username}}",
+    "sendNoticePlaceholder": "Écris le message que cet utilisateur recevra...",
+    "noticeSent": "Avis envoyé",
+    "noticeSendError": "Impossible d'envoyer l'avis. Réessaie."
   },
   "profile": {
     "shareProfile": "Partager le profil",

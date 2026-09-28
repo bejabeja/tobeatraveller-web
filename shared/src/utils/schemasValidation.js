@@ -183,6 +183,14 @@ export const contactSchema = z.object({
     message: z.string().min(10, "validation.messageMin").max(CONTACT_MESSAGE_MAX_LENGTH, "validation.tooLong"),
 });
 
+// Keep in sync with api/src/utils/schemasValidation.js's adminNoticeSchema
+// (api/ has no dependency on shared/, so this is duplicated by necessity).
+export const ADMIN_NOTICE_MAX_LENGTH = 500;
+
+export const adminNoticeSchema = z.object({
+    message: z.string().min(3, "validation.messageMin").max(ADMIN_NOTICE_MAX_LENGTH, "validation.tooLong"),
+});
+
 const VAN_LOG_CATEGORY_VALUES = vanLogCategories.map(c => c.value);
 
 export const vanLogEntrySchema = z.object({

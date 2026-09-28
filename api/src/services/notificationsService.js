@@ -30,21 +30,30 @@ export class NotificationsService {
 
     // `remainingCount` only goes into the push (a trip reminder's things
     // still to pack); the notification itself doesn't keep it.
-    async createNotification({ userId, actorId, type, itineraryId, commentId, badgeId, countryCode, remainingCount }) {
-        if (userId === actorId && !SELF_NOTIFICATION_TYPES.has(type)) return;
+    // Returns whether a notification row was actually created, so a caller
+    // for whom the notice itself is the point (not a fire-and-forget side
+    // effect, e.g. UserService.sendAdminNotice) can tell delivery from a
+    // silent no-op (self-notification, muted preference, or a write failure
+    // swallowed by the repository) and surface that instead of reporting
+    // success. Existing fire-and-forget callers just ignore the return value.
+    async createNotification({ userId, actorId, type, itineraryId, commentId, badgeId, countryCode, remainingCount, message }) {
+        if (userId === actorId && !SELF_NOTIFICATION_TYPES.has(type)) return false;
 
         const preferences = await this.notificationsRepository.getPreferences(userId);
         const preferenceKey = NOTIFICATION_TYPE_PREFERENCE_KEY[type];
-        if (preferenceKey && !preferences[preferenceKey]) return;
+        if (preferenceKey && !preferences[preferenceKey]) return false;
 
-        const created = await this.notificationsRepository.create({ userId, actorId, type, itineraryId, commentId, badgeId, countryCode });
-        if (!created || !this._shouldPush(preferences, type, created)) return;
+        const created = await this.notificationsRepository.create({ userId, actorId, type, itineraryId, commentId, badgeId, countryCode, message });
+        if (!created) return false;
 
-        // Callers fire this with .catch(() => {}), so a push failure would
-        // otherwise vanish without a trace.
-        await this.pushNotificationsService
-            .sendNotificationPush({ userId, actorId, type, itineraryId, commentId, badgeId, countryCode, remainingCount })
-            .catch(err => logger.error('[push] failed to send notification push:', err));
+        if (this._shouldPush(preferences, type, created)) {
+            // Callers fire this with .catch(() => {}), so a push failure would
+            // otherwise vanish without a trace.
+            await this.pushNotificationsService
+                .sendNotificationPush({ userId, actorId, type, itineraryId, commentId, badgeId, countryCode, remainingCount, message })
+                .catch(err => logger.error('[push] failed to send notification push:', err));
+        }
+        return true;
     }
 
     // Each follower goes through createNotification like any other notice,

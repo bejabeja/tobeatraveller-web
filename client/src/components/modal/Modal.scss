@@ -94,6 +94,16 @@ html:has(.modal__backdrop) {
     padding: 1rem 1.5rem;
   }
 
+  &__body {
+    padding: 1rem 1.5rem;
+    overflow-y: auto;
+  }
+
+  // Avoid doubling the gap when a body follows a description.
+  &__description + &__body {
+    padding-top: 0;
+  }
+
   &__actions {
     display: flex;
     justify-content: flex-end;

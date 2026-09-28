@@ -1,17 +1,21 @@
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
-import { formatDate } from "@tobeatraveller/shared";
-import { IoTrashOutline } from "react-icons/io5";
+import { ADMIN_NOTICE_MAX_LENGTH, adminNoticeSchema, formatDate } from "@tobeatraveller/shared";
+import { IoEyeOutline, IoMailOutline, IoTrashOutline } from "react-icons/io5";
 import { useSelector } from "react-redux";
+import { TextAreaForm } from "../../components/form/InputForm";
 import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState";
 import Modal from "../../components/modal/Modal";
 import Spinner from "../../components/spinner/Spinner";
 import useDebouncedEffect from "../../hooks/useDebounced";
-import { deleteUserById, getAllUsersForAdmin, updateUserRole, updateUserTier } from "../../services/users";
+import { deleteUserById, getAllUsersForAdmin, sendAdminNotice, updateUserRole, updateUserTier } from "../../services/users";
 import { selectAuthUser } from "../../store/auth/authSelectors";
 import { selectMe } from "../../store/user/userInfoSelectors";
 import { generateAvatar } from "../../utils/constants/constants";
+import UserDetailModal from "./UserDetailModal";
 import "./InternalUsers.scss";
 
 const PAGE_SIZE = 20;
@@ -19,6 +23,8 @@ const ASSIGNABLE_ROLES = ["user", "admin", "superadmin"];
 const GIFT_PREMIUM_MONTHS = [1, 3, 12];
 const REMOVE_PREMIUM = "free";
 const GIFT_PREFIX = "gift:";
+const TIER_FILTER_PREMIUM = "premium";
+const TIER_FILTER_FREE = "free";
 // A gift with no end date is stored a century out (see userService.js).
 const INDEFINITE_AFTER_YEARS = 50;
 
@@ -34,6 +40,8 @@ const InternalUsers = () => {
   const [users, setUsers] = useState([]);
   const [searchName, setSearchName] = useState("");
   const [sortBy, setSortBy] = useState("username");
+  const [roleFilter, setRoleFilter] = useState("");
+  const [tierFilter, setTierFilter] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -43,10 +51,25 @@ const InternalUsers = () => {
   // { kind: "delete" | "grantSuperadmin", user, newRole? }
   const [pendingAction, setPendingAction] = useState(null);
   const [confirmingAction, setConfirmingAction] = useState(false);
+  const [detailUser, setDetailUser] = useState(null);
+  const [noticeUser, setNoticeUser] = useState(null);
+  const [sendingNotice, setSendingNotice] = useState(false);
 
-  const loadUsers = (targetPage = 1, name = searchName, sort = sortBy) => {
+  const noticeForm = useForm({
+    resolver: zodResolver(adminNoticeSchema),
+    defaultValues: { message: "" },
+  });
+
+  const loadUsers = (targetPage = 1, name = searchName, sort = sortBy, role = roleFilter, tier = tierFilter) => {
     setLoading(true);
-    getAllUsersForAdmin({ searchName: name, page: targetPage, limit: PAGE_SIZE, sortBy: sort })
+    getAllUsersForAdmin({
+      searchName: name,
+      page: targetPage,
+      limit: PAGE_SIZE,
+      sortBy: sort,
+      role: role || undefined,
+      isPremium: tier === TIER_FILTER_PREMIUM ? true : tier === TIER_FILTER_FREE ? false : undefined,
+    })
       .then((res) => {
         setUsers(res.users);
         setPage(res.currentPage);
@@ -57,7 +80,7 @@ const InternalUsers = () => {
       .finally(() => setLoading(false));
   };
 
-  useDebouncedEffect(() => loadUsers(1, searchName, sortBy), [searchName, sortBy], 400);
+  useDebouncedEffect(() => loadUsers(1, searchName, sortBy, roleFilter, tierFilter), [searchName, sortBy, roleFilter, tierFilter], 400);
 
   const applyRoleChange = async (user, newRole) => {
     setUpdatingRoleId(user.id);
@@ -128,6 +151,20 @@ const InternalUsers = () => {
     }
   };
 
+  const submitNotice = async ({ message }) => {
+    setSendingNotice(true);
+    try {
+      await sendAdminNotice(noticeUser.id, message);
+      toast.success(t("admin.noticeSent"));
+      setNoticeUser(null);
+      noticeForm.reset();
+    } catch (err) {
+      toast.error(err.message || t("admin.noticeSendError"));
+    } finally {
+      setSendingNotice(false);
+    }
+  };
+
   if (error) {
     return <FeatureLoadState status={error} onRetry={() => loadUsers(page)} />;
   }
@@ -162,6 +199,27 @@ const InternalUsers = () => {
           <option value="username">{t("community.sortAZ")}</option>
           <option value="newest">{t("admin.sortNewest")}</option>
           <option value="itineraries">{t("community.sortMostItineraries")}</option>
+        </select>
+        <select
+          className="internal-users__filter-role"
+          value={roleFilter}
+          onChange={(e) => setRoleFilter(e.target.value)}
+          aria-label={t("admin.allRoles")}
+        >
+          <option value="">{t("admin.allRoles")}</option>
+          {ASSIGNABLE_ROLES.map((role) => (
+            <option key={role} value={role}>{t(`admin.roleName.${role}`, role)}</option>
+          ))}
+        </select>
+        <select
+          className="internal-users__filter-tier"
+          value={tierFilter}
+          onChange={(e) => setTierFilter(e.target.value)}
+          aria-label={t("admin.allTiers")}
+        >
+          <option value="">{t("admin.allTiers")}</option>
+          <option value={TIER_FILTER_PREMIUM}>{t("admin.premium")}</option>
+          <option value={TIER_FILTER_FREE}>{t("admin.free")}</option>
         </select>
       </div>
 
@@ -224,6 +282,23 @@ const InternalUsers = () => {
                 </select>
                 <button
                   type="button"
+                  className="internal-users__detail"
+                  onClick={() => setDetailUser(user)}
+                  aria-label={t("admin.userDetailTitle", { username: user.username })}
+                >
+                  <IoEyeOutline />
+                </button>
+                <button
+                  type="button"
+                  className="internal-users__notice"
+                  onClick={() => setNoticeUser(user)}
+                  disabled={user.id === currentUserId}
+                  aria-label={t("admin.sendNotice")}
+                >
+                  <IoMailOutline />
+                </button>
+                <button
+                  type="button"
                   className="internal-users__delete"
                   onClick={() => setPendingAction({ kind: "delete", user })}
                   disabled={user.id === currentUserId}
@@ -258,6 +333,25 @@ const InternalUsers = () => {
         type="danger"
         loading={confirmingAction}
       />
+
+      <UserDetailModal user={detailUser} onClose={() => setDetailUser(null)} />
+
+      <Modal
+        isOpen={!!noticeUser}
+        onClose={() => { setNoticeUser(null); noticeForm.reset(); }}
+        onConfirm={noticeForm.handleSubmit(submitNotice)}
+        title={noticeUser ? t("admin.sendNoticeTitle", { username: noticeUser.username }) : ""}
+        confirmText={t("admin.sendNotice")}
+        loading={sendingNotice}
+      >
+        <TextAreaForm
+          name="message"
+          control={noticeForm.control}
+          error={noticeForm.formState.errors.message}
+          placeholder={t("admin.sendNoticePlaceholder")}
+          maxLength={ADMIN_NOTICE_MAX_LENGTH}
+        />
+      </Modal>
     </section>
   );
 };

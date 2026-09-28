@@ -203,14 +203,47 @@ describe('NotificationsService.createNotification() push delivery', () => {
         expect(pushNotificationsService.sendNotificationPush).not.toHaveBeenCalled();
     });
 
+    // A caller for whom the notification IS the point, not a side effect
+    // (UserService.sendAdminNotice), tells delivery from a silent no-op by
+    // this return value instead of assuming success just because nothing threw.
+    it('resolves false, instead of throwing, when storing the in-app notification failed', async () => {
+        notificationsRepository.create.mockResolvedValue(null);
+
+        await expect(
+            service.createNotification({ userId: 'u1', actorId: 'u2', type: 'follow' })
+        ).resolves.toBe(false);
+    });
+
+    it('resolves false for a self-notification of a type that is not self-notifiable', async () => {
+        await expect(
+            service.createNotification({ userId: 'u1', actorId: 'u1', type: 'follow' })
+        ).resolves.toBe(false);
+
+        expect(notificationsRepository.create).not.toHaveBeenCalled();
+    });
+
+    it('resolves false when the recipient muted that notification type', async () => {
+        notificationsRepository.getPreferences.mockResolvedValue(preferences({ notifyOnLike: false }));
+
+        await expect(
+            service.createNotification({ userId: 'u1', actorId: 'u2', type: 'like', itineraryId: 'i1' })
+        ).resolves.toBe(false);
+    });
+
+    it('resolves true once the in-app notification is stored', async () => {
+        await expect(
+            service.createNotification({ userId: 'u1', actorId: 'u2', type: 'follow' })
+        ).resolves.toBe(true);
+    });
+
     // Regression: callers fire createNotification with .catch(() => {}), so a
     // push failure escaping here was swallowed with no log at all.
-    it('still resolves when sending the push fails, after storing the in-app notification', async () => {
+    it('still resolves true when sending the push fails, after storing the in-app notification', async () => {
         pushNotificationsService.sendNotificationPush.mockRejectedValue(new Error('Expo down'));
 
         await expect(
             service.createNotification({ userId: 'u1', actorId: 'u2', type: 'follow' })
-        ).resolves.toBeUndefined();
+        ).resolves.toBe(true);
         expect(notificationsRepository.create).toHaveBeenCalled();
     });
 

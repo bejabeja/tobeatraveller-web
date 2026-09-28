@@ -218,6 +218,13 @@ export const contactSchema = z.object({
     language: z.enum(SUPPORTED_LANGUAGES).optional(),
 });
 
+// Keep in sync with shared/src/utils/schemasValidation.js's adminNoticeSchema.
+const ADMIN_NOTICE_MAX_LENGTH = 500;
+
+export const adminNoticeSchema = z.object({
+    message: z.string().min(3, "validation.messageMin").max(ADMIN_NOTICE_MAX_LENGTH, "validation.tooLong"),
+});
+
 export const updateLanguageSchema = z.object({
     language: z.enum(SUPPORTED_LANGUAGES, { errorMap: () => ({ message: "validation.invalid" }) }),
 });

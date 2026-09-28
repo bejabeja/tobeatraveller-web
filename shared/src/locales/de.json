@@ -392,6 +392,7 @@
     "auditShowingCount": "{{shown}} von {{total}} angezeigt",
     "auditReferralRewardGranted": "Empfehlungsprämie an {{target}} vergeben ({{rewardDays}} Tage Premium)",
     "auditReferralRewardCapped": "Empfehlungsprämie für {{target}} zurückgehalten: Monatslimit von {{monthlyLimit}} erreicht",
+    "auditNoticeSent": "{{actor}} hat {{target}} eine Mitteilung geschickt: \"{{message}}\"",
     "referralsTitle": "Empfehlungen",
     "referralsTotalInvited": "Einladungen gesamt",
     "referralsTotalRewarded": "Prämien gesamt",
@@ -410,7 +411,19 @@
     "auditPremiumGiftedMonths_one": "{{actor}} hat {{target}} {{count}} Monat Premium geschenkt",
     "auditPremiumGiftedMonths_other": "{{actor}} hat {{target}} {{count}} Monate Premium geschenkt",
     "auditPremiumGiftedIndefinite": "{{actor}} hat {{target}} Premium ohne Enddatum geschenkt",
-    "auditPremiumRemoved": "{{actor}} hat {{target}} Premium entfernt"
+    "auditPremiumRemoved": "{{actor}} hat {{target}} Premium entfernt",
+    "allRoles": "Alle Rollen",
+    "allTiers": "Alle Stufen",
+    "userDetailTitle": "Details zu {{username}}",
+    "userDetailItinerariesTitle": "Reiserouten",
+    "userDetailNoItineraries": "Keine öffentlichen Reiserouten.",
+    "userDetailHistoryTitle": "Rollen- und Premium-Verlauf",
+    "userDetailNoHistory": "Noch keine Rollen- oder Premium-Änderungen.",
+    "sendNotice": "Mitteilung senden",
+    "sendNoticeTitle": "Eine Mitteilung an {{username}} senden",
+    "sendNoticePlaceholder": "Schreibe die Nachricht, die dieser Nutzer erhält...",
+    "noticeSent": "Mitteilung gesendet",
+    "noticeSendError": "Die Mitteilung konnte nicht gesendet werden. Bitte versuche es erneut."
   },
   "profile": {
     "shareProfile": "Profil teilen",

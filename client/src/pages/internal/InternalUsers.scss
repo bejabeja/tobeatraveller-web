@@ -9,6 +9,8 @@
 
   &__search,
   &__sort,
+  &__filter-role,
+  &__filter-tier,
   &__role-select,
   &__tier-select {
     width: auto;
@@ -79,13 +81,14 @@
     flex-shrink: 0;
   }
 
+  &__detail,
+  &__notice,
   &__delete {
     width: auto;
     flex-shrink: 0;
     background: none;
     border: none;
     cursor: pointer;
-    color: var(--error-color, #d33);
     font-size: 1.2rem;
     padding: 0.5rem;
 
@@ -93,6 +96,15 @@
       color: var(--text-secondary-color, #999);
       cursor: not-allowed;
     }
+  }
+
+  &__detail,
+  &__notice {
+    color: var(--text-secondary-color, #666);
+  }
+
+  &__delete {
+    color: var(--error-color, #d33);
   }
 
   &__pagination {

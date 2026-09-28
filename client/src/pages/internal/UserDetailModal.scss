@@ -1,0 +1,51 @@
+.user-detail-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-height: 55vh;
+  overflow-y: auto;
+
+  &__section-title {
+    margin: 0 0 0.6rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-color, #111);
+  }
+
+  &__empty {
+    color: var(--text-secondary-color, #666);
+    font-size: 0.875rem;
+    margin: 0;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--border-color, #eee);
+
+    &:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    &:first-child {
+      padding-top: 0;
+    }
+  }
+
+  &__meta {
+    font-size: 0.8rem;
+    color: var(--text-secondary-color, #666);
+  }
+}

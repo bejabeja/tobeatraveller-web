@@ -37,7 +37,7 @@ export class UserService {
         lifeDiaryRepository = null, auditLogService = null, vanLogRepository = null,
         inventoryRepository = null, shoppingListRepository = null, packingChecklistRepository = null,
         subscriptionRepository = null, referralService = null, pushTokensRepository = null,
-        badgeRepository = null, packingListRepository = null
+        badgeRepository = null, packingListRepository = null, notificationsService = null
     ) {
         this.userRepository = userRepository;
         this.itinerariesRepository = itinerariesRepository;
@@ -54,6 +54,7 @@ export class UserService {
         this.pushTokensRepository = pushTokensRepository;
         this.badgeRepository = badgeRepository;
         this.packingListRepository = packingListRepository;
+        this.notificationsService = notificationsService;
     }
 
     async create(userData, { ip, userAgent } = {}) {
@@ -127,7 +128,7 @@ export class UserService {
         };
     }
 
-    async getFilteredAllUsersForAdmin({ searchName, page, limit, sortBy }) {
+    async getFilteredAllUsersForAdmin({ searchName, page, limit, sortBy, role, isPremium }) {
         const offset = (page - 1) * limit;
 
         const { users, total } = await this.userRepository.findByFilters({
@@ -135,6 +136,8 @@ export class UserService {
             offset,
             limit,
             sortBy,
+            role,
+            isPremium,
         });
 
         return {
@@ -167,6 +170,31 @@ export class UserService {
         });
 
         return user;
+    }
+
+    // A one-off notice from staff to a single user (e.g. a moderation
+    // warning), delivered through the same in-app/push pipeline as any other
+    // notification, but with a free-text body instead of a fixed template.
+    async sendAdminNotice(targetId, message, actingUser, { ip, userAgent } = {}) {
+        if (targetId === actingUser.id) {
+            throw new ForbiddenError("You cannot send yourself a notice");
+        }
+
+        const target = await this.userRepository.getUserById(targetId);
+        if (!target) throw new NotFoundError("User not found");
+
+        const delivered = await this.notificationsService?.createNotification({
+            userId: targetId, actorId: actingUser.id, type: 'admin_notice', message,
+        });
+        if (!delivered) throw new Error("Failed to send the notice");
+
+        this.auditLogService?.log({
+            actorId: actingUser.id, actorUsername: actingUser.username,
+            action: AUDIT_EVENTS.ADMIN_NOTICE_SENT,
+            targetUserId: targetId, targetUsername: target.username,
+            metadata: { message },
+            ipAddress: ip, userAgent,
+        });
     }
 
     // Staff gift or take away premium. A gift never shortens the premium the
