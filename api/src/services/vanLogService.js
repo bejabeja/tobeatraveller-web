@@ -7,9 +7,13 @@ import { findClientCreatedEntity, getOwnedEntity } from '../utils/ownedEntity.js
 // bypass it entirely, mirroring requirePremium's own staff bypass.
 const FREE_ENTRY_LIMIT = 10;
 
+const RECEIPT_PHOTO_FOLDER = "van-log-receipts";
+
 export class VanLogService {
-    constructor(vanLogRepository, userRepository, badgeService = null) {
+    constructor(vanLogRepository, cloudinaryService, itineraryRepository, userRepository, badgeService = null) {
         this.vanLogRepository = vanLogRepository;
+        this.cloudinaryService = cloudinaryService;
+        this.itineraryRepository = itineraryRepository;
         this.userRepository = userRepository;
         this.badgeService = badgeService;
     }
@@ -21,6 +25,7 @@ export class VanLogService {
         if (alreadyCreated) return alreadyCreated.toDTO();
 
         await this._assertCanCreateEntry(userId);
+        if (data.itineraryId) await this._getOwnedItinerary(data.itineraryId, userId);
         const entry = await this.vanLogRepository.create({ ...data, userId });
         this.badgeService?.evaluateUserInBackground(userId);
         return entry.toDTO();
@@ -33,6 +38,7 @@ export class VanLogService {
 
     async updateEntry(id, data, userId) {
         const entry = await this._getOwnedEntry(id, userId);
+        if (data.itineraryId) await this._getOwnedItinerary(data.itineraryId, userId);
         const updated = await this.vanLogRepository.update(entry.id, data);
         // An edit can add a location in a new country.
         this.badgeService?.evaluateUserInBackground(userId);
@@ -40,20 +46,48 @@ export class VanLogService {
     }
 
     async deleteEntry(id, userId) {
-        await this._getOwnedEntry(id, userId);
+        const entry = await this._getOwnedEntry(id, userId);
+        if (entry.receiptPhotoPublicId) {
+            await this.cloudinaryService.deleteImage(entry.receiptPhotoPublicId).catch(() => {});
+        }
         await this.vanLogRepository.delete(id);
     }
 
+    async setReceiptPhoto(id, userId, file) {
+        const entry = await this._getOwnedEntry(id, userId);
+        if (entry.receiptPhotoPublicId) {
+            await this.cloudinaryService.deleteImage(entry.receiptPhotoPublicId).catch(() => {});
+        }
+        const result = await this.cloudinaryService.uploadImageFromBuffer(file.buffer, RECEIPT_PHOTO_FOLDER);
+        const updated = await this.vanLogRepository.updateReceiptPhoto(entry.id, {
+            url: result.secure_url,
+            publicId: result.public_id,
+        });
+        return updated.toDTO();
+    }
+
+    async removeReceiptPhoto(id, userId) {
+        const entry = await this._getOwnedEntry(id, userId);
+        if (entry.receiptPhotoPublicId) {
+            await this.cloudinaryService.deleteImage(entry.receiptPhotoPublicId).catch(() => {});
+        }
+        const updated = await this.vanLogRepository.updateReceiptPhoto(entry.id, { url: null, publicId: null });
+        return updated.toDTO();
+    }
+
     async getStats(userId, filters = {}) {
-        // byCountry ignora el filtro country, y availableCurrencies ignora el
-        // filtro currency: cada uno debe seguir listando todas sus propias
-        // opciones (dados los demás filtros) para que su selector no se quede
-        // con una única opción en cuanto el usuario elige un valor.
+        // byCountry ignora el filtro country, byTrip ignora el filtro trip, y
+        // availableCurrencies ignora el filtro currency: cada uno debe seguir
+        // listando todas sus propias opciones (dados los demás filtros) para
+        // que su selector no se quede con una única opción en cuanto el
+        // usuario elige un valor.
         const { country, ...filtersForCountryTotals } = filters;
+        const { itineraryId, ...filtersForTripTotals } = filters;
         const { currency, ...filtersForCurrencyList } = filters;
-        const [byCategory, byCountry, availableCurrencies, freeTierUsage] = await Promise.all([
+        const [byCategory, byCountry, byTrip, availableCurrencies, freeTierUsage] = await Promise.all([
             this.vanLogRepository.getTotalsByCategory(userId, filters),
             this.vanLogRepository.getTotalsByCountry(userId, filtersForCountryTotals),
+            this.vanLogRepository.getTotalsByTrip(userId, filtersForTripTotals),
             this.vanLogRepository.getDistinctCurrencies(userId, filtersForCurrencyList),
             this.getFreeTierUsage(userId),
         ]);
@@ -61,6 +95,7 @@ export class VanLogService {
             totalsByCurrency: this._sumByCurrency(byCategory),
             byCategory,
             byCountry,
+            byTrip,
             availableCurrencies,
             freeTierUsage,
         };
@@ -93,6 +128,10 @@ export class VanLogService {
 
     async _getOwnedEntry(id, userId) {
         return getOwnedEntity(this.vanLogRepository, id, userId, "Van log entry not found");
+    }
+
+    async _getOwnedItinerary(itineraryId, userId) {
+        return getOwnedEntity(this.itineraryRepository, itineraryId, userId, "Itinerary not found");
     }
 
     async _assertCanCreateEntry(userId) {

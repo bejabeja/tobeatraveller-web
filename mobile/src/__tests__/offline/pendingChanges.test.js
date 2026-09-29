@@ -321,6 +321,27 @@ describe('filterVanLogEntries', () => {
     expect(ids(filterVanLogEntries(entries, { dateFrom: '2026-09-05', dateTo: '2026-09-10' }))).toEqual(['water-free', 'fuel-ch']);
   });
 
+  describe('by trip', () => {
+    const tripEntries = [
+      { id: 'synced-in-trip', itinerary: { id: 'trip-1', title: 'Portugal' } },
+      { id: 'synced-other-trip', itinerary: { id: 'trip-2', title: 'Alps' } },
+      { id: 'synced-no-trip', itinerary: null },
+      { id: 'pending-in-trip', itineraryId: 'trip-1' },
+      { id: 'pending-no-trip', itineraryId: null },
+    ];
+
+    it('keeps the entries linked to the trip, whether they came from the server or are still pending', () => {
+      expect(ids(filterVanLogEntries(tripEntries, { itineraryId: 'trip-1' }))).toEqual(['synced-in-trip', 'pending-in-trip']);
+    });
+
+    it('trusts a pending edit over the trip the server last returned', () => {
+      const edited = [{ id: 'moved', itinerary: { id: 'trip-1', title: 'Portugal' }, itineraryId: 'trip-2' }];
+
+      expect(ids(filterVanLogEntries(edited, { itineraryId: 'trip-1' }))).toEqual([]);
+      expect(ids(filterVanLogEntries(edited, { itineraryId: 'trip-2' }))).toEqual(['moved']);
+    });
+  });
+
   it('returns everything with empty filters', () => {
     expect(filterVanLogEntries(entries, { category: '', country: '', currency: '', dateFrom: '', dateTo: '' })).toHaveLength(3);
   });

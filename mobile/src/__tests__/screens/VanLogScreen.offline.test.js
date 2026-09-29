@@ -31,6 +31,9 @@ jest.mock('@tobeatraveller/shared', () => {
     ...jest.requireActual('../../../../shared/src/utils/formatLocale.js'),
     groupVanLogEntriesByMonth: vanLogStats.groupVanLogEntriesByMonth,
     getVanLogFuelPriceTrend: vanLogStats.getVanLogFuelPriceTrend,
+    getTripBudgetProgress: vanLogStats.getTripBudgetProgress,
+    getVanLogDateRangePresets: vanLogStats.getVanLogDateRangePresets,
+    groupVanLogEntriesByTrip: vanLogStats.groupVanLogEntriesByTrip,
     vanLogCategories: constants.vanLogCategories,
     vanLogCategoryEmoji: constants.vanLogCategoryEmoji,
     isNetworkError: parseError.isNetworkError,
@@ -39,12 +42,13 @@ jest.mock('@tobeatraveller/shared', () => {
     getVanLogStats: jest.fn(),
     deleteVanLogEntry: jest.fn(),
     selectAuthUser: jest.fn(),
+    selectMyItineraries: jest.fn(() => []),
   };
 });
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getVanLogEntries, getVanLogStats, selectAuthUser } from '@tobeatraveller/shared';
-import { act, render, screen } from '@testing-library/react-native';
+import { getVanLogEntries, getVanLogStats, selectAuthUser, selectMyItineraries } from '@tobeatraveller/shared';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { cacheSet } from '../../utils/offlineCache';
 import { clearOutbox, loadOutbox, runOrQueue, setOfflineEditingEnabled, setOutboxOnline } from '../../offline/outbox';
@@ -89,6 +93,7 @@ beforeEach(async () => {
   await AsyncStorage.clear(); // the AsyncStorage jest mock persists its storage across tests otherwise
   selectAuthUser.mockReturnValue({ id: 'user-1' });
   getVanLogStats.mockResolvedValue({ totalsByCurrency: [], byCategory: [], byCountry: [], availableCurrencies: [] });
+  selectMyItineraries.mockReturnValue([]);
 });
 
 // Regression coverage for the offline-caching flow added this session
@@ -155,4 +160,42 @@ it('hides an expense deleted offline even though the cache still has it', async 
 
   expect(await screen.findByText('Cached fuel stop')).toBeTruthy();
   expect(screen.queryByText('Deleted offline')).toBeNull();
+});
+
+describe('grouping by trip', () => {
+  const PORTUGAL = { id: 'trip-pt', title: 'Portugal' };
+
+  it('groups an expense saved offline under its trip, whose title comes from the user\'s own trips', async () => {
+    selectMyItineraries.mockReturnValue([PORTUGAL]);
+    await cacheSet('vanlog:entries:user-1', [CACHED_ENTRY]);
+    getVanLogEntries.mockRejectedValue({ isNetworkError: true });
+    setOutboxOnline(false);
+    setOfflineEditingEnabled(true);
+    await loadOutbox('user-1');
+    await runOrQueue({
+      collection: COLLECTIONS.VAN_LOG,
+      kind: CHANGE_KINDS.CREATE,
+      entityId: 'entry-offline',
+      payload: {
+        id: 'entry-offline', category: 'water_fresh', title: 'Offline water refill', amount: 2, currency: 'EUR',
+        entryDate: '2026-01-16', itineraryId: PORTUGAL.id,
+      },
+    });
+
+    await renderScreen(<VanLogScreen navigation={{}} />);
+    fireEvent.press(await screen.findByText('vanLog.byTrip'));
+
+    expect(screen.getByText('Portugal')).toBeTruthy();
+    expect(screen.getByText('vanLog.noTripGroup')).toBeTruthy();
+  });
+
+  it('offers no grouping choice when none of the expenses belong to a trip', async () => {
+    selectMyItineraries.mockReturnValue([PORTUGAL]);
+    getVanLogEntries.mockResolvedValue([CACHED_ENTRY]);
+
+    await renderScreen(<VanLogScreen navigation={{}} />);
+
+    expect(await screen.findByText('Cached fuel stop')).toBeTruthy();
+    expect(screen.queryByText('vanLog.byTrip')).toBeNull();
+  });
 });

@@ -28,7 +28,6 @@ Solo recoge lo que queda por hacer; lo ya resuelto o verificado como correcto se
 - **Mobile (Expo)**: recorrido en Expo web el 2026-09-27; lo que salió está arreglado. Queda:
   - El selector de fecha nativo (viaje, gasto, diario, salida de una experiencia) solo se puede probar en un móvil: en Expo web sigue siendo un campo de texto.
   - No se pudo ver en Expo web lo que abre `Alert.alert` (el menú "⋯" del viaje, confirmaciones), ni los mapas nativos.
-- **Panel interno/admin (`/internal/*`)**: no revisado.
 - Para repetir el recorrido: levantar `api` (`npm run dev` en `api/`) y `client` (`npm run dev` en `client/`) y usar capturas de **viewport normal**, no `fullPage`: con `fullPage` muchas páginas salen descolocadas solo en la captura (en escritorio, la columna de contenido aparece desplazada) y dan falsos positivos.
 
 ## Limpieza

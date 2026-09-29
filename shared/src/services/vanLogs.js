@@ -69,3 +69,29 @@ export const getVanLogStats = async (filters = {}) => {
     }
     return response.json();
 };
+
+// Kept as its own request (not folded into create/update) so a receipt photo
+// can be attached right after an entry is saved without changing the
+// create/update payload shape that mobile's offline outbox also relies on.
+export const uploadVanLogReceiptPhoto = async (id, file) => {
+    const formData = new FormData();
+    formData.append("receipt", file);
+    const response = await authFetch(`${baseUrl()}/${id}/receipt-photo`, {
+        method: "POST",
+        body: formData,
+    });
+    if (!response.ok) {
+        await parseError(response, "Failed to upload receipt photo");
+    }
+    return response.json();
+};
+
+export const removeVanLogReceiptPhoto = async (id) => {
+    const response = await authFetch(`${baseUrl()}/${id}/receipt-photo`, {
+        method: "DELETE",
+    });
+    if (!response.ok) {
+        await parseError(response, "Failed to remove receipt photo");
+    }
+    return response.json();
+};

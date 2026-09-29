@@ -1,13 +1,15 @@
 import { useRef, useState } from 'react';
 import {
-  ActivityIndicator, Alert, KeyboardAvoidingView, Platform,
+  ActivityIndicator, Alert, Image, KeyboardAvoidingView, Platform,
   ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
-  reverseGeocode, searchDestinations,
-  vanLogCategories, vanLogCategoryEmoji as CATEGORY_EMOJI, vanLogCommonCurrencies, vanLogEntrySchema,
+  localCalendarDay, removeVanLogReceiptPhoto, reverseGeocode, searchDestinations, selectMyItineraries,
+  tripsToLinkTo, uploadVanLogReceiptPhoto, vanLogCategories, vanLogCategoryEmoji as CATEGORY_EMOJI, vanLogCommonCurrencies, vanLogEntrySchema,
 } from '@tobeatraveller/shared';
 import { shadow } from '../../utils/styles';
 import { GEOAPIFY_KEY } from '../../utils/config';
@@ -25,11 +27,19 @@ const normalizeLocation = (location) => location?.name
       coordinates: { lat: Number(location.lat) || 0, lon: Number(location.lon) || 0 } }
   : null;
 
+const receiptFileFromAsset = (asset) => {
+  const filename = asset.uri.split('/').pop();
+  const extension = filename.split('.').pop().toLowerCase();
+  return { uri: asset.uri, name: filename, type: extension === 'png' ? 'image/png' : 'image/jpeg' };
+};
+
 const VanLogEntryFormScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const entry = route.params?.entry ?? null;
   const isEditing = !!entry;
+  const trips = tripsToLinkTo(useSelector(selectMyItineraries), localCalendarDay());
+  const initialReceiptPhotoUrl = entry?.receiptPhotoUrl ?? null;
 
   const [category, setCategory] = useState(entry?.category ?? 'fuel');
   const [title, setTitle] = useState(entry?.title ?? '');
@@ -50,6 +60,10 @@ const VanLogEntryFormScreen = ({ navigation, route }) => {
   const [locationResults, setLocationResults] = useState([]);
   const [locationSearching, setLocationSearching] = useState(false);
   const [notes, setNotes] = useState(entry?.notes ?? '');
+  const [itineraryId, setItineraryId] = useState(entry?.itineraryId ?? entry?.itinerary?.id ?? null);
+  // Either the URL already stored, a freshly picked file (not uploaded yet),
+  // or null: uploading happens after the entry is saved.
+  const [receiptPhoto, setReceiptPhoto] = useState(initialReceiptPhotoUrl);
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
   const [submitError, setSubmitError] = useState(null);
@@ -114,6 +128,43 @@ const VanLogEntryFormScreen = ({ navigation, route }) => {
     }
   };
 
+  const pickReceiptPhoto = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert(t('editProfile.permissionNeeded'), t('editProfile.permissionNeededDesc'));
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.8 });
+    if (result.canceled || !result.assets?.[0]) return;
+    setReceiptPhoto(receiptFileFromAsset(result.assets[0]));
+    setIsDirty(true);
+  };
+
+  const removeReceiptPhoto = () => {
+    setReceiptPhoto(null);
+    setIsDirty(true);
+  };
+
+  // The photo is a separate request that can't wait in the offline queue (the
+  // picked file may be gone by the time the connection is back), and it needs
+  // the entry to exist on the server, so it only goes up when the entry
+  // itself was saved straight away.
+  const syncReceiptPhoto = async (savedEntryId, entryQueued) => {
+    const isNewFile = receiptPhoto !== null && typeof receiptPhoto === 'object';
+    const wasRemoved = receiptPhoto === null && initialReceiptPhotoUrl !== null;
+    if (!isNewFile && !wasRemoved) return;
+    if (entryQueued) {
+      Alert.alert(t('vanLog.receiptPhotoNeedsConnection'));
+      return;
+    }
+    try {
+      if (isNewFile) await uploadVanLogReceiptPhoto(savedEntryId, receiptPhoto);
+      else await removeVanLogReceiptPhoto(savedEntryId);
+    } catch {
+      Alert.alert(t('vanLog.receiptPhotoUploadError'));
+    }
+  };
+
   const handleSave = async () => {
     const parsed = vanLogEntrySchema.safeParse({
       category,
@@ -154,16 +205,18 @@ const VanLogEntryFormScreen = ({ navigation, route }) => {
         : null,
       notes: data.notes || null,
       entryDate: data.entryDate,
+      itineraryId,
     };
     const entityId = isEditing ? entry.id : newEntityId();
     try {
-      await runOrQueue({
+      const { queued } = await runOrQueue({
         collection: COLLECTIONS.VAN_LOG,
         kind: isEditing ? CHANGE_KINDS.UPDATE : CHANGE_KINDS.CREATE,
         entityId,
         payload: isEditing ? payload : { ...payload, id: entityId },
         label: payload.title || t(`vanLog.category.${payload.category}`),
       });
+      await syncReceiptPhoto(entityId, queued);
       navigation.goBack();
     } catch (err) {
       setSubmitError(err?.message || t('vanLog.saveError'));
@@ -305,6 +358,24 @@ const VanLogEntryFormScreen = ({ navigation, route }) => {
               />
             </Field>
 
+            {trips.length > 0 && (
+              <Field label={t('vanLog.tripLabel')}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
+                  {[{ id: null, title: t('vanLog.noTrip') }, ...trips].map(trip => (
+                    <TouchableOpacity
+                      key={trip.id ?? 'none'}
+                      style={[styles.chip, itineraryId === trip.id && styles.chipActive]}
+                      onPress={() => { setItineraryId(trip.id); setIsDirty(true); }}
+                    >
+                      <Text style={[styles.chipLabel, itineraryId === trip.id && styles.chipLabelActive]} numberOfLines={1}>
+                        {trip.title}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </Field>
+            )}
+
             <Field label={t('vanLog.locationLabel')} error={errors.location}>
               <View style={styles.locationInputRow}>
                 <TextInput
@@ -336,6 +407,29 @@ const VanLogEntryFormScreen = ({ navigation, route }) => {
                 </View>
               )}
               <UseCurrentLocationButton onPress={handleUseCurrentLocation} loading={locating} />
+            </Field>
+
+            <Field label={t('vanLog.receiptPhotoLabel')}>
+              {receiptPhoto ? (
+                <View style={styles.receiptPreview}>
+                  <Image
+                    source={{ uri: typeof receiptPhoto === 'string' ? receiptPhoto : receiptPhoto.uri }}
+                    style={styles.receiptImage}
+                    resizeMode="cover"
+                  />
+                  <TouchableOpacity
+                    style={styles.receiptRemove}
+                    onPress={removeReceiptPhoto}
+                    accessibilityLabel={t('vanLog.removeReceiptPhoto')}
+                  >
+                    <Text style={styles.receiptRemoveText}>✕</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <TouchableOpacity style={styles.receiptAdd} onPress={pickReceiptPhoto}>
+                  <Text style={styles.receiptAddText}>📷 {t('vanLog.addReceiptPhoto')}</Text>
+                </TouchableOpacity>
+              )}
             </Field>
 
             <Field label={t('vanLog.notesLabel')} error={errors.notes} hint={`${notes.length}/1000`} hintWarn={notes.length > 900}>
@@ -433,6 +527,19 @@ const styles = StyleSheet.create({
   locationResultBorder: { borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
   locationResultName: { fontSize: 14, color: '#111827', fontWeight: '600' },
   locationResultLabel: { fontSize: 12, color: '#9ca3af', marginTop: 1 },
+
+  receiptAdd: {
+    borderWidth: 1.5, borderColor: '#dde3ec', borderStyle: 'dashed', borderRadius: 10,
+    paddingVertical: 14, alignItems: 'center', backgroundColor: '#f7f9fc',
+  },
+  receiptAddText: { fontSize: 14, fontWeight: '600', color: '#6b7280' },
+  receiptPreview: { height: 160, borderRadius: 10, overflow: 'hidden', backgroundColor: '#f3f4f6' },
+  receiptImage: { width: '100%', height: '100%' },
+  receiptRemove: {
+    position: 'absolute', top: 8, right: 8, width: 28, height: 28, borderRadius: 14,
+    backgroundColor: 'rgba(0,0,0,0.55)', alignItems: 'center', justifyContent: 'center',
+  },
+  receiptRemoveText: { color: '#fff', fontSize: 13, fontWeight: '700' },
 
   errorBanner: {
     backgroundColor: '#fef2f2', borderRadius: 10, padding: 12,

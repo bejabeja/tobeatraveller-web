@@ -247,9 +247,15 @@ export const sortByEntryDateDesc = (entries) => [...entries].sort((a, b) =>
 
 // Mirrors vanLogRepository.buildFilters, so an offline list (the cached,
 // unfiltered one plus pending changes) filters the same way the server does.
+// The server returns the trip as `itinerary`, while a pending create/edit
+// carries the plain `itineraryId` payload; the latter wins when present since
+// it is the newer of the two.
+const vanLogEntryTripId = (entry) => 'itineraryId' in entry ? entry.itineraryId : (entry.itinerary?.id ?? null);
+
 export const filterVanLogEntries = (entries, filters) => entries.filter(entry =>
   (!filters.category || entry.category === filters.category)
   && (!filters.country || entry.location?.country?.toLowerCase() === filters.country.toLowerCase())
   && (!filters.currency || entry.currency == null || entry.currency === filters.currency)
   && (!filters.dateFrom || (entry.entryDate ?? '').slice(0, 10) >= filters.dateFrom)
-  && (!filters.dateTo || (entry.entryDate ?? '').slice(0, 10) <= filters.dateTo));
+  && (!filters.dateTo || (entry.entryDate ?? '').slice(0, 10) <= filters.dateTo)
+  && (!filters.itineraryId || vanLogEntryTripId(entry) === filters.itineraryId));

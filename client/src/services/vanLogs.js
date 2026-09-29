@@ -1,1 +1,4 @@
-export { getVanLogEntries, createVanLogEntry, updateVanLogEntry, deleteVanLogEntry, getVanLogStats } from '@tobeatraveller/shared';
+export {
+    getVanLogEntries, createVanLogEntry, updateVanLogEntry, deleteVanLogEntry, getVanLogStats,
+    uploadVanLogReceiptPhoto, removeVanLogReceiptPhoto,
+} from '@tobeatraveller/shared';

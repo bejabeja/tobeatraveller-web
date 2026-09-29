@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import {
-  Alert, RefreshControl, ScrollView, SectionList,
+  Alert, Linking, RefreshControl, ScrollView, SectionList,
   StyleSheet, Text, TextInput, TouchableOpacity, View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,8 +9,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
-  getVanLogEntries, getVanLogFuelPriceTrend, getVanLogStats,
-  formatAmount, formatCalendarDay, formatNumber, groupVanLogEntriesByMonth, isNetworkError, isPremiumRequiredError, selectAuthUser,
+  getTripBudgetProgress, getVanLogDateRangePresets, getVanLogEntries, getVanLogFuelPriceTrend, getVanLogStats,
+  formatAmount, formatBudgetAmount, formatCalendarDay, formatNumber, groupVanLogEntriesByMonth, groupVanLogEntriesByTrip, isNetworkError,
+  isPremiumRequiredError, selectAuthUser, selectMyItineraries,
   vanLogCategories, vanLogCategoryEmoji as CATEGORY_EMOJI,
 } from '@tobeatraveller/shared';
 import FeatureLoadState from '../../components/FeatureLoadState';
@@ -24,13 +25,28 @@ import { useOutbox, useRefetchAfterSync } from '../../offline/useOutbox';
 import { cacheGet, cacheSet } from '../../utils/offlineCache';
 import { shadow } from '../../utils/styles';
 
-const EMPTY_FILTERS = { category: '', country: '', currency: '', dateFrom: '', dateTo: '' };
+const EMPTY_FILTERS = { category: '', country: '', currency: '', dateFrom: '', dateTo: '', itineraryId: '' };
 
 // groupVanLogEntriesByMonth (shared) returns `entries`/`label`; SectionList
 // expects `data`/`title`, so the shared groups are remapped to that shape.
 const groupEntriesByMonth = (entries, language) => groupVanLogEntriesByMonth(entries, language).map(
   ({ key, label, total, currency, entries: data }) => ({ key, title: label, total, currency, data })
 );
+
+// The trip group's own label lives with the caller (it needs `t`), so this
+// maps the shared groups the same way as above, with `title` left to it.
+const groupEntriesByTrip = (entries, noTripLabel) => groupVanLogEntriesByTrip(entries).map(
+  ({ key, title, total, currency, entries: data }) => ({ key, title: title || noTripLabel, total, currency, data })
+);
+
+// A pending create/edit carries the plain `itineraryId` payload, while the
+// list and the grouping read the `itinerary` object the server returns, so
+// the pending one is turned into that shape (the title from the user's trips).
+const withLinkedTrip = (entry, tripTitleById) => {
+  if (!('itineraryId' in entry)) return entry;
+  if (!entry.itineraryId) return { ...entry, itinerary: null };
+  return { ...entry, itinerary: { id: entry.itineraryId, title: tripTitleById.get(entry.itineraryId) ?? entry.itinerary?.title ?? '' } };
+};
 
 const daysSince = (dateStr) => {
   if (!dateStr) return null;
@@ -51,6 +67,7 @@ const VanLogScreen = ({ navigation }) => {
   // The session user rather than the full profile: it is restored even when
   // the app opens offline, so the cached data can still be found.
   const authUser = useSelector(selectAuthUser);
+  const myItineraries = useSelector(selectMyItineraries);
   const cacheKey = `vanlog:entries:${authUser?.id}`;
 
   const [serverEntries, setServerEntries] = useState([]);
@@ -61,15 +78,20 @@ const VanLogScreen = ({ navigation }) => {
   const [loadError, setLoadError] = useState(null); // null | 'premium' | 'error'
   const [showingCached, setShowingCached] = useState(false);
   const [statsExpanded, setStatsExpanded] = useState(false);
+  const [groupBy, setGroupBy] = useState('month');
   const { changes } = useOutbox();
-  const hasActiveFilters = Boolean(filters.category || filters.country || filters.currency || filters.dateFrom || filters.dateTo);
+  const hasActiveFilters = Boolean(
+    filters.category || filters.country || filters.currency || filters.dateFrom || filters.dateTo || filters.itineraryId
+  );
 
   // The cache holds the unfiltered list, so offline the filters (and any
   // pending changes) are applied here the same way the server would.
-  const entries = useMemo(
-    () => sortByEntryDateDesc(filterVanLogEntries(applyPendingChanges(serverEntries, changes, COLLECTIONS.VAN_LOG), filters)),
-    [serverEntries, changes, filters]
-  );
+  const entries = useMemo(() => {
+    const tripTitleById = new Map((myItineraries ?? []).map(trip => [trip.id, trip.title]));
+    const withPending = applyPendingChanges(serverEntries, changes, COLLECTIONS.VAN_LOG)
+      .map(entry => withLinkedTrip(entry, tripTitleById));
+    return sortByEntryDateDesc(filterVanLogEntries(withPending, filters));
+  }, [serverEntries, changes, filters, myItineraries]);
 
   const daysSinceLabel = (dateStr) => {
     const days = daysSince(dateStr);
@@ -144,6 +166,11 @@ const VanLogScreen = ({ navigation }) => {
 
   const updateFilter = (key, value) => setFilters(prev => ({ ...prev, [key]: value }));
   const clearFilters = () => setFilters(EMPTY_FILTERS);
+  const dateRangePresets = getVanLogDateRangePresets();
+  const activePresetKey = dateRangePresets.find(
+    (preset) => preset.dateFrom === filters.dateFrom && preset.dateTo === filters.dateTo
+  )?.key ?? null;
+  const applyDateRangePreset = (preset) => setFilters(prev => ({ ...prev, dateFrom: preset.dateFrom, dateTo: preset.dateTo }));
   const handleDelete = (entry) => {
     Alert.alert(
       t('vanLog.deleteConfirmTitle'),
@@ -192,6 +219,14 @@ const VanLogScreen = ({ navigation }) => {
   // so this chip row keeps listing every country the user has ever logged.
   const countryChipOptions = [...new Set(countryTotals.map(({ country }) => country))];
   const currencyChipOptions = stats?.availableCurrencies ?? [];
+  // Same reasoning as the country chips: byTrip ignores the trip filter, and
+  // a trip has one row per currency it was spent in, so it is deduped here.
+  const tripChipOptions = [...new Map((stats?.byTrip ?? []).map(({ tripId, tripTitle }) => [tripId, tripTitle])).entries()]
+    .map(([id, title]) => ({ id, title }));
+  const activeTripFilter = filters.itineraryId
+    ? (myItineraries ?? []).find(trip => trip.id === filters.itineraryId)
+    : null;
+  const tripBudgetProgress = getTripBudgetProgress(activeTripFilter, totalsByCurrency);
   const sortedCategoryTotals = [...categoryTotals].sort((a, b) => b.total - a.total);
   const maxCategoryTotal = sortedCategoryTotals[0]?.total ?? 0;
   // Unlike the chip row above, the chart below must reflect the active
@@ -200,7 +235,11 @@ const VanLogScreen = ({ navigation }) => {
     .filter((c) => !filters.country || c.country.toLowerCase() === filters.country.toLowerCase())
     .sort((a, b) => b.total - a.total);
   const maxCountryTotal = sortedCountryTotals[0]?.total ?? 0;
-  const sections = groupEntriesByMonth(entries, language);
+  const hasEntriesWithTrip = entries.some(entry => entry.itinerary);
+  const isGroupedByTrip = groupBy === 'trip' && hasEntriesWithTrip;
+  const sections = isGroupedByTrip
+    ? groupEntriesByTrip(entries, t('vanLog.noTripGroup'))
+    : groupEntriesByMonth(entries, language);
   const fuelTrend = getVanLogFuelPriceTrend(entries);
   const hasBreakdown = sortedCategoryTotals.length > 0 || sortedCountryTotals.length > 0 || Boolean(fuelTrend);
 
@@ -313,6 +352,81 @@ const VanLogScreen = ({ navigation }) => {
           </ScrollView>
         )}
 
+        {/* Trip chips */}
+        {tripChipOptions.length > 0 && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.chips}
+          >
+            <TouchableOpacity
+              style={[styles.chip, filters.itineraryId === '' && styles.chipActive]}
+              onPress={() => updateFilter('itineraryId', '')}
+            >
+              <Text style={[styles.chipLabel, filters.itineraryId === '' && styles.chipLabelActive]}>
+                {t('vanLog.allTrips')}
+              </Text>
+            </TouchableOpacity>
+            {tripChipOptions.map((trip) => (
+              <TouchableOpacity
+                key={trip.id}
+                style={[styles.chip, filters.itineraryId === trip.id && styles.chipActive]}
+                onPress={() => updateFilter('itineraryId', filters.itineraryId === trip.id ? '' : trip.id)}
+              >
+                <Text style={[styles.chipLabel, filters.itineraryId === trip.id && styles.chipLabelActive]} numberOfLines={1}>
+                  {trip.title}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
+
+        {/* Grouping */}
+        {hasEntriesWithTrip && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.chips}
+            accessibilityLabel={t('vanLog.groupByLabel')}
+          >
+            {[['month', t('vanLog.groupByMonth')], ['trip', t('vanLog.byTrip')]].map(([value, label]) => {
+              const selected = (isGroupedByTrip ? 'trip' : 'month') === value;
+              return (
+                <TouchableOpacity
+                  key={value}
+                  style={[styles.chip, selected && styles.chipActive]}
+                  onPress={() => setGroupBy(value)}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected }}
+                >
+                  <Text style={[styles.chipLabel, selected && styles.chipLabelActive]}>{label}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        )}
+
+        {/* Date range presets */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.chips}
+        >
+          {dateRangePresets.map((preset) => (
+            <TouchableOpacity
+              key={preset.key}
+              style={[styles.chip, activePresetKey === preset.key && styles.chipActive]}
+              onPress={() => (activePresetKey === preset.key
+                ? setFilters(prev => ({ ...prev, dateFrom: '', dateTo: '' }))
+                : applyDateRangePreset(preset))}
+            >
+              <Text style={[styles.chipLabel, activePresetKey === preset.key && styles.chipLabelActive]}>
+                {t(preset.labelKey)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
         {/* Date range */}
         <View style={styles.dateRow}>
           <TextInput
@@ -341,7 +455,7 @@ const VanLogScreen = ({ navigation }) => {
         {/* Stats: one unified card (hero total + labeled sub-sections)
             instead of a floating total chip, a chart card, and a loose
             row of country chips as three disconnected pieces. */}
-        {stats && (categoryTotals.length > 0 || countryTotals.length > 0) && (
+        {stats && (categoryTotals.length > 0 || countryTotals.length > 0 || tripBudgetProgress) && (
           <View style={styles.statsCard}>
             <View style={styles.statsTotal}>
               <Text style={styles.statsTotalLabel}>{t('vanLog.totalSpent')}</Text>
@@ -351,6 +465,34 @@ const VanLogScreen = ({ navigation }) => {
                   : '0.00'}
               </Text>
             </View>
+
+            {tripBudgetProgress && (
+              <View style={styles.budgetProgress}>
+                <View style={styles.budgetProgressHeader}>
+                  <Text style={styles.statsBlockTitle}>{t('vanLog.tripBudgetLabel')}</Text>
+                  <Text style={styles.budgetProgressValue}>
+                    {t('vanLog.budgetProgressValue', {
+                      spent: formatAmount(tripBudgetProgress.spent, tripBudgetProgress.currency, language),
+                      budget: formatBudgetAmount(tripBudgetProgress.budget, tripBudgetProgress.currency, language),
+                    })}
+                  </Text>
+                </View>
+                <View style={styles.barRowTrack}>
+                  <View
+                    style={[
+                      styles.barRowFill,
+                      tripBudgetProgress.isOver && styles.budgetProgressFillOver,
+                      { width: `${tripBudgetProgress.fillPercent}%` },
+                    ]}
+                  />
+                </View>
+                <Text style={[styles.budgetProgressNote, tripBudgetProgress.isOver && styles.budgetProgressNoteOver]}>
+                  {tripBudgetProgress.isOver
+                    ? t('vanLog.budgetOverBy', { amount: formatAmount(tripBudgetProgress.overBy, tripBudgetProgress.currency, language) })
+                    : t('vanLog.budgetRemaining', { amount: formatAmount(tripBudgetProgress.remaining, tripBudgetProgress.currency, language) })}
+                </Text>
+              </View>
+            )}
 
             {hasBreakdown && (
               <TouchableOpacity
@@ -516,7 +658,13 @@ const VanLogScreen = ({ navigation }) => {
                   {priceLine ? (item.location?.name ? ' · ' : '') + priceLine : ''}
                 </Text>
               ) : null}
+              {item.itinerary?.title && !isGroupedByTrip ? <Text style={styles.entryTrip} numberOfLines={1}>🧭 {item.itinerary.title}</Text> : null}
               {item.notes ? <Text style={styles.entryNotes} numberOfLines={2}>{item.notes}</Text> : null}
+              {item.receiptPhotoUrl ? (
+                <TouchableOpacity onPress={() => Linking.openURL(item.receiptPhotoUrl)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                  <Text style={styles.entryReceiptLink}>🧾 {t('vanLog.viewReceipt')}</Text>
+                </TouchableOpacity>
+              ) : null}
               <PendingSyncBadge item={item} />
             </View>
           );
@@ -583,6 +731,15 @@ const styles = StyleSheet.create({
     borderTopWidth: 1, borderTopColor: '#e5e7eb',
   },
   statsToggleLabel: { fontSize: 12, fontWeight: '600', color: '#6b7280' },
+  budgetProgress: {
+    gap: 8, paddingVertical: 14, paddingHorizontal: 16,
+    borderTopWidth: 1, borderTopColor: '#e5e7eb',
+  },
+  budgetProgressHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
+  budgetProgressValue: { fontSize: 13, fontWeight: '700', color: '#111827' },
+  budgetProgressFillOver: { backgroundColor: '#dc2626' },
+  budgetProgressNote: { fontSize: 12, fontWeight: '600', color: '#6b7280' },
+  budgetProgressNoteOver: { color: '#dc2626' },
   statsBlock: {
     gap: 8, paddingVertical: 14, paddingHorizontal: 16,
     borderTopWidth: 1, borderTopColor: '#e5e7eb',
@@ -675,7 +832,9 @@ const styles = StyleSheet.create({
   entryDate: { fontSize: 11, color: '#9ca3af' },
   entryTitle: { fontSize: 13, color: '#374151', marginTop: 4 },
   entryLocation: { fontSize: 12, color: '#6b7280', marginTop: 2 },
+  entryTrip: { fontSize: 12, color: '#6b7280', marginTop: 2 },
   entryNotes: { fontSize: 12, color: '#9ca3af', marginTop: 4 },
+  entryReceiptLink: { fontSize: 12, fontWeight: '600', color: '#E8743B', marginTop: 4 },
   entryAmount: { fontSize: 14, fontWeight: '800', color: '#111827' },
   entryMenuBtn: { padding: 4 },
 

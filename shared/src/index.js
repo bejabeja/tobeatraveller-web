@@ -54,7 +54,7 @@ export {
     isShoppingListCapReachedError, isInventoryCapReachedError, isPackingListCapReachedError, isNetworkError, isTimeoutError,
 } from './utils/parseError.js';
 export { normalizeSearchText } from './utils/normalizeSearchText.js';
-export { groupVanLogEntriesByMonth, getVanLogFuelPriceTrend } from './utils/vanLogStats.js';
+export { groupVanLogEntriesByMonth, groupVanLogEntriesByTrip, getVanLogFuelPriceTrend, getTripBudgetProgress, getVanLogDateRangePresets } from './utils/vanLogStats.js';
 export * from './utils/formatLocale.js';
 export { formatTimeAgo, timeAgo } from './utils/timeAgo.js';
 export { translateAuthError } from './utils/authErrorMessages.js';

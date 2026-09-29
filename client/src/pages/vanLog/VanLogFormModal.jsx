@@ -1,14 +1,18 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
+import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
-import { vanLogCategories } from "@tobeatraveller/shared";
+import { localCalendarDay, tripsToLinkTo, vanLogCategories } from "@tobeatraveller/shared";
 import { DropdownForm, InputForm, TextAreaForm } from "../../components/form/InputForm";
 import AutocompleteObjectInput from "../../components/form/AutocompleteObjectInput";
 import SubmitButton from "../../components/form/SubmitButton";
-import { updateVanLogEntry } from "../../services/vanLogs";
+import { selectMyItineraries } from "../../store/user/userInfoSelectors";
+import { removeVanLogReceiptPhoto, updateVanLogEntry, uploadVanLogReceiptPhoto } from "../../services/vanLogs";
 import { vanLogEntrySchema } from "../../utils/schemasValidation";
 import CurrencyField from "./CurrencyField";
+import ReceiptPhotoInput from "./ReceiptPhotoInput";
 import "./VanLogFormModal.scss";
 
 const buildDefaultValues = (entry) => ({
@@ -39,6 +43,10 @@ const VanLogFormModal = ({ entry, onClose, onSaved }) => {
     defaultValues: buildDefaultValues(entry),
   });
   const category = useWatch({ control, name: "category" });
+  const initialReceiptPhotoUrl = entry.receiptPhotoUrl ?? null;
+  const [receiptPhoto, setReceiptPhoto] = useState(initialReceiptPhotoUrl);
+  const trips = tripsToLinkTo(useSelector(selectMyItineraries), localCalendarDay());
+  const [itineraryId, setItineraryId] = useState(entry.itinerary?.id ?? "");
 
   const categoryOptions = vanLogCategories.map(({ value, label }) => ({
     value, label: t(`vanLog.category.${value}`, label),
@@ -63,10 +71,24 @@ const VanLogFormModal = ({ entry, onClose, onSaved }) => {
         : null,
       notes: data.notes || null,
       entryDate: data.entryDate,
+      itineraryId: itineraryId || null,
     };
 
     try {
       await updateVanLogEntry(entry.id, payload);
+      if (receiptPhoto instanceof File) {
+        try {
+          await uploadVanLogReceiptPhoto(entry.id, receiptPhoto);
+        } catch {
+          toast.error(t("vanLog.receiptPhotoUploadError"));
+        }
+      } else if (receiptPhoto == null && initialReceiptPhotoUrl) {
+        try {
+          await removeVanLogReceiptPhoto(entry.id);
+        } catch {
+          toast.error(t("vanLog.receiptPhotoUploadError"));
+        }
+      }
       toast.success(t("vanLog.updated"));
       onSaved();
     } catch (error) {
@@ -137,6 +159,21 @@ const VanLogFormModal = ({ entry, onClose, onSaved }) => {
             required
           />
 
+          {trips.length > 0 && (
+            <div className="input">
+              <label htmlFor="van-log-trip" className="input__label">{t("vanLog.tripLabel")}</label>
+              <select
+                id="van-log-trip"
+                className="input__field"
+                value={itineraryId}
+                onChange={(e) => setItineraryId(e.target.value)}
+              >
+                <option value="">{t("vanLog.noTrip")}</option>
+                {trips.map((trip) => <option key={trip.id} value={trip.id}>{trip.title}</option>)}
+              </select>
+            </div>
+          )}
+
           <AutocompleteObjectInput
             label={t("vanLog.locationLabel")}
             name="location"
@@ -144,6 +181,8 @@ const VanLogFormModal = ({ entry, onClose, onSaved }) => {
             error={errors.location}
             placeholder={t("vanLog.locationPlaceholder")}
           />
+
+          <ReceiptPhotoInput value={receiptPhoto} onChange={setReceiptPhoto} />
 
           <TextAreaForm
             label={t("vanLog.notesLabel")}

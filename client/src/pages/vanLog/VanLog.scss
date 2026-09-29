@@ -153,6 +153,90 @@
     }
   }
 
+  // Only shown filtered to one trip that has a budget set (itineraries
+  // already carry one); sits inside the same banner as the total, on the
+  // accent-dark strip, so "how much" and "against what" read as one figure
+  // instead of a second, disconnected widget.
+  &__budget-progress {
+    width: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    background: var(--accent-color-dark);
+    padding: 0.85rem 1.25rem;
+  }
+
+  &__budget-progress-header {
+    width: auto;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  &__budget-progress-label {
+    width: auto;
+    min-width: 0;
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.1rem 0.5rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: rgba(255, 255, 255, 0.75);
+  }
+
+  &__budget-progress-trip {
+    width: auto;
+    min-width: 0;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--white-color);
+    overflow-wrap: anywhere;
+  }
+
+  &__budget-progress-value {
+    width: auto;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--white-color);
+    white-space: nowrap;
+  }
+
+  &__budget-progress-track {
+    width: auto;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  &__budget-progress-fill {
+    height: 100%;
+    min-width: 4px;
+    background: var(--white-color);
+    border-radius: 4px;
+
+    &--over {
+      background: var(--error-color);
+    }
+  }
+
+  &__budget-progress-note {
+    width: auto;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.85);
+
+    &--over {
+      color: #ffb4bb;
+    }
+  }
+
   &__stats-block {
     width: auto;
     display: flex;
@@ -344,8 +428,8 @@
     top: calc(100% + 0.4rem);
     left: 0;
     z-index: 20;
-    width: max-content;
-    min-width: 260px;
+    width: 340px;
+    max-width: calc(100vw - 2rem);
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
@@ -366,7 +450,49 @@
     display: flex;
     gap: 0.6rem;
 
-    .van-log__filter-field { flex: 1; }
+    .van-log__filter-field { flex: 1; min-width: 0; }
+  }
+
+  // Presets (Today / last 7 / last 30 / this month) come right after the
+  // trip: most people filtering by date want one of these four, not a
+  // custom range. Wrapping pills instead of a vertical list keep all four
+  // on one or two lines, so the panel stays short.
+  &__filter-presets {
+    width: auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  &__filter-preset {
+    width: fit-content;
+    font-size: 0.8rem;
+    font-weight: 600;
+    font-family: inherit;
+    color: var(--text-color);
+    background: var(--white-color);
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    padding: 0.35rem 0.8rem;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+
+    &:hover {
+      border-color: var(--primary-color);
+    }
+
+    &--active {
+      color: var(--primary-color-hover);
+      background: var(--primary-light);
+      border-color: var(--primary-color);
+    }
+  }
+
+  &__filter-divider {
+    width: auto;
+    height: 1px;
+    background: var(--border-color);
+    margin: 0.2rem 0;
   }
 
   &__filter-chip {
@@ -452,6 +578,73 @@
     background-size: 0.6em;
   }
 
+  // In the bar, not inside the filters panel: the trip is the filter the
+  // budget bar and the per-trip totals hang off, so it shouldn't take an
+  // extra click to reach. Pill-shaped like the filters toggle beside it.
+  &__filter-select--trip {
+    max-width: 200px;
+    font-weight: 600;
+    border-radius: 999px;
+    padding: 0.5rem 2.25em 0.5rem 0.9rem;
+    text-overflow: ellipsis;
+  }
+
+  &__filter-select--active {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+  }
+
+  // A two-option segmented control above the list; the pressed option gets
+  // the brand tint, same as the active preset, so "which grouping am I in"
+  // reads without a label.
+  &__group-toggle {
+    width: fit-content;
+    display: flex;
+    gap: 0.2rem;
+    margin: 0 0 1rem auto;
+    padding: 0.2rem;
+    background: var(--surface-color);
+    border-radius: 999px;
+  }
+
+  &__group-toggle-btn {
+    width: fit-content;
+    font-size: 0.8rem;
+    font-weight: 600;
+    font-family: inherit;
+    color: var(--text-secondary-color);
+    background: transparent;
+    border: none;
+    border-radius: 999px;
+    padding: 0.3rem 0.85rem;
+    cursor: pointer;
+
+    &--active {
+      color: var(--primary-color-hover);
+      background: var(--white-color);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  &__export-btn {
+    width: fit-content;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    color: var(--text-secondary-color);
+    background: var(--white-color);
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    padding: 0.5rem;
+    cursor: pointer;
+
+    &:hover {
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+    }
+  }
+
   &__filter-clear {
     width: fit-content;
     font-size: 0.8rem;
@@ -504,21 +697,48 @@
     font-variant-numeric: tabular-nums;
   }
 
-  // Stacked, not two side-by-side columns: a two-column split (text on the
-  // left, amount on the right, for the full card height) left a wide dead
-  // gap in the middle on any entry whose text was short, and squeezed the
-  // description into a narrower box than the card actually had to give it.
-  // The amount only needs to sit apart from the category/date row above it.
+  // Icon + body, not a flat column: with 13 possible categories a color per
+  // category would either collide under color-blindness or force a rainbow,
+  // so identity rides the emoji in a fixed-tint badge instead of a color-coded
+  // pill; the badge also gives the list a scannable left edge (each row reads
+  // by icon shape before the eye reaches the text), closer to how a banking
+  // app's transaction list reads than a spreadsheet row.
   &__entry {
     width: auto;
     display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
+    align-items: flex-start;
+    gap: 0.85rem;
     background: var(--white-color);
     border: 1px solid var(--border-color);
     border-radius: 14px;
     padding: 1rem 1.25rem;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  }
+
+  &__entry-icon {
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    background: var(--primary-light);
+    border-radius: 50%;
+  }
+
+  // Stacked, not two side-by-side columns: a two-column split (text on the
+  // left, amount on the right, for the full card height) left a wide dead
+  // gap in the middle on any entry whose text was short, and squeezed the
+  // description into a narrower box than the card actually had to give it.
+  // The amount only needs to sit apart from the category/date row above it.
+  &__entry-body {
+    width: auto;
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
   }
 
   // Deliberately not one flex-wrap row: with category/date/amount and the
@@ -555,14 +775,9 @@
 
   &__entry-category {
     width: fit-content;
-    font-size: 0.7rem;
+    font-size: 0.9rem;
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--primary-color);
-    background: rgba(232, 116, 59, 0.1);
-    border-radius: 999px;
-    padding: 0.2rem 0.6rem;
+    color: var(--text-color);
   }
 
   &__entry-date {
@@ -599,9 +814,63 @@
     overflow-wrap: anywhere;
   }
 
+  // Two pills on one wrapping row instead of two bare text links stacked
+  // under the notes: they read as tags on the expense, each with its own
+  // hue (trip = the app's teal, receipt = its orange) so they stay
+  // distinguishable when both sit on the same entry.
+  &__entry-tags {
+    width: auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.15rem;
+  }
+
+  &__entry-tag {
+    width: fit-content;
+    max-width: 100%;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 999px;
+    padding: 0.25rem 0.65rem;
+    transition: filter 0.15s ease;
+
+    svg {
+      width: 0.95rem;
+      height: 0.95rem;
+      flex-shrink: 0;
+    }
+
+    span {
+      width: auto;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    &:hover {
+      filter: brightness(0.95);
+    }
+
+    &--trip {
+      color: var(--accent-color);
+      background: rgba(26, 83, 92, 0.1);
+    }
+
+    &--receipt {
+      color: var(--primary-color-hover);
+      background: var(--primary-light);
+    }
+  }
+
   &__entry-amount {
     width: auto;
-    font-size: 1rem;
+    font-size: 1.1rem;
     font-weight: 700;
     color: var(--text-color);
     white-space: nowrap;
@@ -679,8 +948,16 @@
 
   &__empty {
     width: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
     text-align: center;
     padding: 3rem 1rem;
     color: var(--text-secondary-color);
+  }
+
+  &__empty-action {
+    width: fit-content;
   }
 }

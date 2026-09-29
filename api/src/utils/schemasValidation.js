@@ -269,6 +269,8 @@ const vanLogEntryFields = z.object({
     location: vanLogLocationSchema,
     notes: z.string().max(1000, "validation.tooLong").nullable().optional(),
     entryDate: z.string().min(1, "validation.dateRequired"),
+    // The trip it's for, if any; null takes it off its trip.
+    itineraryId: z.string().uuid("validation.invalid").nullable().optional(),
 });
 
 const withPricePerLiterOnlyForFuel = (schema) => schema.refine(

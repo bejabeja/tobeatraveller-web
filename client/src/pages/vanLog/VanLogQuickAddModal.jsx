@@ -1,22 +1,34 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
+import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { translateValidationMessage } from "@tobeatraveller/shared";
-import { IoChevronDown, IoLockClosedOutline } from "react-icons/io5";
+import { IoChevronDown, IoLockClosedOutline, IoMapOutline } from "react-icons/io5";
 import { Link } from "react-router-dom";
-import { isVanLogCapReachedError, vanLogCategories, vanLogCategoryEmoji } from "@tobeatraveller/shared";
+import {
+  isVanLogCapReachedError, localCalendarDay, tripsToLinkTo, vanLogCategories, vanLogCategoryEmoji,
+} from "@tobeatraveller/shared";
 import { InputForm, TextAreaForm } from "../../components/form/InputForm";
 import AutocompleteObjectInput from "../../components/form/AutocompleteObjectInput";
 import SubmitButton from "../../components/form/SubmitButton";
-import { createVanLogEntry } from "../../services/vanLogs";
+import { selectMyItineraries } from "../../store/user/userInfoSelectors";
+import { createVanLogEntry, uploadVanLogReceiptPhoto } from "../../services/vanLogs";
 import { vanLogEntrySchema } from "../../utils/schemasValidation";
 import CurrencyField from "./CurrencyField";
+import ReceiptPhotoInput from "./ReceiptPhotoInput";
 import "./VanLogFormModal.scss";
 import "./VanLogQuickAddModal.scss";
 
 const today = () => new Date().toISOString().split("T")[0];
+
+// The trip already under way today, if any: an expense logged right now is
+// almost always for whichever trip the user is currently on, so defaulting
+// to it here means most people never have to touch the trip picker at all.
+const findActiveTrip = (trips, day) => trips.find(
+  (trip) => trip.startDate && trip.endDate && trip.startDate.slice(0, 10) <= day && day <= trip.endDate.slice(0, 10)
+);
 
 const defaultValues = {
   category: "",
@@ -33,9 +45,14 @@ const defaultValues = {
 // one (title, price/L, date, location, notes): "more details" expands the
 // same form in place instead of handing off to a second modal, which used to
 // read as two disconnected flows for what is really a single "add entry" action.
-const VanLogQuickAddModal = ({ onClose, onSaved, initialCapReached = false }) => {
+const VanLogQuickAddModal = ({ onClose, onSaved, initialCapReached = false, defaultItineraryId = "" }) => {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
+  const [receiptPhoto, setReceiptPhoto] = useState(null);
+  const trips = tripsToLinkTo(useSelector(selectMyItineraries), localCalendarDay());
+  const [itineraryId, setItineraryId] = useState(
+    () => defaultItineraryId || (findActiveTrip(trips, localCalendarDay())?.id ?? "")
+  );
   // Starting already at the cap (parent already knows from the stats it just
   // loaded) skips straight to the upsell instead of only discovering it after
   // the user fills out the form and submits.
@@ -54,7 +71,7 @@ const VanLogQuickAddModal = ({ onClose, onSaved, initialCapReached = false }) =>
   const onSubmit = async (data) => {
     const hasLocation = data.location?.name;
     try {
-      await createVanLogEntry({
+      const created = await createVanLogEntry({
         category: data.category,
         title: data.title || null,
         amount: data.amount,
@@ -71,7 +88,15 @@ const VanLogQuickAddModal = ({ onClose, onSaved, initialCapReached = false }) =>
           : null,
         notes: data.notes || null,
         entryDate: data.entryDate,
+        itineraryId: itineraryId || null,
       });
+      if (receiptPhoto) {
+        try {
+          await uploadVanLogReceiptPhoto(created.id, receiptPhoto);
+        } catch {
+          toast.error(t("vanLog.receiptPhotoUploadError"));
+        }
+      }
       toast.success(t("vanLog.created"));
       onSaved();
     } catch (error) {
@@ -118,17 +143,44 @@ const VanLogQuickAddModal = ({ onClose, onSaved, initialCapReached = false }) =>
           <label className="van-log-quick-add__amount-label" htmlFor="quick-add-amount">
             {t("vanLog.amountLabel")}
           </label>
-          <input
-            id="quick-add-amount"
-            className="van-log-quick-add__amount-input"
-            type="number"
-            step="0.01"
-            min="0"
-            inputMode="decimal"
-            placeholder="0.00"
-            {...register("amount")}
-            autoFocus
-          />
+          <div className="van-log-quick-add__amount-row">
+            <input
+              id="quick-add-amount"
+              className="van-log-quick-add__amount-input"
+              type="number"
+              step="0.01"
+              min="0"
+              inputMode="decimal"
+              placeholder="0.00"
+              {...register("amount")}
+              autoFocus
+            />
+            <CurrencyField
+              label={t("vanLog.currencyLabel")}
+              name="currency"
+              control={control}
+              error={errors.currency}
+              compact
+            />
+          </div>
+
+          {trips.length > 0 && (
+            <label className="van-log-quick-add__trip" htmlFor="van-log-quick-add-trip">
+              <IoMapOutline className="van-log-quick-add__trip-icon" aria-hidden="true" />
+              <span className="van-log-quick-add__trip-label">{t("vanLog.tripLabel")}</span>
+              <select
+                id="van-log-quick-add-trip"
+                className="van-log-quick-add__trip-select"
+                value={itineraryId}
+                onChange={(e) => setItineraryId(e.target.value)}
+              >
+                <option value="">{t("vanLog.noTrip")}</option>
+                {trips.map((trip) => <option key={trip.id} value={trip.id}>{trip.title}</option>)}
+              </select>
+            </label>
+          )}
+
+          <ReceiptPhotoInput value={receiptPhoto} onChange={setReceiptPhoto} compact />
 
           <button
             type="button"
@@ -150,22 +202,14 @@ const VanLogQuickAddModal = ({ onClose, onSaved, initialCapReached = false }) =>
                 placeholder={t("vanLog.titlePlaceholder")}
               />
 
-              <div className="van-log-form__row">
-                <CurrencyField
-                  label={t("vanLog.currencyLabel")}
-                  name="currency"
-                  control={control}
-                  error={errors.currency}
-                />
-                <InputForm
-                  label={t("vanLog.dateLabel")}
-                  name="entryDate"
-                  control={control}
-                  error={errors.entryDate}
-                  type="date"
-                  required
-                />
-              </div>
+              <InputForm
+                label={t("vanLog.dateLabel")}
+                name="entryDate"
+                control={control}
+                error={errors.entryDate}
+                type="date"
+                required
+              />
 
               {category === "fuel" && (
                 <InputForm

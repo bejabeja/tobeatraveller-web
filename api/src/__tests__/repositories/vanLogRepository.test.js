@@ -54,6 +54,20 @@ describe('VanLogRepository', () => {
         expect(updateParams[13]).toBe('FR');
     });
 
+    it('links the entry to a trip on create and update', async () => {
+        client.query.mockResolvedValue({ rows: [{ id: 'mock-uuid', user_id: 'user-1', category: 'fuel', entry_date: '2026-08-27' }] });
+
+        await repo.create({ userId: 'user-1', category: 'fuel', entryDate: '2026-08-27', itineraryId: 'trip-1' });
+        await repo.update('mock-uuid', { category: 'fuel', entryDate: '2026-08-27', itineraryId: 'trip-1' });
+
+        const [insertQuery, insertParams] = client.query.mock.calls[0];
+        const [updateQuery, updateParams] = client.query.mock.calls[1];
+        expect(insertQuery).toMatch(/itinerary_id/);
+        expect(insertParams).toContain('trip-1');
+        expect(updateQuery).toMatch(/itinerary_id = \$15/);
+        expect(updateParams[14]).toBe('trip-1');
+    });
+
     it('leaves the country code empty when there is no location', async () => {
         client.query.mockResolvedValue({ rows: [{ id: 'mock-uuid', user_id: 'user-1', category: 'fuel', entry_date: '2026-08-27' }] });
 
@@ -128,6 +142,32 @@ describe('VanLogRepository', () => {
         expect(queryText).not.toMatch(/location_country/);
         expect(queryText).not.toMatch(/entry_date [<>]/);
         expect(params).toEqual(['user-1', 'fuel']);
+    });
+
+    it('filters by trip when an itinerary id is given', async () => {
+        client.query.mockResolvedValue({ rows: [] });
+
+        await repo.findByUserId('user-1', { itineraryId: 'trip-1' });
+
+        const [queryText, params] = client.query.mock.calls[0];
+        expect(queryText).toMatch(/itinerary_id = \$2/);
+        expect(params).toEqual(['user-1', 'trip-1']);
+    });
+
+    it("joins each entry to its trip's title", async () => {
+        client.query.mockResolvedValue({
+            rows: [{
+                id: 'entry-1', user_id: 'user-1', category: 'fuel', entry_date: '2026-08-27',
+                itinerary_id: 'trip-1', itinerary_title: 'Road to the Alps',
+            }],
+        });
+
+        const [entry] = await repo.findByUserId('user-1');
+
+        expect(entry.itineraryId).toBe('trip-1');
+        expect(entry.itineraryTitle).toBe('Road to the Alps');
+        const [queryText] = client.query.mock.calls[0];
+        expect(queryText).toMatch(/LEFT JOIN itineraries trips ON trips\.id = filtered\.itinerary_id/);
     });
 
     it('counts how many entries belong to the given user', async () => {
@@ -218,6 +258,33 @@ describe('VanLogRepository', () => {
         client.query.mockResolvedValue({ rows: [] });
 
         await repo.getTotalsByCountry('user-1', { category: 'fuel' });
+
+        const [queryText, params] = client.query.mock.calls[0];
+        expect(queryText).toMatch(/category = \$2/);
+        expect(params).toEqual(['user-1', 'fuel']);
+    });
+
+    it('sums amounts and counts entries per trip and currency, excluding entries with no trip', async () => {
+        client.query.mockResolvedValue({
+            rows: [
+                { trip_id: 'trip-1', trip_title: 'Road to the Alps', currency: 'EUR', total: '210.00', count: 4 },
+            ],
+        });
+
+        const totals = await repo.getTotalsByTrip('user-1');
+
+        expect(totals).toEqual([
+            { tripId: 'trip-1', tripTitle: 'Road to the Alps', currency: 'EUR', total: 210, count: 4 },
+        ]);
+        const [queryText] = client.query.mock.calls[0];
+        expect(queryText).toMatch(/JOIN itineraries trips ON trips\.id = filtered\.itinerary_id/);
+        expect(queryText).toMatch(/GROUP BY filtered\.itinerary_id, trips\.title, filtered\.currency/);
+    });
+
+    it('scopes the per-trip totals to the active filters', async () => {
+        client.query.mockResolvedValue({ rows: [] });
+
+        await repo.getTotalsByTrip('user-1', { category: 'fuel' });
 
         const [queryText, params] = client.query.mock.calls[0];
         expect(queryText).toMatch(/category = \$2/);

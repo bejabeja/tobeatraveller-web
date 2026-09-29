@@ -62,4 +62,27 @@ export class VanLogController {
             next(error);
         }
     }
+
+    async uploadReceiptPhoto(req, res, next) {
+        if (!req.file) {
+            return next(new ValidationError("A receipt photo file is required"));
+        }
+        try {
+            const { id } = req.params;
+            const entry = await this.vanLogService.setReceiptPhoto(id, req.user.id, req.file);
+            res.status(200).json(entry);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async deleteReceiptPhoto(req, res, next) {
+        try {
+            const { id } = req.params;
+            const entry = await this.vanLogService.removeReceiptPhoto(id, req.user.id);
+            res.status(200).json(entry);
+        } catch (error) {
+            next(error);
+        }
+    }
 }

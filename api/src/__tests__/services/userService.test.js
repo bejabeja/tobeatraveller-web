@@ -139,6 +139,15 @@ describe('UserService.deleteUser()', () => {
         expect(result.imagePublicIds).toEqual(['cover-1', 'gallery-1', 'diary-1']);
     });
 
+    it('also collects the van log receipt photo public ids so they are not orphaned in storage', async () => {
+        const vanLogRepository = { findReceiptPublicIdsByUserId: async () => ['receipt-1'] };
+        service = new UserService(userRepository, itinerariesRepository, {}, null, lifeDiaryRepository, null, vanLogRepository);
+
+        const result = await service.deleteUser('user-1');
+
+        expect(result.imagePublicIds).toEqual(['cover-1', 'gallery-1', 'diary-1', 'receipt-1']);
+    });
+
     it('collects itinerary images even when no lifeDiaryRepository is wired', async () => {
         service = new UserService(userRepository, itinerariesRepository, {});
 

@@ -13,7 +13,7 @@ const OTHER_OPTION = "__other__";
 // off the exact string), so this keeps values reliable while still allowing
 // any code via the "Other" escape hatch, since van-life crosses into
 // currencies well outside this preset list.
-const CurrencyField = ({ label, name, control, error, required = false }) => {
+const CurrencyField = ({ label, name, control, error, required = false, compact = false }) => {
   const { t } = useTranslation();
   const { field } = useController({ name, control });
   const [customMode, setCustomMode] = useState(
@@ -36,7 +36,7 @@ const CurrencyField = ({ label, name, control, error, required = false }) => {
   };
 
   return (
-    <div className="input">
+    <div className={`input${compact ? " currency-field--compact" : ""}`}>
       <label htmlFor={name} className="input__label">
         {label}{required && <span className="input__required">*</span>}
       </label>

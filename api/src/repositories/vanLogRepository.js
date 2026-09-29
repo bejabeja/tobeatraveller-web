@@ -7,7 +7,7 @@ export class VanLogRepository {
     async create(data) {
         const {
             userId, category, title, amount, currency, pricePerLiter,
-            location, notes, entryDate,
+            location, notes, entryDate, itineraryId,
         } = data;
         const id = data.id ?? uuidv4();
 
@@ -15,9 +15,9 @@ export class VanLogRepository {
             INSERT INTO van_log_entries (
                 id, user_id, category, title, amount, currency, price_per_liter,
                 location_name, location_country, location_label, latitude, longitude,
-                notes, entry_date, location_country_code
+                notes, entry_date, location_country_code, itinerary_id
             )
-            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
             RETURNING *;
         `;
 
@@ -25,7 +25,7 @@ export class VanLogRepository {
             id, userId, category, title ?? null, amount ?? null, currency ?? null, pricePerLiter ?? null,
             location?.name ?? null, location?.country ?? null, location?.label ?? null,
             location?.lat ?? null, location?.lon ?? null,
-            notes ?? null, entryDate, countryCodeFromName(location?.country),
+            notes ?? null, entryDate, countryCodeFromName(location?.country), itineraryId ?? null,
         ]);
 
         return VanLogEntry.fromDb(result.rows[0]);
@@ -72,13 +72,26 @@ export class VanLogRepository {
             values.push(filters.dateTo);
         }
 
+        if (filters.itineraryId) {
+            conditions.push(`itinerary_id = $${i++}`);
+            values.push(filters.itineraryId);
+        }
+
         return { conditions, values };
     }
 
+    // Filtered first in a subquery (plain, unqualified column names, same as
+    // every other query here) and only then joined to itineraries: joining
+    // van_log_entries directly would make several of buildFilters' bare
+    // column names (user_id, category, currency...) ambiguous, since
+    // itineraries has columns of the same name.
     async findByUserId(userId, filters = {}) {
         const { conditions, values } = this.buildFilters(userId, filters);
         const result = await client.query(
-            `SELECT * FROM van_log_entries WHERE ${conditions.join(" AND ")} ORDER BY entry_date DESC, created_at DESC`,
+            `SELECT filtered.*, trips.title AS itinerary_title
+             FROM (SELECT * FROM van_log_entries WHERE ${conditions.join(" AND ")}) AS filtered
+             LEFT JOIN itineraries trips ON trips.id = filtered.itinerary_id
+             ORDER BY filtered.entry_date DESC, filtered.created_at DESC`,
             values
         );
         return result.rows.map(VanLogEntry.fromDb);
@@ -95,7 +108,7 @@ export class VanLogRepository {
     async update(id, data) {
         const {
             category, title, amount, currency, pricePerLiter,
-            location, notes, entryDate,
+            location, notes, entryDate, itineraryId,
         } = data;
 
         const query = `
@@ -103,7 +116,7 @@ export class VanLogRepository {
                 category = $1, title = $2, amount = $3, currency = $4, price_per_liter = $5,
                 location_name = $6, location_country = $7, location_label = $8,
                 latitude = $9, longitude = $10, notes = $11, entry_date = $12,
-                location_country_code = $14,
+                location_country_code = $14, itinerary_id = $15,
                 updated_at = CURRENT_TIMESTAMP
             WHERE id = $13
             RETURNING *;
@@ -113,7 +126,7 @@ export class VanLogRepository {
             category, title ?? null, amount ?? null, currency ?? null, pricePerLiter ?? null,
             location?.name ?? null, location?.country ?? null, location?.label ?? null,
             location?.lat ?? null, location?.lon ?? null,
-            notes ?? null, entryDate, id, countryCodeFromName(location?.country),
+            notes ?? null, entryDate, id, countryCodeFromName(location?.country), itineraryId ?? null,
         ]);
 
         return result.rows.length ? VanLogEntry.fromDb(result.rows[0]) : null;
@@ -121,6 +134,25 @@ export class VanLogRepository {
 
     async delete(id) {
         await client.query(`DELETE FROM van_log_entries WHERE id = $1`, [id]);
+    }
+
+    async updateReceiptPhoto(id, { url, publicId }) {
+        const result = await client.query(
+            `UPDATE van_log_entries SET receipt_photo_url = $1, receipt_photo_public_id = $2, updated_at = CURRENT_TIMESTAMP
+             WHERE id = $3
+             RETURNING *;`,
+            [url, publicId, id]
+        );
+        return result.rows.length ? VanLogEntry.fromDb(result.rows[0]) : null;
+    }
+
+    async findReceiptPublicIdsByUserId(userId) {
+        const result = await client.query(
+            `SELECT receipt_photo_public_id FROM van_log_entries
+             WHERE user_id = $1 AND receipt_photo_public_id IS NOT NULL`,
+            [userId]
+        );
+        return result.rows.map(row => row.receipt_photo_public_id);
     }
 
     // Grouped by currency too (not just category): summing across currencies
@@ -156,6 +188,26 @@ export class VanLogRepository {
         );
         return result.rows.map(row => ({
             country: row.country,
+            currency: row.currency,
+            total: Number(row.total),
+            count: row.count,
+        }));
+    }
+
+    async getTotalsByTrip(userId, filters = {}) {
+        const { conditions, values } = this.buildFilters(userId, filters);
+        const result = await client.query(
+            `SELECT filtered.itinerary_id AS trip_id, trips.title AS trip_title, filtered.currency,
+                    COALESCE(SUM(filtered.amount), 0) AS total, COUNT(*)::int AS count
+             FROM (SELECT * FROM van_log_entries WHERE ${conditions.join(" AND ")}) AS filtered
+             JOIN itineraries trips ON trips.id = filtered.itinerary_id
+             GROUP BY filtered.itinerary_id, trips.title, filtered.currency
+             ORDER BY total DESC`,
+            values
+        );
+        return result.rows.map(row => ({
+            tripId: row.trip_id,
+            tripTitle: row.trip_title,
             currency: row.currency,
             total: Number(row.total),
             count: row.count,

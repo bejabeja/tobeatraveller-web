@@ -15,3 +15,34 @@
     }
   }
 }
+
+// Sits beside another field (the quick-add amount), so the label stays for
+// screen readers only and the select sizes to its content instead of the
+// full row.
+.currency-field--compact {
+  width: auto;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+
+  .input__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .input__field {
+    width: auto;
+    flex: 1;
+    font-size: 1rem;
+    font-weight: 700;
+    padding-left: 0.85rem;
+    padding-right: 0.85rem;
+  }
+}

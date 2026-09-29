@@ -10,7 +10,7 @@ export const VAN_LOG_CATEGORIES = [
 export const toDateOnlyString = (date) => toCalendarDay(date);
 
 export class VanLogEntry {
-    constructor({ id, userId, category, title, amount, currency, pricePerLiter, location, notes, entryDate, createdAt, updatedAt }) {
+    constructor({ id, userId, category, title, amount, currency, pricePerLiter, location, notes, entryDate, receiptPhotoUrl, receiptPhotoPublicId, itineraryId, itineraryTitle, createdAt, updatedAt }) {
         this.id = id;
         this.userId = userId;
         this.category = category;
@@ -21,6 +21,10 @@ export class VanLogEntry {
         this.location = location || null;
         this.notes = notes;
         this.entryDate = entryDate;
+        this.receiptPhotoUrl = receiptPhotoUrl ?? null;
+        this.receiptPhotoPublicId = receiptPhotoPublicId ?? null;
+        this.itineraryId = itineraryId ?? null;
+        this.itineraryTitle = itineraryTitle ?? null;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -44,6 +48,10 @@ export class VanLogEntry {
             } : null,
             notes: row.notes,
             entryDate: toDateOnlyString(row.entry_date),
+            receiptPhotoUrl: row.receipt_photo_url,
+            receiptPhotoPublicId: row.receipt_photo_public_id,
+            itineraryId: row.itinerary_id,
+            itineraryTitle: row.itinerary_title,
             createdAt: row.created_at,
             updatedAt: row.updated_at,
         });
@@ -61,6 +69,11 @@ export class VanLogEntry {
             location: this.location,
             notes: this.notes,
             entryDate: this.entryDate,
+            // receiptPhotoPublicId stays server-side: it's a Cloudinary storage
+            // detail needed only to delete/replace the image, not something the
+            // client has any use for.
+            receiptPhotoUrl: this.receiptPhotoUrl,
+            itinerary: this.itineraryId ? { id: this.itineraryId, title: this.itineraryTitle } : null,
             createdAt: this.createdAt,
             updatedAt: this.updatedAt,
         };

@@ -391,9 +391,10 @@ export class UserService {
 
         // Collected before the delete cascades, since itinerary/diary rows
         // (and their photo_public_id columns) won't exist to query afterwards.
-        const [itineraryImagePublicIds, lifeDiaryImagePublicIds] = await Promise.all([
+        const [itineraryImagePublicIds, lifeDiaryImagePublicIds, receiptPhotoPublicIds] = await Promise.all([
             this.itinerariesRepository.findImagePublicIdsByUserId(id),
             this.lifeDiaryRepository ? this.lifeDiaryRepository.findImagePublicIdsByUserId(id) : [],
+            this.vanLogRepository ? this.vanLogRepository.findReceiptPublicIdsByUserId(id) : [],
         ]);
 
         this.emailService?.sendAccountDeleted({ username: user.username, email: user.email, language: user.language })
@@ -410,7 +411,7 @@ export class UserService {
             });
         }
 
-        return { user, imagePublicIds: [...itineraryImagePublicIds, ...lifeDiaryImagePublicIds] };
+        return { user, imagePublicIds: [...itineraryImagePublicIds, ...lifeDiaryImagePublicIds, ...receiptPhotoPublicIds] };
     }
 
     async exportUserData(id, actingUser, { ip, userAgent } = {}) {
