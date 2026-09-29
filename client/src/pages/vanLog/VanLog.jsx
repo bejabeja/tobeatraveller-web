@@ -15,8 +15,7 @@ import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState
 import Modal from "../../components/modal/Modal";
 import { selectMyItineraries } from "../../store/user/userInfoSelectors";
 import { deleteVanLogEntry, getVanLogEntries, getVanLogStats } from "../../services/vanLogs";
-import VanLogFormModal from "./VanLogFormModal";
-import VanLogQuickAddModal from "./VanLogQuickAddModal";
+import VanLogEntryModal from "./VanLogEntryModal";
 import ToolHeader from "../../components/toolPage/ToolHeader";
 import ToolEmptyState from "../../components/toolPage/ToolEmptyState";
 import "./VanLog.scss";
@@ -79,12 +78,10 @@ const VanLog = () => {
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState(EMPTY_FILTERS);
   const [search, setSearch] = useState("");
-  const [formOpen, setFormOpen] = useState(false);
-  const [editingEntry, setEditingEntry] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
   const [deleting, setDeleting] = useState(false);
-  const [quickAddOpen, setQuickAddOpen] = useState(false);
-  const [quickAddTripId, setQuickAddTripId] = useState("");
+  // null = closed; `entry` null = adding (optionally for a given trip), set = editing it.
+  const [entryModal, setEntryModal] = useState(null);
   const [activeTab, setActiveTab] = useState("entries");
   const [groupBy, setGroupBy] = useState("month");
   const [openMenuId, setOpenMenuId] = useState(null);
@@ -143,21 +140,11 @@ const VanLog = () => {
 
   useEffect(() => { refresh(); }, [filters]);
 
-  const openEdit = (entry) => { setEditingEntry(entry); setFormOpen(true); };
-  const closeForm = () => setFormOpen(false);
-
-  const openQuickAdd = (tripId = "") => {
-    setQuickAddTripId(tripId);
-    setQuickAddOpen(true);
-  };
-  const closeQuickAdd = () => setQuickAddOpen(false);
-  const handleQuickAddSaved = () => {
-    closeQuickAdd();
-    refresh();
-  };
-
-  const handleSaved = () => {
-    closeForm();
+  const openEdit = (entry) => setEntryModal({ entry, tripId: "" });
+  const openQuickAdd = (tripId = "") => setEntryModal({ entry: null, tripId });
+  const closeEntryModal = () => setEntryModal(null);
+  const handleEntrySaved = () => {
+    closeEntryModal();
     refresh();
   };
 
@@ -782,20 +769,13 @@ const VanLog = () => {
         )
       )}
 
-      {formOpen && (
-        <VanLogFormModal
-          entry={editingEntry}
-          onClose={closeForm}
-          onSaved={handleSaved}
-        />
-      )}
-
-      {quickAddOpen && (
-        <VanLogQuickAddModal
-          onClose={closeQuickAdd}
-          onSaved={handleQuickAddSaved}
+      {entryModal && (
+        <VanLogEntryModal
+          entry={entryModal.entry}
+          onClose={closeEntryModal}
+          onSaved={handleEntrySaved}
           initialCapReached={atFreeTierCap}
-          defaultItineraryId={quickAddTripId}
+          defaultItineraryId={entryModal.tripId}
         />
       )}
 

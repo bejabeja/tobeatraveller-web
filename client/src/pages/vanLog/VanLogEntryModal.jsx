@@ -4,62 +4,46 @@ import { useForm, useWatch } from "react-hook-form";
 import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
-import { translateValidationMessage } from "@tobeatraveller/shared";
 import { IoChevronDown, IoLockClosedOutline, IoMapOutline } from "react-icons/io5";
 import { Link } from "react-router-dom";
 import {
-  isVanLogCapReachedError, localCalendarDay, tripsToLinkTo, vanLogCategories, vanLogCategoryEmoji,
+  initialVanLogTripId, isVanLogCapReachedError, localCalendarDay, translateValidationMessage, tripsToLinkTo,
+  vanLogCategories, vanLogCategoryEmoji, vanLogEntryToFormValues, vanLogFormValuesToPayload,
 } from "@tobeatraveller/shared";
 import { InputForm, TextAreaForm } from "../../components/form/InputForm";
 import AutocompleteObjectInput from "../../components/form/AutocompleteObjectInput";
 import SubmitButton from "../../components/form/SubmitButton";
 import { selectMyItineraries } from "../../store/user/userInfoSelectors";
-import { createVanLogEntry, uploadVanLogReceiptPhoto } from "../../services/vanLogs";
+import {
+  createVanLogEntry, removeVanLogReceiptPhoto, updateVanLogEntry, uploadVanLogReceiptPhoto,
+} from "../../services/vanLogs";
 import { vanLogEntrySchema } from "../../utils/schemasValidation";
 import CurrencyField from "./CurrencyField";
 import ReceiptPhotoInput from "./ReceiptPhotoInput";
-import "./VanLogFormModal.scss";
-import "./VanLogQuickAddModal.scss";
+import "./VanLogEntryModal.scss";
 
-const today = () => new Date().toISOString().split("T")[0];
-
-// The trip already under way today, if any: an expense logged right now is
-// almost always for whichever trip the user is currently on, so defaulting
-// to it here means most people never have to touch the trip picker at all.
-const findActiveTrip = (trips, day) => trips.find(
-  (trip) => trip.startDate && trip.endDate && trip.startDate.slice(0, 10) <= day && day <= trip.endDate.slice(0, 10)
-);
-
-const defaultValues = {
-  category: "",
-  title: "",
-  amount: "",
-  currency: "EUR",
-  pricePerLiter: "",
-  location: { name: "", label: "", coordinates: { lat: 0, lon: 0 } },
-  notes: "",
-  entryDate: today(),
-};
-
-// One modal covers both the quick path (category + amount) and the detailed
-// one (title, price/L, date, location, notes): "more details" expands the
-// same form in place instead of handing off to a second modal, which used to
-// read as two disconnected flows for what is really a single "add entry" action.
-const VanLogQuickAddModal = ({ onClose, onSaved, initialCapReached = false, defaultItineraryId = "" }) => {
+// One modal for creating and editing an expense, so both look and behave the
+// same. Without `entry` it starts on the quick path (category + amount, the
+// rest behind "more details"); with one it opens with everything filled in
+// and the details already showing.
+const VanLogEntryModal = ({ entry = null, onClose, onSaved, initialCapReached = false, defaultItineraryId = "" }) => {
   const { t } = useTranslation();
-  const [expanded, setExpanded] = useState(false);
-  const [receiptPhoto, setReceiptPhoto] = useState(null);
+  const isEditing = Boolean(entry);
+  const [expanded, setExpanded] = useState(isEditing);
+  const initialReceiptPhotoUrl = entry?.receiptPhotoUrl ?? null;
+  const [receiptPhoto, setReceiptPhoto] = useState(initialReceiptPhotoUrl);
   const trips = tripsToLinkTo(useSelector(selectMyItineraries), localCalendarDay());
   const [itineraryId, setItineraryId] = useState(
-    () => defaultItineraryId || (findActiveTrip(trips, localCalendarDay())?.id ?? "")
+    () => initialVanLogTripId({ entry, requestedTripId: defaultItineraryId, trips })
   );
   // Starting already at the cap (parent already knows from the stats it just
   // loaded) skips straight to the upsell instead of only discovering it after
-  // the user fills out the form and submits.
-  const [capReached, setCapReached] = useState(initialCapReached);
+  // the user fills out the form and submits. Editing never creates an entry,
+  // so it is never blocked by it.
+  const [capReached, setCapReached] = useState(!isEditing && initialCapReached);
   const { control, register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(vanLogEntrySchema),
-    defaultValues,
+    defaultValues: vanLogEntryToFormValues(entry),
   });
   const category = useWatch({ control, name: "category" });
 
@@ -68,36 +52,24 @@ const VanLogQuickAddModal = ({ onClose, onSaved, initialCapReached = false, defa
     return t(`vanLog.category.${value}`, fallback);
   };
 
-  const onSubmit = async (data) => {
-    const hasLocation = data.location?.name;
+  // The photo is its own request, made after the expense is saved: a new
+  // file uploads, and clearing a stored one removes it. Its failure must not
+  // undo the save, so it only warns.
+  const syncReceiptPhoto = async (entryId) => {
     try {
-      const created = await createVanLogEntry({
-        category: data.category,
-        title: data.title || null,
-        amount: data.amount,
-        currency: data.amount != null ? (data.currency || null) : null,
-        pricePerLiter: data.category === "fuel" ? data.pricePerLiter : null,
-        location: hasLocation
-          ? {
-              name: data.location.name,
-              country: data.location.country || null,
-              label: data.location.label || data.location.name,
-              lat: data.location.coordinates?.lat ?? null,
-              lon: data.location.coordinates?.lon ?? null,
-            }
-          : null,
-        notes: data.notes || null,
-        entryDate: data.entryDate,
-        itineraryId: itineraryId || null,
-      });
-      if (receiptPhoto) {
-        try {
-          await uploadVanLogReceiptPhoto(created.id, receiptPhoto);
-        } catch {
-          toast.error(t("vanLog.receiptPhotoUploadError"));
-        }
-      }
-      toast.success(t("vanLog.created"));
+      if (receiptPhoto instanceof File) await uploadVanLogReceiptPhoto(entryId, receiptPhoto);
+      else if (receiptPhoto == null && initialReceiptPhotoUrl) await removeVanLogReceiptPhoto(entryId);
+    } catch {
+      toast.error(t("vanLog.receiptPhotoUploadError"));
+    }
+  };
+
+  const onSubmit = async (data) => {
+    const payload = vanLogFormValuesToPayload(data, itineraryId, { isEditing });
+    try {
+      const saved = isEditing ? await updateVanLogEntry(entry.id, payload) : await createVanLogEntry(payload);
+      await syncReceiptPhoto(saved?.id ?? entry?.id);
+      toast.success(t(isEditing ? "vanLog.updated" : "vanLog.created"));
       onSaved();
     } catch (error) {
       if (isVanLogCapReachedError(error)) {
@@ -112,7 +84,7 @@ const VanLogQuickAddModal = ({ onClose, onSaved, initialCapReached = false, defa
     <div className="van-log-form__backdrop" onClick={onClose}>
       <div className="van-log-form__panel" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
         <div className="van-log-form__header">
-          <h2>{t("vanLog.quickAdd")}</h2>
+          <h2>{t(isEditing ? "vanLog.editEntry" : "vanLog.quickAdd")}</h2>
           <button type="button" className="van-log-form__close" onClick={onClose} aria-label={t("common.close")}>✕</button>
         </div>
 
@@ -125,35 +97,35 @@ const VanLogQuickAddModal = ({ onClose, onSaved, initialCapReached = false, defa
           </div>
         ) : (
         <form className="van-log-form__body" onSubmit={handleSubmit(onSubmit)}>
-          <div className="van-log-quick-add__grid">
+          <div className="van-log-entry-modal__grid">
             {vanLogCategories.map(({ value }) => (
               <button
                 key={value}
                 type="button"
-                className={`van-log-quick-add__category${category === value ? " van-log-quick-add__category--active" : ""}`}
+                className={`van-log-entry-modal__category${category === value ? " van-log-entry-modal__category--active" : ""}`}
                 onClick={() => setValue("category", value, { shouldValidate: true })}
               >
-                <span className="van-log-quick-add__category-emoji">{vanLogCategoryEmoji[value] ?? "📍"}</span>
-                <span className="van-log-quick-add__category-label">{categoryLabel(value)}</span>
+                <span className="van-log-entry-modal__category-emoji">{vanLogCategoryEmoji[value] ?? "📍"}</span>
+                <span className="van-log-entry-modal__category-label">{categoryLabel(value)}</span>
               </button>
             ))}
           </div>
           {errors.category && <div className="input__error">{translateValidationMessage(t, errors.category.message)}</div>}
 
-          <label className="van-log-quick-add__amount-label" htmlFor="quick-add-amount">
+          <label className="van-log-entry-modal__amount-label" htmlFor="van-log-entry-amount">
             {t("vanLog.amountLabel")}
           </label>
-          <div className="van-log-quick-add__amount-row">
+          <div className="van-log-entry-modal__amount-row">
             <input
-              id="quick-add-amount"
-              className="van-log-quick-add__amount-input"
+              id="van-log-entry-amount"
+              className="van-log-entry-modal__amount-input"
               type="number"
               step="0.01"
               min="0"
               inputMode="decimal"
               placeholder="0.00"
               {...register("amount")}
-              autoFocus
+              autoFocus={!isEditing}
             />
             <CurrencyField
               label={t("vanLog.currencyLabel")}
@@ -165,35 +137,35 @@ const VanLogQuickAddModal = ({ onClose, onSaved, initialCapReached = false, defa
           </div>
 
           {trips.length > 0 && (
-            <label className="van-log-quick-add__trip" htmlFor="van-log-quick-add-trip">
-              <IoMapOutline className="van-log-quick-add__trip-icon" aria-hidden="true" />
-              <span className="van-log-quick-add__trip-label">{t("vanLog.tripLabel")}</span>
+            <div className={`van-log-entry-modal__trip${itineraryId ? " van-log-entry-modal__trip--filled" : ""}`}>
+              <IoMapOutline className="van-log-entry-modal__trip-icon" aria-hidden="true" />
               <select
-                id="van-log-quick-add-trip"
-                className="van-log-quick-add__trip-select"
+                id="van-log-entry-trip"
+                className="van-log-entry-modal__trip-select"
                 value={itineraryId}
                 onChange={(e) => setItineraryId(e.target.value)}
+                aria-label={t("vanLog.tripLabel")}
               >
-                <option value="">{t("vanLog.noTrip")}</option>
+                <option value="">{itineraryId ? t("vanLog.noTrip") : t("vanLog.tripLabel")}</option>
                 {trips.map((trip) => <option key={trip.id} value={trip.id}>{trip.title}</option>)}
               </select>
-            </label>
+            </div>
           )}
 
-          <ReceiptPhotoInput value={receiptPhoto} onChange={setReceiptPhoto} compact />
+          <ReceiptPhotoInput value={receiptPhoto} onChange={setReceiptPhoto} />
 
           <button
             type="button"
-            className="van-log-quick-add__expand-toggle"
+            className="van-log-entry-modal__expand-toggle"
             onClick={() => setExpanded((prev) => !prev)}
             aria-expanded={expanded}
           >
             {expanded ? t("vanLog.lessDetails") : t("vanLog.moreDetails")}
-            <IoChevronDown className={`van-log-quick-add__expand-icon${expanded ? " van-log-quick-add__expand-icon--open" : ""}`} />
+            <IoChevronDown className={`van-log-entry-modal__expand-icon${expanded ? " van-log-entry-modal__expand-icon--open" : ""}`} />
           </button>
 
           {expanded && (
-            <div className="van-log-quick-add__expanded">
+            <div className="van-log-entry-modal__expanded">
               <InputForm
                 label={t("vanLog.titleLabel")}
                 name="title"
@@ -244,7 +216,7 @@ const VanLogQuickAddModal = ({ onClose, onSaved, initialCapReached = false, defa
             <button type="button" className="btn btn--ghost" onClick={onClose}>
               {t("common.cancel")}
             </button>
-            <SubmitButton loading={isSubmitting} disabled={!category} label={t("vanLog.quickAdd")} />
+            <SubmitButton loading={isSubmitting} disabled={!category} label={t(isEditing ? "common.save" : "vanLog.quickAdd")} />
           </div>
         </form>
         )}
@@ -253,4 +225,4 @@ const VanLogQuickAddModal = ({ onClose, onSaved, initialCapReached = false, defa
   );
 };
 
-export default VanLogQuickAddModal;
+export default VanLogEntryModal;

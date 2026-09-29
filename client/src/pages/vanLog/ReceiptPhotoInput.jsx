@@ -10,14 +10,7 @@ const MAX_RECEIPT_PHOTO_BYTES = 5 * 1024 * 1024;
 // string, or null. Uploading/removing on the server is the caller's job (it
 // happens after the entry itself is saved); this component only picks,
 // previews and clears.
-//
-// `compact` drops the field label and shrinks the button to a small chip:
-// the quick-add flow already gives "add a photo" a big-enough affordance
-// through its own rhythm (emoji grid, big amount), and a labeled dashed
-// dropzone there reads as a form field bolted onto an otherwise lightweight
-// screen. The full edit form keeps the labeled version, matching its other
-// labeled fields.
-const ReceiptPhotoInput = ({ value, onChange, compact = false }) => {
+const ReceiptPhotoInput = ({ value, onChange }) => {
   const { t } = useTranslation();
   const inputRef = useRef(null);
   const [objectUrl, setObjectUrl] = useState(null);
@@ -43,8 +36,7 @@ const ReceiptPhotoInput = ({ value, onChange, compact = false }) => {
   };
 
   return (
-    <div className={`receipt-photo-input${compact ? " receipt-photo-input--compact" : ""}`}>
-      {!compact && <span className="receipt-photo-input__label">{t("vanLog.receiptPhotoLabel")}</span>}
+    <div className="receipt-photo-input">
       {preview ? (
         <div className="receipt-photo-input__preview">
           <img src={preview} alt="" />
