@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { chooseOption } from "../../testUtils/chooseOption";
 
 let mockTrips = [];
 jest.mock("react-redux", () => ({ useSelector: (selector) => selector() }));
@@ -65,7 +66,7 @@ it("adds something to the chosen category from the one box", async () => {
   renderList();
 
   fireEvent.change(await screen.findByRole("textbox", { name: "packingChecklist.addItemPlaceholder" }), { target: { value: "Botas" } });
-  fireEvent.change(screen.getByRole("combobox", { name: "packingChecklist.categoryLabel" }), { target: { value: "clothing" } });
+  chooseOption(screen.getByRole("combobox", { name: "packingChecklist.categoryLabel" }), "clothing");
   fireEvent.click(screen.getByRole("button", { name: "packingChecklist.add" }));
 
   await waitFor(() => expect(addPackingListItem).toHaveBeenCalledWith("l1", { category: "clothing", name: "Botas" }));
@@ -149,7 +150,7 @@ it("renames something, moves it to another category and says how many to take", 
   fireEvent.click((await screen.findAllByRole("button", { name: "packingChecklist.editItem" }))[0]);
   const dialog = screen.getByRole("dialog");
   fireEvent.change(within(dialog).getByLabelText("packingChecklist.itemName"), { target: { value: "Calcetines" } });
-  fireEvent.change(within(dialog).getByLabelText("packingChecklist.categoryLabel"), { target: { value: "clothing" } });
+  chooseOption(within(dialog).getByLabelText("packingChecklist.categoryLabel"), "clothing");
   fireEvent.change(within(dialog).getByLabelText("packingChecklist.quantity"), { target: { value: "5" } });
   fireEvent.click(within(dialog).getByRole("button", { name: "common.save" }));
 
@@ -238,7 +239,7 @@ it("links the list to one of the user's trips", async () => {
   fireEvent.click(await screen.findByRole("button", { name: "common.moreOptions" }));
   fireEvent.click(screen.getByRole("menuitem", { name: "packingChecklist.linkToTrip" }));
   const dialog = screen.getByRole("dialog");
-  fireEvent.change(within(dialog).getByLabelText("packingChecklist.tripLabel"), { target: { value: "t1" } });
+  chooseOption(within(dialog).getByLabelText("packingChecklist.tripLabel"), "t1");
   fireEvent.click(within(dialog).getByRole("button", { name: "common.save" }));
 
   await waitFor(() => expect(updatePackingList).toHaveBeenCalledWith("l1", { itineraryId: "t1" }));

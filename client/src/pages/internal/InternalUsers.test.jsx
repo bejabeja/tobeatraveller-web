@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { chooseOption } from "../../testUtils/chooseOption";
 
 jest.mock("react-redux", () => ({ useSelector: (selector) => selector() }));
 jest.mock("react-i18next", () => ({
@@ -51,7 +52,7 @@ it("gifts premium for the months chosen and shows until when", async () => {
   updateUserTier.mockResolvedValue({ id: "u2", isPremium: true, premiumUntil: "2026-12-27T10:00:00.000Z" });
   const tierSelect = await renderWith(user());
 
-  fireEvent.change(tierSelect, { target: { value: "gift:3" } });
+  chooseOption(tierSelect, "gift:3");
 
   expect(updateUserTier).toHaveBeenCalledWith("u2", "premium", 3);
   await waitFor(() => expect(tierSelect).toHaveTextContent("admin.premiumUntil:2026-12-27"));
@@ -61,7 +62,7 @@ it("gifts premium with no end date", async () => {
   updateUserTier.mockResolvedValue({ id: "u2", isPremium: true, premiumUntil: "2126-09-27T10:00:00.000Z" });
   const tierSelect = await renderWith(user());
 
-  fireEvent.change(tierSelect, { target: { value: "gift:" } });
+  chooseOption(tierSelect, "gift:");
 
   expect(updateUserTier).toHaveBeenCalledWith("u2", "premium", undefined);
   await waitFor(() => expect(tierSelect).toHaveTextContent("admin.premiumIndefinite"));
@@ -71,7 +72,7 @@ it("says when someone stays premium after a removal because they pay for it", as
   updateUserTier.mockResolvedValue({ id: "u2", isPremium: true, premiumUntil: PAID_UNTIL });
   const tierSelect = await renderWith(user({ isPremium: true, premiumUntil: "2126-01-01T00:00:00.000Z" }));
 
-  fireEvent.change(tierSelect, { target: { value: "free" } });
+  chooseOption(tierSelect, "free");
 
   expect(updateUserTier).toHaveBeenCalledWith("u2", "free", undefined);
   await waitFor(() => expect(toast.success).toHaveBeenCalledWith("admin.tierKeptPaid:2026-12-01"));
@@ -87,8 +88,8 @@ it("reloads with the chosen role and premium filters", async () => {
   await renderWith(user());
   getAllUsersForAdmin.mockClear();
 
-  fireEvent.change(screen.getByRole("combobox", { name: "admin.allRoles" }), { target: { value: "admin" } });
-  fireEvent.change(screen.getByRole("combobox", { name: "admin.allTiers" }), { target: { value: "premium" } });
+  chooseOption(screen.getByRole("combobox", { name: "admin.allRoles" }), "admin");
+  chooseOption(screen.getByRole("combobox", { name: "admin.allTiers" }), "premium");
 
   await waitFor(() => expect(getAllUsersForAdmin).toHaveBeenLastCalledWith(
     expect.objectContaining({ role: "admin", isPremium: true })

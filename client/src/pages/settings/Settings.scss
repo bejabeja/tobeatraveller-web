@@ -165,16 +165,8 @@ $settings-row-min-height: 48px;
     color: var(--text-secondary-color);
   }
 
+  // The language menu sits at the right of its row.
   &__select {
-    width: auto;
     max-width: 55%;
-    padding: 0.4rem 0.6rem;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    background: var(--white-color);
-    font-family: inherit;
-    font-size: 0.875rem;
-    color: var(--text-color);
-    cursor: pointer;
   }
 }

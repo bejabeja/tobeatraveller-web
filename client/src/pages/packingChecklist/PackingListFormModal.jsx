@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { IoLockClosedOutline } from "react-icons/io5";
 import { Link } from "react-router-dom";
 import { FREE_PLAN_LIMITS, PACKING_LIST_NAME_MAX_LENGTH, PACKING_TEMPLATES, packingTemplateOptions } from "@tobeatraveller/shared";
+import SelectMenu from "../../components/form/SelectMenu";
 import SubmitButton from "../../components/form/SubmitButton";
 import "../../components/form/InputForm.scss";
 import "./PackingListFormModal.scss";
@@ -87,10 +88,13 @@ const PackingListFormModal = ({
             {withTemplates && trips.length > 0 && (
               <div className="input">
                 <label htmlFor="packing-list-trip" className="input__label">{p("tripLabel")}</label>
-                <select id="packing-list-trip" className="input__field" value={tripId} onChange={(event) => setTripId(event.target.value)}>
-                  <option value="">{p("noTrip")}</option>
-                  {trips.map((trip) => <option key={trip.id} value={trip.id}>{trip.title}</option>)}
-                </select>
+                <SelectMenu
+                  id="packing-list-trip"
+                  ariaLabel={p("tripLabel")}
+                  options={[{ value: "", label: p("noTrip") }, ...trips.map((trip) => ({ value: trip.id, label: trip.title }))]}
+                  value={tripId}
+                  onChange={setTripId}
+                />
               </div>
             )}
 

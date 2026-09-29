@@ -3,12 +3,13 @@ import { useController } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { translateValidationMessage } from "@tobeatraveller/shared";
 import { vanLogCommonCurrencies } from "@tobeatraveller/shared";
+import SelectMenu from "../../components/form/SelectMenu";
 import "../../components/form/InputForm.scss";
 import "./CurrencyField.scss";
 
 const OTHER_OPTION = "__other__";
 
-// A dropdown of common currencies instead of free text: a typo like "EURO"
+// A menu of common currencies instead of free text: a typo like "EURO"
 // silently creates its own bucket in the by-currency stats/filter (both key
 // off the exact string), so this keeps values reliable while still allowing
 // any code via the "Other" escape hatch, since van-life crosses into
@@ -21,12 +22,12 @@ const CurrencyField = ({ label, name, control, error, required = false, compact 
   );
   const errorId = `${name}-error`;
 
-  const handleSelectChange = (e) => {
-    if (e.target.value === OTHER_OPTION) {
+  const handleSelectChange = (value) => {
+    if (value === OTHER_OPTION) {
       field.onChange("");
       setCustomMode(true);
     } else {
-      field.onChange(e.target.value);
+      field.onChange(value);
     }
   };
 
@@ -46,6 +47,7 @@ const CurrencyField = ({ label, name, control, error, required = false, compact 
           <input
             id={name}
             type="text"
+            ref={field.ref}
             value={field.value}
             onChange={(e) => field.onChange(e.target.value.toUpperCase())}
             onBlur={field.onBlur}
@@ -60,21 +62,20 @@ const CurrencyField = ({ label, name, control, error, required = false, compact 
           </button>
         </>
       ) : (
-        <select
+        <SelectMenu
           id={name}
+          ariaLabel={label}
+          placeholder={label}
+          options={[
+            ...vanLogCommonCurrencies.map((currency) => ({ value: currency, label: currency })),
+            { value: OTHER_OPTION, label: t("vanLog.otherCurrency") },
+          ]}
           value={vanLogCommonCurrencies.includes(field.value) ? field.value : ""}
           onChange={handleSelectChange}
           onBlur={field.onBlur}
-          className={`input__field ${error ? "input__field--invalid" : ""}`}
-          aria-invalid={!!error}
-          aria-describedby={error ? errorId : undefined}
-        >
-          {!field.value && <option value="" hidden />}
-          {vanLogCommonCurrencies.map((currency) => (
-            <option key={currency} value={currency}>{currency}</option>
-          ))}
-          <option value={OTHER_OPTION}>{t("vanLog.otherCurrency")}</option>
-        </select>
+          fieldRef={field.ref}
+          invalid={!!error}
+        />
       )}
 
       {error && (

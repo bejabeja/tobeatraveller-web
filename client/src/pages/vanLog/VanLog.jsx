@@ -12,6 +12,7 @@ import {
   groupVanLogEntriesByMonth, groupVanLogEntriesByTrip, isPremiumRequiredError, localCalendarDay, normalizeSearchText, vanLogCategories, vanLogCategoryEmoji,
 } from "@tobeatraveller/shared";
 import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState";
+import SelectMenu from "../../components/form/SelectMenu";
 import Modal from "../../components/modal/Modal";
 import { selectMyItineraries } from "../../store/user/userInfoSelectors";
 import { deleteVanLogEntry, getVanLogEntries, getVanLogStats } from "../../services/vanLogs";
@@ -88,6 +89,8 @@ const VanLog = () => {
   useEffect(() => {
     if (!filtersOpen) return;
     const onClickOutside = (e) => {
+      // A menu inside the panel draws its list on the page body, outside it.
+      if (e.target.closest?.("[data-select-menu-list]")) return;
       if (filtersRef.current && !filtersRef.current.contains(e.target)) setFiltersOpen(false);
     };
     document.addEventListener("mousedown", onClickOutside);
@@ -370,17 +373,14 @@ const VanLog = () => {
         )}
 
         {tripOptions.length > 0 && (
-          <select
-            className={`van-log__filter-select van-log__filter-select--trip${filters.itineraryId ? " van-log__filter-select--active" : ""}`}
+          <SelectMenu
+            variant="pill"
+            className="van-log__trip-menu"
+            ariaLabel={t("vanLog.tripLabel")}
+            options={[{ value: "", label: t("vanLog.allTrips") }, ...tripOptions.map((trip) => ({ value: trip.id, label: trip.title }))]}
             value={filters.itineraryId}
-            onChange={(e) => updateFilter("itineraryId", e.target.value)}
-            aria-label={t("vanLog.tripLabel")}
-          >
-            <option value="">{t("vanLog.allTrips")}</option>
-            {tripOptions.map((trip) => (
-              <option key={trip.id} value={trip.id}>{trip.title}</option>
-            ))}
-          </select>
+            onChange={(value) => updateFilter("itineraryId", value)}
+          />
         )}
 
         <div className="van-log__filter-toggle-wrap" ref={filtersRef}>
@@ -433,50 +433,42 @@ const VanLog = () => {
 
               <div className="van-log__filter-divider" />
 
-              <label className="van-log__filter-field">
+              <div className="van-log__filter-field">
                 <span className="van-log__filter-field-label">{t("vanLog.categoryLabel")}</span>
-                <select
-                  className="van-log__filter-select"
+                <SelectMenu
+                  ariaLabel={t("vanLog.categoryLabel")}
+                  options={[
+                    { value: "", label: t("vanLog.allCategories") },
+                    ...vanLogCategories.map(({ value, label }) => ({
+                      value,
+                      label: `${vanLogCategoryEmoji[value] ?? "📍"} ${t(`vanLog.category.${value}`, label)}`,
+                    })),
+                  ]}
                   value={filters.category}
-                  onChange={(e) => updateFilter("category", e.target.value)}
-                >
-                  <option value="">{t("vanLog.allCategories")}</option>
-                  {vanLogCategories.map(({ value, label }) => (
-                    <option key={value} value={value}>
-                      {vanLogCategoryEmoji[value] ?? "📍"} {t(`vanLog.category.${value}`, label)}
-                    </option>
-                  ))}
-                </select>
-              </label>
+                  onChange={(value) => updateFilter("category", value)}
+                />
+              </div>
 
               <div className="van-log__filter-panel-row">
-                <label className="van-log__filter-field">
+                <div className="van-log__filter-field">
                   <span className="van-log__filter-field-label">{t("vanLog.currencyLabel")}</span>
-                  <select
-                    className="van-log__filter-select"
+                  <SelectMenu
+                    ariaLabel={t("vanLog.currencyLabel")}
+                    options={[{ value: "", label: t("vanLog.allCurrencies") }, ...currencyOptions.map((currency) => ({ value: currency, label: currency }))]}
                     value={filters.currency}
-                    onChange={(e) => updateFilter("currency", e.target.value)}
-                  >
-                    <option value="">{t("vanLog.allCurrencies")}</option>
-                    {currencyOptions.map((currency) => (
-                      <option key={currency} value={currency}>{currency}</option>
-                    ))}
-                  </select>
-                </label>
+                    onChange={(value) => updateFilter("currency", value)}
+                  />
+                </div>
 
-                <label className="van-log__filter-field">
+                <div className="van-log__filter-field">
                   <span className="van-log__filter-field-label">{t("vanLog.countryLabel")}</span>
-                  <select
-                    className="van-log__filter-select"
+                  <SelectMenu
+                    ariaLabel={t("vanLog.countryLabel")}
+                    options={[{ value: "", label: t("vanLog.allCountries") }, ...countryOptions.map((country) => ({ value: country, label: country }))]}
                     value={filters.country}
-                    onChange={(e) => updateFilter("country", e.target.value)}
-                  >
-                    <option value="">{t("vanLog.allCountries")}</option>
-                    {countryOptions.map((country) => (
-                      <option key={country} value={country}>{country}</option>
-                    ))}
-                  </select>
-                </label>
+                    onChange={(value) => updateFilter("country", value)}
+                  />
+                </div>
               </div>
 
               {hasActiveFilters && (

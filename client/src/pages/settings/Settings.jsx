@@ -9,6 +9,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Trans, useTranslation } from "react-i18next";
 import { APP_LANGUAGES, fetchNotificationPreferences, toAppLanguage, updateNotificationPreferences } from "@tobeatraveller/shared";
 import i18n from "../../i18n";
+import SelectMenu from "../../components/form/SelectMenu";
 import Spinner from "../../components/spinner/Spinner";
 import { REOPEN_COOKIE_PREFERENCES_EVENT } from "../../utils/analytics";
 import { changePassword, deleteMyAccount, exportMyData } from "../../services/users";
@@ -178,18 +179,17 @@ const Settings = () => {
               <span className="settings__row-label">{t("auth.emailLabel")}</span>
               <span className="settings__row-value">{userMe?.email}</span>
             </div>
-            <label className="settings__row">
+            <div className="settings__row">
               <span className="settings__row-label">{t("settings.language")}</span>
-              <select
+              <SelectMenu
+                variant="compact"
                 className="settings__select"
+                ariaLabel={t("settings.language")}
+                options={APP_LANGUAGES.map(({ code, flag, name }) => ({ value: code, label: `${flag} ${name}` }))}
                 value={currentLang}
-                onChange={(event) => i18n.changeLanguage(event.target.value)}
-              >
-                {APP_LANGUAGES.map(({ code, flag, name }) => (
-                  <option key={code} value={code}>{flag} {name}</option>
-                ))}
-              </select>
-            </label>
+                onChange={(code) => i18n.changeLanguage(code)}
+              />
+            </div>
             <SettingsActionRow label={t("editProfile.changePassword")} onClick={() => setShowPasswordModal(true)} />
           </div>
         </section>

@@ -110,7 +110,7 @@ it("starts a list for the trip it was opened for, named after it and with a temp
   renderPage("/packing-checklist?forTrip=t1");
 
   expect(await screen.findByRole("radio", { name: /packingChecklist.templates.longTrip.name/ })).toBeChecked();
-  expect(screen.getByLabelText("packingChecklist.tripLabel")).toHaveValue("t1");
+  expect(screen.getByLabelText("packingChecklist.tripLabel")).toHaveTextContent("Costa Vicentina");
   fireEvent.click(screen.getByRole("button", { name: "packingChecklist.createList" }));
 
   await waitFor(() => expect(createPackingList).toHaveBeenCalled());
@@ -132,7 +132,7 @@ it("waits for the trips before opening the form for one", async () => {
   mockTrips = [{ id: "t1", title: "Costa Vicentina", startDate: "2099-10-02", endDate: "2099-10-09", tripTotalDays: 8 }];
   rerender(pageAt("/packing-checklist?forTrip=t1"));
 
-  expect(await screen.findByLabelText("packingChecklist.tripLabel")).toHaveValue("t1");
+  expect(await screen.findByLabelText("packingChecklist.tripLabel")).toHaveTextContent("Costa Vicentina");
 });
 
 // Regression: a free plan with no lists left saw the whole form and only

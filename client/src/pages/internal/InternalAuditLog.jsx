@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState";
+import SelectMenu from "../../components/form/SelectMenu";
 import Spinner from "../../components/spinner/Spinner";
 import { getRecentAuditLog } from "../../services/auditLog";
 import "./InternalAuditLog.scss";
@@ -101,15 +102,19 @@ const InternalAuditLog = () => {
   return (
     <section className="internal-audit-log">
       <div className="internal-audit-log__filters">
-        <label>
+        <div className="internal-audit-log__filter">
           {t("admin.auditFilterActionLabel")}
-          <select value={action} onChange={(e) => setAction(e.target.value)}>
-            <option value="">{t("admin.auditFilterAllActions")}</option>
-            {Object.keys(AUDIT_DESCRIPTIONS).map((key) => (
-              <option key={key} value={key}>{humanizeAction(key)}</option>
-            ))}
-          </select>
-        </label>
+          <SelectMenu
+            variant="compact"
+            ariaLabel={t("admin.auditFilterActionLabel")}
+            options={[
+              { value: "", label: t("admin.auditFilterAllActions") },
+              ...Object.keys(AUDIT_DESCRIPTIONS).map((key) => ({ value: key, label: humanizeAction(key) })),
+            ]}
+            value={action}
+            onChange={setAction}
+          />
+        </div>
         <label>
           {t("admin.auditFilterDateFromLabel")}
           <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />

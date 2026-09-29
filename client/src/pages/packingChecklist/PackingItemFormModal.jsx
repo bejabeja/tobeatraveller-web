@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { packingCategories } from "@tobeatraveller/shared";
+import SelectMenu from "../../components/form/SelectMenu";
 import SubmitButton from "../../components/form/SubmitButton";
 import "../../components/form/InputForm.scss";
 import "./PackingListFormModal.scss";
@@ -63,11 +64,13 @@ const PackingItemFormModal = ({ item, categoryLabel, onClose, onSubmit }) => {
 
           <div className="input">
             <label htmlFor="packing-item-category" className="input__label">{p("categoryLabel")}</label>
-            <select id="packing-item-category" className="input__field" value={category} onChange={(event) => setCategory(event.target.value)}>
-              {packingCategories.map(({ value }) => (
-                <option key={value} value={value}>{categoryLabel(value)}</option>
-              ))}
-            </select>
+            <SelectMenu
+              id="packing-item-category"
+              ariaLabel={p("categoryLabel")}
+              options={packingCategories.map(({ value }) => ({ value, label: categoryLabel(value) }))}
+              value={category}
+              onChange={setCategory}
+            />
           </div>
 
           <div className="input">

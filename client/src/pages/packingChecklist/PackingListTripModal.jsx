@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import SelectMenu from "../../components/form/SelectMenu";
 import SubmitButton from "../../components/form/SubmitButton";
 import "../../components/form/InputForm.scss";
 import "./PackingListFormModal.scss";
@@ -34,10 +35,13 @@ const PackingListTripModal = ({ trips, currentTripId, onClose, onSubmit }) => {
           <form className="packing-list-form__body" onSubmit={submit}>
             <div className="input">
               <label htmlFor="packing-list-trip-choice" className="input__label">{p("tripLabel")}</label>
-              <select id="packing-list-trip-choice" className="input__field" value={tripId} onChange={(event) => setTripId(event.target.value)}>
-                <option value="">{p("noTrip")}</option>
-                {trips.map((trip) => <option key={trip.id} value={trip.id}>{trip.title}</option>)}
-              </select>
+              <SelectMenu
+                id="packing-list-trip-choice"
+                ariaLabel={p("tripLabel")}
+                options={[{ value: "", label: p("noTrip") }, ...trips.map((trip) => ({ value: trip.id, label: trip.title }))]}
+                value={tripId}
+                onChange={setTripId}
+              />
             </div>
             <SubmitButton label={t("common.save")} loading={saving} />
           </form>

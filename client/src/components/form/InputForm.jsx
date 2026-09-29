@@ -1,6 +1,7 @@
 import { Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { translateValidationMessage } from "@tobeatraveller/shared";
+import SelectMenu from "./SelectMenu";
 import "./InputForm.scss";
 
 // `counterFrom` (0 to 1): how full the field must be before the counter
@@ -164,18 +165,18 @@ export const DropdownForm = ({ label, name, control, error, options, required = 
         name={name}
         control={control}
         render={({ field }) => (
-          <select
+          <SelectMenu
             id={name}
-            {...field}
-            className={`input__field ${error ? "input__field--invalid" : ""}`}
-            aria-invalid={!!error}
-            aria-describedby={error ? errorId : undefined}
-          >
-            <option value="" disabled>{t("common.selectOption")}</option>
-            {options.map(({ value, label }) => (
-              <option key={value} value={value}>{label}</option>
-            ))}
-          </select>
+            ariaLabel={label}
+            ariaDescribedBy={error ? errorId : undefined}
+            placeholder={t("common.selectOption")}
+            options={options}
+            value={field.value}
+            onChange={field.onChange}
+            onBlur={field.onBlur}
+            fieldRef={field.ref}
+            invalid={!!error}
+          />
         )}
       />
       {error && (

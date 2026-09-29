@@ -8,6 +8,7 @@ import { aiPaceOptions, dayPlacesPreview, daysToFold, DEFAULT_AI_PACE, isPremium
 import { getCategoryIcon } from "../../../assets/icons";
 import AiGenerationUpsell from "../../../components/aiGenerationUpsell/AiGenerationUpsell";
 import AutocompletePlaceInput from "../../../components/form/AutocompletePlaceInput";
+import SelectMenu from "../../../components/form/SelectMenu";
 import Modal from "../../../components/modal/Modal";
 import { TextAreaForm } from "../../../components/form/InputForm";
 import { placeCategories } from "../../../utils/constants/constants";
@@ -172,19 +173,15 @@ const PlacesForm = ({
           {isComplete && <span className="form__section-check">✓</span>}
         </h2>
         <div className="form__ai-controls">
-          <select
+          <SelectMenu
+            variant="compact"
             className="form__ai-pace-select"
-            value={pace}
-            onChange={(e) => setPace(e.target.value)}
+            ariaLabel={f("paceLabel")}
             disabled={isGenerating}
-            aria-label={f("paceLabel")}
-          >
-            {aiPaceOptions.map(({ value, labelKey, descKey }) => (
-              <option key={value} value={value}>
-                {f(labelKey)} – {f(descKey)}
-              </option>
-            ))}
-          </select>
+            options={aiPaceOptions.map(({ value, labelKey, descKey }) => ({ value, label: `${f(labelKey)} – ${f(descKey)}` }))}
+            value={pace}
+            onChange={setPace}
+          />
           <button
             type="button"
             className="btn btn--secondary btn--sm form__ai-btn"

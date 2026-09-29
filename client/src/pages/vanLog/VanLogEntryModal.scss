@@ -177,69 +177,6 @@
     }
   }
 
-  // A field of its own (icon inside, custom chevron) instead of a native
-  // select dropped into a row: the empty state reads as a placeholder
-  // ("Which trip?") and only turns into a value once a trip is picked, so
-  // it sits at the same visual weight as the receipt button under it.
-  &__trip {
-    position: relative;
-    width: auto;
-    display: flex;
-    align-items: center;
-  }
-
-  &__trip-icon {
-    position: absolute;
-    left: 0.85rem;
-    width: 1.1rem;
-    height: 1.1rem;
-    color: var(--text-secondary-color);
-    pointer-events: none;
-    transition: color 0.2s;
-  }
-
-  &__trip--filled &__trip-icon {
-    color: var(--accent-color);
-  }
-
-  &__trip-select {
-    width: 100%;
-    min-width: 0;
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    font-size: 0.9rem;
-    font-weight: 500;
-    font-family: inherit;
-    color: var(--text-secondary-color);
-    background-color: var(--white-color);
-    background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23666' stroke-width='1.5'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 0.9rem center;
-    background-size: 0.6rem;
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
-    padding: 0.65rem 2.25rem 0.65rem 2.5rem;
-    text-overflow: ellipsis;
-    cursor: pointer;
-    transition: border-color 0.2s, box-shadow 0.2s;
-
-    &:hover {
-      border-color: var(--primary-color);
-    }
-
-    &:focus {
-      outline: none;
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 3px rgba(232, 116, 59, 0.15);
-    }
-  }
-
-  &__trip--filled &__trip-select {
-    font-weight: 600;
-    color: var(--text-color);
-  }
-
   // Expands the same form in place instead of handing off to a second
   // modal, which used to read as two disconnected flows for one action.
   &__expand-toggle {

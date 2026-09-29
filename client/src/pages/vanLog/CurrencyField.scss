@@ -17,7 +17,7 @@
 }
 
 // Sits beside another field (the quick-add amount), so the label stays for
-// screen readers only and the select sizes to its content instead of the
+// screen readers only and the menu sizes to its content instead of the
 // full row.
 .currency-field--compact {
   width: auto;
@@ -37,9 +37,10 @@
     border: 0;
   }
 
-  .input__field {
+  .select-menu__button {
     width: auto;
     flex: 1;
+    min-width: 5.5rem;
     font-size: 1rem;
     font-weight: 700;
     padding-left: 0.85rem;

@@ -1,0 +1,156 @@
+.select-menu__button {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: left;
+  font-family: inherit;
+  color: var(--text-color);
+  background: var(--white-color);
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    border-color: var(--primary-color);
+  }
+
+  &:focus-visible,
+  &--open {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(232, 116, 59, 0.15);
+  }
+
+  &--invalid {
+    border-color: var(--error-color);
+  }
+
+  // A form field: as wide as its row.
+  &--field {
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: 10px;
+    padding: 0.65rem 0.9rem;
+  }
+
+  // A small one inside a row of other controls, or in a table of settings.
+  &--compact {
+    width: fit-content;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border-radius: 8px;
+    padding: 0.4rem 0.6rem;
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+
+    &:hover {
+      border-color: var(--border-color);
+    }
+  }
+
+  // A filter in a toolbar: sized to its content, like the buttons beside it.
+  &--pill {
+    width: fit-content;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 999px;
+    padding: 0.5rem 0.9rem;
+
+    &.select-menu__button--filled {
+      color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+  }
+}
+
+.select-menu__icon {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex-shrink: 0;
+  color: var(--text-secondary-color);
+}
+
+.select-menu__button--filled .select-menu__icon {
+  color: var(--accent-color);
+}
+
+.select-menu__label {
+  width: auto;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  &--placeholder {
+    color: var(--text-secondary-color);
+  }
+}
+
+.select-menu__chevron {
+  width: 0.8rem;
+  height: 0.8rem;
+  flex-shrink: 0;
+  color: var(--text-secondary-color);
+  transition: transform 0.2s;
+}
+
+.select-menu__button--open .select-menu__chevron {
+  transform: rotate(180deg);
+}
+
+// On the page body, above a modal's backdrop (9999).
+.select-menu__list {
+  position: fixed;
+  z-index: 10000;
+  // Sized to its options (the min and max come from where the field is), not
+  // to the full width the page gives blocks by default.
+  width: max-content;
+  margin: 0;
+  padding: 0.25rem;
+  list-style: none;
+  overflow-y: auto;
+  background: var(--white-color);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+}
+
+.select-menu__option {
+  width: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text-color);
+  border-radius: 8px;
+  padding: 0.55rem 0.7rem;
+  cursor: pointer;
+
+  &--active {
+    background: var(--surface-color);
+  }
+
+  &--selected {
+    font-weight: 700;
+    color: var(--primary-color);
+  }
+}
+
+.select-menu__option-label {
+  width: auto;
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.select-menu__check {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}

@@ -13,6 +13,7 @@ import {
   packingCategories, tripsToLinkTo,
 } from "@tobeatraveller/shared";
 import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState";
+import SelectMenu from "../../components/form/SelectMenu";
 import TripActionsMenu from "../../components/itineraries/TripActionsMenu";
 import Modal from "../../components/modal/Modal";
 import ToolEmptyState from "../../components/toolPage/ToolEmptyState";
@@ -342,16 +343,14 @@ const PackingList = () => {
           value={newItemName}
           onChange={(event) => setNewItemName(event.target.value)}
         />
-        <select
+        <SelectMenu
+          variant="compact"
           className="packing-checklist__add-category"
+          ariaLabel={p("categoryLabel")}
+          options={packingCategories.map(({ value }) => ({ value, label: categoryLabel(value) }))}
           value={newItemCategory}
-          onChange={(event) => setNewItemCategory(event.target.value)}
-          aria-label={p("categoryLabel")}
-        >
-          {packingCategories.map(({ value }) => (
-            <option key={value} value={value}>{categoryLabel(value)}</option>
-          ))}
-        </select>
+          onChange={setNewItemCategory}
+        />
         <button type="submit" className="packing-checklist__add-btn" aria-label={p("add")}>
           <IoAddOutline />
         </button>

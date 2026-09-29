@@ -12,6 +12,7 @@ import {
 } from "@tobeatraveller/shared";
 import { InputForm, TextAreaForm } from "../../components/form/InputForm";
 import AutocompleteObjectInput from "../../components/form/AutocompleteObjectInput";
+import SelectMenu from "../../components/form/SelectMenu";
 import SubmitButton from "../../components/form/SubmitButton";
 import { selectMyItineraries } from "../../store/user/userInfoSelectors";
 import {
@@ -139,19 +140,14 @@ const VanLogEntryModal = ({ entry = null, onClose, onSaved, initialCapReached = 
           {errors.category && <div className="input__error">{translateValidationMessage(t, errors.category.message)}</div>}
 
           {trips.length > 0 && (
-            <div className={`van-log-entry-modal__trip${itineraryId ? " van-log-entry-modal__trip--filled" : ""}`}>
-              <IoMapOutline className="van-log-entry-modal__trip-icon" aria-hidden="true" />
-              <select
-                id="van-log-entry-trip"
-                className="van-log-entry-modal__trip-select"
-                value={itineraryId}
-                onChange={(e) => setItineraryId(e.target.value)}
-                aria-label={t("vanLog.tripLabel")}
-              >
-                <option value="">{itineraryId ? t("vanLog.noTrip") : t("vanLog.tripLabel")}</option>
-                {trips.map((trip) => <option key={trip.id} value={trip.id}>{trip.title}</option>)}
-              </select>
-            </div>
+            <SelectMenu
+              Icon={IoMapOutline}
+              ariaLabel={t("vanLog.tripLabel")}
+              placeholder={t("vanLog.tripLabel")}
+              options={[{ value: "", label: t("vanLog.noTrip") }, ...trips.map((trip) => ({ value: trip.id, label: trip.title }))]}
+              value={itineraryId}
+              onChange={setItineraryId}
+            />
           )}
 
           <ReceiptPhotoInput value={receiptPhoto} onChange={setReceiptPhoto} />

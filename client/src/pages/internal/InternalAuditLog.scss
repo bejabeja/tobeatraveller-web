@@ -6,7 +6,8 @@
     gap: 1rem;
     margin-bottom: 1rem;
 
-    label {
+    label,
+    .internal-audit-log__filter {
       width: auto;
       display: flex;
       flex-direction: column;

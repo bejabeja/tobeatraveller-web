@@ -289,18 +289,12 @@
     &::placeholder { color: var(--text-secondary-color); }
   }
 
-  &__add-category {
-    width: auto;
+  // Doubled so it wins over the menu's own look, which loads separately.
+  &__add-category.select-menu__button {
     max-width: 45%;
     flex-shrink: 0;
-    font-size: 0.85rem;
-    font-family: inherit;
-    color: var(--text-color);
-    background: var(--surface-color, #f1f5f9);
-    border: none;
-    border-radius: 8px;
-    padding: 0.45rem 0.5rem;
-    cursor: pointer;
+    background: var(--surface-color);
+    border-color: transparent;
   }
 
   &__add-btn {

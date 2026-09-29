@@ -10,6 +10,7 @@ import { TextAreaForm } from "../../components/form/InputForm";
 import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState";
 import Modal from "../../components/modal/Modal";
 import Spinner from "../../components/spinner/Spinner";
+import SelectMenu from "../../components/form/SelectMenu";
 import useDebouncedEffect from "../../hooks/useDebounced";
 import { deleteUserById, getAllUsersForAdmin, sendAdminNotice, updateUserRole, updateUserTier } from "../../services/users";
 import { selectAuthUser } from "../../store/auth/authSelectors";
@@ -191,36 +192,41 @@ const InternalUsers = () => {
           onChange={(e) => setSearchName(e.target.value)}
           placeholder={t("community.searchPlaceholder")}
         />
-        <select
+        <SelectMenu
+          variant="compact"
           className="internal-users__sort"
+          ariaLabel={t("community.sortAZ")}
+          options={[
+            { value: "username", label: t("community.sortAZ") },
+            { value: "newest", label: t("admin.sortNewest") },
+            { value: "itineraries", label: t("community.sortMostItineraries") },
+          ]}
           value={sortBy}
-          onChange={(e) => setSortBy(e.target.value)}
-        >
-          <option value="username">{t("community.sortAZ")}</option>
-          <option value="newest">{t("admin.sortNewest")}</option>
-          <option value="itineraries">{t("community.sortMostItineraries")}</option>
-        </select>
-        <select
+          onChange={setSortBy}
+        />
+        <SelectMenu
+          variant="compact"
           className="internal-users__filter-role"
+          ariaLabel={t("admin.allRoles")}
+          options={[
+            { value: "", label: t("admin.allRoles") },
+            ...ASSIGNABLE_ROLES.map((role) => ({ value: role, label: t(`admin.roleName.${role}`, role) })),
+          ]}
           value={roleFilter}
-          onChange={(e) => setRoleFilter(e.target.value)}
-          aria-label={t("admin.allRoles")}
-        >
-          <option value="">{t("admin.allRoles")}</option>
-          {ASSIGNABLE_ROLES.map((role) => (
-            <option key={role} value={role}>{t(`admin.roleName.${role}`, role)}</option>
-          ))}
-        </select>
-        <select
+          onChange={setRoleFilter}
+        />
+        <SelectMenu
+          variant="compact"
           className="internal-users__filter-tier"
+          ariaLabel={t("admin.allTiers")}
+          options={[
+            { value: "", label: t("admin.allTiers") },
+            { value: TIER_FILTER_PREMIUM, label: t("admin.premium") },
+            { value: TIER_FILTER_FREE, label: t("admin.free") },
+          ]}
           value={tierFilter}
-          onChange={(e) => setTierFilter(e.target.value)}
-          aria-label={t("admin.allTiers")}
-        >
-          <option value="">{t("admin.allTiers")}</option>
-          <option value={TIER_FILTER_PREMIUM}>{t("admin.premium")}</option>
-          <option value={TIER_FILTER_FREE}>{t("admin.free")}</option>
-        </select>
+          onChange={setTierFilter}
+        />
       </div>
 
       {loading ? (
@@ -254,32 +260,32 @@ const InternalUsers = () => {
                     {t("admin.itinerariesCount", { count: user.totalItineraries })}
                   </span>
                 </div>
-                <select
+                <SelectMenu
+                  variant="compact"
                   className="internal-users__role-select"
-                  value={user.role}
+                  ariaLabel={user.username}
                   disabled={user.id === currentUserId || updatingRoleId === user.id}
-                  onChange={(e) => handleRoleChange(user, e.target.value)}
-                >
-                  {roleOptions.map((role) => (
-                    <option key={role} value={role}>{t(`admin.roleName.${role}`, role)}</option>
-                  ))}
-                </select>
-                <select
+                  options={roleOptions.map((role) => ({ value: role, label: t(`admin.roleName.${role}`, role) }))}
+                  value={user.role}
+                  onChange={(role) => handleRoleChange(user, role)}
+                />
+                <SelectMenu
+                  variant="compact"
                   className="internal-users__tier-select"
-                  value=""
+                  ariaLabel={t("admin.premium")}
+                  placeholder={tierStatus(user)}
                   disabled={updatingTierId === user.id}
-                  onChange={(e) => handleTierChange(user, e.target.value)}
-                  aria-label={t("admin.premium")}
-                >
-                  <option value="" disabled>{tierStatus(user)}</option>
-                  {GIFT_PREMIUM_MONTHS.map((months) => (
-                    <option key={months} value={`${GIFT_PREFIX}${months}`}>
-                      {t("admin.giftPremiumMonths", { count: months })}
-                    </option>
-                  ))}
-                  <option value={GIFT_PREFIX}>{t("admin.giftPremiumIndefinite")}</option>
-                  {user.isPremium && <option value={REMOVE_PREMIUM}>{t("admin.removePremium")}</option>}
-                </select>
+                  options={[
+                    ...GIFT_PREMIUM_MONTHS.map((months) => ({
+                      value: `${GIFT_PREFIX}${months}`,
+                      label: t("admin.giftPremiumMonths", { count: months }),
+                    })),
+                    { value: GIFT_PREFIX, label: t("admin.giftPremiumIndefinite") },
+                    ...(user.isPremium ? [{ value: REMOVE_PREMIUM, label: t("admin.removePremium") }] : []),
+                  ]}
+                  value=""
+                  onChange={(value) => handleTierChange(user, value)}
+                />
                 <button
                   type="button"
                   className="internal-users__detail"

@@ -351,13 +351,9 @@
   gap: 0.5rem;
 }
 
-.form__ai-pace-select {
+.form__ai-pace-select.select-menu__button {
   font-size: 0.78rem;
-  border: 1px solid var(--border-color, #e8ecf0);
-  border-radius: 8px;
   padding: 0.35rem 0.5rem;
-  background: #fff;
-  color: var(--text-color);
 }
 
 .form__ai-btn {
