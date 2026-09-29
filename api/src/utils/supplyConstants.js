@@ -1,4 +1,4 @@
-export const SUPPLY_CATEGORIES = ['food', 'hygiene', 'cleaning', 'vehicle', 'other'];
+export const SUPPLY_CATEGORIES = ['food', 'hygiene', 'health', 'cleaning', 'home', 'vehicle', 'leisure', 'other'];
 
 export const SUPPLY_UNITS = ['g', 'kg', 'ml', 'l', 'units', 'packs', 'cans', 'other'];
 

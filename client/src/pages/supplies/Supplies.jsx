@@ -1,11 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import {
   IoAddOutline, IoBagCheckOutline, IoCartOutline, IoCloseOutline, IoCubeOutline, IoPencilOutline, IoRefreshOutline, IoSearchOutline, IoTrashOutline,
 } from "react-icons/io5";
-import { formatNumber, isPremiumRequiredError, normalizeSearchText, supplyCategories, supplyUnits } from "@tobeatraveller/shared";
+import {
+  findSupplyByName, formatNumber, groupSuppliesByCategory, isInventoryCapReachedError, isPremiumRequiredError, isShoppingListCapReachedError, normalizeSearchText,
+  resolveQuickAddSupply, suggestSupplies, supplyCategories, supplyUnits,
+} from "@tobeatraveller/shared";
 import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState";
+import TripActionsMenu from "../../components/itineraries/TripActionsMenu";
 import Modal from "../../components/modal/Modal";
 import {
   addInventoryItem, addShoppingListItem, deleteInventoryItem, deleteShoppingListItem, getInventory, getShoppingList,
@@ -15,6 +19,14 @@ import SupplyFormModal from "./SupplyFormModal";
 import ToolHeader from "../../components/toolPage/ToolHeader";
 import ToolEmptyState from "../../components/toolPage/ToolEmptyState";
 import "./Supplies.scss";
+
+// Buying is not final for this long: the check is shown at once and the
+// purchase is only sent when the window closes, so a slip in the shop can be
+// undone (moving an item to the inventory has no server-side way back).
+const UNDO_PURCHASE_WINDOW_MS = 5000;
+const SEARCH_FROM_ITEMS = 15;
+const PURCHASE_UNDO_TOAST_ID = "purchase-undo";
+const DEFAULT_QUICK_ADD_CATEGORY = "food";
 
 const Supplies = () => {
   const { t, i18n } = useTranslation();
@@ -28,16 +40,22 @@ const Supplies = () => {
   const [inventory, setInventory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [formTarget, setFormTarget] = useState(null); // { mode: 'add-shopping' | 'add-inventory' | 'edit-shopping' | 'edit-inventory', item? }
+  const [formTarget, setFormTarget] = useState(null); // { mode: 'add-shopping' | 'add-inventory' | 'edit-shopping' | 'edit-inventory', item?, capReached? }
   const [deleteTarget, setDeleteTarget] = useState(null); // { mode, id }
   const [deleting, setDeleting] = useState(false);
   const [quantityPrompt, setQuantityPrompt] = useState(null); // { type: 'purchase' | 'consume', item }
   const [quantityValue, setQuantityValue] = useState("");
   const [confirmingQuantity, setConfirmingQuantity] = useState(false);
   const [freeTierUsage, setFreeTierUsage] = useState(null);
+  const [newItemName, setNewItemName] = useState("");
+  const [newItemCategory, setNewItemCategory] = useState(DEFAULT_QUICK_ADD_CATEGORY);
+  const [addingItem, setAddingItem] = useState(false);
+  const [pendingPurchaseIds, setPendingPurchaseIds] = useState(() => new Set());
+  const pendingPurchases = useRef({});
+  const addInputRef = useRef(null);
 
-  const loadData = () => {
-    setLoading(true);
+  const loadData = ({ silent = false } = {}) => {
+    if (!silent) setLoading(true);
     Promise.all([getShoppingList(), getInventory()])
       .then(([shoppingRes, inventoryRes]) => {
         setShoppingList(shoppingRes);
@@ -53,6 +71,17 @@ const Supplies = () => {
   };
 
   useEffect(() => { loadData(); loadUsage(); }, []);
+
+  // A pending purchase's timer is not cancelled by React on unmount, so it
+  // would finish against a page nobody sees. Leaving the page finalizes the
+  // purchases still waiting instead.
+  useEffect(() => () => {
+    Object.values(pendingPurchases.current).forEach(({ item, timeoutId }) => {
+      clearTimeout(timeoutId);
+      markShoppingListItemPurchased(item.id).catch(() => {});
+    });
+    toast.dismiss(PURCHASE_UNDO_TOAST_ID);
+  }, []);
 
   const openAddItem = () => setFormTarget({ mode: tab === "shopping" ? "add-shopping" : "add-inventory" });
 
@@ -86,6 +115,27 @@ const Supplies = () => {
     loadUsage();
   };
 
+  // The item is back on the shopping list, which is another tab: say so and
+  // offer to go there instead of leaving it to be found.
+  const showRestockedToast = (item) => {
+    const toastId = `restock-${item.id}`;
+    toast.custom(
+      () => (
+        <div className="supplies__undo-toast">
+          <span>{s("movedToShoppingList", { name: item.name })}</span>
+          <button
+            type="button"
+            className="supplies__undo-btn"
+            onClick={() => { setTab("shopping"); toast.dismiss(toastId); }}
+          >
+            {s("viewList")}
+          </button>
+        </div>
+      ),
+      { id: toastId, duration: UNDO_PURCHASE_WINDOW_MS }
+    );
+  };
+
   const openQuantityPrompt = (type, item) => {
     setQuantityPrompt({ type, item });
     setQuantityValue(String(item.amount));
@@ -105,7 +155,8 @@ const Supplies = () => {
         toast.success(s("movedToInventory", { name: item.name }));
       } else {
         await markInventoryItemUsedUp(item.id, amount);
-        toast.success(amount < item.amount ? s("amountUpdated", { name: item.name }) : s("movedToShoppingList", { name: item.name }));
+        if (amount < item.amount) toast.success(s("amountUpdated", { name: item.name }));
+        else showRestockedToast(item);
       }
       setQuantityPrompt(null);
       loadData();
@@ -138,6 +189,111 @@ const Supplies = () => {
     }
   };
 
+  const setPurchasePending = (itemId, isPending) => setPendingPurchaseIds((prev) => {
+    const next = new Set(prev);
+    if (isPending) next.add(itemId); else next.delete(itemId);
+    return next;
+  });
+
+  // One notice for all the purchases waiting out the undo window, not one per
+  // product: ticking a whole shop in a row would otherwise pile up a toast for
+  // each. It says how many are pending and undoes them together.
+  const syncPurchaseToast = () => {
+    const pending = Object.values(pendingPurchases.current).map(({ item }) => item);
+    if (pending.length === 0) {
+      toast.dismiss(PURCHASE_UNDO_TOAST_ID);
+      return;
+    }
+    toast.custom(
+      () => (
+        <div className="supplies__undo-toast">
+          <span>
+            {pending.length === 1
+              ? s("movedToInventory", { name: pending[0].name })
+              : s("purchasedCount", { count: pending.length })}
+          </span>
+          <button type="button" className="supplies__undo-btn" onClick={undoAllPurchases}>
+            {s("undo")}
+          </button>
+        </div>
+      ),
+      { id: PURCHASE_UNDO_TOAST_ID, duration: Infinity }
+    );
+  };
+
+  const commitPurchase = async (item) => {
+    delete pendingPurchases.current[item.id];
+    syncPurchaseToast();
+    try {
+      await markShoppingListItemPurchased(item.id);
+      setShoppingList((prev) => prev.filter((candidate) => candidate.id !== item.id));
+      loadData({ silent: true });
+      loadUsage();
+    } catch (err) {
+      toast.error(err.message || s("saveError"));
+    } finally {
+      setPurchasePending(item.id, false);
+    }
+  };
+
+  const undoPurchase = (item) => {
+    const pending = pendingPurchases.current[item.id];
+    if (!pending) return;
+    clearTimeout(pending.timeoutId);
+    delete pendingPurchases.current[item.id];
+    setPurchasePending(item.id, false);
+    syncPurchaseToast();
+  };
+
+  const undoAllPurchases = () => {
+    Object.values(pendingPurchases.current).forEach(({ item }) => undoPurchase(item));
+  };
+
+  const startPurchase = (item) => {
+    setPurchasePending(item.id, true);
+    pendingPurchases.current[item.id] = {
+      item,
+      timeoutId: setTimeout(() => commitPurchase(item), UNDO_PURCHASE_WINDOW_MS),
+    };
+    syncPurchaseToast();
+  };
+
+  const knownItems = Object.values(
+    [...inventory, ...shoppingList].reduce((byKey, current) => {
+      const key = `${current.name.toLowerCase()}|${current.unit}`;
+      if (!byKey[key]) byKey[key] = { name: current.name, unit: current.unit, category: current.category };
+      return byKey;
+    }, {})
+  );
+
+  const addQuickItem = async (text) => {
+    const name = text.trim();
+    if (!name) return;
+    if (atCurrentListCap) {
+      openAddItem();
+      return;
+    }
+    const isShopping = tab === "shopping";
+    if (findSupplyByName(isShopping ? shoppingList : inventory, name)) {
+      toast.error(s(isShopping ? "alreadyOnList" : "alreadyInInventory"));
+      return;
+    }
+    setAddingItem(true);
+    try {
+      const item = resolveQuickAddSupply(name, newItemCategory, knownItems);
+      const created = isShopping ? await addShoppingListItem(item) : await addInventoryItem(item);
+      (isShopping ? setShoppingList : setInventory)((prev) => [...prev, created]);
+      setNewItemName("");
+      loadUsage();
+    } catch (err) {
+      const isCapReached = isShopping ? isShoppingListCapReachedError(err) : isInventoryCapReachedError(err);
+      if (isCapReached) setFormTarget({ mode: isShopping ? "add-shopping" : "add-inventory", capReached: true });
+      else toast.error(err.message || s("saveError"));
+    } finally {
+      setAddingItem(false);
+    }
+  };
+
   if (error) {
     return (
       <section className="section__container">
@@ -147,15 +303,27 @@ const Supplies = () => {
   }
 
   const tabItems = tab === "shopping" ? shoppingList : inventory;
+  const suggestions = suggestSupplies(knownItems, newItemName, tabItems);
+  const quickAddPlaceholder = s(tab === "shopping" ? "quickAddPlaceholder" : "quickAddInventoryPlaceholder");
   const query = normalizeSearchText(search.trim());
   const items = query ? tabItems.filter(item => normalizeSearchText(item.name).includes(query)) : tabItems;
+  // What is already ticked drops to the bottom of its category.
+  const groups = groupSuppliesByCategory(items, supplyCategories).map((group) => ({
+    ...group,
+    items: [...group.items].sort((a, b) => Number(pendingPurchaseIds.has(a.id)) - Number(pendingPurchaseIds.has(b.id))),
+  }));
 
-  const knownItems = Object.values(
-    [...inventory, ...shoppingList].reduce((byKey, current) => {
-      const key = `${current.name.toLowerCase()}|${current.unit}`;
-      if (!byKey[key]) byKey[key] = { name: current.name, unit: current.unit, category: current.category };
-      return byKey;
-    }, {})
+  const renderMenu = (item) => (
+    <TripActionsMenu
+      toggleClassName="supplies__row-menu-btn"
+      items={[
+        { key: "edit", label: t("common.edit"), Icon: IoPencilOutline, onSelect: () => setFormTarget({ mode: tab === "shopping" ? "edit-shopping" : "edit-inventory", item }) },
+        ...(tab === "shopping"
+          ? [{ key: "amount", label: s("differentAmount"), Icon: IoBagCheckOutline, onSelect: () => openQuantityPrompt("purchase", item) }]
+          : []),
+        { key: "delete", label: t("common.delete"), Icon: IoTrashOutline, onSelect: () => setDeleteTarget({ mode: tab, id: item.id }), danger: true },
+      ]}
+    />
   );
 
   return (
@@ -188,7 +356,61 @@ const Supplies = () => {
         </button>
       </div>
 
-      {(shoppingList.length > 0 || inventory.length > 0) && (
+      <div className="supplies__add">
+        <form className="supplies__add-row" onSubmit={(event) => { event.preventDefault(); addQuickItem(newItemName); }}>
+          <input
+            ref={addInputRef}
+            type="text"
+            className="supplies__add-input"
+            placeholder={quickAddPlaceholder}
+            aria-label={quickAddPlaceholder}
+            value={newItemName}
+            onChange={(event) => setNewItemName(event.target.value)}
+            maxLength={255}
+          />
+          <button type="submit" className="supplies__add-btn" aria-label={s("add")} disabled={addingItem}>
+            <IoAddOutline />
+          </button>
+        </form>
+
+        {newItemName.trim() && (
+          <div className="supplies__cat-chips" role="group" aria-label={s("categoryLabel")}>
+            {supplyCategories.map(({ value }) => (
+              <button
+                key={value}
+                type="button"
+                className={`supplies__cat-chip${newItemCategory === value ? " supplies__cat-chip--active" : ""}`}
+                aria-pressed={newItemCategory === value}
+                // Back to the field, so Enter still adds the product after choosing.
+                onClick={() => { setNewItemCategory(value); addInputRef.current?.focus(); }}
+              >
+                {categoryLabel(value)}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {suggestions.length > 0 && (
+          <ul className="supplies__suggestions" aria-label={quickAddPlaceholder}>
+            {suggestions.map((suggestion) => (
+              <li key={`${suggestion.name}-${suggestion.unit}`}>
+                <button
+                  type="button"
+                  className="supplies__suggestion"
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => addQuickItem(suggestion.name)}
+                >
+                  <strong>{suggestion.name}</strong>
+                  <small>{categoryLabel(suggestion.category)} · {unitLabel(suggestion.unit, 1)}</small>
+                  <IoAddOutline aria-hidden="true" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {tabItems.length >= SEARCH_FROM_ITEMS && (
         <div className="supplies__search">
           <IoSearchOutline className="supplies__search-icon" />
           <input
@@ -197,6 +419,7 @@ const Supplies = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={s("searchPlaceholder")}
+            aria-label={s("searchPlaceholder")}
           />
           {search && (
             <button type="button" className="supplies__search-clear" onClick={() => setSearch("")} aria-label={t("common.close")}>
@@ -207,9 +430,9 @@ const Supplies = () => {
       )}
 
       {loading ? (
-        <div className="supplies__list">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="skeleton supplies__item-skeleton" />
+        <div className="supplies__groups">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="skeleton supplies__group-skeleton" />
           ))}
         </div>
       ) : items.length === 0 && query ? (
@@ -217,48 +440,59 @@ const Supplies = () => {
           <p>{s("noSearchResults", { query: search.trim() })}</p>
         </div>
       ) : items.length === 0 ? (
-        <ToolEmptyState
-          Icon={tab === "shopping" ? IoCartOutline : IoCubeOutline}
-          text={tab === "shopping" ? s("noShoppingItems") : s("noInventoryItems")}
-          actionLabel={s("addItem")}
-          onAction={openAddItem}
-        />
+        tab === "shopping" ? (
+          <div className="supplies__empty"><p>{s("noShoppingItems")}</p></div>
+        ) : (
+          <ToolEmptyState Icon={IoCubeOutline} text={s("noInventoryItems")} actionLabel={s("addItem")} onAction={openAddItem} />
+        )
       ) : (
-        <div className="supplies__list">
-          {items.map((item) => (
-            <div key={item.id} className="supplies__item">
-              <div className="supplies__item-main">
-                <span className="supplies__item-category">{categoryLabel(item.category)}</span>
-                <span className="supplies__item-name">{item.name}</span>
-                <span className="supplies__item-amount">{formatNumber(item.amount, i18n.language)} {unitLabel(item.unit, item.amount)}</span>
-                {item.notes && <p className="supplies__item-notes">{item.notes}</p>}
-              </div>
-              <div className="supplies__item-actions">
-                {tab === "shopping" ? (
-                  <button type="button" className="supplies__item-action-btn supplies__item-action-btn--primary" onClick={() => openQuantityPrompt("purchase", item)} title={s("markPurchased")}>
-                    <IoBagCheckOutline />
-                  </button>
-                ) : (
-                  <button type="button" className="supplies__item-action-btn supplies__item-action-btn--primary" onClick={() => openQuantityPrompt("consume", item)} title={s("markUsedUp")}>
-                    <IoRefreshOutline />
-                  </button>
-                )}
-                <button
-                  type="button"
-                  className="supplies__item-action-btn"
-                  onClick={() => setFormTarget({ mode: tab === "shopping" ? "edit-shopping" : "edit-inventory", item })}
-                  aria-label={t("common.edit")}
-                >
-                  <IoPencilOutline />
-                </button>
-                <button
-                  type="button"
-                  className="supplies__item-action-btn"
-                  onClick={() => setDeleteTarget({ mode: tab, id: item.id })}
-                  aria-label={t("common.delete")}
-                >
-                  <IoTrashOutline />
-                </button>
+        <div className="supplies__groups">
+          {groups.map(({ category, items: groupItems }) => (
+            <div key={category} className="supplies__group">
+              <h2 className="supplies__group-title">
+                {categoryLabel(category)}
+                <span className="supplies__group-count">{groupItems.length}</span>
+              </h2>
+              <div className="supplies__rows">
+                {groupItems.map((item) => {
+                  const isPending = pendingPurchaseIds.has(item.id);
+                  const amountLabel = `${formatNumber(item.amount, i18n.language)} ${unitLabel(item.unit, item.amount)}`;
+                  const text = (
+                    <span className="supplies__row-text">
+                      <span className="supplies__row-name">{item.name}</span>
+                      {item.notes && <small className="supplies__row-notes">{item.notes}</small>}
+                    </span>
+                  );
+                  return (
+                    <div key={item.id} className={`supplies__row${isPending ? " supplies__row--checked" : ""}`}>
+                      {tab === "shopping" ? (
+                        <label className="supplies__row-label">
+                          <input
+                            type="checkbox"
+                            checked={isPending}
+                            onChange={() => (isPending ? undoPurchase(item) : startPurchase(item))}
+                            aria-label={s("markPurchased")}
+                          />
+                          {text}
+                        </label>
+                      ) : (
+                        <div className="supplies__row-label">{text}</div>
+                      )}
+                      <span className="supplies__row-amount">{amountLabel}</span>
+                      {tab === "inventory" && (
+                        <button
+                          type="button"
+                          className="supplies__use-btn"
+                          onClick={() => openQuantityPrompt("consume", item)}
+                          title={s("markUsedUp")}
+                        >
+                          <IoRefreshOutline aria-hidden="true" /> {s("useItem")}
+                        </button>
+                      )}
+                      {!isPending && renderMenu(item)}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           ))}
@@ -272,7 +506,7 @@ const Supplies = () => {
           saveLabel={formTarget.mode.startsWith("add") ? s("addItem") : t("common.save")}
           existingItems={knownItems}
           listType={formTarget.mode.includes("shopping") ? "shopping" : "inventory"}
-          initialCapReached={formTarget.mode.startsWith("add") && atCurrentListCap}
+          initialCapReached={formTarget.mode.startsWith("add") && (atCurrentListCap || Boolean(formTarget.capReached))}
           onClose={closeForm}
           onSave={handleSave}
         />

@@ -10,7 +10,9 @@ import { newEntityId, runOrQueue } from '../../offline/outbox';
 import { CHANGE_KINDS, COLLECTIONS } from '../../offline/pendingChanges';
 import { shadow } from '../../utils/styles';
 
-const CATEGORY_EMOJI = { food: '🍎', hygiene: '🧴', cleaning: '🧽', vehicle: '🚗', other: '📦' };
+const CATEGORY_EMOJI = {
+  food: '🍎', hygiene: '🧴', health: '💊', cleaning: '🧽', home: '🏠', vehicle: '🚗', leisure: '⛺', other: '📦',
+};
 const MAX_SUGGESTIONS = 5;
 
 const SupplyFormScreen = ({ navigation, route }) => {
@@ -26,6 +28,8 @@ const SupplyFormScreen = ({ navigation, route }) => {
   const [amount, setAmount] = useState(item?.amount != null ? String(item.amount) : '');
   const [unit, setUnit] = useState(item?.unit ?? 'units');
   const [notes, setNotes] = useState(item?.notes ?? '');
+  // The note is rare, so it starts folded unless there already is one.
+  const [showNotes, setShowNotes] = useState(Boolean(item?.notes));
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
   const [submitError, setSubmitError] = useState(null);
@@ -150,23 +154,6 @@ const SupplyFormScreen = ({ navigation, route }) => {
               )}
             </Field>
 
-            <Field label={s('categoryLabel')} error={errors.category}>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
-                {supplyCategories.map(cat => (
-                  <TouchableOpacity
-                    key={cat.value}
-                    style={[styles.chip, category === cat.value && styles.chipActive]}
-                    onPress={() => { setCategory(cat.value); setErrors(e => ({ ...e, category: null })); setIsDirty(true); }}
-                  >
-                    <Text style={styles.chipEmoji}>{CATEGORY_EMOJI[cat.value] ?? '📦'}</Text>
-                    <Text style={[styles.chipLabel, category === cat.value && styles.chipLabelActive]}>
-                      {s(`category.${cat.value}`, cat.label)}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </Field>
-
             <View style={styles.row}>
               <Field label={s('amountLabel')} error={errors.amount} style={{ flex: 1 }}>
                 <TextInput
@@ -196,15 +183,38 @@ const SupplyFormScreen = ({ navigation, route }) => {
               </ScrollView>
             </Field>
 
-            <Field label={s('notesLabel')} error={errors.notes} hint={`${notes.length}/500`} hintWarn={notes.length > 450}>
-              <TextInput
-                style={[styles.input, styles.textarea]}
-                value={notes}
-                onChangeText={v => { setNotes(v); setErrors(e => ({ ...e, notes: null })); setIsDirty(true); }}
-                multiline
-                maxLength={500}
-              />
+            <Field label={s('categoryLabel')} error={errors.category}>
+              <View style={styles.categoryChips}>
+                {supplyCategories.map(cat => (
+                  <TouchableOpacity
+                    key={cat.value}
+                    style={[styles.chip, category === cat.value && styles.chipActive]}
+                    onPress={() => { setCategory(cat.value); setErrors(e => ({ ...e, category: null })); setIsDirty(true); }}
+                  >
+                    <Text style={styles.chipEmoji}>{CATEGORY_EMOJI[cat.value] ?? '📦'}</Text>
+                    <Text style={[styles.chipLabel, category === cat.value && styles.chipLabelActive]}>
+                      {s(`category.${cat.value}`, cat.label)}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
             </Field>
+
+            {showNotes ? (
+              <Field label={s('notesLabel')} error={errors.notes} hint={`${notes.length}/500`} hintWarn={notes.length > 450}>
+                <TextInput
+                  style={[styles.input, styles.textarea]}
+                  value={notes}
+                  onChangeText={v => { setNotes(v); setErrors(e => ({ ...e, notes: null })); setIsDirty(true); }}
+                  multiline
+                  maxLength={500}
+                />
+              </Field>
+            ) : (
+              <TouchableOpacity style={styles.notesToggle} onPress={() => setShowNotes(true)} accessibilityRole="button">
+                <Text style={styles.notesToggleText}>+ {s('addNote')}</Text>
+              </TouchableOpacity>
+            )}
           </View>
 
           {submitError && (
@@ -274,6 +284,9 @@ const styles = StyleSheet.create({
   suggestionUnit: { fontSize: 12, color: '#9ca3af' },
 
   chips: { gap: 8, paddingVertical: 2 },
+  categoryChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  notesToggle: { alignSelf: 'flex-start', paddingVertical: 4 },
+  notesToggleText: { fontSize: 14, fontWeight: '600', color: '#E8743B' },
   chip: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
     paddingVertical: 6, paddingHorizontal: 12,

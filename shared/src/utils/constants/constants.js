@@ -91,8 +91,11 @@ export const vanLogCommonCurrencies = [
 export const supplyCategories = [
   { value: "food", label: "Food" },
   { value: "hygiene", label: "Hygiene" },
+  { value: "health", label: "Health" },
   { value: "cleaning", label: "Cleaning" },
+  { value: "home", label: "Home" },
   { value: "vehicle", label: "Vehicle" },
+  { value: "leisure", label: "Leisure" },
   { value: "other", label: "Other" },
 ];
 

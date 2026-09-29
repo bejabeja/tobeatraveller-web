@@ -4,10 +4,10 @@ import { Controller, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { translateValidationMessage } from "@tobeatraveller/shared";
-import { IoLockClosedOutline } from "react-icons/io5";
+import { IoAddOutline, IoLockClosedOutline } from "react-icons/io5";
 import { Link } from "react-router-dom";
 import { isInventoryCapReachedError, isShoppingListCapReachedError, supplyCategories, supplyUnits } from "@tobeatraveller/shared";
-import { DropdownForm, InputForm, TextAreaForm } from "../../components/form/InputForm";
+import { InputForm, TextAreaForm } from "../../components/form/InputForm";
 import SubmitButton from "../../components/form/SubmitButton";
 import { supplyItemSchema } from "../../utils/schemasValidation";
 import "./SupplyFormModal.scss";
@@ -31,6 +31,8 @@ const SupplyFormModal = ({ item, title, saveLabel, existingItems = [], listType,
   const isEditing = !!item;
 
   const [suggestions, setSuggestions] = useState([]);
+  // The note is rare, so it starts folded unless there already is one.
+  const [showNotes, setShowNotes] = useState(Boolean(item?.notes));
   const suggestionsRef = useRef(null);
   // Only meaningful when adding a new item: editing one that already exists
   // must never be blocked by the cap, since it doesn't add a net-new item.
@@ -48,6 +50,7 @@ const SupplyFormModal = ({ item, title, saveLabel, existingItems = [], listType,
     value, label: s(`unit.${value}`, label),
   }));
 
+  const selectedCategory = watch("category");
   const selectedUnit = watch("unit");
   const allowsDecimals = supplyUnits.find(u => u.value === selectedUnit)?.allowsDecimals ?? true;
   const amountStep = allowsDecimals ? "0.01" : "1";
@@ -144,42 +147,65 @@ const SupplyFormModal = ({ item, title, saveLabel, existingItems = [], listType,
             />
           </div>
 
-          <DropdownForm
-            label={s("categoryLabel")}
-            name="category"
+          <InputForm
+            label={s("amountLabel")}
+            name="amount"
             control={control}
-            error={errors.category}
-            options={categoryOptions}
+            error={errors.amount}
+            type="number"
+            inputProps={{ step: amountStep, min: amountStep }}
             required
           />
 
-          <div className="supply-form__row">
-            <InputForm
-              label={s("amountLabel")}
-              name="amount"
-              control={control}
-              error={errors.amount}
-              type="number"
-              inputProps={{ step: amountStep, min: amountStep }}
-              required
-            />
-            <DropdownForm
-              label={s("unitLabel")}
-              name="unit"
-              control={control}
-              error={errors.unit}
-              options={unitOptions}
-              required
-            />
+          <div className="supply-form__field">
+            <span className="input__label">{s("unitLabel")}<span className="input__required">*</span></span>
+            <div className="supply-form__chips" role="group" aria-label={s("unitLabel")}>
+              {unitOptions.map(({ value, label }) => (
+                <button
+                  key={value}
+                  type="button"
+                  className={`supply-form__chip${selectedUnit === value ? " supply-form__chip--active" : ""}`}
+                  aria-pressed={selectedUnit === value}
+                  onClick={() => setValue("unit", value, { shouldValidate: true })}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            {errors.unit && <div className="input__error">{translateValidationMessage(t, errors.unit.message)}</div>}
           </div>
 
-          <TextAreaForm
-            label={s("notesLabel")}
-            name="notes"
-            control={control}
-            error={errors.notes}
-            maxLength={500}
-          />
+          <div className="supply-form__field">
+            <span className="input__label">{s("categoryLabel")}<span className="input__required">*</span></span>
+            <div className="supply-form__chips" role="group" aria-label={s("categoryLabel")}>
+              {supplyCategories.map(({ value }) => (
+                <button
+                  key={value}
+                  type="button"
+                  className={`supply-form__chip${selectedCategory === value ? " supply-form__chip--active" : ""}`}
+                  aria-pressed={selectedCategory === value}
+                  onClick={() => setValue("category", value, { shouldValidate: true })}
+                >
+                  {categoryOptions.find((option) => option.value === value)?.label}
+                </button>
+              ))}
+            </div>
+            {errors.category && <div className="input__error">{translateValidationMessage(t, errors.category.message)}</div>}
+          </div>
+
+          {showNotes ? (
+            <TextAreaForm
+              label={s("notesLabel")}
+              name="notes"
+              control={control}
+              error={errors.notes}
+              maxLength={500}
+            />
+          ) : (
+            <button type="button" className="supply-form__notes-toggle" onClick={() => setShowNotes(true)}>
+              <IoAddOutline aria-hidden="true" /> {s("addNote")}
+            </button>
+          )}
 
           <div className="supply-form__actions">
             <button type="button" className="btn btn--ghost" onClick={onClose}>
