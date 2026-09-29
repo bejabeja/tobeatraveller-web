@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
-    getTripBudgetProgress, getVanLogDateRangePresets, getVanLogFuelPriceTrend, groupVanLogEntriesByMonth, groupVanLogEntriesByTrip,
+    getTripBudgetProgress, getVanLogBreakdownByCurrency, getVanLogDateRangePresets, getVanLogFuelPriceTrend,
+    getVanLogSpendingByCurrency, groupVanLogEntriesByMonth, groupVanLogEntriesByTrip,
 } from '../../utils/vanLogStats.js';
 
 describe('groupVanLogEntriesByMonth', () => {
@@ -210,5 +211,132 @@ describe('groupVanLogEntriesByTrip', () => {
 
     it('returns no groups for no entries', () => {
         expect(groupVanLogEntriesByTrip([])).toEqual([]);
+    });
+});
+
+describe('getVanLogSpendingByCurrency', () => {
+    const entry = (entryDate, amount, currency = 'EUR') => ({ entryDate, amount, currency });
+
+    it('keeps each currency apart instead of adding them together', () => {
+        const summaries = getVanLogSpendingByCurrency([
+            entry('2026-03-05', 10, 'EUR'), entry('2026-03-06', 20, 'EUR'), entry('2026-03-06', 100, 'MAD'),
+        ]);
+
+        expect(summaries.map(({ currency, total }) => [currency, total])).toEqual([['EUR', 30], ['MAD', 100]]);
+    });
+
+    it('averages per calendar day across the span from the first to the last expense, days without expenses included', () => {
+        const [eur] = getVanLogSpendingByCurrency([entry('2026-03-01', 30), entry('2026-03-10', 30)]);
+
+        expect(eur.days).toBe(10);
+        expect(eur.averagePerDay).toBe(6);
+    });
+
+    it('uses the chosen date range as the span when there is one', () => {
+        const [eur] = getVanLogSpendingByCurrency(
+            [entry('2026-03-05', 30)],
+            { dateFrom: '2026-03-01', dateTo: '2026-03-30' }
+        );
+
+        expect(eur.days).toBe(30);
+        expect(eur.averagePerDay).toBe(1);
+    });
+
+    it('counts a single day as one day', () => {
+        const [eur] = getVanLogSpendingByCurrency([entry('2026-03-05', 12)]);
+
+        expect(eur.days).toBe(1);
+        expect(eur.averagePerDay).toBe(12);
+    });
+
+    it('ignores entries without an amount', () => {
+        const summaries = getVanLogSpendingByCurrency([entry('2026-03-05', 10), { entryDate: '2026-03-06', amount: null, currency: 'EUR' }]);
+
+        expect(summaries[0].count).toBe(1);
+    });
+
+    it('returns nothing when there are no priced entries', () => {
+        expect(getVanLogSpendingByCurrency([])).toEqual([]);
+    });
+
+    it('buckets by day, filling days without expenses with zero, for a span of up to a month', () => {
+        const [eur] = getVanLogSpendingByCurrency([entry('2026-03-01', 10), entry('2026-03-01', 5), entry('2026-03-04', 8)]);
+
+        expect(eur.granularity).toBe('day');
+        expect(eur.buckets).toEqual([
+            { key: '2026-03-01', total: 15 }, { key: '2026-03-02', total: 0 },
+            { key: '2026-03-03', total: 0 }, { key: '2026-03-04', total: 8 },
+        ]);
+    });
+
+    it('buckets by month, filling months without expenses with zero, for a longer span', () => {
+        const [eur] = getVanLogSpendingByCurrency([entry('2026-01-15', 10), entry('2026-03-20', 7)]);
+
+        expect(eur.granularity).toBe('month');
+        expect(eur.buckets).toEqual([
+            { key: '2026-01', total: 10 }, { key: '2026-02', total: 0 }, { key: '2026-03', total: 7 },
+        ]);
+    });
+
+    it('keeps only the latest twelve months', () => {
+        const [eur] = getVanLogSpendingByCurrency([entry('2024-01-15', 10), entry('2026-03-20', 7)]);
+
+        expect(eur.buckets).toHaveLength(12);
+        expect(eur.buckets.at(-1).key).toBe('2026-03');
+    });
+
+    it('exposes the largest bucket so a chart can scale against it', () => {
+        const [eur] = getVanLogSpendingByCurrency([entry('2026-03-01', 10), entry('2026-03-02', 40)]);
+
+        expect(eur.maxBucketTotal).toBe(40);
+    });
+});
+
+describe('getVanLogBreakdownByCurrency', () => {
+    it('gives each row its share of the total of its own currency, largest first', () => {
+        const [eur] = getVanLogBreakdownByCurrency([
+            { category: 'food', currency: 'EUR', total: 25 },
+            { category: 'fuel', currency: 'EUR', total: 75 },
+        ]);
+
+        expect(eur.rows.map(({ category, share }) => [category, share])).toEqual([['fuel', 0.75], ['food', 0.25]]);
+    });
+
+    it('never mixes shares across currencies', () => {
+        const groups = getVanLogBreakdownByCurrency([
+            { category: 'fuel', currency: 'EUR', total: 50 },
+            { category: 'fuel', currency: 'MAD', total: 500 },
+        ]);
+
+        expect(groups.map(({ currency, rows }) => [currency, rows[0].share])).toEqual([['EUR', 1], ['MAD', 1]]);
+    });
+
+    it('returns nothing for no rows', () => {
+        expect(getVanLogBreakdownByCurrency([])).toEqual([]);
+    });
+});
+
+describe('getVanLogFuelPriceTrend bars', () => {
+    const fill = (entryDate, pricePerLiter) => ({ id: entryDate, category: 'fuel', entryDate, pricePerLiter, currency: 'EUR' });
+
+    it('does not start the bars at zero, so a small price change stays visible', () => {
+        const trend = getVanLogFuelPriceTrend([fill('2026-03-01', 1.55), fill('2026-03-02', 1.6), fill('2026-03-03', 1.62)]);
+
+        const heights = trend.points.map((point) => point.heightPercent);
+        expect(heights[2]).toBe(100);
+        expect(heights[0]).toBeCloseTo(50, 5);
+    });
+
+    it('draws equal bars when the price never changed', () => {
+        const trend = getVanLogFuelPriceTrend([fill('2026-03-01', 1.5), fill('2026-03-02', 1.5), fill('2026-03-03', 1.5)]);
+
+        expect(trend.points.map((point) => point.heightPercent)).toEqual([100, 100, 100]);
+    });
+
+    it('reports the average and the latest price', () => {
+        const trend = getVanLogFuelPriceTrend([fill('2026-03-01', 1.5), fill('2026-03-02', 1.6), fill('2026-03-03', 1.7)]);
+
+        expect(trend.averagePrice).toBeCloseTo(1.6, 5);
+        expect(trend.latestPrice).toBe(1.7);
     });
 });

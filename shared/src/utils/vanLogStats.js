@@ -74,16 +74,138 @@ export const groupVanLogEntriesByTrip = (entries) => {
 // Needs 3+ points: with only 1-2 fill-ups the chart is mostly empty space and
 // reads as broken rather than as a trend.
 export const getVanLogFuelPriceTrend = (entries) => {
-    const points = entries
+    const fillUps = entries
         .filter((e) => e.category === 'fuel' && e.pricePerLiter != null)
         .slice()
         .sort((a, b) => a.entryDate.localeCompare(b.entryDate));
-    if (points.length < 3) return null;
+    if (fillUps.length < 3) return null;
 
-    const currency = points[0].currency || '';
-    if (points.some((p) => (p.currency || '') !== currency)) return null;
+    const currency = fillUps[0].currency || '';
+    if (fillUps.some((p) => (p.currency || '') !== currency)) return null;
 
-    return { points, currency, maxPrice: Math.max(...points.map((p) => p.pricePerLiter)) };
+    const prices = fillUps.map((p) => p.pricePerLiter);
+    const maxPrice = Math.max(...prices);
+    const minPrice = Math.min(...prices);
+    // Bars that start at zero make 1.55 and 1.62 look the same. The baseline
+    // sits one price range under the cheapest fill-up, so the cheapest bar is
+    // half the height of the dearest and any change stays visible.
+    const baseline = Math.max(0, minPrice - (maxPrice - minPrice));
+    const points = fillUps.map((fillUp) => ({
+        ...fillUp,
+        heightPercent: maxPrice === baseline ? 100 : ((fillUp.pricePerLiter - baseline) / (maxPrice - baseline)) * 100,
+    }));
+
+    return {
+        points,
+        currency,
+        maxPrice,
+        averagePrice: prices.reduce((sum, price) => sum + price, 0) / prices.length,
+        latestPrice: prices.at(-1),
+    };
+};
+
+const MILLISECONDS_PER_DAY = 86400000;
+const DAILY_BUCKETS_MAX_DAYS = 31;
+const MONTHLY_BUCKETS_MAX = 12;
+
+const toDayNumber = (day) => {
+    const [year, month, date] = day.slice(0, 10).split('-').map(Number);
+    return Date.UTC(year, month - 1, date) / MILLISECONDS_PER_DAY;
+};
+
+const dayNumberToKey = (dayNumber) => new Date(dayNumber * MILLISECONDS_PER_DAY).toISOString().slice(0, 10);
+
+const monthKeyAt = (offset, firstMonthIndex) => {
+    const monthIndex = firstMonthIndex + offset;
+    const year = Math.floor(monthIndex / 12);
+    return `${year}-${String((monthIndex % 12) + 1).padStart(2, '0')}`;
+};
+
+const buildBuckets = (entries, firstDay, lastDay, days) => {
+    if (days <= DAILY_BUCKETS_MAX_DAYS) {
+        const totals = new Map();
+        for (const entry of entries) totals.set(entry.entryDate.slice(0, 10), (totals.get(entry.entryDate.slice(0, 10)) ?? 0) + entry.amount);
+        const buckets = [];
+        for (let day = toDayNumber(firstDay); day <= toDayNumber(lastDay); day++) {
+            const key = dayNumberToKey(day);
+            buckets.push({ key, total: totals.get(key) ?? 0 });
+        }
+        return { granularity: 'day', buckets };
+    }
+
+    const totals = new Map();
+    for (const entry of entries) {
+        const key = entry.entryDate.slice(0, 7);
+        totals.set(key, (totals.get(key) ?? 0) + entry.amount);
+    }
+    const monthIndexOf = (day) => Number(day.slice(0, 4)) * 12 + Number(day.slice(5, 7)) - 1;
+    const firstMonthIndex = monthIndexOf(firstDay);
+    const monthCount = monthIndexOf(lastDay) - firstMonthIndex + 1;
+    const buckets = Array.from({ length: monthCount }, (_, offset) => {
+        const key = monthKeyAt(offset, firstMonthIndex);
+        return { key, total: totals.get(key) ?? 0 };
+    });
+    return { granularity: 'month', buckets: buckets.slice(-MONTHLY_BUCKETS_MAX) };
+};
+
+// Spending per currency, never added across them (converting isn't done
+// anywhere in the app). The span for the daily average runs from the first to
+// the last expense, or the chosen date range, so days without expenses count.
+export const getVanLogSpendingByCurrency = (entries, { dateFrom, dateTo } = {}) => {
+    const byCurrency = new Map();
+    for (const entry of entries) {
+        if (entry.amount == null) continue;
+        const currency = entry.currency || '';
+        if (!byCurrency.has(currency)) byCurrency.set(currency, []);
+        byCurrency.get(currency).push(entry);
+    }
+
+    return [...byCurrency.entries()]
+        .map(([currency, currencyEntries]) => {
+            const days = currencyEntries.map((entry) => entry.entryDate.slice(0, 10)).sort();
+            const firstDay = dateFrom || days[0];
+            const lastDay = dateTo || days.at(-1);
+            const spanDays = Math.max(1, toDayNumber(lastDay) - toDayNumber(firstDay) + 1);
+            const total = currencyEntries.reduce((sum, entry) => sum + entry.amount, 0);
+            const { granularity, buckets } = buildBuckets(currencyEntries, firstDay, lastDay, spanDays);
+            return {
+                currency,
+                total,
+                count: currencyEntries.length,
+                days: spanDays,
+                averagePerDay: total / spanDays,
+                granularity,
+                buckets,
+                maxBucketTotal: Math.max(...buckets.map((bucket) => bucket.total)),
+            };
+        })
+        .sort((a, b) => b.count - a.count || a.currency.localeCompare(b.currency));
+};
+
+// Groups breakdown rows (by category, country or trip) by currency and gives
+// each its share of that currency's own total, so bars are only ever
+// compared with amounts in the same currency (so currencies themselves are
+// listed alphabetically, not by amount).
+export const getVanLogBreakdownByCurrency = (rows) => {
+    const byCurrency = new Map();
+    for (const row of rows) {
+        const currency = row.currency || '';
+        if (!byCurrency.has(currency)) byCurrency.set(currency, []);
+        byCurrency.get(currency).push(row);
+    }
+
+    return [...byCurrency.entries()]
+        .map(([currency, currencyRows]) => {
+            const total = currencyRows.reduce((sum, row) => sum + row.total, 0);
+            return {
+                currency,
+                total,
+                rows: currencyRows
+                    .map((row) => ({ ...row, share: total > 0 ? row.total / total : 0 }))
+                    .sort((a, b) => b.total - a.total),
+            };
+        })
+        .sort((a, b) => a.currency.localeCompare(b.currency));
 };
 
 // Itineraries already carry a budget (set when the trip was planned), so this

@@ -684,6 +684,14 @@
     "receiptPhotoUploadError": "Die Ausgabe wurde gespeichert, aber das Foto konnte nicht hochgeladen werden.",
     "receiptPhotoNeedsConnection": "Die Ausgabe wurde gespeichert, aber das Foto braucht eine Verbindung. Füge es erneut hinzu, sobald du wieder online bist.",
     "viewReceipt": "Beleg ansehen",
+    "notesShowMore": "Mehr anzeigen",
+    "notesShowLess": "Weniger anzeigen",
+    "statsPeriodAll": "Alles",
+    "statsAveragePerDay": "Pro Tag",
+    "statsExpenseCount": "Ausgaben",
+    "statsOverTime": "Ausgaben im Zeitverlauf",
+    "fuelPriceAverage": "Durchschnitt",
+    "fuelPriceLatest": "Zuletzt",
     "tripLabel": "Für welche Reise?",
     "noTrip": "Keine",
     "allTrips": "Alle Reisen",
@@ -731,9 +739,7 @@
       "overnight_stay": "Übernachtung",
       "maintenance": "Wartung",
       "other": "Sonstiges"
-    },
-    "viewBreakdown": "Aufschlüsselung anzeigen",
-    "hideBreakdown": "Aufschlüsselung ausblenden"
+    }
   },
   "supplies": {
     "title": "Einkaufsliste",

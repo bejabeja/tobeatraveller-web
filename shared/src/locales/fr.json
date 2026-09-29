@@ -693,6 +693,14 @@
     "receiptPhotoUploadError": "La dépense a été enregistrée, mais la photo n'a pas pu être envoyée.",
     "receiptPhotoNeedsConnection": "La dépense est enregistrée, mais la photo nécessite une connexion. Ajoute-la à nouveau une fois de nouveau en ligne.",
     "viewReceipt": "Voir le reçu",
+    "notesShowMore": "Voir plus",
+    "notesShowLess": "Voir moins",
+    "statsPeriodAll": "Tout",
+    "statsAveragePerDay": "Par jour",
+    "statsExpenseCount": "Dépenses",
+    "statsOverTime": "Dépenses dans le temps",
+    "fuelPriceAverage": "Moyenne",
+    "fuelPriceLatest": "Dernier",
     "tripLabel": "Pour quel voyage ?",
     "noTrip": "Aucun",
     "allTrips": "Tous les voyages",
@@ -741,9 +749,7 @@
       "overnight_stay": "Nuitée",
       "maintenance": "Entretien",
       "other": "Autre"
-    },
-    "viewBreakdown": "Voir le détail",
-    "hideBreakdown": "Masquer le détail"
+    }
   },
   "supplies": {
     "title": "Liste de courses",

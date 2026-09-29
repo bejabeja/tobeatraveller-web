@@ -9,7 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
-  getTripBudgetProgress, getVanLogDateRangePresets, getVanLogEntries, getVanLogFuelPriceTrend, getVanLogStats,
+  getTripBudgetProgress, getVanLogDateRangePresets, getVanLogEntries, getVanLogStats,
   formatAmount, formatBudgetAmount, formatCalendarDay, formatNumber, groupVanLogEntriesByMonth, groupVanLogEntriesByTrip, isNetworkError,
   isPremiumRequiredError, selectAuthUser, selectMyItineraries,
   vanLogCategories, vanLogCategoryEmoji as CATEGORY_EMOJI,
@@ -24,6 +24,7 @@ import {
 import { useOutbox, useRefetchAfterSync } from '../../offline/useOutbox';
 import { cacheGet, cacheSet } from '../../utils/offlineCache';
 import { shadow } from '../../utils/styles';
+import VanLogStatsView from './VanLogStatsView';
 
 const EMPTY_FILTERS = { category: '', country: '', currency: '', dateFrom: '', dateTo: '', itineraryId: '' };
 
@@ -48,17 +49,37 @@ const withLinkedTrip = (entry, tripTitleById) => {
   return { ...entry, itinerary: { id: entry.itineraryId, title: tripTitleById.get(entry.itineraryId) ?? entry.itinerary?.title ?? '' } };
 };
 
-const daysSince = (dateStr) => {
-  if (!dateStr) return null;
-  const [year, month, day] = dateStr.split('-').map(Number);
-  const then = new Date(year, month - 1, day);
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  return Math.round((today - then) / 86400000);
-};
-
+const NOTES_PREVIEW_LINES = 2;
 const SHORT_DAY = { month: 'short', day: 'numeric' };
-const TWO_DECIMALS = { minimumFractionDigits: 2, maximumFractionDigits: 2 };
+// "Today" is a period too short for statistics.
+const STATS_PERIOD_PRESET_KEYS = ['last7', 'last30', 'thisMonth'];
+
+// A labeled, horizontally scrolling row of single-choice chips; pressing the
+// selected one again (or the "all" chip) clears it.
+const ChipRow = ({ label, allLabel, options, selected, onSelect }) => (
+  <View style={styles.filterGroup}>
+    {label ? <Text style={styles.filterGroupLabel}>{label}</Text> : null}
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
+      {allLabel ? (
+        <TouchableOpacity style={[styles.chip, selected === '' && styles.chipActive]} onPress={() => onSelect('')}>
+          <Text style={[styles.chipLabel, selected === '' && styles.chipLabelActive]}>{allLabel}</Text>
+        </TouchableOpacity>
+      ) : null}
+      {options.map(({ value, label: optionLabel, emoji }) => (
+        <TouchableOpacity
+          key={value}
+          style={[styles.chip, selected === value && styles.chipActive]}
+          onPress={() => onSelect(selected === value ? '' : value)}
+        >
+          {emoji ? <Text style={styles.chipEmoji}>{emoji}</Text> : null}
+          <Text style={[styles.chipLabel, selected === value && styles.chipLabelActive]} numberOfLines={1}>
+            {optionLabel}
+          </Text>
+        </TouchableOpacity>
+      ))}
+    </ScrollView>
+  </View>
+);
 
 const VanLogScreen = ({ navigation }) => {
   const { t, i18n } = useTranslation();
@@ -77,7 +98,10 @@ const VanLogScreen = ({ navigation }) => {
   const [filters, setFilters] = useState(EMPTY_FILTERS);
   const [loadError, setLoadError] = useState(null); // null | 'premium' | 'error'
   const [showingCached, setShowingCached] = useState(false);
-  const [statsExpanded, setStatsExpanded] = useState(false);
+  const [activeTab, setActiveTab] = useState('entries');
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [expandedEntryId, setExpandedEntryId] = useState(null);
+  const [truncatedNoteIds, setTruncatedNoteIds] = useState(() => new Set());
   const [groupBy, setGroupBy] = useState('month');
   const { changes } = useOutbox();
   const hasActiveFilters = Boolean(
@@ -92,14 +116,6 @@ const VanLogScreen = ({ navigation }) => {
       .map(entry => withLinkedTrip(entry, tripTitleById));
     return sortByEntryDateDesc(filterVanLogEntries(withPending, filters));
   }, [serverEntries, changes, filters, myItineraries]);
-
-  const daysSinceLabel = (dateStr) => {
-    const days = daysSince(dateStr);
-    if (days == null) return null;
-    if (days <= 0) return t('vanLog.today');
-    if (days === 1) return t('vanLog.yesterday');
-    return t('vanLog.daysAgo', { count: days });
-  };
 
   const categoryLabel = (value) => {
     const fallback = vanLogCategories.find(c => c.value === value)?.label ?? value;
@@ -164,6 +180,17 @@ const VanLogScreen = ({ navigation }) => {
     setRefreshing(false);
   };
 
+  const toggleExpanded = (entryId) => setExpandedEntryId(prev => (prev === entryId ? null : entryId));
+  const markNoteTruncation = (entryId, lineCount) => {
+    const isTruncated = lineCount > NOTES_PREVIEW_LINES;
+    setTruncatedNoteIds(prev => {
+      if (prev.has(entryId) === isTruncated) return prev;
+      const next = new Set(prev);
+      if (isTruncated) next.add(entryId); else next.delete(entryId);
+      return next;
+    });
+  };
+
   const updateFilter = (key, value) => setFilters(prev => ({ ...prev, [key]: value }));
   const clearFilters = () => setFilters(EMPTY_FILTERS);
   const dateRangePresets = getVanLogDateRangePresets();
@@ -213,7 +240,6 @@ const VanLogScreen = ({ navigation }) => {
   };
 
   const totalsByCurrency = stats?.totalsByCurrency ?? [];
-  const categoryTotals = stats?.byCategory ?? [];
   const countryTotals = stats?.byCountry ?? [];
   // byCountry ignores the country filter on purpose (see vanLogService.getStats)
   // so this chip row keeps listing every country the user has ever logged.
@@ -227,25 +253,212 @@ const VanLogScreen = ({ navigation }) => {
     ? (myItineraries ?? []).find(trip => trip.id === filters.itineraryId)
     : null;
   const tripBudgetProgress = getTripBudgetProgress(activeTripFilter, totalsByCurrency);
-  const sortedCategoryTotals = [...categoryTotals].sort((a, b) => b.total - a.total);
-  const maxCategoryTotal = sortedCategoryTotals[0]?.total ?? 0;
-  // Unlike the chip row above, the chart below must reflect the active
-  // country filter, so it's narrowed back down here before sorting.
-  const sortedCountryTotals = countryTotals
-    .filter((c) => !filters.country || c.country.toLowerCase() === filters.country.toLowerCase())
-    .sort((a, b) => b.total - a.total);
-  const maxCountryTotal = sortedCountryTotals[0]?.total ?? 0;
+  // On the Stats tab the total is one of its own figures, so it is not shown twice.
+  const showSummaryTotal = activeTab === 'entries' && totalsByCurrency.length > 0;
+  const statsPeriodPresets = dateRangePresets.filter((preset) => STATS_PERIOD_PRESET_KEYS.includes(preset.key));
+  const statsPeriodOptions = statsPeriodPresets.map((preset) => ({ value: preset.key, label: t(preset.labelKey) }));
   const hasEntriesWithTrip = entries.some(entry => entry.itinerary);
   const isGroupedByTrip = groupBy === 'trip' && hasEntriesWithTrip;
-  const sections = isGroupedByTrip
+  // On the Stats tab the list is empty: the statistics take its place.
+  const sections = activeTab === 'stats' ? [] : isGroupedByTrip
     ? groupEntriesByTrip(entries, t('vanLog.noTripGroup'))
     : groupEntriesByMonth(entries, language);
-  const fuelTrend = getVanLogFuelPriceTrend(entries);
-  const hasBreakdown = sortedCategoryTotals.length > 0 || sortedCountryTotals.length > 0 || Boolean(fuelTrend);
+
+  const panelFilterCount = [
+    filters.category, filters.country, filters.currency, filters.dateFrom || filters.dateTo,
+  ].filter(Boolean).length;
+  const categoryOptions = vanLogCategories.map(({ value }) => ({ value, label: categoryLabel(value), emoji: CATEGORY_EMOJI[value] ?? '📍' }));
+  const currencyOptions = currencyChipOptions.map((currency) => ({ value: currency, label: currency }));
+  const countryOptions = countryChipOptions.map((country) => ({ value: country, label: country }));
+  const tripOptions = tripChipOptions.map(({ id, title }) => ({ value: id, label: title }));
+  const presetOptions = dateRangePresets.map((preset) => ({ value: preset.key, label: t(preset.labelKey) }));
+  const selectDateRangePreset = (key) => {
+    const preset = dateRangePresets.find((candidate) => candidate.key === key);
+    if (preset) applyDateRangePreset(preset);
+    else setFilters(prev => ({ ...prev, dateFrom: '', dateTo: '' }));
+  };
+
+  // Inside the list, not pinned above it: the total and the filters scroll
+  // away, so the entries get the whole screen instead of what is left under
+  // a stack of controls.
+  const listHeader = (
+    <View style={styles.listHeader}>
+      <View style={styles.tabs} accessibilityRole="tablist">
+        {[['entries', t('vanLog.entriesTab')], ['stats', t('vanLog.statsTab')]].map(([value, label]) => (
+          <TouchableOpacity
+            key={value}
+            style={[styles.tab, activeTab === value && styles.tabActive]}
+            onPress={() => setActiveTab(value)}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: activeTab === value }}
+          >
+            <Text style={[styles.tabLabel, activeTab === value && styles.tabLabelActive]}>{label}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {stats && (showSummaryTotal || tripBudgetProgress) && (
+        <View style={styles.summary}>
+          {showSummaryTotal && (
+            <>
+              <Text style={styles.summaryLabel}>{t('vanLog.totalSpent')}</Text>
+              <Text style={styles.summaryValue}>
+                {totalsByCurrency.map((ct) => formatAmount(ct.total, ct.currency, language)).join(' + ')}
+              </Text>
+            </>
+          )}
+
+          {tripBudgetProgress && (
+            <View style={styles.budgetProgress}>
+              <View style={styles.budgetProgressHeader}>
+                <Text style={styles.statsBlockTitle}>{t('vanLog.tripBudgetLabel')}</Text>
+                <Text style={styles.budgetProgressValue}>
+                  {t('vanLog.budgetProgressValue', {
+                    spent: formatAmount(tripBudgetProgress.spent, tripBudgetProgress.currency, language),
+                    budget: formatBudgetAmount(tripBudgetProgress.budget, tripBudgetProgress.currency, language),
+                  })}
+                </Text>
+              </View>
+              <View style={styles.barRowTrack}>
+                <View
+                  style={[
+                    styles.barRowFill,
+                    styles.budgetProgressFill,
+                    tripBudgetProgress.isOver && styles.budgetProgressFillOver,
+                    { width: `${tripBudgetProgress.fillPercent}%` },
+                  ]}
+                />
+              </View>
+              <Text style={[styles.budgetProgressNote, tripBudgetProgress.isOver && styles.budgetProgressNoteOver]}>
+                {tripBudgetProgress.isOver
+                  ? t('vanLog.budgetOverBy', { amount: formatAmount(tripBudgetProgress.overBy, tripBudgetProgress.currency, language) })
+                  : t('vanLog.budgetRemaining', { amount: formatAmount(tripBudgetProgress.remaining, tripBudgetProgress.currency, language) })}
+              </Text>
+            </View>
+          )}
+        </View>
+      )}
+
+      <View style={styles.toolbar}>
+        <TouchableOpacity
+          style={[styles.toolbarBtn, panelFilterCount > 0 && styles.toolbarBtnActive]}
+          onPress={() => setFiltersOpen(prev => !prev)}
+          accessibilityState={{ expanded: filtersOpen }}
+        >
+          <Ionicons name="funnel-outline" size={14} color={panelFilterCount > 0 ? '#E8743B' : '#374151'} />
+          <Text style={[styles.toolbarBtnLabel, panelFilterCount > 0 && styles.toolbarBtnLabelActive]}>
+            {t('vanLog.filters')}
+          </Text>
+          {panelFilterCount > 0 && (
+            <View style={styles.filterCount}><Text style={styles.filterCountText}>{panelFilterCount}</Text></View>
+          )}
+        </TouchableOpacity>
+
+        {hasActiveFilters && (
+          <TouchableOpacity onPress={clearFilters} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <Text style={styles.clearFilters}>{t('common.reset')}</Text>
+          </TouchableOpacity>
+        )}
+
+        {activeTab === 'entries' && hasEntriesWithTrip && (
+          <View style={styles.segmented} accessibilityLabel={t('vanLog.groupByLabel')}>
+            {[['month', t('vanLog.groupByMonth')], ['trip', t('vanLog.byTrip')]].map(([value, label]) => {
+              const selected = (isGroupedByTrip ? 'trip' : 'month') === value;
+              return (
+                <TouchableOpacity
+                  key={value}
+                  style={[styles.segmentedBtn, selected && styles.segmentedBtnActive]}
+                  onPress={() => setGroupBy(value)}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected }}
+                >
+                  <Text style={[styles.segmentedLabel, selected && styles.segmentedLabelActive]}>{label}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        )}
+      </View>
+
+      {tripOptions.length > 0 && (
+        <ChipRow
+          allLabel={t('vanLog.allTrips')}
+          options={tripOptions}
+          selected={filters.itineraryId}
+          onSelect={(value) => updateFilter('itineraryId', value)}
+        />
+      )}
+
+      {filtersOpen && (
+        <View style={styles.filterPanel}>
+          <ChipRow options={presetOptions} selected={activePresetKey ?? ''} onSelect={selectDateRangePreset} />
+          <View style={styles.dateRow}>
+            <TextInput
+              style={styles.dateInput}
+              value={filters.dateFrom}
+              onChangeText={v => updateFilter('dateFrom', v)}
+              placeholder={t('vanLog.dateFromLabel')}
+              placeholderTextColor="#9ca3af"
+              keyboardType="numbers-and-punctuation"
+            />
+            <TextInput
+              style={styles.dateInput}
+              value={filters.dateTo}
+              onChangeText={v => updateFilter('dateTo', v)}
+              placeholder={t('vanLog.dateToLabel')}
+              placeholderTextColor="#9ca3af"
+              keyboardType="numbers-and-punctuation"
+            />
+          </View>
+          <ChipRow
+            label={t('vanLog.categoryLabel')}
+            allLabel={t('vanLog.allCategories')}
+            options={categoryOptions}
+            selected={filters.category}
+            onSelect={(value) => updateFilter('category', value)}
+          />
+          <ChipRow
+            label={t('vanLog.currencyLabel')}
+            allLabel={t('vanLog.allCurrencies')}
+            options={currencyOptions}
+            selected={filters.currency}
+            onSelect={(value) => updateFilter('currency', value)}
+          />
+          {countryOptions.length > 0 && (
+            <ChipRow
+              label={t('vanLog.countryLabel')}
+              allLabel={t('vanLog.allCountries')}
+              options={countryOptions}
+              selected={filters.country}
+              onSelect={(value) => updateFilter('country', value)}
+            />
+          )}
+        </View>
+      )}
+
+      {activeTab === 'stats' && (
+        <>
+          <ChipRow
+            allLabel={t('vanLog.statsPeriodAll')}
+            options={statsPeriodOptions}
+            selected={activePresetKey && STATS_PERIOD_PRESET_KEYS.includes(activePresetKey) ? activePresetKey : (filters.dateFrom || filters.dateTo ? null : '')}
+            onSelect={selectDateRangePreset}
+          />
+          <VanLogStatsView
+            entries={entries}
+            stats={stats}
+            filters={filters}
+            myItineraries={myItineraries}
+            language={language}
+            categoryLabel={categoryLabel}
+          />
+        </>
+      )}
+    </View>
+  );
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      {/* Header */}
       <View style={styles.header}>
         <View style={styles.titleRow}>
           <TouchableOpacity
@@ -267,314 +480,6 @@ const VanLogScreen = ({ navigation }) => {
             </TouchableOpacity>
           )}
         </View>
-
-        {/* Category chips */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.chips}
-        >
-          <TouchableOpacity
-            style={[styles.chip, filters.category === '' && styles.chipActive]}
-            onPress={() => updateFilter('category', '')}
-          >
-            <Text style={[styles.chipLabel, filters.category === '' && styles.chipLabelActive]}>
-              {t('vanLog.allCategories')}
-            </Text>
-          </TouchableOpacity>
-          {vanLogCategories.map(cat => (
-            <TouchableOpacity
-              key={cat.value}
-              style={[styles.chip, filters.category === cat.value && styles.chipActive]}
-              onPress={() => updateFilter('category', filters.category === cat.value ? '' : cat.value)}
-            >
-              <Text style={styles.chipEmoji}>{CATEGORY_EMOJI[cat.value] ?? '📍'}</Text>
-              <Text style={[styles.chipLabel, filters.category === cat.value && styles.chipLabelActive]}>
-                {categoryLabel(cat.value)}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-
-        {/* Currency chips */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.chips}
-        >
-          <TouchableOpacity
-            style={[styles.chip, filters.currency === '' && styles.chipActive]}
-            onPress={() => updateFilter('currency', '')}
-          >
-            <Text style={[styles.chipLabel, filters.currency === '' && styles.chipLabelActive]}>
-              {t('vanLog.allCurrencies')}
-            </Text>
-          </TouchableOpacity>
-          {currencyChipOptions.map((currency) => (
-            <TouchableOpacity
-              key={currency}
-              style={[styles.chip, filters.currency === currency && styles.chipActive]}
-              onPress={() => updateFilter('currency', currency)}
-            >
-              <Text style={[styles.chipLabel, filters.currency === currency && styles.chipLabelActive]}>
-                {currency}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-
-        {/* Country chips */}
-        {countryTotals.length > 0 && (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.chips}
-          >
-            <TouchableOpacity
-              style={[styles.chip, filters.country === '' && styles.chipActive]}
-              onPress={() => updateFilter('country', '')}
-            >
-              <Text style={[styles.chipLabel, filters.country === '' && styles.chipLabelActive]}>
-                {t('vanLog.allCountries')}
-              </Text>
-            </TouchableOpacity>
-            {countryChipOptions.map((country) => (
-              <TouchableOpacity
-                key={country}
-                style={[styles.chip, filters.country === country && styles.chipActive]}
-                onPress={() => updateFilter('country', filters.country === country ? '' : country)}
-              >
-                <Text style={[styles.chipLabel, filters.country === country && styles.chipLabelActive]}>
-                  {country}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        )}
-
-        {/* Trip chips */}
-        {tripChipOptions.length > 0 && (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.chips}
-          >
-            <TouchableOpacity
-              style={[styles.chip, filters.itineraryId === '' && styles.chipActive]}
-              onPress={() => updateFilter('itineraryId', '')}
-            >
-              <Text style={[styles.chipLabel, filters.itineraryId === '' && styles.chipLabelActive]}>
-                {t('vanLog.allTrips')}
-              </Text>
-            </TouchableOpacity>
-            {tripChipOptions.map((trip) => (
-              <TouchableOpacity
-                key={trip.id}
-                style={[styles.chip, filters.itineraryId === trip.id && styles.chipActive]}
-                onPress={() => updateFilter('itineraryId', filters.itineraryId === trip.id ? '' : trip.id)}
-              >
-                <Text style={[styles.chipLabel, filters.itineraryId === trip.id && styles.chipLabelActive]} numberOfLines={1}>
-                  {trip.title}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        )}
-
-        {/* Grouping */}
-        {hasEntriesWithTrip && (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.chips}
-            accessibilityLabel={t('vanLog.groupByLabel')}
-          >
-            {[['month', t('vanLog.groupByMonth')], ['trip', t('vanLog.byTrip')]].map(([value, label]) => {
-              const selected = (isGroupedByTrip ? 'trip' : 'month') === value;
-              return (
-                <TouchableOpacity
-                  key={value}
-                  style={[styles.chip, selected && styles.chipActive]}
-                  onPress={() => setGroupBy(value)}
-                  accessibilityRole="radio"
-                  accessibilityState={{ selected }}
-                >
-                  <Text style={[styles.chipLabel, selected && styles.chipLabelActive]}>{label}</Text>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-        )}
-
-        {/* Date range presets */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.chips}
-        >
-          {dateRangePresets.map((preset) => (
-            <TouchableOpacity
-              key={preset.key}
-              style={[styles.chip, activePresetKey === preset.key && styles.chipActive]}
-              onPress={() => (activePresetKey === preset.key
-                ? setFilters(prev => ({ ...prev, dateFrom: '', dateTo: '' }))
-                : applyDateRangePreset(preset))}
-            >
-              <Text style={[styles.chipLabel, activePresetKey === preset.key && styles.chipLabelActive]}>
-                {t(preset.labelKey)}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-
-        {/* Date range */}
-        <View style={styles.dateRow}>
-          <TextInput
-            style={styles.dateInput}
-            value={filters.dateFrom}
-            onChangeText={v => updateFilter('dateFrom', v)}
-            placeholder={t('vanLog.dateFromLabel')}
-            placeholderTextColor="#9ca3af"
-            keyboardType="numbers-and-punctuation"
-          />
-          <TextInput
-            style={styles.dateInput}
-            value={filters.dateTo}
-            onChangeText={v => updateFilter('dateTo', v)}
-            placeholder={t('vanLog.dateToLabel')}
-            placeholderTextColor="#9ca3af"
-            keyboardType="numbers-and-punctuation"
-          />
-          {hasActiveFilters && (
-            <TouchableOpacity onPress={clearFilters}>
-              <Text style={styles.clearFilters}>{t('common.reset')}</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-
-        {/* Stats: one unified card (hero total + labeled sub-sections)
-            instead of a floating total chip, a chart card, and a loose
-            row of country chips as three disconnected pieces. */}
-        {stats && (categoryTotals.length > 0 || countryTotals.length > 0 || tripBudgetProgress) && (
-          <View style={styles.statsCard}>
-            <View style={styles.statsTotal}>
-              <Text style={styles.statsTotalLabel}>{t('vanLog.totalSpent')}</Text>
-              <Text style={styles.statsTotalValue}>
-                {totalsByCurrency.length > 0
-                  ? totalsByCurrency.map((ct) => formatAmount(ct.total, ct.currency, language)).join(' + ')
-                  : '0.00'}
-              </Text>
-            </View>
-
-            {tripBudgetProgress && (
-              <View style={styles.budgetProgress}>
-                <View style={styles.budgetProgressHeader}>
-                  <Text style={styles.statsBlockTitle}>{t('vanLog.tripBudgetLabel')}</Text>
-                  <Text style={styles.budgetProgressValue}>
-                    {t('vanLog.budgetProgressValue', {
-                      spent: formatAmount(tripBudgetProgress.spent, tripBudgetProgress.currency, language),
-                      budget: formatBudgetAmount(tripBudgetProgress.budget, tripBudgetProgress.currency, language),
-                    })}
-                  </Text>
-                </View>
-                <View style={styles.barRowTrack}>
-                  <View
-                    style={[
-                      styles.barRowFill,
-                      tripBudgetProgress.isOver && styles.budgetProgressFillOver,
-                      { width: `${tripBudgetProgress.fillPercent}%` },
-                    ]}
-                  />
-                </View>
-                <Text style={[styles.budgetProgressNote, tripBudgetProgress.isOver && styles.budgetProgressNoteOver]}>
-                  {tripBudgetProgress.isOver
-                    ? t('vanLog.budgetOverBy', { amount: formatAmount(tripBudgetProgress.overBy, tripBudgetProgress.currency, language) })
-                    : t('vanLog.budgetRemaining', { amount: formatAmount(tripBudgetProgress.remaining, tripBudgetProgress.currency, language) })}
-                </Text>
-              </View>
-            )}
-
-            {hasBreakdown && (
-              <TouchableOpacity
-                style={styles.statsToggle}
-                onPress={() => setStatsExpanded(prev => !prev)}
-              >
-                <Text style={styles.statsToggleLabel}>
-                  {statsExpanded ? t('vanLog.hideBreakdown') : t('vanLog.viewBreakdown')}
-                </Text>
-                <Ionicons name={statsExpanded ? 'chevron-up' : 'chevron-down'} size={14} color="#6b7280" />
-              </TouchableOpacity>
-            )}
-
-            {statsExpanded && sortedCategoryTotals.length > 0 && (
-              <View style={styles.statsBlock}>
-                <Text style={styles.statsBlockTitle}>{t('vanLog.byCategory')}</Text>
-                <View style={styles.barChart}>
-                  {sortedCategoryTotals.map(c => {
-                    const pct = maxCategoryTotal > 0 ? (c.total / maxCategoryTotal) * 100 : 0;
-                    const label = categoryLabel(c.category);
-                    return (
-                      <View key={`cat-${c.category}-${c.currency ?? 'none'}`} style={styles.barRow}>
-                        <Text style={styles.barRowLabel} numberOfLines={1}>
-                          {CATEGORY_EMOJI[c.category] ?? '📍'} {label}
-                        </Text>
-                        <View style={styles.barRowTrack}>
-                          <View style={[styles.barRowFill, { width: `${pct}%` }]} />
-                        </View>
-                        <Text style={styles.barRowValue}>{formatNumber(c.total, language, TWO_DECIMALS)}</Text>
-                      </View>
-                    );
-                  })}
-                </View>
-              </View>
-            )}
-
-            {statsExpanded && sortedCountryTotals.length > 0 && (
-              <View style={styles.statsBlock}>
-                <Text style={styles.statsBlockTitle}>{t('vanLog.byCountry')}</Text>
-                <View style={styles.barChart}>
-                  {sortedCountryTotals.map(c => {
-                    const pct = maxCountryTotal > 0 ? (c.total / maxCountryTotal) * 100 : 0;
-                    return (
-                      <View key={`country-${c.country}-${c.currency ?? 'none'}`} style={styles.barRow}>
-                        <Text style={styles.barRowLabel} numberOfLines={1}>{c.country}</Text>
-                        <View style={styles.barRowTrack}>
-                          <View style={[styles.barRowFill, styles.barRowFillCountry, { width: `${pct}%` }]} />
-                        </View>
-                        <Text style={styles.barRowValue}>{formatNumber(c.total, language, TWO_DECIMALS)}</Text>
-                      </View>
-                    );
-                  })}
-                </View>
-              </View>
-            )}
-
-            {statsExpanded && fuelTrend && (
-              <View style={styles.statsBlock}>
-                <Text style={styles.statsBlockTitle}>
-                  {t('vanLog.fuelPriceTrend')} ({fuelTrend.currency}/L)
-                </Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                  <View style={styles.fuelTrendChart}>
-                    {fuelTrend.points.map(p => {
-                      const pct = fuelTrend.maxPrice > 0 ? (p.pricePerLiter / fuelTrend.maxPrice) * 100 : 0;
-                      return (
-                        <View key={p.id} style={styles.fuelTrendCol}>
-                          <Text style={styles.fuelTrendValue}>{formatNumber(p.pricePerLiter, language, TWO_DECIMALS)}</Text>
-                          <View style={styles.fuelTrendBarTrack}>
-                            <View style={[styles.fuelTrendBar, { height: `${pct}%` }]} />
-                          </View>
-                          <Text style={styles.fuelTrendDate}>{formatCalendarDay(p.entryDate, language, SHORT_DAY)}</Text>
-                        </View>
-                      );
-                    })}
-                  </View>
-                </ScrollView>
-              </View>
-            )}
-          </View>
-        )}
-
       </View>
 
       <PendingChangesNotice />
@@ -590,6 +495,7 @@ const VanLogScreen = ({ navigation }) => {
           : sections
         }
         keyExtractor={item => item.id}
+        ListHeaderComponent={listHeader}
         contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 24 }]}
         showsVerticalScrollIndicator={false}
         stickySectionHeadersEnabled={false}
@@ -605,7 +511,7 @@ const VanLogScreen = ({ navigation }) => {
           </View>
         ) : null}
         ListEmptyComponent={
-          !loading ? (
+          !loading && activeTab === 'entries' ? (
             loadError ? (
               <FeatureLoadState status={loadError} onRetry={fetchEntries} />
             ) : (
@@ -623,49 +529,90 @@ const VanLogScreen = ({ navigation }) => {
             )
           ) : null
         }
-        renderItem={({ item }) => {
-          if (item._skeleton) return <View style={[styles.entry, styles.entrySkeleton]} />;
+        renderItem={({ item, index, section }) => {
+          const rowStyle = [
+            styles.entry,
+            index === 0 && styles.entryFirst,
+            index === section.data.length - 1 && styles.entryLast,
+          ];
+          if (item._skeleton) return <View style={[...rowStyle, styles.entrySkeleton]} />;
 
           const priceLine = item.category === 'fuel' && item.pricePerLiter != null
             ? `${formatNumber(item.pricePerLiter, language, { minimumFractionDigits: 3, maximumFractionDigits: 3 })} ${item.currency || ''}/L`
             : null;
+          const isExpanded = expandedEntryId === item.id;
+          const locationLine = item.location?.name
+            ? `${item.location.name}${item.location.country ? `, ${item.location.country}` : ''}`
+            : null;
+          const detailParts = [
+            item.title ? categoryLabel(item.category) : null,
+            item.entryDate ? formatCalendarDay(item.entryDate, language, SHORT_DAY) : null,
+            locationLine,
+            priceLine,
+          ].filter(Boolean);
 
           return (
-            <View style={styles.entry}>
-              <View style={styles.entryTopRow}>
-                <View style={styles.entryTopLeft}>
-                  <Text style={styles.entryCategory}>
-                    {CATEGORY_EMOJI[item.category] ?? '📍'} {categoryLabel(item.category)}
+            <View style={rowStyle}>
+              <Text style={styles.entryIcon}>{CATEGORY_EMOJI[item.category] ?? '📍'}</Text>
+              <TouchableOpacity
+                style={styles.entryBody}
+                activeOpacity={0.7}
+                disabled={!item.notes}
+                onPress={() => toggleExpanded(item.id)}
+                accessibilityState={{ expanded: isExpanded }}
+              >
+                <Text style={styles.entryTitle}>{item.title || categoryLabel(item.category)}</Text>
+                <Text style={styles.entryDetails}>{detailParts.join(' · ')}</Text>
+                {item.notes ? (
+                  <Text style={styles.entryNotes} numberOfLines={isExpanded ? undefined : NOTES_PREVIEW_LINES}>
+                    {item.notes}
                   </Text>
-                  <Text style={styles.entryDate}>
-                    {item.entryDate && formatCalendarDay(item.entryDate, language, SHORT_DAY)}
-                    {item.entryDate && daysSinceLabel(item.entryDate) ? ` · ${daysSinceLabel(item.entryDate)}` : ''}
+                ) : null}
+                {item.notes && !isExpanded ? (
+                  // onTextLayout on a clamped Text can report only the visible
+                  // lines on some platforms, so the full text is measured on an
+                  // invisible, unclamped copy.
+                  <Text
+                    style={[styles.entryNotes, styles.entryNotesMeasure]}
+                    pointerEvents="none"
+                    accessibilityElementsHidden
+                    importantForAccessibility="no-hide-descendants"
+                    onTextLayout={(event) => markNoteTruncation(item.id, event.nativeEvent.lines.length)}
+                  >
+                    {item.notes}
                   </Text>
-                </View>
-                <View style={styles.entryTopRight}>
-                  {item.amount != null && (
-                    <Text style={styles.entryAmount}>{formatAmount(item.amount, item.currency, language)}</Text>
-                  )}
-                  <TouchableOpacity style={styles.entryMenuBtn} onPress={() => handleEntryMenu(item)}>
-                    <Ionicons name="ellipsis-vertical" size={16} color="#6b7280" />
+                ) : null}
+                {item.notes && (isExpanded || truncatedNoteIds.has(item.id)) ? (
+                  <Text style={styles.entryNotesToggle}>
+                    {isExpanded ? t('vanLog.notesShowLess') : t('vanLog.notesShowMore')}
+                  </Text>
+                ) : null}
+                {item.itinerary?.title && !isGroupedByTrip ? (
+                  <Text style={styles.entryTrip} numberOfLines={1}>🧭 {item.itinerary.title}</Text>
+                ) : null}
+                <PendingSyncBadge item={item} />
+              </TouchableOpacity>
+              {item.amount != null && (
+                <Text style={styles.entryAmount}>{formatAmount(item.amount, item.currency, language)}</Text>
+              )}
+              <View style={styles.entryActions}>
+                {item.receiptPhotoUrl ? (
+                  <TouchableOpacity
+                    style={styles.entryActionBtn}
+                    onPress={() => Linking.openURL(item.receiptPhotoUrl)}
+                    accessibilityLabel={t('vanLog.viewReceipt')}
+                  >
+                    <Ionicons name="receipt-outline" size={16} color="#6b7280" />
                   </TouchableOpacity>
-                </View>
-              </View>
-              {item.title ? <Text style={styles.entryTitle}>{item.title}</Text> : null}
-              {(item.location?.name || priceLine) ? (
-                <Text style={styles.entryLocation}>
-                  📍 {item.location?.name}{item.location?.country ? `, ${item.location.country}` : ''}
-                  {priceLine ? (item.location?.name ? ' · ' : '') + priceLine : ''}
-                </Text>
-              ) : null}
-              {item.itinerary?.title && !isGroupedByTrip ? <Text style={styles.entryTrip} numberOfLines={1}>🧭 {item.itinerary.title}</Text> : null}
-              {item.notes ? <Text style={styles.entryNotes} numberOfLines={2}>{item.notes}</Text> : null}
-              {item.receiptPhotoUrl ? (
-                <TouchableOpacity onPress={() => Linking.openURL(item.receiptPhotoUrl)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                  <Text style={styles.entryReceiptLink}>🧾 {t('vanLog.viewReceipt')}</Text>
+                ) : null}
+                <TouchableOpacity
+                  style={styles.entryActionBtn}
+                  onPress={() => handleEntryMenu(item)}
+                  accessibilityLabel={t('common.moreOptions')}
+                >
+                  <Ionicons name="ellipsis-vertical" size={16} color="#6b7280" />
                 </TouchableOpacity>
-              ) : null}
-              <PendingSyncBadge item={item} />
+              </View>
             </View>
           );
         }}
@@ -702,81 +649,74 @@ const styles = StyleSheet.create({
   },
   newBtnText: { color: '#fff', fontWeight: '700', fontSize: 13 },
 
-  // One unified card: a hero total up top, then a stack of labeled
-  // sub-sections (by category, by country, fuel trend), instead of a
-  // floating total chip, a chart card, and a loose row of country chips
-  // as three disconnected pieces.
-  statsCard: {
-    marginHorizontal: 16, marginBottom: 10,
-    backgroundColor: '#fff', borderRadius: 14,
-    borderWidth: 1, borderColor: '#e5e7eb',
-    overflow: 'hidden',
-    ...shadow(2, 0.04, 6, 1),
-  },
-  statsTotal: {
-    flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between',
-    backgroundColor: '#1A535C', paddingVertical: 14, paddingHorizontal: 16,
-  },
-  statsTotalLabel: {
-    fontSize: 11, fontWeight: '700', color: 'rgba(255,255,255,0.85)',
+  // Plain text, not a colored banner: the total is context for the list,
+  // not what people open this screen to do.
+  listHeader: { gap: 10, paddingBottom: 4 },
+  summary: { paddingHorizontal: 4, gap: 2 },
+  summaryLabel: {
+    fontSize: 11, fontWeight: '700', color: '#6b7280',
     textTransform: 'uppercase', letterSpacing: 0.4,
   },
-  statsTotalValue: { fontSize: 22, fontWeight: '800', color: '#fff' },
-  // Category/country bars and the fuel trend chart default to collapsed:
-  // this header sits outside the scrollable list, so a fully expanded
-  // dashboard could push the entry list almost entirely off-screen.
-  statsToggle: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4,
-    paddingVertical: 10, paddingHorizontal: 16,
-    borderTopWidth: 1, borderTopColor: '#e5e7eb',
-  },
-  statsToggleLabel: { fontSize: 12, fontWeight: '600', color: '#6b7280' },
-  budgetProgress: {
-    gap: 8, paddingVertical: 14, paddingHorizontal: 16,
-    borderTopWidth: 1, borderTopColor: '#e5e7eb',
-  },
+  summaryValue: { fontSize: 26, fontWeight: '800', color: '#111827' },
+  tabs: { flexDirection: 'row', gap: 20, borderBottomWidth: 1, borderBottomColor: '#e5e7eb' },
+  tab: { paddingVertical: 8, marginBottom: -1, borderBottomWidth: 2, borderBottomColor: 'transparent' },
+  tabActive: { borderBottomColor: '#E8743B' },
+  tabLabel: { fontSize: 14, fontWeight: '600', color: '#6b7280' },
+  tabLabelActive: { color: '#E8743B' },
+  budgetProgress: { gap: 6, paddingTop: 10 },
   budgetProgressHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
   budgetProgressValue: { fontSize: 13, fontWeight: '700', color: '#111827' },
+  budgetProgressFill: { backgroundColor: '#1A535C' },
   budgetProgressFillOver: { backgroundColor: '#dc2626' },
   budgetProgressNote: { fontSize: 12, fontWeight: '600', color: '#6b7280' },
   budgetProgressNoteOver: { color: '#dc2626' },
-  statsBlock: {
-    gap: 8, paddingVertical: 14, paddingHorizontal: 16,
-    borderTopWidth: 1, borderTopColor: '#e5e7eb',
-  },
   statsBlockTitle: {
     fontSize: 11, fontWeight: '700', color: '#6b7280',
     textTransform: 'uppercase', letterSpacing: 0.4,
   },
 
-  // ── Shared mini bar chart (category / country) ──────────────
-  // Magnitude comparison: one hue, sorted, direct-labeled.
-  barChart: { gap: 8 },
-  barRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  barRowLabel: { width: 108, fontSize: 12, fontWeight: '600', color: '#111827' },
   barRowTrack: {
-    flex: 1, height: 8, borderRadius: 4,
+    height: 8, borderRadius: 4,
     backgroundColor: '#e5e7eb', overflow: 'hidden',
   },
   barRowFill: { height: '100%', minWidth: 3, borderRadius: 4, backgroundColor: '#E8743B' },
-  // Country bars get the app's other brand hue, not to encode identity per
-  // row, just so the two stacked sections tell apart from each other.
-  barRowFillCountry: { backgroundColor: '#1A535C' },
-  barRowValue: {
-    width: 56, fontSize: 12, fontWeight: '700', color: '#111827', textAlign: 'right',
+
+  toolbar: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  toolbarBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    paddingVertical: 7, paddingHorizontal: 12,
+    borderRadius: 999, borderWidth: 1, borderColor: '#e5e7eb', backgroundColor: '#fff',
   },
+  toolbarBtnActive: { borderColor: '#E8743B' },
+  toolbarBtnLabel: { fontSize: 13, fontWeight: '600', color: '#374151' },
+  toolbarBtnLabelActive: { color: '#E8743B' },
+  filterCount: {
+    minWidth: 18, height: 18, paddingHorizontal: 5, borderRadius: 999,
+    backgroundColor: '#E8743B', alignItems: 'center', justifyContent: 'center',
+  },
+  filterCountText: { fontSize: 11, fontWeight: '700', color: '#fff' },
+  clearFilters: { fontSize: 12, color: '#dc2626', fontWeight: '600' },
 
-  // ── Fuel price trend ─────────────────────────────────────────
-  // Bars, not a line: each point is a discrete fill-up, not a continuous
-  // quantity, so the chart shouldn't visually interpolate between them.
-  fuelTrendChart: { flexDirection: 'row', alignItems: 'flex-end', gap: 14 },
-  fuelTrendCol: { alignItems: 'center', gap: 4 },
-  fuelTrendValue: { fontSize: 11, fontWeight: '700', color: '#111827' },
-  fuelTrendBarTrack: { width: 20, height: 64, justifyContent: 'flex-end' },
-  fuelTrendBar: { width: '100%', minHeight: 4, borderRadius: 4, backgroundColor: '#E8743B' },
-  fuelTrendDate: { fontSize: 10, color: '#9ca3af' },
+  segmented: {
+    flexDirection: 'row', marginLeft: 'auto', padding: 2,
+    borderRadius: 999, backgroundColor: '#f1f5f9',
+  },
+  segmentedBtn: { paddingVertical: 5, paddingHorizontal: 12, borderRadius: 999 },
+  segmentedBtnActive: { backgroundColor: '#fff', ...shadow(1, 0.1, 2, 1) },
+  segmentedLabel: { fontSize: 12, fontWeight: '600', color: '#6b7280' },
+  segmentedLabelActive: { color: '#C55A24' },
 
-  chips: { paddingHorizontal: 16, gap: 8, paddingBottom: 8 },
+  filterPanel: {
+    gap: 12, padding: 12,
+    backgroundColor: '#fff', borderRadius: 14,
+    borderWidth: 1, borderColor: '#e5e7eb',
+  },
+  filterGroup: { gap: 6 },
+  filterGroupLabel: {
+    fontSize: 11, fontWeight: '700', color: '#6b7280',
+    textTransform: 'uppercase', letterSpacing: 0.4,
+  },
+  chips: { gap: 8 },
   chip: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
     paddingVertical: 5, paddingHorizontal: 10,
@@ -788,22 +728,18 @@ const styles = StyleSheet.create({
   chipLabel: { fontSize: 12, color: '#6b7280', fontWeight: '500' },
   chipLabelActive: { color: '#E8743B', fontWeight: '600' },
 
-  dateRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingHorizontal: 16, paddingTop: 2,
-  },
+  dateRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   dateInput: {
     flex: 1, borderWidth: 1.5, borderColor: '#e5e7eb', borderRadius: 10,
     backgroundColor: '#f9fafb', paddingVertical: 8, paddingHorizontal: 10,
     fontSize: 13, color: '#111827',
   },
-  clearFilters: { fontSize: 12, color: '#dc2626', fontWeight: '600' },
 
-  list: { padding: 12, gap: 10 },
+  list: { padding: 12 },
 
   sectionHeader: {
     flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between',
-    paddingHorizontal: 4, paddingTop: 6, paddingBottom: 8,
+    paddingHorizontal: 4, paddingTop: 14, paddingBottom: 8,
   },
   sectionHeaderLabel: {
     fontSize: 12, fontWeight: '700', color: '#6b7280',
@@ -811,32 +747,28 @@ const styles = StyleSheet.create({
   },
   sectionHeaderTotal: { fontSize: 13, fontWeight: '700', color: '#111827' },
 
-  // Stacked, not two side-by-side columns: a two-column split (text on the
-  // left, amount on the right, for the full card height) left a wide dead
-  // gap on any entry whose text was short, and squeezed the description
-  // into a narrower box than the card actually had to give it. The amount
-  // only needs to sit apart from the category/date row above it.
+  // Rows of one card per group, separated by hairlines, not one card per
+  // entry: a log is scanned, so the amount gets its own column and each row
+  // stays about one line tall.
   entry: {
-    backgroundColor: '#fff', borderRadius: 12,
-    borderWidth: 1, borderColor: '#e5e7eb',
-    padding: 12, gap: 3,
+    flexDirection: 'row', alignItems: 'flex-start', gap: 10,
+    backgroundColor: '#fff', paddingVertical: 10, paddingHorizontal: 12,
+    borderTopWidth: 1, borderLeftWidth: 1, borderRightWidth: 1, borderColor: '#e5e7eb',
   },
-  entrySkeleton: { height: 76, backgroundColor: '#f3f4f6', borderColor: '#f3f4f6' },
-  entryTopRow: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    flexWrap: 'wrap', gap: 8,
-  },
-  entryTopLeft: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 8 },
-  entryTopRight: { flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 0 },
-  entryCategory: { fontSize: 13, fontWeight: '700', color: '#111827' },
-  entryDate: { fontSize: 11, color: '#9ca3af' },
-  entryTitle: { fontSize: 13, color: '#374151', marginTop: 4 },
-  entryLocation: { fontSize: 12, color: '#6b7280', marginTop: 2 },
-  entryTrip: { fontSize: 12, color: '#6b7280', marginTop: 2 },
-  entryNotes: { fontSize: 12, color: '#9ca3af', marginTop: 4 },
-  entryReceiptLink: { fontSize: 12, fontWeight: '600', color: '#E8743B', marginTop: 4 },
-  entryAmount: { fontSize: 14, fontWeight: '800', color: '#111827' },
-  entryMenuBtn: { padding: 4 },
+  entryFirst: { borderTopLeftRadius: 12, borderTopRightRadius: 12 },
+  entryLast: { borderBottomLeftRadius: 12, borderBottomRightRadius: 12, borderBottomWidth: 1 },
+  entrySkeleton: { height: 56, backgroundColor: '#f3f4f6' },
+  entryIcon: { width: 26, textAlign: 'center', fontSize: 20, lineHeight: 24 },
+  entryBody: { flex: 1, minWidth: 0, gap: 1 },
+  entryTitle: { fontSize: 15, fontWeight: '600', color: '#111827', lineHeight: 24 },
+  entryDetails: { fontSize: 12, color: '#6b7280' },
+  entryNotes: { fontSize: 12, color: '#6b7280' },
+  entryNotesMeasure: { position: 'absolute', left: 0, right: 0, opacity: 0 },
+  entryNotesToggle: { fontSize: 12, fontWeight: '600', color: '#E8743B', marginTop: 2 },
+  entryTrip: { fontSize: 12, fontWeight: '600', color: '#1A535C', marginTop: 2 },
+  entryAmount: { fontSize: 15, fontWeight: '700', color: '#111827', lineHeight: 24 },
+  entryActions: { width: 28, alignItems: 'flex-end' },
+  entryActionBtn: { padding: 4 },
 
   empty: { alignItems: 'center', paddingTop: 56, paddingHorizontal: 32 },
   emptyEmoji: { fontSize: 40, marginBottom: 12 },

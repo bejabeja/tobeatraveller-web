@@ -97,21 +97,6 @@ const VanLogEntryModal = ({ entry = null, onClose, onSaved, initialCapReached = 
           </div>
         ) : (
         <form className="van-log-form__body" onSubmit={handleSubmit(onSubmit)}>
-          <div className="van-log-entry-modal__grid">
-            {vanLogCategories.map(({ value }) => (
-              <button
-                key={value}
-                type="button"
-                className={`van-log-entry-modal__category${category === value ? " van-log-entry-modal__category--active" : ""}`}
-                onClick={() => setValue("category", value, { shouldValidate: true })}
-              >
-                <span className="van-log-entry-modal__category-emoji">{vanLogCategoryEmoji[value] ?? "📍"}</span>
-                <span className="van-log-entry-modal__category-label">{categoryLabel(value)}</span>
-              </button>
-            ))}
-          </div>
-          {errors.category && <div className="input__error">{translateValidationMessage(t, errors.category.message)}</div>}
-
           <label className="van-log-entry-modal__amount-label" htmlFor="van-log-entry-amount">
             {t("vanLog.amountLabel")}
           </label>
@@ -135,6 +120,23 @@ const VanLogEntryModal = ({ entry = null, onClose, onSaved, initialCapReached = 
               compact
             />
           </div>
+
+          <span className="van-log-entry-modal__amount-label">{t("vanLog.categoryLabel")}</span>
+          <div className="van-log-entry-modal__grid" role="group" aria-label={t("vanLog.categoryLabel")}>
+            {vanLogCategories.map(({ value }) => (
+              <button
+                key={value}
+                type="button"
+                className={`van-log-entry-modal__category${category === value ? " van-log-entry-modal__category--active" : ""}`}
+                aria-pressed={category === value}
+                onClick={() => setValue("category", value, { shouldValidate: true })}
+              >
+                <span className="van-log-entry-modal__category-emoji">{vanLogCategoryEmoji[value] ?? "📍"}</span>
+                <span className="van-log-entry-modal__category-label">{categoryLabel(value)}</span>
+              </button>
+            ))}
+          </div>
+          {errors.category && <div className="input__error">{translateValidationMessage(t, errors.category.message)}</div>}
 
           {trips.length > 0 && (
             <div className={`van-log-entry-modal__trip${itineraryId ? " van-log-entry-modal__trip--filled" : ""}`}>

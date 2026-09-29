@@ -693,6 +693,14 @@
     "receiptPhotoUploadError": "La spesa è stata salvata, ma non è stato possibile caricare la foto.",
     "receiptPhotoNeedsConnection": "La spesa è stata salvata, ma la foto richiede una connessione. Aggiungila di nuovo quando sei di nuovo online.",
     "viewReceipt": "Vedi scontrino",
+    "notesShowMore": "Mostra di più",
+    "notesShowLess": "Mostra meno",
+    "statsPeriodAll": "Tutto",
+    "statsAveragePerDay": "Al giorno",
+    "statsExpenseCount": "Spese",
+    "statsOverTime": "Spese nel tempo",
+    "fuelPriceAverage": "Media",
+    "fuelPriceLatest": "Ultimo",
     "tripLabel": "Per quale viaggio?",
     "noTrip": "Nessuno",
     "allTrips": "Tutti i viaggi",
@@ -741,9 +749,7 @@
       "overnight_stay": "Pernottamento",
       "maintenance": "Manutenzione",
       "other": "Altro"
-    },
-    "viewBreakdown": "Vedi dettaglio",
-    "hideBreakdown": "Nascondi dettaglio"
+    }
   },
   "supplies": {
     "title": "Lista della spesa",

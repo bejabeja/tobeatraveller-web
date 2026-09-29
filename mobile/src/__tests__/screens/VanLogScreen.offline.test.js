@@ -31,6 +31,8 @@ jest.mock('@tobeatraveller/shared', () => {
     ...jest.requireActual('../../../../shared/src/utils/formatLocale.js'),
     groupVanLogEntriesByMonth: vanLogStats.groupVanLogEntriesByMonth,
     getVanLogFuelPriceTrend: vanLogStats.getVanLogFuelPriceTrend,
+    getVanLogSpendingByCurrency: vanLogStats.getVanLogSpendingByCurrency,
+    getVanLogBreakdownByCurrency: vanLogStats.getVanLogBreakdownByCurrency,
     getTripBudgetProgress: vanLogStats.getTripBudgetProgress,
     getVanLogDateRangePresets: vanLogStats.getVanLogDateRangePresets,
     groupVanLogEntriesByTrip: vanLogStats.groupVanLogEntriesByTrip,
@@ -197,5 +199,98 @@ describe('grouping by trip', () => {
 
     expect(await screen.findByText('Cached fuel stop')).toBeTruthy();
     expect(screen.queryByText('vanLog.byTrip')).toBeNull();
+  });
+});
+
+describe('filters', () => {
+  it('keeps the filters collapsed until the filters button is pressed', async () => {
+    getVanLogEntries.mockResolvedValue([CACHED_ENTRY]);
+
+    await renderScreen(<VanLogScreen navigation={{}} />);
+
+    expect(await screen.findByText('Cached fuel stop')).toBeTruthy();
+    expect(screen.queryByPlaceholderText('vanLog.dateFromLabel')).toBeNull();
+
+    fireEvent.press(screen.getByText('vanLog.filters'));
+
+    expect(screen.getByPlaceholderText('vanLog.dateFromLabel')).toBeTruthy();
+  });
+
+  it('shows how many filters are active on the filters button', async () => {
+    getVanLogEntries.mockResolvedValue([CACHED_ENTRY]);
+
+    await renderScreen(<VanLogScreen navigation={{}} />);
+    await screen.findByText('Cached fuel stop');
+    fireEvent.press(screen.getByText('vanLog.filters'));
+    fireEvent.press(screen.getByText('vanLog.category.fuel'));
+
+    expect(screen.getByText('1')).toBeTruthy();
+  });
+});
+
+describe('long notes', () => {
+  const LONG_NOTES = 'Una nota muy larga sobre este gasto. '.repeat(20);
+
+  // Jest has no text layout, so a measured line count is simulated.
+  const reportLines = (lineCount) => {
+    fireEvent(screen.getAllByText(LONG_NOTES, { includeHiddenElements: true }).at(-1), 'textLayout', { nativeEvent: { lines: Array.from({ length: lineCount }) } });
+  };
+
+  it('offers "show more" only once the notes are measured as longer than the preview, and expands them on press', async () => {
+    getVanLogEntries.mockResolvedValue([{ ...CACHED_ENTRY, notes: LONG_NOTES }]);
+
+    await renderScreen(<VanLogScreen navigation={{}} />);
+    await screen.findByText('Cached fuel stop');
+    expect(screen.queryByText('vanLog.notesShowMore')).toBeNull();
+
+    await act(async () => { reportLines(6); });
+    fireEvent.press(screen.getByText('vanLog.notesShowMore'));
+
+    expect(screen.getByText('vanLog.notesShowLess')).toBeTruthy();
+  });
+
+  it('does not offer "show more" for notes that fit in the preview', async () => {
+    getVanLogEntries.mockResolvedValue([{ ...CACHED_ENTRY, notes: LONG_NOTES }]);
+
+    await renderScreen(<VanLogScreen navigation={{}} />);
+    await screen.findByText('Cached fuel stop');
+    await act(async () => { reportLines(2); });
+
+    expect(screen.queryByText('vanLog.notesShowMore')).toBeNull();
+  });
+});
+
+describe('stats tab', () => {
+  const ENTRIES = [
+    { ...CACHED_ENTRY, id: 'a', entryDate: '2026-03-01', amount: 30, currency: 'EUR' },
+    { ...CACHED_ENTRY, id: 'b', entryDate: '2026-03-10', amount: 30, currency: 'EUR' },
+    { ...CACHED_ENTRY, id: 'c', entryDate: '2026-03-05', amount: 200, currency: 'MAD' },
+  ];
+
+  it('replaces the entries with the statistics, one block per currency', async () => {
+    getVanLogEntries.mockResolvedValue(ENTRIES);
+    getVanLogStats.mockResolvedValue({
+      totalsByCurrency: [{ currency: 'EUR', total: 60 }, { currency: 'MAD', total: 200 }],
+      byCategory: [{ category: 'fuel', currency: 'EUR', total: 60 }, { category: 'fuel', currency: 'MAD', total: 200 }],
+      byCountry: [], byTrip: [], availableCurrencies: ['EUR', 'MAD'],
+    });
+
+    await renderScreen(<VanLogScreen navigation={{}} />);
+    await screen.findAllByText('Cached fuel stop');
+    fireEvent.press(screen.getByText('vanLog.statsTab'));
+
+    expect(screen.queryByText('Cached fuel stop')).toBeNull();
+    expect(screen.getByText('EUR')).toBeTruthy();
+    expect(screen.getByText('MAD')).toBeTruthy();
+    expect(screen.getAllByText('vanLog.statsAveragePerDay')).toHaveLength(2);
+  });
+
+  it('shows the empty message when there is nothing to measure yet', async () => {
+    getVanLogEntries.mockResolvedValue([]);
+
+    await renderScreen(<VanLogScreen navigation={{}} />);
+    fireEvent.press(await screen.findByText('vanLog.statsTab'));
+
+    expect(screen.getByText('vanLog.noStatsYet')).toBeTruthy();
   });
 });

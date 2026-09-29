@@ -684,6 +684,14 @@
     "receiptPhotoUploadError": "The expense was saved, but the photo could not be uploaded.",
     "receiptPhotoNeedsConnection": "The expense was saved, but the photo needs a connection. Add it again once you are back online.",
     "viewReceipt": "View receipt",
+    "notesShowMore": "Show more",
+    "notesShowLess": "Show less",
+    "statsPeriodAll": "All time",
+    "statsAveragePerDay": "Per day",
+    "statsExpenseCount": "Expenses",
+    "statsOverTime": "Spending over time",
+    "fuelPriceAverage": "Average",
+    "fuelPriceLatest": "Latest",
     "tripLabel": "Which trip is it for?",
     "noTrip": "None",
     "allTrips": "All trips",
@@ -731,9 +739,7 @@
       "overnight_stay": "Overnight stay",
       "maintenance": "Maintenance",
       "other": "Other"
-    },
-    "viewBreakdown": "View breakdown",
-    "hideBreakdown": "Hide breakdown"
+    }
   },
   "supplies": {
     "title": "Shopping list",

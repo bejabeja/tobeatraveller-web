@@ -9,38 +9,24 @@ import {
 } from "react-icons/io5";
 import {
   formatAmount, formatBudgetAmount, formatCalendarDay, formatNumber, getTripBudgetProgress, getVanLogDateRangePresets,
-  getVanLogFuelPriceTrend, groupVanLogEntriesByMonth, groupVanLogEntriesByTrip, isPremiumRequiredError, localCalendarDay, normalizeSearchText, vanLogCategories, vanLogCategoryEmoji,
+  groupVanLogEntriesByMonth, groupVanLogEntriesByTrip, isPremiumRequiredError, localCalendarDay, normalizeSearchText, vanLogCategories, vanLogCategoryEmoji,
 } from "@tobeatraveller/shared";
 import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState";
 import Modal from "../../components/modal/Modal";
 import { selectMyItineraries } from "../../store/user/userInfoSelectors";
 import { deleteVanLogEntry, getVanLogEntries, getVanLogStats } from "../../services/vanLogs";
 import VanLogEntryModal from "./VanLogEntryModal";
+import VanLogEntryNotes from "./VanLogEntryNotes";
+import VanLogStatsView from "./VanLogStatsView";
 import ToolHeader from "../../components/toolPage/ToolHeader";
 import ToolEmptyState from "../../components/toolPage/ToolEmptyState";
 import "./VanLog.scss";
 
 const EMPTY_FILTERS = { category: "", country: "", currency: "", dateFrom: "", dateTo: "", itineraryId: "" };
 
-const daysSince = (dateStr) => {
-  if (!dateStr) return null;
-  const [year, month, day] = dateStr.split("-").map(Number);
-  const then = new Date(year, month - 1, day);
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  return Math.round((today - then) / 86400000);
-};
-
-const daysSinceLabel = (dateStr, t) => {
-  const days = daysSince(dateStr);
-  if (days == null) return null;
-  if (days <= 0) return t("vanLog.today");
-  if (days === 1) return t("vanLog.yesterday");
-  return t("vanLog.daysAgo", { count: days });
-};
-
+// "Today" is a period too short for statistics.
+const STATS_PERIOD_PRESET_KEYS = ["last7", "last30", "thisMonth"];
 const SHORT_DAY = { month: "short", day: "numeric" };
-const TWO_DECIMALS = { minimumFractionDigits: 2, maximumFractionDigits: 2 };
 
 const escapeCsvField = (value) => {
   const str = value == null ? "" : String(value);
@@ -85,6 +71,7 @@ const VanLog = () => {
   const [activeTab, setActiveTab] = useState("entries");
   const [groupBy, setGroupBy] = useState("month");
   const [openMenuId, setOpenMenuId] = useState(null);
+  const [expandedEntryId, setExpandedEntryId] = useState(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const menuRef = useRef(null);
   const filtersRef = useRef(null);
@@ -140,6 +127,13 @@ const VanLog = () => {
 
   useEffect(() => { refresh(); }, [filters]);
 
+  const toggleExpanded = (entryId) => setExpandedEntryId((prev) => (prev === entryId ? null : entryId));
+  // The row itself toggles too, but not when the press was on the menu, the
+  // receipt or the trip link.
+  const handleEntryRowClick = (event, entry) => {
+    if (entry.notes && !event.target.closest("a, button")) toggleExpanded(entry.id);
+  };
+
   const openEdit = (entry) => setEntryModal({ entry, tripId: "" });
   const openQuickAdd = (tripId = "") => setEntryModal({ entry: null, tripId });
   const closeEntryModal = () => setEntryModal(null);
@@ -174,6 +168,8 @@ const VanLog = () => {
     (preset) => preset.dateFrom === filters.dateFrom && preset.dateTo === filters.dateTo
   )?.key ?? null;
 
+  const statsPeriodPresets = dateRangePresets.filter((preset) => STATS_PERIOD_PRESET_KEYS.includes(preset.key));
+
   const handleExportCsv = () => {
     const csv = "﻿" + buildVanLogCsv(searchedEntries, t, categoryLabel);
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -201,7 +197,6 @@ const VanLog = () => {
   const freeTierUsage = stats?.freeTierUsage;
   const atFreeTierCap = !!freeTierUsage?.limited && freeTierUsage.used >= freeTierUsage.limit;
   const totalsByCurrency = stats?.totalsByCurrency ?? [];
-  const categoryTotals = stats?.byCategory ?? [];
   const countryTotals = stats?.byCountry ?? [];
   // byCountry ignores the country filter on purpose (see vanLogService.getStats)
   // so this dropdown keeps listing every country the user has ever logged.
@@ -213,23 +208,12 @@ const VanLog = () => {
   // in), so the picker is deduped down to one entry per trip.
   const tripOptions = [...new Map(tripTotals.map((t) => [t.tripId, t.tripTitle])).entries()]
     .map(([id, title]) => ({ id, title }));
-  const sortedCategoryTotals = [...categoryTotals].sort((a, b) => b.total - a.total);
-  const maxCategoryTotal = sortedCategoryTotals[0]?.total ?? 0;
-  // Unlike the dropdown above, the chart below must reflect the active
-  // country filter, so it's narrowed back down here before sorting.
-  const sortedCountryTotals = countryTotals
-    .filter((c) => !filters.country || c.country.toLowerCase() === filters.country.toLowerCase())
-    .sort((a, b) => b.total - a.total);
-  const maxCountryTotal = sortedCountryTotals[0]?.total ?? 0;
-  const sortedTripTotals = tripTotals
-    .filter((t) => !filters.itineraryId || t.tripId === filters.itineraryId)
-    .sort((a, b) => b.total - a.total);
-  const maxTripTotal = sortedTripTotals[0]?.total ?? 0;
-
   const activeTripFilter = filters.itineraryId
     ? (myItineraries ?? []).find((trip) => trip.id === filters.itineraryId)
     : null;
   const tripBudgetProgress = getTripBudgetProgress(activeTripFilter, totalsByCurrency);
+  // On the Stats tab the total is one of its own figures, so it is not shown twice.
+  const showSummaryTotal = activeTab === "entries" && totalsByCurrency.length > 0;
   // Client-side only: entries aren't paginated, so everything matching the
   // structured filters is already in `entries` and free-text search just
   // narrows that in place, no extra request needed.
@@ -247,9 +231,6 @@ const VanLog = () => {
   const groupedEntries = isGroupedByTrip
     ? groupVanLogEntriesByTrip(searchedEntries).map((group) => ({ ...group, label: group.title ?? t("vanLog.noTripGroup") }))
     : groupVanLogEntriesByMonth(searchedEntries, language);
-  const fuelTrend = getVanLogFuelPriceTrend(entries);
-  const hasBreakdown = sortedCategoryTotals.length > 0 || sortedCountryTotals.length > 0
-    || sortedTripTotals.length > 0 || Boolean(fuelTrend);
 
   // Chips summarize the active filters next to the toggle so the "you're
   // filtered" state stays visible without keeping every field expanded.
@@ -309,18 +290,18 @@ const VanLog = () => {
         onAction={() => openQuickAdd()}
       />
 
-      {stats && (hasBreakdown || tripBudgetProgress) && (
-        <div className="van-log__total-banner">
-          <div className="van-log__stats-total">
-            <span className="van-log__stats-total-label">{t("vanLog.totalSpent")}</span>
-            <div className="van-log__stats-total-value">
-              {totalsByCurrency.length > 0
-                ? totalsByCurrency.map((ct) => (
-                    <strong key={ct.currency}>{formatAmount(ct.total, ct.currency, language)}</strong>
-                  ))
-                : <strong>{formatNumber(0, language, TWO_DECIMALS)}</strong>}
+      {stats && (showSummaryTotal || tripBudgetProgress) && (
+        <div className="van-log__summary">
+          {showSummaryTotal && (
+            <div className="van-log__summary-total">
+              <span className="van-log__summary-label">{t("vanLog.totalSpent")}</span>
+              <div className="van-log__summary-value">
+                {totalsByCurrency.map((ct) => (
+                  <strong key={ct.currency}>{formatAmount(ct.total, ct.currency, language)}</strong>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {tripBudgetProgress && (
             <div className="van-log__budget-progress">
@@ -507,29 +488,14 @@ const VanLog = () => {
           )}
         </div>
 
-        {activeTab === "entries" && searchedEntries.length > 0 && (
-          <button
-            type="button"
-            className="van-log__export-btn"
-            onClick={handleExportCsv}
-            aria-label={t("vanLog.exportCsv")}
-            title={t("vanLog.exportCsv")}
-          >
-            <IoDownloadOutline />
-          </button>
-        )}
-
         {filterChips.map((chip) => (
           <span key={chip.key} className="van-log__filter-chip">
             {chip.label}
             <button type="button" onClick={chip.onRemove} aria-label={t("vanLog.removeFilter")}>✕</button>
           </span>
         ))}
-      </div>
-
-      {activeTab === "entries" && (
-        <>
-          {!loading && hasEntriesWithTrip && (
+        <div className="van-log__toolbar-end">
+          {activeTab === "entries" && !loading && hasEntriesWithTrip && (
             <div className="van-log__group-toggle" role="group" aria-label={t("vanLog.groupByLabel")}>
               {[["month", t("vanLog.groupByMonth")], ["trip", t("vanLog.byTrip")]].map(([value, label]) => (
                 <button
@@ -544,6 +510,22 @@ const VanLog = () => {
               ))}
             </div>
           )}
+          {activeTab === "entries" && searchedEntries.length > 0 && (
+            <button
+              type="button"
+              className="van-log__export-btn"
+              onClick={handleExportCsv}
+              aria-label={t("vanLog.exportCsv")}
+              title={t("vanLog.exportCsv")}
+            >
+              <IoDownloadOutline />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {activeTab === "entries" && (
+        <>
           {loading ? (
             <div className="van-log__list">
               {Array.from({ length: 4 }).map((_, i) => (
@@ -577,31 +559,63 @@ const VanLog = () => {
                       </span>
                     )}
                   </div>
-                  {group.entries.map((entry) => {
-                    const priceLine = entry.category === "fuel" && entry.pricePerLiter != null
-                      ? `${formatNumber(entry.pricePerLiter, language, { minimumFractionDigits: 3, maximumFractionDigits: 3 })} ${entry.currency || ""}/L`
-                      : null;
-                    return (
-                      <div key={entry.id} className="van-log__entry">
-                        <div className="van-log__entry-icon" aria-hidden="true">
-                          {vanLogCategoryEmoji[entry.category] ?? "📍"}
-                        </div>
-                        <div className="van-log__entry-body">
-                          <div className="van-log__entry-top">
-                            <div className="van-log__entry-top-content">
-                              <div className="van-log__entry-top-left">
-                                <span className="van-log__entry-category">{categoryLabel(entry.category)}</span>
-                                <span className="van-log__entry-date">
-                                  {entry.entryDate && formatCalendarDay(entry.entryDate, language, SHORT_DAY)}
-                                  {entry.entryDate && <span className="van-log__entry-date-relative"> · {daysSinceLabel(entry.entryDate, t)}</span>}
-                                </span>
-                              </div>
-                              {entry.amount != null && (
-                                <strong className="van-log__entry-amount">
-                                  {formatAmount(entry.amount, entry.currency, language)}
-                                </strong>
-                              )}
-                            </div>
+                  <div className="van-log__group-rows">
+                    {group.entries.map((entry) => {
+                      const priceLine = entry.category === "fuel" && entry.pricePerLiter != null
+                        ? `${formatNumber(entry.pricePerLiter, language, { minimumFractionDigits: 3, maximumFractionDigits: 3 })} ${entry.currency || ""}/L`
+                        : null;
+                      const locationLine = entry.location?.name
+                        ? `${entry.location.name}${entry.location.country ? `, ${entry.location.country}` : ""}`
+                        : null;
+                      const detailParts = [
+                        entry.title ? categoryLabel(entry.category) : null,
+                        entry.entryDate ? formatCalendarDay(entry.entryDate, language, SHORT_DAY) : null,
+                        locationLine,
+                        priceLine,
+                      ].filter(Boolean);
+                      return (
+                        <div
+                          key={entry.id}
+                          className={`van-log__entry${openMenuId === entry.id ? " van-log__entry--menu-open" : ""}${entry.notes ? " van-log__entry--expandable" : ""}`}
+                          onClick={(event) => handleEntryRowClick(event, entry)}
+                        >
+                          <span className="van-log__entry-icon" aria-hidden="true">
+                            {vanLogCategoryEmoji[entry.category] ?? "📍"}
+                          </span>
+                          <div className="van-log__entry-body">
+                            <p className="van-log__entry-title">{entry.title || categoryLabel(entry.category)}</p>
+                            <p className="van-log__entry-details">{detailParts.join(" · ")}</p>
+                            {entry.notes && (
+                              <VanLogEntryNotes
+                                notes={entry.notes}
+                                expanded={expandedEntryId === entry.id}
+                                onToggle={() => toggleExpanded(entry.id)}
+                              />
+                            )}
+                            {entry.itinerary && !isGroupedByTrip && (
+                              <Link to={`/itinerary/${entry.itinerary.id}`} className="van-log__entry-trip">
+                                <IoMapOutline aria-hidden="true" /> <span>{entry.itinerary.title}</span>
+                              </Link>
+                            )}
+                          </div>
+                          {entry.amount != null && (
+                            <strong className="van-log__entry-amount">
+                              {formatAmount(entry.amount, entry.currency, language)}
+                            </strong>
+                          )}
+                          <div className="van-log__entry-actions">
+                            {entry.receiptPhotoUrl && (
+                              <a
+                                href={entry.receiptPhotoUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="van-log__entry-receipt"
+                                aria-label={t("vanLog.viewReceipt")}
+                                title={t("vanLog.viewReceipt")}
+                              >
+                                <IoReceiptOutline aria-hidden="true" />
+                              </a>
+                            )}
                             <div className="van-log__entry-menu" ref={openMenuId === entry.id ? menuRef : null}>
                               <button
                                 type="button"
@@ -627,37 +641,10 @@ const VanLog = () => {
                               )}
                             </div>
                           </div>
-                          {entry.title && <p className="van-log__entry-title">{entry.title}</p>}
-                          {(entry.location?.name || priceLine) && (
-                            <p className="van-log__entry-location">
-                              {entry.location?.name}{entry.location?.country ? `, ${entry.location.country}` : ""}
-                              {priceLine && (entry.location?.name ? " · " : "") + priceLine}
-                            </p>
-                          )}
-                          {entry.notes && <p className="van-log__entry-notes">{entry.notes}</p>}
-                          {((entry.itinerary && !isGroupedByTrip) || entry.receiptPhotoUrl) && (
-                            <div className="van-log__entry-tags">
-                              {entry.itinerary && !isGroupedByTrip && (
-                                <Link to={`/itinerary/${entry.itinerary.id}`} className="van-log__entry-tag van-log__entry-tag--trip">
-                                  <IoMapOutline aria-hidden="true" /> <span>{entry.itinerary.title}</span>
-                                </Link>
-                              )}
-                              {entry.receiptPhotoUrl && (
-                                <a
-                                  href={entry.receiptPhotoUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="van-log__entry-tag van-log__entry-tag--receipt"
-                                >
-                                  <IoReceiptOutline aria-hidden="true" /> {t("vanLog.viewReceipt")}
-                                </a>
-                              )}
-                            </div>
-                          )}
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
               ))}
             </div>
@@ -666,107 +653,39 @@ const VanLog = () => {
       )}
 
       {activeTab === "stats" && (
-        stats && hasBreakdown ? (
-          <div className="van-log__stats">
-            {sortedCategoryTotals.length > 0 && (
-              <div className="van-log__stats-block">
-                <span className="van-log__stats-block-title">{t("vanLog.byCategory")}</span>
-                <div className="van-log__bar-chart">
-                  {sortedCategoryTotals.map((c) => {
-                    const pct = maxCategoryTotal > 0 ? (c.total / maxCategoryTotal) * 100 : 0;
-                    const lastUsed = c.lastDate ? daysSinceLabel(c.lastDate, t) : null;
-                    const name = categoryLabel(c.category);
-                    return (
-                      <div
-                        key={`cat-${c.category}-${c.currency ?? "none"}`}
-                        className="van-log__bar-row"
-                        title={lastUsed ? `${name} · ${lastUsed}` : undefined}
-                      >
-                        <span className="van-log__bar-row-label">
-                          {vanLogCategoryEmoji[c.category] ?? "📍"} {name}
-                        </span>
-                        <div className="van-log__bar-row-track">
-                          <div className="van-log__bar-row-fill" style={{ width: `${pct}%` }} />
-                        </div>
-                        <span className="van-log__bar-row-value">{formatNumber(c.total, language, TWO_DECIMALS)}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {sortedCountryTotals.length > 0 && (
-              <div className="van-log__stats-block">
-                <span className="van-log__stats-block-title">{t("vanLog.byCountry")}</span>
-                <div className="van-log__bar-chart van-log__bar-chart--country">
-                  {sortedCountryTotals.map((c) => {
-                    const pct = maxCountryTotal > 0 ? (c.total / maxCountryTotal) * 100 : 0;
-                    return (
-                      <div key={`country-${c.country}-${c.currency ?? "none"}`} className="van-log__bar-row">
-                        <span className="van-log__bar-row-label">{c.country}</span>
-                        <div className="van-log__bar-row-track">
-                          <div className="van-log__bar-row-fill" style={{ width: `${pct}%` }} />
-                        </div>
-                        <span className="van-log__bar-row-value">{formatNumber(c.total, language, TWO_DECIMALS)}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {sortedTripTotals.length > 0 && (
-              <div className="van-log__stats-block">
-                <span className="van-log__stats-block-title">{t("vanLog.byTrip")}</span>
-                <div className="van-log__bar-chart van-log__bar-chart--country">
-                  {sortedTripTotals.map((tr) => {
-                    const pct = maxTripTotal > 0 ? (tr.total / maxTripTotal) * 100 : 0;
-                    return (
-                      <div key={`trip-${tr.tripId}-${tr.currency ?? "none"}`} className="van-log__bar-row">
-                        <span className="van-log__bar-row-label">{tr.tripTitle}</span>
-                        <div className="van-log__bar-row-track">
-                          <div className="van-log__bar-row-fill" style={{ width: `${pct}%` }} />
-                        </div>
-                        <span className="van-log__bar-row-value">{formatNumber(tr.total, language, TWO_DECIMALS)}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {fuelTrend && (
-              <div className="van-log__stats-block">
-                <span className="van-log__stats-block-title">
-                  {t("vanLog.fuelPriceTrend")} ({fuelTrend.currency}/L)
-                </span>
-                <div className="van-log__fuel-trend-chart">
-                  {fuelTrend.points.map((p) => {
-                    const pct = fuelTrend.maxPrice > 0 ? (p.pricePerLiter / fuelTrend.maxPrice) * 100 : 0;
-                    return (
-                      <div
-                        key={p.id}
-                        className="van-log__fuel-trend-col"
-                        title={`${formatCalendarDay(p.entryDate, language, SHORT_DAY)} · ${formatNumber(p.pricePerLiter, language, { minimumFractionDigits: 3, maximumFractionDigits: 3 })} ${fuelTrend.currency}/L`}
-                      >
-                        <span className="van-log__fuel-trend-value">{formatNumber(p.pricePerLiter, language, TWO_DECIMALS)}</span>
-                        <div className="van-log__fuel-trend-bar-track">
-                          <div className="van-log__fuel-trend-bar" style={{ height: `${pct}%` }} />
-                        </div>
-                        <span className="van-log__fuel-trend-date">{formatCalendarDay(p.entryDate, language, SHORT_DAY)}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+        <>
+          <div className="van-log__period">
+            <button
+              type="button"
+              className={`van-log__filter-preset${!filters.dateFrom && !filters.dateTo ? " van-log__filter-preset--active" : ""}`}
+              onClick={() => setFilters((prev) => ({ ...prev, dateFrom: "", dateTo: "" }))}
+            >
+              {t("vanLog.statsPeriodAll")}
+            </button>
+            {statsPeriodPresets.map((preset) => (
+              <button
+                key={preset.key}
+                type="button"
+                className={`van-log__filter-preset${activePresetKey === preset.key ? " van-log__filter-preset--active" : ""}`}
+                onClick={() => applyDateRangePreset(preset)}
+              >
+                {t(preset.labelKey)}
+              </button>
+            ))}
           </div>
-        ) : (
-          <div className="van-log__empty">
-            <p>{t("vanLog.noStatsYet")}</p>
-          </div>
-        )
+          {loading && entries.length === 0 ? (
+            <div className="skeleton van-log__stats-skeleton" />
+          ) : (
+            <VanLogStatsView
+              entries={entries}
+              stats={stats}
+              filters={filters}
+              myItineraries={myItineraries}
+              language={language}
+              categoryLabel={categoryLabel}
+            />
+          )}
+        </>
       )}
 
       {entryModal && (

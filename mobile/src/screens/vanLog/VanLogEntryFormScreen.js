@@ -253,34 +253,6 @@ const VanLogEntryFormScreen = ({ navigation, route }) => {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.card}>
-            <Field label={t('vanLog.categoryLabel')} error={errors.category}>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
-                {vanLogCategories.map(cat => (
-                  <TouchableOpacity
-                    key={cat.value}
-                    style={[styles.chip, category === cat.value && styles.chipActive]}
-                    onPress={() => { setCategory(cat.value); setErrors(e => ({ ...e, category: null })); setIsDirty(true); }}
-                  >
-                    <Text style={styles.chipEmoji}>{CATEGORY_EMOJI[cat.value] ?? '📍'}</Text>
-                    <Text style={[styles.chipLabel, category === cat.value && styles.chipLabelActive]}>
-                      {t(`vanLog.category.${cat.value}`, cat.label)}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </Field>
-
-            <Field label={t('vanLog.titleLabel')} error={errors.title}>
-              <TextInput
-                style={styles.input}
-                value={title}
-                onChangeText={v => { setTitle(v); setErrors(e => ({ ...e, title: null })); setIsDirty(true); }}
-                placeholder={t('vanLog.titlePlaceholder')}
-                placeholderTextColor="#9ca3af"
-                maxLength={255}
-              />
-            </Field>
-
             <Field label={t('vanLog.amountLabel')} error={errors.amount}>
               <TextInput
                 style={styles.input}
@@ -289,6 +261,7 @@ const VanLogEntryFormScreen = ({ navigation, route }) => {
                 placeholder="0.00"
                 placeholderTextColor="#9ca3af"
                 keyboardType="decimal-pad"
+                autoFocus={!entry}
               />
             </Field>
 
@@ -334,6 +307,34 @@ const VanLogEntryFormScreen = ({ navigation, route }) => {
                   </TouchableOpacity>
                 </ScrollView>
               )}
+            </Field>
+
+            <Field label={t('vanLog.categoryLabel')} error={errors.category}>
+              <View style={styles.categoryChips}>
+                {vanLogCategories.map(cat => (
+                  <TouchableOpacity
+                    key={cat.value}
+                    style={[styles.chip, category === cat.value && styles.chipActive]}
+                    onPress={() => { setCategory(cat.value); setErrors(e => ({ ...e, category: null })); setIsDirty(true); }}
+                  >
+                    <Text style={styles.chipEmoji}>{CATEGORY_EMOJI[cat.value] ?? '📍'}</Text>
+                    <Text style={[styles.chipLabel, category === cat.value && styles.chipLabelActive]}>
+                      {t(`vanLog.category.${cat.value}`, cat.label)}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </Field>
+
+            <Field label={t('vanLog.titleLabel')} error={errors.title}>
+              <TextInput
+                style={styles.input}
+                value={title}
+                onChangeText={v => { setTitle(v); setErrors(e => ({ ...e, title: null })); setIsDirty(true); }}
+                placeholder={t('vanLog.titlePlaceholder')}
+                placeholderTextColor="#9ca3af"
+                maxLength={255}
+              />
             </Field>
 
             {category === 'fuel' && (
@@ -495,6 +496,7 @@ const styles = StyleSheet.create({
   currencyCustomInput: { flex: 1 },
   currencyBackText: { fontSize: 13, fontWeight: '600', color: '#E8743B' },
 
+  categoryChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chips: { gap: 8, paddingVertical: 2 },
   chip: {
     flexDirection: 'row', alignItems: 'center', gap: 4,

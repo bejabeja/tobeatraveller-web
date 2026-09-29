@@ -677,6 +677,14 @@
     "receiptPhotoUploadError": "El gasto se guardó, pero no se pudo subir la foto.",
     "receiptPhotoNeedsConnection": "El gasto se ha guardado, pero la foto necesita conexión. Vuelve a añadirla cuando tengas internet.",
     "viewReceipt": "Ver recibo",
+    "notesShowMore": "Ver más",
+    "notesShowLess": "Ver menos",
+    "statsPeriodAll": "Todo",
+    "statsAveragePerDay": "Al día",
+    "statsExpenseCount": "Gastos",
+    "statsOverTime": "Gasto en el tiempo",
+    "fuelPriceAverage": "Media",
+    "fuelPriceLatest": "Último",
     "tripLabel": "¿Para qué viaje?",
     "noTrip": "Ninguno",
     "allTrips": "Todos los viajes",
@@ -725,9 +733,7 @@
       "overnight_stay": "Pernocta",
       "maintenance": "Mantenimiento",
       "other": "Otros"
-    },
-    "viewBreakdown": "Ver desglose",
-    "hideBreakdown": "Ocultar desglose"
+    }
   },
   "supplies": {
     "title": "Lista de la compra",
