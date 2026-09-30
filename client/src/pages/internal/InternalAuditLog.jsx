@@ -48,6 +48,27 @@ const AUDIT_DESCRIPTIONS = {
   referral_reward_capped: (entry, t) => t("admin.auditReferralRewardCapped", {
     target: entry.targetUsername ?? entry.targetUserId, monthlyLimit: entry.metadata?.monthlyLimit,
   }),
+  subscription_started: (entry, t) => t(
+    entry.metadata?.status === "trialing" ? "admin.auditSubscriptionTrialStarted" : "admin.auditSubscriptionStarted",
+    { target: entry.targetUsername ?? entry.targetUserId },
+  ),
+  subscription_canceled: (entry, t) => t(
+    entry.metadata?.previousStatus === "trialing" ? "admin.auditSubscriptionTrialExpired" : "admin.auditSubscriptionEnded",
+    { target: entry.targetUsername ?? entry.targetUserId },
+  ),
+  subscription_cancellation_scheduled: (entry, t) => t(
+    entry.metadata?.status === "trialing" ? "admin.auditTrialCanceled" : "admin.auditSubscriptionCancellationScheduled",
+    { target: entry.targetUsername ?? entry.targetUserId },
+  ),
+  subscription_resumed: (entry, t) => t("admin.auditSubscriptionResumed", {
+    target: entry.targetUsername ?? entry.targetUserId,
+  }),
+  subscription_trial_converted: (entry, t) => t("admin.auditTrialConverted", {
+    target: entry.targetUsername ?? entry.targetUserId,
+  }),
+  subscription_payment_failed: (entry, t) => t("admin.auditSubscriptionPaymentFailed", {
+    target: entry.targetUsername ?? entry.targetUserId,
+  }),
   admin_notice_sent: (entry, t) => t("admin.auditNoticeSent", {
     actor: entry.actorUsername, target: entry.targetUsername, message: entry.metadata?.message,
   }),

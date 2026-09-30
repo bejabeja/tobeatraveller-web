@@ -14,6 +14,12 @@ const PRICE_IDS_BY_PLAN = {
 // subscription, otherwise cancelling and resubscribing would be a free
 // premium loophole.
 const FREE_TRIAL_DAYS = 7;
+// By default Stripe invoices when a trial ends with no card, fails, and keeps
+// retrying with "payment failed" emails to someone who never entered a card.
+const TRIAL_SUBSCRIPTION_DATA = {
+    trial_period_days: FREE_TRIAL_DAYS,
+    trial_settings: { end_behavior: { missing_payment_method: 'cancel' } },
+};
 
 // Recent Stripe API versions moved current_period_end from the subscription
 // itself to its first item (a subscription can have several items, each with
@@ -59,13 +65,12 @@ export class SubscriptionService {
             customer: customerId,
             mode: 'subscription',
             line_items: [{ price: PRICE_IDS_BY_PLAN[plan], quantity: 1 }],
-            subscription_data: isFirstSubscription ? { trial_period_days: FREE_TRIAL_DAYS } : undefined,
+            subscription_data: isFirstSubscription ? TRIAL_SUBSCRIPTION_DATA : undefined,
             // Only skips card collection when nothing is due today, which is
             // exactly the free trial case (amount due $0); a resubscribe with
             // no trial still owes the full price immediately, so Stripe still
-            // asks for a card then. If the trial ends with no card on file,
-            // the renewal invoice fails and the subscription status moves out
-            // of ACTIVE_SUBSCRIPTION_STATUSES, so premiumUntil still expires
+            // asks for a card then. A trial that ends with no card on file is
+            // canceled (see TRIAL_SUBSCRIPTION_DATA), so premiumUntil expires
             // on schedule and requirePremium reverts the user to free.
             payment_method_collection: 'if_required',
             success_url: `${config.appUrl}/subscription?checkout=success`,
@@ -103,6 +108,17 @@ export class SubscriptionService {
             currentPeriodEnd: currentPeriodEndOf(resumed),
             cancelAtPeriodEnd: isScheduledToCancel(resumed),
         });
+
+        // The webhook that follows finds the row already updated, so it would
+        // never see this change: this is the one that records it.
+        if (!updated.cancelAtPeriodEnd) {
+            const user = await this.userRepository.getUserById(userId);
+            this.auditLogService?.log({
+                action: AUDIT_EVENTS.SUBSCRIPTION_RESUMED,
+                targetUserId: userId, targetUsername: user?.username,
+                metadata: { stripeSubscriptionId: subscription.stripeSubscriptionId, status: resumed.status },
+            });
+        }
 
         return updated.toDTO();
     }
@@ -189,10 +205,26 @@ export class SubscriptionService {
         if (!existing) return;
 
         const currentPeriodEnd = currentPeriodEndOf(subscription);
+        const cancelAtPeriodEnd = isScheduledToCancel(subscription);
+
+        // Resolved and logged before the row changes: Stripe delivers at least
+        // once, and a retry recomputes the same transitions only while the
+        // stored row is still the old one. A rare duplicate entry after a
+        // failed update is better than a transition lost for good.
+        const transitions = this._transitionActions(existing, subscription.status, cancelAtPeriodEnd);
+        if (transitions.length) {
+            const user = await this.userRepository.getUserById(existing.userId);
+            transitions.forEach((action) => this.auditLogService?.log({
+                action,
+                targetUserId: existing.userId, targetUsername: user?.username,
+                metadata: { stripeSubscriptionId: subscription.id, status: subscription.status },
+            }));
+        }
+
         await this.subscriptionRepository.updateByStripeSubscriptionId(subscription.id, {
             status: subscription.status,
             currentPeriodEnd,
-            cancelAtPeriodEnd: isScheduledToCancel(subscription),
+            cancelAtPeriodEnd,
         });
 
         if (ACTIVE_SUBSCRIPTION_STATUSES.includes(subscription.status)) {
@@ -200,9 +232,20 @@ export class SubscriptionService {
         }
     }
 
+    // Only changes from what was stored, so a redelivered event does not log
+    // twice; one event can carry several of them.
+    _transitionActions(existing, status, cancelAtPeriodEnd) {
+        const actions = [];
+        if (!existing.cancelAtPeriodEnd && cancelAtPeriodEnd) actions.push(AUDIT_EVENTS.SUBSCRIPTION_CANCELLATION_SCHEDULED);
+        if (existing.cancelAtPeriodEnd && !cancelAtPeriodEnd) actions.push(AUDIT_EVENTS.SUBSCRIPTION_RESUMED);
+        if (existing.status === 'trialing' && status === 'active') actions.push(AUDIT_EVENTS.SUBSCRIPTION_TRIAL_CONVERTED);
+        if (existing.status !== 'past_due' && status === 'past_due') actions.push(AUDIT_EVENTS.SUBSCRIPTION_PAYMENT_FAILED);
+        return actions;
+    }
+
     async _handleSubscriptionDeleted(subscription) {
         const existing = await this.subscriptionRepository.findByStripeSubscriptionId(subscription.id);
-        if (!existing) return;
+        if (!existing || existing.status === 'canceled') return;
 
         await this.subscriptionRepository.updateByStripeSubscriptionId(subscription.id, {
             status: 'canceled',
@@ -215,7 +258,7 @@ export class SubscriptionService {
         this.auditLogService?.log({
             action: AUDIT_EVENTS.SUBSCRIPTION_CANCELED,
             targetUserId: existing.userId, targetUsername: user?.username,
-            metadata: { stripeSubscriptionId: subscription.id },
+            metadata: { stripeSubscriptionId: subscription.id, previousStatus: existing.status },
         });
     }
 

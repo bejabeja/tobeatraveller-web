@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { FREE_PLAN_LIMITS, PLAN_COMPARISON } from '../../utils/constants/premiumFeatures.js';
+import { FREE_PLAN_LIMITS, PLAN_COMPARISON, PREMIUM_FEATURES, PREMIUM_WELCOME_FEATURES } from '../../utils/constants/premiumFeatures.js';
 
 // The pricing page promises these limits; the API is what enforces them.
 const apiLimit = (service) => {
@@ -29,5 +29,17 @@ describe('PLAN_COMPARISON', () => {
         const byId = Object.fromEntries(PLAN_COMPARISON.map(row => [row.id, row.free]));
 
         expect(byId).toMatchObject({ vanLog: 10, supplies: 10, lifeDiary: 10, packingChecklist: 2, aiItineraries: false, core: true });
+    });
+});
+
+describe('PREMIUM_WELCOME_FEATURES', () => {
+    it('points a new subscriber to the AI itineraries first, then to the tools they can now use without limits', () => {
+        expect(PREMIUM_WELCOME_FEATURES.map(feature => feature.id)).toEqual(['aiItineraries', 'packingChecklist', 'vanLog']);
+    });
+
+    it('reuses the feature copy of the pricing page instead of a copy of its own', () => {
+        PREMIUM_WELCOME_FEATURES.forEach((feature) => {
+            expect(PREMIUM_FEATURES).toContainEqual(feature);
+        });
     });
 });

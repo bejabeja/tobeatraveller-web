@@ -21,7 +21,12 @@ export const ANALYTICS_EVENTS = Object.freeze({
     TRIP_SAVED: 'trip_saved',
     COMMENT_POSTED: 'comment_posted',
     USER_FOLLOWED: 'user_followed',
+    SUBSCRIPTION_PAGE_VIEWED: 'subscription_page_viewed',
     CHECKOUT_STARTED: 'checkout_started',
+    CHECKOUT_COMPLETED: 'checkout_completed',
+    ACTIVATION_DELAYED: 'activation_delayed',
+    SUBSCRIPTION_RESUMED: 'subscription_resumed',
+    SUBSCRIPTION_PORTAL_OPENED: 'subscription_portal_opened',
     PACKING_LIST_CREATED: 'packing_list_created',
     PACKING_LIST_LINKED_TO_TRIP: 'packing_list_linked_to_trip',
 });

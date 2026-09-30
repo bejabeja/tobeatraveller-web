@@ -1,20 +1,23 @@
-import { render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
+import { formatDate } from "@tobeatraveller/shared";
 
 let mockMe = { id: "user-1", isPremium: false, isTrialEligible: true };
+let mockAuthUser = { id: "user-1" };
 
+const mockDispatch = jest.fn();
 jest.mock("react-redux", () => ({
   useSelector: (selector) => selector(),
-  useDispatch: () => jest.fn(),
+  useDispatch: () => mockDispatch,
 }));
 jest.mock("../../store/auth/authSelectors", () => ({
-  selectAuthUser: () => ({ id: "user-1" }),
+  selectAuthUser: () => mockAuthUser,
   selectIsAuthenticated: () => true,
 }));
 jest.mock("../../store/user/userInfoSelectors", () => ({ selectMe: () => mockMe }));
 jest.mock("../../store/user/userInfoActions", () => ({ setUserInfo: jest.fn() }));
 jest.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (key, vars) => (vars?.count !== undefined ? `${key}:${vars.count}` : key), i18n: { language: "es" } }),
+  useTranslation: () => ({ t: (key, vars) => (vars?.count !== undefined ? `${key}:${vars.count}` : vars?.date ? `${key}:${vars.date}` : key), i18n: { language: "es" } }),
 }));
 jest.mock("react-hot-toast", () => ({ __esModule: true, default: Object.assign(jest.fn(), { success: jest.fn(), error: jest.fn() }) }));
 jest.mock("../../services/subscription", () => ({
@@ -24,13 +27,22 @@ jest.mock("../../utils/preloadImg", () => ({ preloadImg: jest.fn() }));
 jest.mock("../../utils/analytics", () => ({ trackEvent: jest.fn() }));
 jest.mock("../../hooks/useScrollReveal", () => ({ useScrollReveal: () => null }));
 
+import { getMySubscription, createPortalSession } from "../../services/subscription";
+import { trackEvent } from "../../utils/analytics";
 import Subscription from "./Subscription";
 
-const renderPage = () => render(<MemoryRouter><Subscription /></MemoryRouter>);
+const pageAt = (path) => <MemoryRouter initialEntries={[path]}><Subscription /></MemoryRouter>;
+const renderPage = (path = "/subscription") => {
+  const utils = render(pageAt(path));
+  return { ...utils, rerenderPage: () => utils.rerender(pageAt(path)) };
+};
+
+const eventsNamed = (name) => trackEvent.mock.calls.filter(([event]) => event === name);
 
 describe("Subscription", () => {
   beforeEach(() => {
     mockMe = { id: "user-1", isPremium: false, isTrialEligible: true };
+    mockAuthUser = { id: "user-1" };
   });
 
   // Either plan starts with the free trial the first time.
@@ -59,5 +71,262 @@ describe("Subscription", () => {
     expect(screen.getByText("subscription.compareUpTo:2")).toBeInTheDocument();
     expect(screen.getAllByLabelText("subscription.compareNotIncluded")).toHaveLength(2);
     expect(screen.queryByText("subscription.featureNoAdsTitle")).not.toBeInTheDocument();
+  });
+
+  describe("when the user is Premium", () => {
+    const IN_TWO_WEEKS = new Date(Date.now() + 14 * 86400000).toISOString();
+    const date = (iso) => formatDate(iso, "es");
+    const paidSubscription = (overrides = {}) => ({ status: "active", currentPeriodEnd: IN_TWO_WEEKS, cancelAtPeriodEnd: false, ...overrides });
+    const renderPremium = async (subscription) => {
+      mockMe = { id: "user-1", isPremium: true, premiumUntil: IN_TWO_WEEKS };
+      getMySubscription.mockResolvedValue(subscription);
+      renderPage();
+      await act(async () => {});
+    };
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it("is not sold Premium again: the page is about their subscription, not the pitch", async () => {
+      await renderPremium(paidSubscription());
+
+      expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("subscription.yourPremiumTitle");
+      expect(screen.queryByText("subscription.subtitle")).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "subscription.ctaSubscribe" })).not.toBeInTheDocument();
+    });
+
+    it("tells a paying customer when the subscription renews, and lets them manage it", async () => {
+      await renderPremium(paidSubscription());
+
+      expect(screen.getByText(`subscription.renewsOn:${date(IN_TWO_WEEKS)}`)).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "subscription.manageLink" })).toBeInTheDocument();
+    });
+
+    // Regression: Premium that came as a gift or a referral reward has no Stripe
+    // customer, so the billing portal failed with "No subscription found".
+    it("offers no billing to someone whose Premium is a gift, and says until when they have it", async () => {
+      await renderPremium(null);
+
+      expect(screen.getByText(`subscription.premiumUntilDesc:${date(IN_TWO_WEEKS)}`)).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "subscription.manageLink" })).not.toBeInTheDocument();
+      expect(createPortalSession).not.toHaveBeenCalled();
+    });
+
+    it("keeps the way to billing when the subscription could not be read, as they may well be paying", async () => {
+      mockMe = { id: "user-1", isPremium: true, premiumUntil: IN_TWO_WEEKS };
+      getMySubscription.mockRejectedValue(new Error("offline"));
+      renderPage();
+      await act(async () => {});
+
+      expect(screen.getByRole("button", { name: "subscription.manageLink" })).toBeInTheDocument();
+    });
+
+    it("shows a canceled subscription as ending, not as the green confirmation, with the way back", async () => {
+      await renderPremium(paidSubscription({ cancelAtPeriodEnd: true }));
+
+      expect(screen.getByText("subscription.canceledTitle")).toBeInTheDocument();
+      expect(screen.queryByText("subscription.alreadyPremiumTitle")).not.toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "subscription.ctaResume" })).toBeInTheDocument();
+    });
+
+    it("shows the failed payment, and never the reassuring state first", async () => {
+      let resolveSubscription;
+      getMySubscription.mockReturnValue(new Promise((resolve) => { resolveSubscription = resolve; }));
+      mockMe = { id: "user-1", isPremium: true, premiumUntil: IN_TWO_WEEKS };
+      renderPage();
+
+      expect(screen.queryByText("subscription.alreadyPremiumTitle")).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "subscription.manageLink" })).not.toBeInTheDocument();
+
+      await act(async () => { resolveSubscription(paidSubscription({ status: "past_due" })); });
+
+      expect(screen.getByText("subscription.paymentFailedTitle")).toBeInTheDocument();
+      expect(screen.queryByText("subscription.alreadyPremiumTitle")).not.toBeInTheDocument();
+    });
+  });
+
+  describe("right after paying", () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+      jest.useFakeTimers();
+      mockMe = { id: "user-1", isPremium: false, isTrialEligible: true };
+    });
+    afterEach(() => jest.useRealTimers());
+
+    it("says the Premium is being activated instead of showing the plans again", () => {
+      renderPage("/subscription?checkout=success");
+
+      expect(screen.getByText("subscription.activatingTitle")).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "subscription.ctaStartTrial" })).not.toBeInTheDocument();
+    });
+
+    // Regression: the retries were cancelled as soon as the param left the URL,
+    // so a webhook that landed a few seconds late was never picked up.
+    // Regression: with the user still loading, the param was removed without
+    // starting the wait, and someone who had just paid saw the plans again.
+    it("still waits for the activation when the user finishes loading after coming back from paying", () => {
+      mockAuthUser = {};
+      const { rerenderPage } = renderPage("/subscription?checkout=success");
+      expect(screen.queryByText("subscription.activatingTitle")).not.toBeInTheDocument();
+
+      mockAuthUser = { id: "user-1" };
+      rerenderPage();
+
+      expect(screen.getByText("subscription.activatingTitle")).toBeInTheDocument();
+    });
+
+    it("keeps asking for the user while the webhook is late", () => {
+      renderPage("/subscription?checkout=success");
+      const askedRightAway = mockDispatch.mock.calls.length;
+
+      act(() => { jest.advanceTimersByTime(8000); });
+
+      expect(mockDispatch.mock.calls.length).toBe(askedRightAway + 3);
+    });
+
+    // Regression: the plans came back after the wait, inviting someone who had
+    // just paid to pay again.
+    it("says it is late instead of selling Premium again if the activation never arrives", () => {
+      renderPage("/subscription?checkout=success");
+
+      act(() => { jest.advanceTimersByTime(13000); });
+
+      expect(screen.getByText("subscription.activationDelayedTitle")).toBeInTheDocument();
+      expect(screen.queryByText("subscription.activatingTitle")).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "subscription.ctaStartTrial" })).not.toBeInTheDocument();
+    });
+
+    it("waits and asks for the user again when checking again", () => {
+      renderPage("/subscription?checkout=success");
+      act(() => { jest.advanceTimersByTime(13000); });
+      const askedBefore = mockDispatch.mock.calls.length;
+
+      fireEvent.click(screen.getByRole("button", { name: "subscription.activationDelayedCta" }));
+
+      expect(mockDispatch.mock.calls.length).toBe(askedBefore + 1);
+      expect(screen.getByText("subscription.activatingTitle")).toBeInTheDocument();
+    });
+  });
+  describe("analytics", () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+      jest.useFakeTimers();
+      mockMe = { id: "user-1", isPremium: false, isTrialEligible: true };
+    });
+    afterEach(() => jest.useRealTimers());
+
+    it("records which state the page was seen in, once", () => {
+      const { rerenderPage } = renderPage();
+      rerenderPage();
+
+      expect(eventsNamed("subscription_page_viewed")).toEqual([["subscription_page_viewed", { view: "plans" }]]);
+    });
+
+    it("waits for the profile so a Premium user is not recorded as seeing the plans", () => {
+      mockMe = undefined;
+      const { rerenderPage } = renderPage();
+      expect(eventsNamed("subscription_page_viewed")).toHaveLength(0);
+
+      mockMe = { id: "user-1", isPremium: true };
+      getMySubscription.mockReturnValue(new Promise(() => {}));
+      rerenderPage();
+
+      expect(eventsNamed("subscription_page_viewed")).toHaveLength(0);
+    });
+
+    it("records the activation wait, not the plans, when coming back from paying", () => {
+      renderPage("/subscription?checkout=success");
+
+      expect(eventsNamed("subscription_page_viewed")).toEqual([["subscription_page_viewed", { view: "activating" }]]);
+    });
+
+    it("records that the payment went through once Premium arrives", () => {
+      const { rerenderPage } = renderPage("/subscription?checkout=success");
+      getMySubscription.mockResolvedValue({ status: "trialing", currentPeriodEnd: "2026-10-13T00:00:00.000Z", cancelAtPeriodEnd: false });
+
+      mockMe = { id: "user-1", isPremium: true };
+      rerenderPage();
+      rerenderPage();
+
+      expect(eventsNamed("checkout_completed")).toHaveLength(1);
+    });
+
+    it("does not record a completed checkout for someone who was already Premium", () => {
+      mockMe = { id: "user-1", isPremium: true };
+      getMySubscription.mockResolvedValue(null);
+      renderPage();
+
+      expect(eventsNamed("checkout_completed")).toHaveLength(0);
+    });
+
+    it("records when the activation runs late", () => {
+      renderPage("/subscription?checkout=success");
+
+      act(() => { jest.advanceTimersByTime(13000); });
+
+      expect(eventsNamed("activation_delayed")).toHaveLength(1);
+    });
+  });
+  describe("deciding whether to subscribe", () => {
+    it("shows what the yearly plan costs per month, only on the yearly plan", () => {
+      renderPage();
+
+      expect(screen.getAllByText("subscription.annualPerMonth")).toHaveLength(1);
+    });
+
+    // Regression-in-waiting: the answers state what the API does (a trial with
+    // no card that ends by canceling), so they have to stay on the page.
+    it("answers the doubts that hold people back, one tap away", () => {
+      renderPage();
+
+      expect(screen.getByText("subscription.faqTitle")).toBeInTheDocument();
+      ["Trial", "Cancel", "Data", "Ads", "Invoices"].forEach((topic) => {
+        expect(screen.getByText(`subscription.faq${topic}Question`)).toBeInTheDocument();
+        expect(screen.getByText(`subscription.faq${topic}Answer`)).toBeInTheDocument();
+      });
+    });
+
+    it("does not pitch the FAQ to someone who is already Premium", async () => {
+      mockMe = { id: "user-1", isPremium: true };
+      getMySubscription.mockResolvedValue(null);
+      renderPage();
+
+      expect(screen.queryByText("subscription.faqTitle")).not.toBeInTheDocument();
+    });
+  });
+
+  describe("right after Premium is activated", () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+      jest.useFakeTimers();
+      mockMe = { id: "user-1", isPremium: false, isTrialEligible: true };
+    });
+    afterEach(() => jest.useRealTimers());
+
+    const payAndBecomePremium = () => {
+      const { rerenderPage } = renderPage("/subscription?checkout=success");
+      getMySubscription.mockResolvedValue({ status: "trialing", currentPeriodEnd: "2026-10-13T00:00:00.000Z", cancelAtPeriodEnd: false });
+      mockMe = { id: "user-1", isPremium: true };
+      rerenderPage();
+      rerenderPage();
+    };
+
+    it("welcomes the new subscriber and points to what to try first", () => {
+      payAndBecomePremium();
+
+      expect(screen.getByText("subscription.welcomeTitle")).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: /subscription.featureAiItineraries/ })).toHaveAttribute("href", "/create-itinerary");
+      expect(screen.getByRole("link", { name: /subscription.featurePackingChecklistTitle/ })).toHaveAttribute("href", "/packing-checklist");
+      expect(screen.getByRole("link", { name: /subscription.featureVanLogTitle/ })).toHaveAttribute("href", "/van-log");
+    });
+
+    it("does not welcome someone who was already Premium when they opened the page", () => {
+      mockMe = { id: "user-1", isPremium: true };
+      getMySubscription.mockResolvedValue(null);
+      renderPage();
+
+      expect(screen.queryByText("subscription.welcomeTitle")).not.toBeInTheDocument();
+    });
   });
 });

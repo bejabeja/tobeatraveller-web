@@ -130,8 +130,18 @@ describe('SubscriptionService', () => {
             await service.createCheckoutSession('user-1', 'monthly');
 
             expect(stripeClient.checkout.sessions.create).toHaveBeenCalledWith(
-                expect.objectContaining({ subscription_data: { trial_period_days: 7 } })
+                expect.objectContaining({ subscription_data: expect.objectContaining({ trial_period_days: 7 }) })
             );
+        });
+
+        // Regression: by default Stripe invoices at the end of a trial without
+        // a card, fails, and keeps retrying with "payment failed" emails to
+        // someone who never entered a card.
+        it('ends a trial that has no card by canceling, instead of failing invoices', async () => {
+            await service.createCheckoutSession('user-1', 'monthly');
+
+            const { subscription_data: subscriptionData } = stripeClient.checkout.sessions.create.mock.calls[0][0];
+            expect(subscriptionData.trial_settings).toEqual({ end_behavior: { missing_payment_method: 'cancel' } });
         });
 
         it('does not grant a trial when the user has subscribed before', async () => {
@@ -192,6 +202,29 @@ describe('SubscriptionService', () => {
                 'sub_123', expect.objectContaining({ cancelAtPeriodEnd: false })
             );
             expect(result.cancelAtPeriodEnd).toBe(false);
+        });
+
+        // The webhook that follows finds the row already updated, so it would
+        // never see this change: the API is the one that has to record it.
+        it('records that the user took the cancellation back', async () => {
+            subscriptionRepository.findByUserId.mockResolvedValue([makeSubscriptionRow({ cancelAtPeriodEnd: true, status: 'trialing' })]);
+
+            await service.resumeSubscription('user-1');
+
+            expect(auditLogService.log).toHaveBeenCalledWith(expect.objectContaining({
+                action: 'subscription_resumed', targetUserId: 'user-1', metadata: { stripeSubscriptionId: 'sub_123', status: 'active' },
+            }));
+        });
+
+        it('does not record a resume when Stripe kept the cancellation scheduled', async () => {
+            subscriptionRepository.findByUserId.mockResolvedValue([makeSubscriptionRow({ cancelAtPeriodEnd: true })]);
+            stripeClient.subscriptions.update.mockResolvedValue(
+                makeStripeSubscription({ cancel_at_period_end: false, cancel_at: 1893456000 })
+            );
+
+            await service.resumeSubscription('user-1');
+
+            expect(auditLogService.log).not.toHaveBeenCalled();
         });
 
         it('still reports a pending cancellation if Stripe did not actually clear cancel_at', async () => {
@@ -335,6 +368,92 @@ describe('SubscriptionService', () => {
                 'sub_123', expect.objectContaining({ cancelAtPeriodEnd: true })
             );
         });
+
+        describe('audit trail of the subscription funnel', () => {
+            const updateWith = async (existing, stripeOverrides) => {
+                subscriptionRepository.findByStripeSubscriptionId.mockResolvedValue({
+                    userId: 'user-1', stripeSubscriptionId: 'sub_123', status: 'active', cancelAtPeriodEnd: false, ...existing,
+                });
+                await service.handleWebhookEvent({
+                    type: 'customer.subscription.updated',
+                    data: { object: makeStripeSubscription(stripeOverrides) },
+                });
+            };
+            const loggedActions = () => auditLogService.log.mock.calls.map(([entry]) => entry.action);
+
+            it('records a trial canceled by the user, telling it apart from a paid subscription', async () => {
+                await updateWith({ status: 'trialing' }, { status: 'trialing', cancel_at_period_end: true });
+
+                expect(auditLogService.log).toHaveBeenCalledWith(expect.objectContaining({
+                    action: 'subscription_cancellation_scheduled',
+                    targetUserId: 'user-1',
+                    metadata: { stripeSubscriptionId: 'sub_123', status: 'trialing' },
+                }));
+            });
+
+            it('records a cancellation scheduled from the portal, where cancel_at_period_end stays false', async () => {
+                await updateWith({}, { cancel_at: 1893456000 });
+
+                expect(loggedActions()).toEqual(['subscription_cancellation_scheduled']);
+            });
+
+            it('records it once even when Stripe delivers the same event again', async () => {
+                await updateWith({ cancelAtPeriodEnd: true }, { cancel_at_period_end: true });
+
+                expect(loggedActions()).toEqual([]);
+            });
+
+            it('records a trial that turned into a paid subscription', async () => {
+                await updateWith({ status: 'trialing' }, { status: 'active' });
+
+                expect(loggedActions()).toEqual(['subscription_trial_converted']);
+            });
+
+            it('records a payment that failed, once', async () => {
+                await updateWith({ status: 'active' }, { status: 'past_due' });
+                expect(loggedActions()).toEqual(['subscription_payment_failed']);
+
+                auditLogService.log.mockClear();
+                await updateWith({ status: 'past_due' }, { status: 'past_due' });
+                expect(loggedActions()).toEqual([]);
+            });
+
+            // Regression: only the first transition of an event was logged, and the
+            // row was already updated, so a redelivery could not recover the rest.
+            it('records every transition one event carries, not only the first', async () => {
+                await updateWith({ status: 'trialing' }, { status: 'active', cancel_at_period_end: true });
+
+                expect(loggedActions()).toEqual(['subscription_cancellation_scheduled', 'subscription_trial_converted']);
+            });
+
+            it('records a cancellation that was taken back from the portal', async () => {
+                await updateWith({ cancelAtPeriodEnd: true }, { cancel_at_period_end: false });
+
+                expect(loggedActions()).toEqual(['subscription_resumed']);
+            });
+
+            // Regression: the row was updated first, so when the lookup of the user
+            // failed, Stripe's retry saw no change and the event was lost for good.
+            it('leaves the row untouched when the user cannot be read, so the retry finds the same change', async () => {
+                subscriptionRepository.findByStripeSubscriptionId.mockResolvedValue({
+                    userId: 'user-1', stripeSubscriptionId: 'sub_123', status: 'active', cancelAtPeriodEnd: false,
+                });
+                userRepository.getUserById.mockRejectedValue(new Error('db down'));
+
+                await expect(service.handleWebhookEvent({
+                    type: 'customer.subscription.updated',
+                    data: { object: makeStripeSubscription({ status: 'past_due' }) },
+                })).rejects.toThrow('db down');
+
+                expect(subscriptionRepository.updateByStripeSubscriptionId).not.toHaveBeenCalled();
+            });
+
+            it('records nothing for a plain renewal', async () => {
+                await updateWith({ status: 'active' }, { status: 'active' });
+
+                expect(loggedActions()).toEqual([]);
+            });
+        });
     });
 
     describe('handleWebhookEvent() / customer.subscription.deleted', () => {
@@ -356,6 +475,40 @@ describe('SubscriptionService', () => {
             expect(auditLogService.log).toHaveBeenCalledWith(
                 expect.objectContaining({ action: 'subscription_canceled', targetUserId: 'user-1' })
             );
+        });
+
+        // The signal for a trial that ended without a card: the funnel needs it
+        // apart from someone who paid and then canceled.
+        it('records what state the subscription was in when it ended', async () => {
+            subscriptionRepository.findByStripeSubscriptionId.mockResolvedValue({
+                userId: 'user-1', stripeSubscriptionId: 'sub_123', status: 'trialing', currentPeriodEnd: new Date('2030-01-01'),
+            });
+
+            await service.handleWebhookEvent({
+                type: 'customer.subscription.deleted',
+                data: { object: makeStripeSubscription() },
+            });
+
+            expect(auditLogService.log).toHaveBeenCalledWith(expect.objectContaining({
+                action: 'subscription_canceled',
+                metadata: { stripeSubscriptionId: 'sub_123', previousStatus: 'trialing' },
+            }));
+        });
+
+        // Regression: a redelivered event logged a second "ended", now with
+        // previousStatus "canceled", losing the trial-expired distinction.
+        it('does nothing when the deletion was already processed', async () => {
+            subscriptionRepository.findByStripeSubscriptionId.mockResolvedValue({
+                userId: 'user-1', stripeSubscriptionId: 'sub_123', status: 'canceled', currentPeriodEnd: new Date('2030-01-01'),
+            });
+
+            await service.handleWebhookEvent({
+                type: 'customer.subscription.deleted',
+                data: { object: makeStripeSubscription() },
+            });
+
+            expect(subscriptionRepository.updateByStripeSubscriptionId).not.toHaveBeenCalled();
+            expect(auditLogService.log).not.toHaveBeenCalled();
         });
 
         it('does not revoke a premiumUntil an admin granted independently of this subscription', async () => {

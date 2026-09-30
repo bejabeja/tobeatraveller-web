@@ -12,6 +12,14 @@ export const PREMIUM_FEATURES = [
   { id: "noAds", titleKey: "subscription.featureNoAdsTitle", descriptionKey: "subscription.featureNoAdsDesc", emoji: "🚫", color: "#546E7A" },
 ];
 
+// What a new subscriber is pointed to first: the feature that most justifies
+// the plan, then the tools whose free limit they just lost. Same copy as the
+// pricing page (ids from PREMIUM_FEATURES), so it never says something else.
+const PREMIUM_WELCOME_FEATURE_IDS = ["aiItineraries", "packingChecklist", "vanLog"];
+export const PREMIUM_WELCOME_FEATURES = Object.freeze(
+  PREMIUM_WELCOME_FEATURE_IDS.map((id) => PREMIUM_FEATURES.find((feature) => feature.id === id)),
+);
+
 // What the free plan allows before asking for Premium: entries, items or,
 // for packing, lists. The API enforces them (FREE_ENTRY_LIMIT, FREE_ITEM_LIMIT
 // and FREE_LIST_LIMIT in api/src/services/vanLogService.js, suppliesService.js,

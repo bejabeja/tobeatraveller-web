@@ -541,6 +541,8 @@
     background: var(--success-light);
     border-radius: 16px;
     padding: 40px 24px;
+    max-width: 520px;
+    margin: 0 auto;
 
     h2 {
       margin: 8px 0 8px;
@@ -568,6 +570,110 @@
     justify-content: center;
     gap: 12px;
     margin-top: 24px;
+  }
+
+  // The page for someone who is Premium: no photo selling what they already
+  // have, just their own subscription.
+  &__account-header {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 2.5rem 1rem 0.5rem;
+  }
+
+  &__account-title {
+    width: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--text-color);
+  }
+
+  &__account-icon {
+    width: 1em;
+    height: 1em;
+    color: var(--primary-color);
+  }
+
+  // More specific than the cards' own paragraph style, so it needs no !important.
+  &__already-premium &__manage-hint,
+  &__canceled &__manage-hint {
+    margin: 12px auto 0;
+    max-width: 420px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  // Not the green "you're set" card: the subscription is ending, and the way
+  // back is what the card is for.
+  &__canceled {
+    text-align: center;
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 40px 24px;
+    max-width: 520px;
+    margin: 0 auto;
+
+    h2 {
+      margin: 8px 0 8px;
+      font-size: 20px;
+      color: var(--text-color);
+    }
+
+    p {
+      margin: 0;
+      color: var(--text-secondary-color);
+      font-size: 15px;
+      line-height: 1.6;
+    }
+  }
+
+  &__canceled-icon {
+    width: 1em;
+    height: 1em;
+    font-size: 36px;
+    color: var(--text-secondary-color);
+  }
+
+  &__activating {
+    text-align: center;
+    background: var(--primary-light);
+    border-radius: 16px;
+    padding: 40px 24px;
+    max-width: 520px;
+    margin: 0 auto;
+
+    h2 {
+      margin: 8px 0 8px;
+      font-size: 20px;
+      color: var(--text-color);
+    }
+
+    p {
+      margin: 0;
+      color: var(--text-secondary-color);
+      font-size: 15px;
+    }
+  }
+
+  &__activating-icon {
+    width: 1em;
+    height: 1em;
+    font-size: 36px;
+    color: var(--primary-color);
+  }
+
+  // Same height as the cards it stands in for, so nothing jumps when it loads.
+  &__state-skeleton {
+    width: 100%;
+    max-width: 520px;
+    height: 230px;
+    margin: 0 auto;
+    border-radius: 16px;
   }
 
   // Warmer/on-brand treatment (not the green "you're set" one above) on
@@ -648,5 +754,135 @@
 
   &__payment-failed-cta {
     margin-top: 24px;
+  }
+
+  &__price-equivalent {
+    margin: -4px 0 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--primary-color);
+  }
+
+  &__welcome {
+    max-width: 520px;
+    margin: 0 auto 24px;
+    text-align: center;
+
+    h2 {
+      margin: 0 0 4px;
+      font-size: 24px;
+      color: var(--text-color);
+    }
+
+    > p {
+      margin: 0 0 16px;
+      color: var(--text-secondary-color);
+      font-size: 15px;
+    }
+  }
+
+  &__welcome-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  &__welcome-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    text-align: left;
+    text-decoration: none;
+    color: var(--text-color);
+    background: var(--white-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    transition: border-color 0.15s ease, transform 0.15s ease;
+
+    &:hover,
+    &:focus-visible {
+      border-color: var(--primary-color);
+      transform: translateY(-1px);
+    }
+  }
+
+  &__welcome-emoji {
+    font-size: 26px;
+    line-height: 1;
+  }
+
+  &__welcome-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    strong {
+      font-size: 15px;
+    }
+
+    span {
+      font-size: 13px;
+      color: var(--text-secondary-color);
+      line-height: 1.4;
+    }
+  }
+
+  &__faq {
+    max-width: 720px;
+    padding-top: 0;
+    padding-bottom: 88px;
+
+    .subscription__features-title {
+      margin-bottom: 20px;
+    }
+  }
+
+  &__faq-item {
+    border-bottom: 1px solid var(--border-color);
+
+    summary {
+      cursor: pointer;
+      padding: 16px 4px;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-color);
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+
+      &::-webkit-details-marker {
+        display: none;
+      }
+
+      &::after {
+        content: "+";
+        font-size: 22px;
+        color: var(--primary-color);
+        flex-shrink: 0;
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--primary-color);
+        outline-offset: 2px;
+      }
+    }
+
+    &[open] summary::after {
+      content: "\2212";
+    }
+
+    p {
+      margin: 0;
+      padding: 0 4px 18px;
+      color: var(--text-secondary-color);
+      font-size: 15px;
+      line-height: 1.6;
+    }
   }
 }

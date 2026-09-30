@@ -20,6 +20,10 @@ export const AUDIT_EVENTS = Object.freeze({
     AI_ITINERARY_GENERATED: 'ai_itinerary_generated',
     SUBSCRIPTION_STARTED: 'subscription_started',
     SUBSCRIPTION_CANCELED: 'subscription_canceled',
+    SUBSCRIPTION_CANCELLATION_SCHEDULED: 'subscription_cancellation_scheduled',
+    SUBSCRIPTION_RESUMED: 'subscription_resumed',
+    SUBSCRIPTION_TRIAL_CONVERTED: 'subscription_trial_converted',
+    SUBSCRIPTION_PAYMENT_FAILED: 'subscription_payment_failed',
     REFERRAL_REWARD_GRANTED: 'referral_reward_granted',
     REFERRAL_REWARD_CAPPED: 'referral_reward_capped',
 });

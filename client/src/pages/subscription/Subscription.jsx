@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { FaCity } from "react-icons/fa";
 import { IoAlertCircleOutline, IoCheckmark, IoCheckmarkCircle, IoHourglassOutline, IoRemove, IoSparkles } from "react-icons/io5";
@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next";
 import { selectAuthUser, selectIsAuthenticated } from "../../store/auth/authSelectors";
 import { selectMe } from "../../store/user/userInfoSelectors";
 import { setUserInfo } from "../../store/user/userInfoActions";
-import { formatDate, PLAN_COMPARISON } from "@tobeatraveller/shared";
+import { formatDate, getPremiumView, PLAN_COMPARISON, PREMIUM_WELCOME_FEATURES, SUBSCRIPTION_FAQ } from "@tobeatraveller/shared";
 import { createCheckoutSession, createPortalSession, getMySubscription, resumeSubscription } from "../../services/subscription";
 import { getCategoryIcon } from "../../assets/icons";
 import { preloadImg } from "../../utils/preloadImg";
@@ -45,6 +45,18 @@ const PREVIEW_ITINERARY = [
   },
 ];
 
+// Premium is granted by the webhook, which can land a while after Stripe sends
+// the customer back: the page asks again a few times, and gives up waiting for
+// it a little after the last try.
+const REFRESH_RETRY_DELAYS_MS = [2000, 4000, 8000];
+const ACTIVATION_GIVE_UP_MS = 12000;
+
+const WELCOME_PATHS = {
+  aiItineraries: "/create-itinerary",
+  packingChecklist: "/packing-checklist",
+  vanLog: "/van-log",
+};
+
 const PLANS = [
   {
     id: "monthly",
@@ -57,6 +69,7 @@ const PLANS = [
     nameKey: "subscription.annualPlanName",
     priceKey: "subscription.annualPriceAmount",
     periodKey: "subscription.annualPricePeriod",
+    perMonthKey: "subscription.annualPerMonth",
     badgeKey: "subscription.annualBadge",
     highlighted: true,
   },
@@ -78,16 +91,15 @@ const Subscription = () => {
   const [loadingPlanId, setLoadingPlanId] = useState(null);
   const [loadingPortal, setLoadingPortal] = useState(false);
   const [subscription, setSubscription] = useState(null);
+  // "loading" until the subscription is known, so a paying customer is not
+  // shown a state that flips a moment later; "failed" when it could not be read.
+  const [subscriptionState, setSubscriptionState] = useState("loading");
+  const [activating, setActivating] = useState(false);
+  const [activationStalled, setActivationStalled] = useState(false);
+  const [justActivated, setJustActivated] = useState(false);
+  const refreshTimersRef = useRef([]);
   const [resuming, setResuming] = useState(false);
   const previewRef = useScrollReveal("subscription__preview");
-  // Distinct from a canceled *paid* subscription: this user never got
-  // charged and has nothing to lose by resuming, so it's a retention moment
-  // worth a more persuasive treatment than the plain "already premium" card.
-  const isTrialCanceled = subscription?.cancelAtPeriodEnd && subscription?.status === "trialing";
-  // A failed renewal charge (Stripe status "past_due"): access isn't revoked
-  // yet (Stripe is still retrying), but the user needs to fix their payment
-  // method or they'll eventually lose Premium when retries run out.
-  const isPaymentFailed = subscription?.status === "past_due";
   const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
 
@@ -96,32 +108,56 @@ const Subscription = () => {
   // page needs the actual Stripe-backed subscription row to show the right
   // status/CTA once premium.
   useEffect(() => {
+    setSubscriptionState("loading");
     if (!isPremium) {
       setSubscription(null);
-      return;
+      return undefined;
     }
-    getMySubscription().then(setSubscription).catch(() => {});
+    let cancelled = false;
+    getMySubscription()
+      .then((result) => {
+        if (cancelled) return;
+        setSubscription(result);
+        setSubscriptionState("loaded");
+      })
+      .catch(() => { if (!cancelled) setSubscriptionState("failed"); });
+    return () => { cancelled = true; };
   }, [isPremium]);
+
+  // Not cleared with the effect below: it runs again as soon as the param is
+  // removed from the URL, which would cancel the retries it has just set up.
+  useEffect(() => () => refreshTimersRef.current.forEach(clearTimeout), []);
+
+  // The webhook that actually grants premium can land a few seconds after the
+  // redirect, so a single fetch can arrive too early and leave the page stuck
+  // showing the plans; retry a few times instead.
+  const waitForActivation = () => {
+    const refreshMe = () => dispatch(setUserInfo(authUser.id));
+    setActivationStalled(false);
+    setActivating(true);
+    refreshMe();
+    REFRESH_RETRY_DELAYS_MS.forEach((delay) => refreshTimersRef.current.push(setTimeout(refreshMe, delay)));
+    refreshTimersRef.current.push(setTimeout(() => {
+      trackEvent(ANALYTICS_EVENTS.ACTIVATION_DELAYED);
+      setActivating(false);
+      setActivationStalled(true);
+    }, ACTIVATION_GIVE_UP_MS));
+  };
 
   // Stripe redirects back here with ?checkout=success|cancel once the
   // customer leaves Checkout; the webhook (not this page) is what actually
   // grants premium, so this just refreshes `me` to pick that up and gives
   // the user feedback, then clears the param so it doesn't refire on reload.
+  // A success waits for the user to be known: the param stays in the URL until
+  // then, or the wait would never start and the plans would be sold again.
   useEffect(() => {
     const checkoutResult = searchParams.get("checkout");
     if (!checkoutResult) return;
 
-    const timeouts = [];
     if (checkoutResult === "success") {
+      if (!authUser?.id) return;
       toast.success(t("subscription.checkoutSuccessToast"));
-      if (authUser?.id) {
-        const refreshMe = () => dispatch(setUserInfo(authUser.id));
-        refreshMe();
-        // The webhook that actually grants premium can land a few seconds
-        // after this redirect, so a single fetch can arrive too early and
-        // leave the page stuck showing the plans; retry a few times instead.
-        [2000, 4000, 8000].forEach((delay) => timeouts.push(setTimeout(refreshMe, delay)));
-      }
+      waitForActivation();
     } else if (checkoutResult === "cancel") {
       toast(t("subscription.checkoutCancelToast"));
     }
@@ -130,10 +166,8 @@ const Subscription = () => {
       params.delete("checkout");
       return params;
     }, { replace: true });
-
-    return () => timeouts.forEach(clearTimeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+  }, [searchParams, authUser?.id]);
 
   // Reaching this page with the plans hash already in the URL (e.g. coming
   // back from register/onboarding after clicking "Try Premium free" while
@@ -143,6 +177,36 @@ const Subscription = () => {
     if (location.hash !== "#subscription-plans" || isPremium) return;
     document.getElementById("subscription-plans")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [location.hash, isPremium]);
+
+  // Someone who is Premium, or is about to be, is not sold Premium again: the
+  // page is about their own subscription. Which card it shows is decided in
+  // shared/, so the app cannot disagree with it.
+  const view = getPremiumView({
+    isPremium, activating, activationStalled, subscription, subscriptionState, premiumUntil: userMe?.premiumUntil,
+  });
+  const showsPremiumState = view.kind !== "plans";
+  const dateOf = (isoDate) => formatDate(isoDate, i18n.language);
+
+  const viewedRef = useRef(false);
+  // Once, and only when the state is settled: not while the subscription is
+  // loading, before the profile is known (a Premium user would count as seeing
+  // the plans), or on the first render after paying (the checkout param is
+  // still in the URL, and the wait for the activation has not started yet).
+  useEffect(() => {
+    const profileKnown = !isAuthenticated || !!userMe;
+    if (viewedRef.current || !profileKnown || view.kind === "loading" || searchParams.get("checkout")) return;
+    viewedRef.current = true;
+    trackEvent(ANALYTICS_EVENTS.SUBSCRIPTION_PAGE_VIEWED, { view: view.kind });
+  }, [view.kind, isAuthenticated, userMe, searchParams]);
+
+  useEffect(() => {
+    if (!isPremium || !(activating || activationStalled)) return;
+    trackEvent(ANALYTICS_EVENTS.CHECKOUT_COMPLETED);
+    refreshTimersRef.current.forEach(clearTimeout);
+    setJustActivated(true);
+    setActivating(false);
+    setActivationStalled(false);
+  }, [isPremium, activating, activationStalled]);
 
   const handleSubscribeClick = async (planId) => {
     setLoadingPlanId(planId);
@@ -161,6 +225,7 @@ const Subscription = () => {
     try {
       const updated = await resumeSubscription();
       setSubscription(updated);
+      trackEvent(ANALYTICS_EVENTS.SUBSCRIPTION_RESUMED, { view: view.kind });
       toast.success(t("subscription.resumeSuccessToast"));
     } catch (error) {
       toast.error(error.message || t("subscription.resumeErrorToast"));
@@ -173,6 +238,7 @@ const Subscription = () => {
     setLoadingPortal(true);
     try {
       const { url } = await createPortalSession();
+      trackEvent(ANALYTICS_EVENTS.SUBSCRIPTION_PORTAL_OPENED, { view: view.kind });
       window.location.href = url;
     } catch (error) {
       toast.error(error.message || t("subscription.portalErrorToast"));
@@ -180,11 +246,134 @@ const Subscription = () => {
     }
   };
 
+  const manageButton = (
+    <button
+      type="button"
+      className="btn btn--secondary"
+      disabled={loadingPortal}
+      onClick={handleManageSubscriptionClick}
+    >
+      {loadingPortal ? t("subscription.ctaLoading") : t("subscription.manageLink")}
+    </button>
+  );
+  const manageHint = <p className="subscription__manage-hint">{t("subscription.manageHint")}</p>;
+
+  const renderPremiumState = () => {
+    switch (view.kind) {
+      case "activating":
+        return (
+          <div className="subscription__activating" role="status">
+            <IoHourglassOutline className="subscription__activating-icon" aria-hidden="true" />
+            <h2>{t("subscription.activatingTitle")}</h2>
+            <p>{t("subscription.activatingDesc")}</p>
+          </div>
+        );
+      case "activationDelayed":
+        return (
+          <div className="subscription__activating">
+            <IoHourglassOutline className="subscription__activating-icon" aria-hidden="true" />
+            <h2>{t("subscription.activationDelayedTitle")}</h2>
+            <p>{t("subscription.activationDelayedDesc")}</p>
+            <button type="button" className="btn btn--secondary" onClick={waitForActivation}>
+              {t("subscription.activationDelayedCta")}
+            </button>
+          </div>
+        );
+      case "loading":
+        return <div className="skeleton subscription__state-skeleton" aria-busy="true" />;
+      case "trialCanceled":
+        return (
+          <div className="subscription__win-back">
+            <IoHourglassOutline className="subscription__win-back-icon" aria-hidden="true" />
+            <h2>{t("subscription.trialCanceledTitle")}</h2>
+            <p>{t("subscription.trialCanceledDesc", { date: dateOf(view.date) })}</p>
+            <p className="subscription__win-back-reminder">{t("subscription.trialCanceledReminder")}</p>
+
+            <button
+              type="button"
+              className="btn btn--primary subscription__win-back-cta"
+              disabled={resuming}
+              onClick={handleResumeClick}
+            >
+              {resuming ? t("subscription.ctaLoading") : t("subscription.ctaResumeTrial")}
+            </button>
+          </div>
+        );
+      case "paymentFailed":
+        return (
+          <div className="subscription__payment-failed">
+            <IoAlertCircleOutline className="subscription__payment-failed-icon" aria-hidden="true" />
+            <h2>{t("subscription.paymentFailedTitle")}</h2>
+            <p>{t("subscription.paymentFailedDesc")}</p>
+
+            <button
+              type="button"
+              className="btn btn--primary subscription__payment-failed-cta"
+              disabled={loadingPortal}
+              onClick={handleManageSubscriptionClick}
+            >
+              {loadingPortal ? t("subscription.ctaLoading") : t("subscription.manageLink")}
+            </button>
+          </div>
+        );
+      case "canceled":
+        // Not the green "you're set" card: it is ending, and the way back is the point.
+        return (
+          <div className="subscription__canceled">
+            <IoHourglassOutline className="subscription__canceled-icon" aria-hidden="true" />
+            <h2>{t("subscription.canceledTitle")}</h2>
+            <p>{t("subscription.canceledDesc", { date: dateOf(view.date) })}</p>
+            <div className="subscription__already-premium-actions">
+              <button type="button" className="btn btn--primary" disabled={resuming} onClick={handleResumeClick}>
+                {resuming ? t("subscription.ctaLoading") : t("subscription.ctaResume")}
+              </button>
+              {manageButton}
+            </div>
+            {manageHint}
+          </div>
+        );
+      default: {
+        // Active, in a trial, unknown, or Premium that came without a
+        // subscription (a gift, a referral reward), which has no billing to
+        // manage: the portal would fail.
+        const hasBilling = view.kind !== "granted";
+        const description = {
+          trial: () => t("subscription.trialActiveDesc", { date: dateOf(view.date) }),
+          active: () => t("subscription.renewsOn", { date: dateOf(view.date) }),
+          granted: () => t("subscription.premiumUntilDesc", { date: dateOf(view.date) }),
+        }[view.kind]?.() ?? t("subscription.alreadyPremiumDesc");
+        return (
+          <div className="subscription__already-premium">
+            <IoCheckmarkCircle className="subscription__already-premium-icon" aria-hidden="true" />
+            <h2>{t("subscription.alreadyPremiumTitle")}</h2>
+            <p>{description}</p>
+            {hasBilling ? (
+              <>
+                <div className="subscription__already-premium-actions">{manageButton}</div>
+                {manageHint}
+              </>
+            ) : (
+              <p className="subscription__manage-hint">{t("subscription.noPaidSubscriptionNote")}</p>
+            )}
+          </div>
+        );
+      }
+    }
+  };
+
   return (
     <div className="subscription">
-      {/* A van-life photo for the mood, kept short so the plans peek below
+      {showsPremiumState ? (
+        <header className="subscription__account-header">
+          <h1 className="subscription__account-title">
+            <IoSparkles className="subscription__account-icon" aria-hidden="true" />
+            {t("subscription.yourPremiumTitle")}
+          </h1>
+        </header>
+      ) : (
+      /* A van-life photo for the mood, kept short so the plans peek below
           it: people come here to see the prices. Each plan has its own
-          trial button, so the hero doesn't repeat one. */}
+          trial button, so the hero doesn't repeat one. */
       <header className={`subscription__hero${imageHeroLoaded ? " loaded" : ""}`}>
         <div className="subscription__hero-overlay" />
         <div className="subscription__hero-content">
@@ -195,77 +384,13 @@ const Subscription = () => {
           <p className="subscription__subtitle">{t("subscription.subtitle")}</p>
         </div>
       </header>
+      )}
 
-      {isTrialCanceled || isPaymentFailed || isPremium ? (
+      {showsPremiumState ? (
       <div className="subscription__pricing-backdrop">
       <section className="subscription__content section__container">
-      {isTrialCanceled ? (
-        <div className="subscription__win-back">
-          <IoHourglassOutline className="subscription__win-back-icon" aria-hidden="true" />
-          <h2>{t("subscription.trialCanceledTitle")}</h2>
-          <p>{t("subscription.trialCanceledDesc", { date: formatDate(subscription.currentPeriodEnd, i18n.language) })}</p>
-          <p className="subscription__win-back-reminder">{t("subscription.trialCanceledReminder")}</p>
-
-          <button
-            type="button"
-            className="btn btn--primary subscription__win-back-cta"
-            disabled={resuming}
-            onClick={handleResumeClick}
-          >
-            {resuming ? t("subscription.ctaLoading") : t("subscription.ctaResumeTrial")}
-          </button>
-        </div>
-      ) : isPaymentFailed ? (
-        <div className="subscription__payment-failed">
-          <IoAlertCircleOutline className="subscription__payment-failed-icon" aria-hidden="true" />
-          <h2>{t("subscription.paymentFailedTitle")}</h2>
-          <p>{t("subscription.paymentFailedDesc")}</p>
-
-          <button
-            type="button"
-            className="btn btn--primary subscription__payment-failed-cta"
-            disabled={loadingPortal}
-            onClick={handleManageSubscriptionClick}
-          >
-            {loadingPortal ? t("subscription.ctaLoading") : t("subscription.manageLink")}
-          </button>
-        </div>
-      ) : isPremium ? (
-        <div className="subscription__already-premium">
-          <IoCheckmarkCircle className="subscription__already-premium-icon" aria-hidden="true" />
-          <h2>{t("subscription.alreadyPremiumTitle")}</h2>
-
-          {subscription?.cancelAtPeriodEnd ? (
-            <p>{t("subscription.canceledDesc", { date: formatDate(subscription.currentPeriodEnd, i18n.language) })}</p>
-          ) : subscription?.status === "trialing" ? (
-            <p>{t("subscription.trialActiveDesc", { date: formatDate(subscription.currentPeriodEnd, i18n.language) })}</p>
-          ) : (
-            <p>{t("subscription.alreadyPremiumDesc")}</p>
-          )}
-
-          <div className="subscription__already-premium-actions">
-            {subscription?.cancelAtPeriodEnd && (
-              <button
-                type="button"
-                className="btn btn--primary"
-                disabled={resuming}
-                onClick={handleResumeClick}
-              >
-                {resuming ? t("subscription.ctaLoading") : t("subscription.ctaResume")}
-              </button>
-            )}
-
-            <button
-              type="button"
-              className="btn btn--secondary"
-              disabled={loadingPortal}
-              onClick={handleManageSubscriptionClick}
-            >
-              {loadingPortal ? t("subscription.ctaLoading") : t("subscription.manageLink")}
-            </button>
-          </div>
-        </div>
-      ) : null}
+        {justActivated && <PremiumWelcome t={t} />}
+        {renderPremiumState()}
       </section>
       </div>
       ) : (
@@ -334,6 +459,8 @@ const Subscription = () => {
             <p className="subscription__features-subtitle">{t("subscription.compareSubtitle")}</p>
             <PlanComparison t={t} />
           </section>
+
+          <SubscriptionFaq t={t} />
         </>
       )}
     </div>
@@ -358,6 +485,7 @@ const PlanCard = ({ plan, isAuthenticated, isTrialEligible, loadingPlanId, onSub
         <span className="subscription__price-amount">{t(plan.priceKey)}</span>
         <span className="subscription__price-period">{t(plan.periodKey)}</span>
       </p>
+      {plan.perMonthKey && <p className="subscription__price-equivalent">{t(plan.perMonthKey)}</p>}
 
       {isAuthenticated ? (
         <button
@@ -418,5 +546,41 @@ const PlanComparison = ({ t }) => {
     </table>
   );
 };
+
+// Right after paying is when they pay the most attention: point to what
+// changed for them instead of just confirming, with the tools whose free limit
+// they just lost and the feature that most justifies the plan.
+const PremiumWelcome = ({ t }) => (
+  <div className="subscription__welcome">
+    <h2>{t("subscription.welcomeTitle")}</h2>
+    <p>{t("subscription.welcomeSubtitle")}</p>
+    <ul className="subscription__welcome-list">
+      {PREMIUM_WELCOME_FEATURES.map(({ id, titleKey, descriptionKey, emoji }) => (
+        <li key={id}>
+          <Link to={WELCOME_PATHS[id]} className="subscription__welcome-item">
+            <span className="subscription__welcome-emoji" aria-hidden="true">{emoji}</span>
+            <span className="subscription__welcome-text">
+              <strong>{t(titleKey)}</strong>
+              <span>{t(descriptionKey)}</span>
+            </span>
+          </Link>
+        </li>
+      ))}
+    </ul>
+  </div>
+);
+
+// Native <details>: keyboard and screen reader friendly with no state to keep.
+const SubscriptionFaq = ({ t }) => (
+  <section className="subscription__faq section__container">
+    <h2 className="subscription__features-title">{t("subscription.faqTitle")}</h2>
+    {SUBSCRIPTION_FAQ.map(({ id, questionKey, answerKey }) => (
+      <details key={id} className="subscription__faq-item">
+        <summary>{t(questionKey)}</summary>
+        <p>{t(answerKey)}</p>
+      </details>
+    ))}
+  </section>
+);
 
 export default Subscription;

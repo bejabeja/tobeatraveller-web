@@ -1,16 +1,28 @@
-import { useCallback, useState } from 'react';
-import { Alert, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Alert, AppState, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
-  createCheckoutSession, createPortalSession, getMySubscription, PLAN_COMPARISON, resumeSubscription,
-  selectAuthUser, selectIsAuthenticated, selectMe, setUserInfo, formatDate, ANALYTICS_EVENTS,
+  createCheckoutSession, createPortalSession, getMySubscription, PLAN_COMPARISON, PREMIUM_WELCOME_FEATURES, resumeSubscription, SUBSCRIPTION_FAQ,
+  selectAuthUser, selectIsAuthenticated, selectMe, setUserInfo, formatDate, getPremiumView, ANALYTICS_EVENTS,
 } from '@tobeatraveller/shared';
 import { trackEvent } from '../../utils/analytics';
 import { shadow } from '../../utils/styles';
+
+// Premium is granted by the webhook, which can land a while after the customer
+// is back from the browser: the screen asks again a few times, and gives up
+// waiting for it a little after the last try.
+const REFRESH_RETRY_DELAYS_MS = [2000, 4000, 8000];
+const ACTIVATION_GIVE_UP_MS = 12000;
+
+const WELCOME_SCREENS = {
+  aiItineraries: 'CreateItinerary',
+  packingChecklist: 'PackingChecklist',
+  vanLog: 'VanLog',
+};
 
 const PLANS = [
   {
@@ -24,6 +36,7 @@ const PLANS = [
     nameKey: 'subscription.annualPlanName',
     priceKey: 'subscription.annualPriceAmount',
     periodKey: 'subscription.annualPricePeriod',
+    perMonthKey: 'subscription.annualPerMonth',
     badgeKey: 'subscription.annualBadge',
     highlighted: true,
   },
@@ -41,6 +54,43 @@ const PlanValue = ({ value, t }) => {
   );
 };
 
+// Right after paying is when they pay the most attention: point to what
+// changed for them instead of just confirming, with the tools whose free limit
+// they just lost and the feature that most justifies the plan.
+const PremiumWelcome = ({ t, onOpen }) => (
+  <View style={styles.welcome}>
+    <Text style={styles.welcomeTitle}>{t('subscription.welcomeTitle')}</Text>
+    <Text style={styles.welcomeSubtitle}>{t('subscription.welcomeSubtitle')}</Text>
+    {PREMIUM_WELCOME_FEATURES.map(({ id, titleKey, descriptionKey, emoji }) => (
+      <TouchableOpacity key={id} style={styles.welcomeItem} accessibilityRole="button" onPress={() => onOpen(id)}>
+        <Text style={styles.welcomeEmoji}>{emoji}</Text>
+        <View style={styles.welcomeText}>
+          <Text style={styles.welcomeItemTitle}>{t(titleKey)}</Text>
+          <Text style={styles.welcomeItemDesc}>{t(descriptionKey)}</Text>
+        </View>
+      </TouchableOpacity>
+    ))}
+  </View>
+);
+
+const FaqItem = ({ questionKey, answerKey, t }) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <View style={styles.faqItem}>
+      <TouchableOpacity
+        style={styles.faqQuestionRow}
+        accessibilityRole="button"
+        accessibilityState={{ expanded: open }}
+        onPress={() => setOpen((current) => !current)}
+      >
+        <Text style={styles.faqQuestion}>{t(questionKey)}</Text>
+        <Ionicons name={open ? 'remove' : 'add'} size={20} color="#E8743B" />
+      </TouchableOpacity>
+      {open && <Text style={styles.faqAnswer}>{t(answerKey)}</Text>}
+    </View>
+  );
+};
+
 const SubscriptionScreen = ({ navigation }) => {
   const { t, i18n } = useTranslation();
   const dispatch = useDispatch();
@@ -53,30 +103,103 @@ const SubscriptionScreen = ({ navigation }) => {
   const [loadingPlanId, setLoadingPlanId] = useState(null);
   const [loadingPortal, setLoadingPortal] = useState(false);
   const [subscription, setSubscription] = useState(null);
+  // "loading" until the subscription is known, so a paying customer is not
+  // shown a state that flips a moment later; "failed" when it could not be read.
+  const [subscriptionState, setSubscriptionState] = useState('loading');
+  const [activating, setActivating] = useState(false);
+  const [activationStalled, setActivationStalled] = useState(false);
+  const [justActivated, setJustActivated] = useState(false);
+  const awaitingCheckoutRef = useRef(false);
+  const refreshTimersRef = useRef([]);
   const [resuming, setResuming] = useState(false);
-  // Distinct from a canceled *paid* subscription: this user never got
-  // charged and has nothing to lose by resuming, so it's a retention moment
-  // worth a more persuasive treatment than the plain "already premium" card.
-  const isTrialCanceled = subscription?.cancelAtPeriodEnd && subscription?.status === 'trialing';
-  // A failed renewal charge (Stripe status "past_due"): access isn't revoked
-  // yet (Stripe is still retrying), but the user needs to fix their payment
-  // method or they'll eventually lose Premium when retries run out.
-  const isPaymentFailed = subscription?.status === 'past_due';
+  const view = getPremiumView({
+    isPremium, activating, activationStalled, subscription, subscriptionState, premiumUntil: user?.premiumUntil,
+  });
+  const showsPremiumState = view.kind !== 'plans';
+
+  const loadSubscription = () => {
+    setSubscriptionState((state) => (state === 'loaded' ? state : 'loading'));
+    getMySubscription()
+      .then((result) => {
+        setSubscription(result);
+        setSubscriptionState('loaded');
+      })
+      .catch(() => setSubscriptionState('failed'));
+  };
+
+  useEffect(() => {
+    if (isPremium) return;
+    setSubscription(null);
+    setSubscriptionState('loading');
+  }, [isPremium]);
+
+  useEffect(() => () => refreshTimersRef.current.forEach(clearTimeout), []);
 
   // Checkout opens in the system browser (no in-app deep link back, see
   // mobile/AGENTS.md: no Apple/Google Play accounts to register one), so the
-  // only way to pick up a completed subscription is to re-fetch `me` whenever
-  // this screen regains focus after the user switches back from the browser.
-  // The subscription row is fetched alongside it so the screen can tell a
-  // trial or a pending cancellation apart from a normal active subscription
-  // (`isPremium` alone can't).
+  // only way to pick up a completed subscription is to re-fetch `me` when the
+  // user comes back to the app, and again for a few seconds while the webhook
+  // that grants Premium catches up. The subscription row is fetched alongside
+  // it so the screen can tell a trial, a pending cancellation or Premium that
+  // came as a gift apart from a normal active subscription (`isPremium` alone
+  // can't).
   useFocusEffect(
     useCallback(() => {
       if (user?.id) dispatch(setUserInfo(user.id));
-      if (isPremium) getMySubscription().then(setSubscription).catch(() => {});
+      if (isPremium) loadSubscription();
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user?.id, isPremium])
   );
+
+  const viewedRef = useRef(false);
+  // Once, and only when the state is settled: not while the subscription is
+  // loading, or before the profile is known (a Premium user would count as
+  // seeing the plans).
+  useEffect(() => {
+    const profileKnown = !isAuthenticated || !!user;
+    if (viewedRef.current || !profileKnown || view.kind === 'loading') return;
+    viewedRef.current = true;
+    trackEvent(ANALYTICS_EVENTS.SUBSCRIPTION_PAGE_VIEWED, { view: view.kind });
+  }, [view.kind, isAuthenticated, user]);
+
+  useEffect(() => {
+    if (!isPremium || !(activating || activationStalled)) return;
+    trackEvent(ANALYTICS_EVENTS.CHECKOUT_COMPLETED);
+    refreshTimersRef.current.forEach(clearTimeout);
+    setJustActivated(true);
+    setActivating(false);
+    setActivationStalled(false);
+  }, [isPremium, activating, activationStalled]);
+
+  const waitForActivation = useCallback(() => {
+    const refreshMe = () => dispatch(setUserInfo(user.id));
+    setActivationStalled(false);
+    setActivating(true);
+    refreshMe();
+    REFRESH_RETRY_DELAYS_MS.forEach((delay) => refreshTimersRef.current.push(setTimeout(refreshMe, delay)));
+    refreshTimersRef.current.push(setTimeout(() => {
+      trackEvent(ANALYTICS_EVENTS.ACTIVATION_DELAYED);
+      setActivating(false);
+      setActivationStalled(true);
+    }, ACTIVATION_GIVE_UP_MS));
+  }, [user?.id, dispatch]);
+
+  useEffect(() => {
+    const listener = AppState.addEventListener('change', (nextState) => {
+      if (nextState !== 'active' || !user?.id) return;
+      // The billing portal opens in the browser too: what was changed there
+      // (a cancellation, a new card) is only known by reading it again.
+      if (isPremium) loadSubscription();
+      if (!awaitingCheckoutRef.current) {
+        dispatch(setUserInfo(user.id));
+        return;
+      }
+      awaitingCheckoutRef.current = false;
+      waitForActivation();
+    });
+    return () => listener.remove();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, isPremium, dispatch, waitForActivation]);
 
   const handleSubscribeClick = async (planId) => {
     setLoadingPlanId(planId);
@@ -84,6 +207,7 @@ const SubscriptionScreen = ({ navigation }) => {
       const { url } = await createCheckoutSession(planId);
       trackEvent(ANALYTICS_EVENTS.CHECKOUT_STARTED, { plan: planId });
       await Linking.openURL(url);
+      awaitingCheckoutRef.current = true;
     } catch (error) {
       Alert.alert(error.message || t('subscription.checkoutErrorToast'));
     } finally {
@@ -96,6 +220,7 @@ const SubscriptionScreen = ({ navigation }) => {
     try {
       const updated = await resumeSubscription();
       setSubscription(updated);
+      trackEvent(ANALYTICS_EVENTS.SUBSCRIPTION_RESUMED, { view: view.kind });
     } catch (error) {
       Alert.alert(error.message || t('subscription.resumeErrorToast'));
     } finally {
@@ -107,6 +232,7 @@ const SubscriptionScreen = ({ navigation }) => {
     setLoadingPortal(true);
     try {
       const { url } = await createPortalSession();
+      trackEvent(ANALYTICS_EVENTS.SUBSCRIPTION_PORTAL_OPENED, { view: view.kind });
       await Linking.openURL(url);
     } catch (error) {
       Alert.alert(error.message || t('subscription.portalErrorToast'));
@@ -145,24 +271,55 @@ const SubscriptionScreen = ({ navigation }) => {
         contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 40 }]}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.hero}>
-          <Ionicons name="sparkles" size={40} color="#E8743B" style={styles.heroIcon} />
-          <Text style={styles.title}>{t('subscription.title')}</Text>
-          <Text style={styles.subtitle}>{t('subscription.subtitle')}</Text>
+        {showsPremiumState ? (
+          <View style={styles.accountHeader}>
+            <Ionicons name="sparkles" size={26} color="#E8743B" />
+            <Text style={styles.accountTitle}>{t('subscription.yourPremiumTitle')}</Text>
+          </View>
+        ) : (
+          <View style={styles.hero}>
+            <Ionicons name="sparkles" size={40} color="#E8743B" style={styles.heroIcon} />
+            <Text style={styles.title}>{t('subscription.title')}</Text>
+            <Text style={styles.subtitle}>{t('subscription.subtitle')}</Text>
 
-          {!isPremium && (
             <TouchableOpacity style={styles.trialBtn} onPress={handleTrialClick}>
               <Text style={styles.trialBtnText}>{t('subscription.ctaFreeTrial')}</Text>
             </TouchableOpacity>
-          )}
-        </View>
+          </View>
+        )}
 
-        {isTrialCanceled ? (
+        {justActivated && showsPremiumState && (
+          <PremiumWelcome t={t} onOpen={(featureId) => navigation.navigate(WELCOME_SCREENS[featureId])} />
+        )}
+
+        {view.kind === 'activating' ? (
+          <View style={styles.activating} accessibilityRole="alert">
+            <Ionicons name="hourglass-outline" size={36} color="#E8743B" style={styles.cardIcon} />
+            <Text style={styles.cardTitle}>{t('subscription.activatingTitle')}</Text>
+            <Text style={styles.cardDesc}>{t('subscription.activatingDesc')}</Text>
+          </View>
+        ) : view.kind === 'activationDelayed' ? (
+          <View style={styles.activating}>
+            <Ionicons name="hourglass-outline" size={36} color="#E8743B" style={styles.cardIcon} />
+            <Text style={styles.cardTitle}>{t('subscription.activationDelayedTitle')}</Text>
+            <Text style={styles.cardDesc}>{t('subscription.activationDelayedDesc')}</Text>
+            <TouchableOpacity style={[styles.manageBtn, styles.activationDelayedCta]} onPress={waitForActivation}>
+              <Text style={styles.manageBtnText}>{t('subscription.activationDelayedCta')}</Text>
+            </TouchableOpacity>
+            {/* Checkout opens in the browser and the screen cannot tell a closed
+                window from a payment that is late, so there is a way out. */}
+            <TouchableOpacity onPress={() => setActivationStalled(false)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <Text style={styles.activationDelayedBack}>{t('subscription.activationDelayedBack')}</Text>
+            </TouchableOpacity>
+          </View>
+        ) : view.kind === 'loading' ? (
+          <View style={styles.stateSkeleton} accessibilityState={{ busy: true }} />
+        ) : view.kind === 'trialCanceled' ? (
           <View style={styles.winBack}>
             <Ionicons name="hourglass-outline" size={36} color="#E8743B" style={styles.winBackIcon} />
             <Text style={styles.winBackTitle}>{t('subscription.trialCanceledTitle')}</Text>
             <Text style={styles.winBackDesc}>
-              {t('subscription.trialCanceledDesc', { date: formatDate(subscription.currentPeriodEnd, i18n.language) })}
+              {t('subscription.trialCanceledDesc', { date: formatDate(view.date, i18n.language) })}
             </Text>
             <Text style={styles.winBackReminder}>{t('subscription.trialCanceledReminder')}</Text>
 
@@ -176,7 +333,7 @@ const SubscriptionScreen = ({ navigation }) => {
               </Text>
             </TouchableOpacity>
           </View>
-        ) : isPaymentFailed ? (
+        ) : view.kind === 'paymentFailed' ? (
           <View style={styles.paymentFailed}>
             <Ionicons name="alert-circle-outline" size={36} color="#dc2626" style={styles.paymentFailedIcon} />
             <Text style={styles.paymentFailedTitle}>{t('subscription.paymentFailedTitle')}</Text>
@@ -192,41 +349,57 @@ const SubscriptionScreen = ({ navigation }) => {
               </Text>
             </TouchableOpacity>
           </View>
-        ) : isPremium ? (
-          <View style={styles.alreadyPremium}>
-            <Ionicons name="checkmark-circle" size={36} color="#16a34a" style={styles.alreadyPremiumIcon} />
-            <Text style={styles.alreadyPremiumTitle}>{t('subscription.alreadyPremiumTitle')}</Text>
-            <Text style={styles.alreadyPremiumDesc}>
-              {subscription?.cancelAtPeriodEnd
-                ? t('subscription.canceledDesc', { date: formatDate(subscription.currentPeriodEnd, i18n.language) })
-                : subscription?.status === 'trialing'
-                  ? t('subscription.trialActiveDesc', { date: formatDate(subscription.currentPeriodEnd, i18n.language) })
-                  : t('subscription.alreadyPremiumDesc')}
-            </Text>
-
+        ) : view.kind === 'canceled' ? (
+          // Not the green "you're set" card: it is ending, and the way back is the point.
+          <View style={styles.canceled}>
+            <Ionicons name="hourglass-outline" size={36} color="#6b7280" style={styles.cardIcon} />
+            <Text style={styles.cardTitle}>{t('subscription.canceledTitle')}</Text>
+            <Text style={styles.cardDesc}>{t('subscription.canceledDesc', { date: formatDate(view.date, i18n.language) })}</Text>
             <View style={styles.alreadyPremiumActions}>
-              {subscription?.cancelAtPeriodEnd && (
-                <TouchableOpacity
-                  style={styles.resumeBtn}
-                  disabled={resuming}
-                  onPress={handleResumeClick}
-                >
-                  <Text style={styles.resumeBtnText}>
-                    {resuming ? t('subscription.ctaLoading') : t('subscription.ctaResume')}
-                  </Text>
-                </TouchableOpacity>
-              )}
-
-              <TouchableOpacity
-                style={styles.manageBtn}
-                disabled={loadingPortal}
-                onPress={handleManageSubscriptionClick}
-              >
+              <TouchableOpacity style={styles.resumeBtn} disabled={resuming} onPress={handleResumeClick}>
+                <Text style={styles.resumeBtnText}>
+                  {resuming ? t('subscription.ctaLoading') : t('subscription.ctaResume')}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.manageBtn} disabled={loadingPortal} onPress={handleManageSubscriptionClick}>
                 <Text style={styles.manageBtnText}>
                   {loadingPortal ? t('subscription.ctaLoading') : t('subscription.manageLink')}
                 </Text>
               </TouchableOpacity>
             </View>
+            <Text style={styles.manageHint}>{t('subscription.manageHint')}</Text>
+          </View>
+        ) : showsPremiumState ? (
+          // Active, in a trial, unknown, or Premium that came without a
+          // subscription (a gift, a referral reward), which has no billing to
+          // manage: the portal would fail.
+          <View style={styles.alreadyPremium}>
+            <Ionicons name="checkmark-circle" size={36} color="#16a34a" style={styles.alreadyPremiumIcon} />
+            <Text style={styles.alreadyPremiumTitle}>{t('subscription.alreadyPremiumTitle')}</Text>
+            <Text style={styles.alreadyPremiumDesc}>
+              {view.kind === 'trial'
+                ? t('subscription.trialActiveDesc', { date: formatDate(view.date, i18n.language) })
+                : view.kind === 'active'
+                  ? t('subscription.renewsOn', { date: formatDate(view.date, i18n.language) })
+                  : view.kind === 'granted'
+                    ? t('subscription.premiumUntilDesc', { date: formatDate(view.date, i18n.language) })
+                    : t('subscription.alreadyPremiumDesc')}
+            </Text>
+
+            {view.kind === 'granted' ? (
+              <Text style={styles.manageHint}>{t('subscription.noPaidSubscriptionNote')}</Text>
+            ) : (
+              <>
+                <View style={styles.alreadyPremiumActions}>
+                  <TouchableOpacity style={styles.manageBtn} disabled={loadingPortal} onPress={handleManageSubscriptionClick}>
+                    <Text style={styles.manageBtnText}>
+                      {loadingPortal ? t('subscription.ctaLoading') : t('subscription.manageLink')}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+                <Text style={styles.manageHint}>{t('subscription.manageHint')}</Text>
+              </>
+            )}
           </View>
         ) : (
           <>
@@ -246,6 +419,7 @@ const SubscriptionScreen = ({ navigation }) => {
                     <Text style={styles.planPrice}>{t(plan.priceKey)}</Text>
                     <Text style={styles.planPeriod}>{t(plan.periodKey)}</Text>
                   </View>
+                  {plan.perMonthKey && <Text style={styles.planPerMonth}>{t(plan.perMonthKey)}</Text>}
 
                   {isAuthenticated ? (
                     <TouchableOpacity
@@ -295,6 +469,10 @@ const SubscriptionScreen = ({ navigation }) => {
               ))}
             </View>
 
+            <Text style={styles.featuresTitle}>{t('subscription.faqTitle')}</Text>
+            {SUBSCRIPTION_FAQ.map(({ id, questionKey, answerKey }) => (
+              <FaqItem key={id} questionKey={questionKey} answerKey={answerKey} t={t} />
+            ))}
           </>
         )}
       </ScrollView>
@@ -320,6 +498,28 @@ const styles = StyleSheet.create({
   headerSpacer: { width: 44 },
 
   scroll: { padding: 16, gap: 14 },
+
+  accountHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, paddingTop: 12, paddingBottom: 4 },
+  accountTitle: { fontSize: 22, fontWeight: '800', color: '#111827' },
+
+  // Shared by the cards that are not the green one, the orange one or the red one.
+  cardIcon: { marginBottom: 8 },
+  cardTitle: { fontSize: 17, fontWeight: '700', color: '#111827', marginBottom: 6, textAlign: 'center' },
+  cardDesc: { fontSize: 13, color: '#6b7280', textAlign: 'center', lineHeight: 19 },
+  manageHint: { fontSize: 12, color: '#6b7280', textAlign: 'center', lineHeight: 17, marginTop: 12, paddingHorizontal: 8 },
+  canceled: {
+    alignItems: 'center', backgroundColor: '#f1f5f9',
+    borderWidth: 1, borderColor: '#e5e7eb',
+    borderRadius: 16, padding: 28, marginTop: 8,
+  },
+  activating: {
+    alignItems: 'center', backgroundColor: '#FFF0E8',
+    borderRadius: 16, padding: 28, marginTop: 8,
+  },
+  activationDelayedCta: { marginTop: 16 },
+  activationDelayedBack: { fontSize: 13, color: '#6b7280', textDecorationLine: 'underline', marginTop: 14 },
+  // Same height as the cards it stands in for, so nothing jumps when it loads.
+  stateSkeleton: { height: 200, borderRadius: 16, backgroundColor: '#e5e7eb', marginTop: 8 },
 
   hero: { alignItems: 'center', paddingTop: 12, paddingBottom: 8 },
   heroIcon: { marginBottom: 12 },
@@ -436,6 +636,28 @@ const styles = StyleSheet.create({
   planPriceRow: { flexDirection: 'row', alignItems: 'baseline', marginBottom: 14 },
   planPrice: { fontSize: 30, fontWeight: '800', color: '#111827' },
   planPeriod: { fontSize: 13, color: '#6b7280', marginLeft: 6 },
+  planPerMonth: { fontSize: 13, fontWeight: '600', color: '#E8743B', marginTop: -10, marginBottom: 14 },
+
+  welcome: { marginTop: 8, marginBottom: 16 },
+  welcomeTitle: { fontSize: 22, fontWeight: '800', color: '#111827', textAlign: 'center' },
+  welcomeSubtitle: { fontSize: 14, color: '#6b7280', textAlign: 'center', marginTop: 4, marginBottom: 14 },
+  welcomeItem: {
+    flexDirection: 'row', alignItems: 'center', gap: 14,
+    backgroundColor: '#fff', borderWidth: 1, borderColor: '#e5e7eb',
+    borderRadius: 12, padding: 14, marginBottom: 10,
+  },
+  welcomeEmoji: { fontSize: 26 },
+  welcomeText: { flex: 1 },
+  welcomeItemTitle: { fontSize: 15, fontWeight: '700', color: '#111827' },
+  welcomeItemDesc: { fontSize: 13, color: '#6b7280', lineHeight: 18, marginTop: 2 },
+
+  faqItem: { borderBottomWidth: 1, borderBottomColor: '#e5e7eb' },
+  faqQuestionRow: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    gap: 12, paddingVertical: 14,
+  },
+  faqQuestion: { flex: 1, fontSize: 15, fontWeight: '600', color: '#111827' },
+  faqAnswer: { fontSize: 14, color: '#6b7280', lineHeight: 20, paddingBottom: 16 },
   planCta: {
     backgroundColor: '#E8743B', borderRadius: 999,
     paddingVertical: 12, paddingHorizontal: 28, width: '100%', alignItems: 'center',
