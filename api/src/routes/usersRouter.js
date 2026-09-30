@@ -26,6 +26,8 @@ import { EmailService } from "../services/emailService.js";
 import { NotificationsService } from "../services/notificationsService.js";
 import { PushNotificationsService } from "../services/pushNotificationsService.js";
 import { ReferralService } from "../services/referralService.js";
+import { stripeClient } from "../services/stripeClient.js";
+import { SubscriptionService } from "../services/subscriptionService.js";
 import { UserService } from "../services/userService.js";
 
 export const createUsersRouter = () => {
@@ -53,7 +55,8 @@ export const createUsersRouter = () => {
         lifeDiaryRepository, auditLogService, vanLogRepository,
         inventoryRepository, shoppingListRepository, packingChecklistRepository,
         subscriptionRepository, new ReferralService(new ReferralRepository(), userRepository, auditLogService),
-        pushTokensRepository, badgeRepository, packingListRepository, notificationsService
+        pushTokensRepository, badgeRepository, packingListRepository, notificationsService,
+        new SubscriptionService(subscriptionRepository, userRepository, auditLogService, stripeClient)
     );
     const cloudinaryService = new CloudinaryService();
     const userController = new UserController(userService, cloudinaryService);

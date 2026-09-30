@@ -5,7 +5,7 @@ import RichText from "../../components/RichText";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import "./Legal.scss";
 
-const LAST_UPDATED = "29 May 2025";
+const LAST_UPDATED = "30 September 2026";
 
 const Terms = () => {
   const { t } = useTranslation();
@@ -57,6 +57,18 @@ const Terms = () => {
 
         <Section title={lt("s6Title")}>
           <p><RichText text={lt("s6Body")} /></p>
+        </Section>
+
+        <Section title={lt("subscriptionsTitle")}>
+          <p>{lt("subscriptionsIntro")}</p>
+          <ul>
+            {lt("subscriptionsItems", { returnObjects: true }).map((item, i) => (
+              <li key={i}><RichText text={item} /></li>
+            ))}
+          </ul>
+          {lt("subscriptionsWithdrawal", { returnObjects: true }).map((paragraph, i) => (
+            <p key={i}><RichText text={paragraph} /></p>
+          ))}
         </Section>
 
         <Section title={lt("s7Title")}>

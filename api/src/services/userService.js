@@ -37,7 +37,8 @@ export class UserService {
         lifeDiaryRepository = null, auditLogService = null, vanLogRepository = null,
         inventoryRepository = null, shoppingListRepository = null, packingChecklistRepository = null,
         subscriptionRepository = null, referralService = null, pushTokensRepository = null,
-        badgeRepository = null, packingListRepository = null, notificationsService = null
+        badgeRepository = null, packingListRepository = null, notificationsService = null,
+        subscriptionService = null
     ) {
         this.userRepository = userRepository;
         this.itinerariesRepository = itinerariesRepository;
@@ -55,6 +56,7 @@ export class UserService {
         this.badgeRepository = badgeRepository;
         this.packingListRepository = packingListRepository;
         this.notificationsService = notificationsService;
+        this.subscriptionService = subscriptionService;
     }
 
     async create(userData, { ip, userAgent } = {}) {
@@ -397,6 +399,8 @@ export class UserService {
             this.vanLogRepository ? this.vanLogRepository.findReceiptPublicIdsByUserId(id) : [],
         ]);
 
+        await this.subscriptionService?.closeBillingAccount(user);
+
         this.emailService?.sendAccountDeleted({ username: user.username, email: user.email, language: user.language })
             .catch(err => logger.error('[email] account deleted failed:', err));
 
@@ -421,7 +425,7 @@ export class UserService {
         const [
             itineraries, followers, following, commentsResult, likesResult, favoritesResult,
             lifeDiaryEntries, vanLogEntries, inventoryItems, shoppingListItems, packingChecklistItems, packingLists,
-            pushDevices, badges, countryStamps, declaredCountries, previousReferralCodes,
+            pushDevices, badges, countryStamps, declaredCountries, previousReferralCodes, subscriptions,
         ] = await Promise.all([
             this.itinerariesRepository.findByUserId(id),
             this.followRepository.getFollowers(id),
@@ -455,6 +459,7 @@ export class UserService {
             this.badgeRepository ? this.badgeRepository.findStampedCountries(id) : [],
             this.badgeRepository ? this.badgeRepository.findDeclaredCountries(id) : [],
             this.userRepository.findRetiredReferralCodes(id),
+            this.subscriptionRepository ? this.subscriptionRepository.findByUserId(id) : [],
         ]);
 
         // Same batched entry+images composition as LifeDiaryService.getEntriesByUser.
@@ -491,6 +496,17 @@ export class UserService {
                 previousReferralCodes,
                 language: user.language,
                 createdAt: user.createdAt,
+            },
+            billing: {
+                stripeCustomerId: user.stripeCustomerId ?? null,
+                premiumUntil: user.premiumUntil ?? null,
+                subscriptions: subscriptions.map(subscription => ({
+                    stripeSubscriptionId: subscription.stripeSubscriptionId,
+                    status: subscription.status,
+                    currentPeriodEnd: subscription.currentPeriodEnd,
+                    cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
+                    startedAt: subscription.createdAt,
+                })),
             },
             itineraries: itineraries.map(i => i.toDTO()),
             comments: commentsResult.rows,

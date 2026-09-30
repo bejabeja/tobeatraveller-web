@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { SubscriptionService } from '../../services/subscriptionService.js';
+import config from '../../config/config.js';
 
 const makeUser = (overrides = {}) => ({
     id: 'user-1',
@@ -58,7 +59,9 @@ describe('SubscriptionService', () => {
             subscriptions: {
                 retrieve: vi.fn(async () => makeStripeSubscription()),
                 update: vi.fn(async () => makeStripeSubscription({ cancel_at_period_end: false })),
+                cancel: vi.fn(async () => makeStripeSubscription({ status: 'canceled' })),
             },
+            charges: { retrieve: vi.fn(async () => ({ id: 'ch_1', customer: 'cus_123' })) },
             webhooks: { constructEvent: vi.fn() },
         };
         service = new SubscriptionService(subscriptionRepository, userRepository, auditLogService, stripeClient);
@@ -171,6 +174,84 @@ describe('SubscriptionService', () => {
             expect(subscriptionData.trial_settings).toEqual({ end_behavior: { missing_payment_method: 'cancel' } });
         });
 
+        // The right of withdrawal is lost only if the customer asked for the
+        // service to start right away and acknowledged it: an explicit act, taken on
+        // the Stripe page right before paying, where the payment button is.
+        describe('consent to start right away', () => {
+            const sessionParams = () => stripeClient.checkout.sessions.create.mock.calls[0][0];
+
+            it('asks Stripe to make the customer accept the terms when charging right away', async () => {
+                await service.createCheckoutSession('user-1', 'annual', { startTrial: false });
+
+                expect(sessionParams().consent_collection).toEqual({ terms_of_service: 'required' });
+                expect(sessionParams().custom_text.terms_of_service_acceptance.message).toContain('/terms');
+            });
+
+            it('says it in the language of the customer, and lets Stripe show its page in it', async () => {
+                userRepository.getUserById.mockResolvedValue(makeUser({ language: 'es' }));
+
+                await service.createCheckoutSession('user-1', 'annual', { startTrial: false });
+
+                expect(sessionParams().locale).toBe('es');
+                expect(sessionParams().custom_text.terms_of_service_acceptance.message).toContain('derecho de desistimiento');
+            });
+
+            it('falls back to English for a language it has no text in', async () => {
+                userRepository.getUserById.mockResolvedValue(makeUser({ language: 'pt' }));
+
+                await service.createCheckoutSession('user-1', 'annual', { startTrial: false });
+
+                expect(sessionParams().locale).toBe('en');
+                expect(sessionParams().custom_text.terms_of_service_acceptance.message).toContain('right of withdrawal');
+            });
+
+            it('also asks for it from someone with no trial left, who is charged right away', async () => {
+                subscriptionRepository.findByUserId.mockResolvedValue([makeSubscriptionRow({ status: 'canceled' })]);
+
+                await service.createCheckoutSession('user-1', 'monthly');
+
+                expect(sessionParams().consent_collection).toEqual({ terms_of_service: 'required' });
+            });
+
+            it('does not ask for it to start a free trial, where nothing is charged', async () => {
+                await service.createCheckoutSession('user-1', 'monthly');
+
+                expect(sessionParams().consent_collection).toBeUndefined();
+                expect(sessionParams().custom_text).toBeUndefined();
+            });
+        });
+
+        // Stripe Tax needs the Stripe account set up first (head office address,
+        // registrations, tax behavior on the prices): without it Checkout refuses to
+        // start, so collecting taxes is switched on by configuration.
+        describe('taxes', () => {
+            const sessionParams = () => stripeClient.checkout.sessions.create.mock.calls[0][0];
+            afterEach(() => { config.stripeAutomaticTax = false; });
+
+            it('lets Stripe calculate and collect the taxes when it is switched on', async () => {
+                config.stripeAutomaticTax = true;
+
+                await service.createCheckoutSession('user-1', 'annual');
+
+                expect(sessionParams().automatic_tax).toEqual({ enabled: true });
+            });
+
+            it('keeps the customer address Stripe collects for it, which the tax of the next invoices depends on', async () => {
+                config.stripeAutomaticTax = true;
+
+                await service.createCheckoutSession('user-1', 'annual');
+
+                expect(sessionParams().customer_update).toEqual({ address: 'auto' });
+            });
+
+            it('asks Stripe for nothing about taxes while it is switched off, the default', async () => {
+                await service.createCheckoutSession('user-1', 'annual');
+
+                expect(sessionParams().automatic_tax).toBeUndefined();
+                expect(sessionParams().customer_update).toBeUndefined();
+            });
+        });
+
         // Someone who already knows they want Premium should be able to pay now
         // instead of being pushed to a trial that ends on the free plan.
         it('does not grant the trial when the user chooses to subscribe right away', async () => {
@@ -204,6 +285,106 @@ describe('SubscriptionService', () => {
             expect(stripeClient.checkout.sessions.create).toHaveBeenCalledWith(
                 expect.objectContaining({ payment_method_collection: 'if_required' })
             );
+        });
+    });
+
+    describe('handleWebhookEvent() / refunds and disputes', () => {
+        const activeRow = (overrides = {}) => makeSubscriptionRow({ status: 'active', ...overrides });
+        const refund = (overrides = {}) => service.handleWebhookEvent({
+            type: 'charge.refunded',
+            data: { object: { id: 'ch_1', customer: 'cus_123', refunded: true, amount_refunded: 299, ...overrides } },
+        });
+
+        beforeEach(() => {
+            subscriptionRepository.findByUserId.mockResolvedValue([activeRow()]);
+        });
+
+        it('ends the subscription right away when the payment is fully refunded', async () => {
+            await refund();
+
+            expect(stripeClient.subscriptions.cancel).toHaveBeenCalledWith('sub_123');
+        });
+
+        it('records why the Premium ended', async () => {
+            await refund();
+
+            expect(auditLogService.log).toHaveBeenCalledWith(expect.objectContaining({
+                action: 'subscription_refunded', targetUserId: 'user-1',
+                metadata: { stripeSubscriptionId: 'sub_123', chargeId: 'ch_1' },
+            }));
+        });
+
+        it('keeps the Premium of someone who was only partly refunded, a goodwill gesture', async () => {
+            await refund({ refunded: false, amount_refunded: 100 });
+
+            expect(stripeClient.subscriptions.cancel).not.toHaveBeenCalled();
+        });
+
+        it('does nothing when there is no live subscription left to end, so a redelivery does not repeat it', async () => {
+            subscriptionRepository.findByUserId.mockResolvedValue([activeRow({ status: 'canceled' })]);
+
+            await refund();
+
+            expect(stripeClient.subscriptions.cancel).not.toHaveBeenCalled();
+            expect(auditLogService.log).not.toHaveBeenCalled();
+        });
+
+        it('ignores a charge of a customer it does not know', async () => {
+            userRepository.findByStripeCustomerId.mockResolvedValue(null);
+
+            await refund();
+
+            expect(stripeClient.subscriptions.cancel).not.toHaveBeenCalled();
+        });
+
+        it('ends the subscription when the customer disputes the payment', async () => {
+            await service.handleWebhookEvent({
+                type: 'charge.dispute.created',
+                data: { object: { id: 'dp_1', charge: 'ch_1' } },
+            });
+
+            expect(stripeClient.charges.retrieve).toHaveBeenCalledWith('ch_1');
+            expect(stripeClient.subscriptions.cancel).toHaveBeenCalledWith('sub_123');
+            expect(auditLogService.log).toHaveBeenCalledWith(expect.objectContaining({
+                action: 'subscription_disputed',
+                metadata: { stripeSubscriptionId: 'sub_123', chargeId: 'ch_1', disputeId: 'dp_1' },
+            }));
+        });
+
+        it('does not swallow a Stripe failure, so the event is delivered again and the subscription still ends', async () => {
+            stripeClient.subscriptions.cancel.mockRejectedValue(new Error('stripe down'));
+
+            await expect(refund()).rejects.toThrow('stripe down');
+        });
+    });
+
+    describe('closeBillingAccount()', () => {
+        it('deletes the Stripe customer, which cancels its subscriptions right away', async () => {
+            stripeClient.customers.del = vi.fn(async () => ({ deleted: true }));
+
+            await service.closeBillingAccount(makeUser({ stripeCustomerId: 'cus_123' }));
+
+            expect(stripeClient.customers.del).toHaveBeenCalledWith('cus_123');
+        });
+
+        it('does nothing for someone who never reached Stripe', async () => {
+            stripeClient.customers.del = vi.fn();
+
+            await service.closeBillingAccount(makeUser({ stripeCustomerId: null }));
+
+            expect(stripeClient.customers.del).not.toHaveBeenCalled();
+        });
+
+        it('carries on when Stripe no longer has the customer', async () => {
+            stripeClient.customers.del = vi.fn(async () => { throw Object.assign(new Error('No such customer'), { code: 'resource_missing' }); });
+
+            await expect(service.closeBillingAccount(makeUser({ stripeCustomerId: 'cus_gone' }))).resolves.toBeUndefined();
+        });
+
+        it('does not swallow any other failure, so the account is not deleted with the billing still running', async () => {
+            stripeClient.customers.del = vi.fn(async () => { throw new Error('stripe down'); });
+
+            await expect(service.closeBillingAccount(makeUser({ stripeCustomerId: 'cus_123' }))).rejects.toThrow('stripe down');
         });
     });
 
@@ -360,6 +541,28 @@ describe('SubscriptionService', () => {
             });
 
             expect(userRepository.updatePremiumUntil).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('handleWebhookEvent() / checkout.session.completed / terms', () => {
+        const completed = (consent) => service.handleWebhookEvent({
+            type: 'checkout.session.completed',
+            data: { object: { mode: 'subscription', subscription: 'sub_123', customer: 'cus_123', consent } },
+        });
+
+        it('records that the customer accepted the terms on the Stripe page, and which version', async () => {
+            await completed({ terms_of_service: 'accepted' });
+
+            expect(auditLogService.log).toHaveBeenCalledWith({
+                action: 'subscription_terms_accepted', targetUserId: 'user-1', targetUsername: 'miriam',
+                metadata: { stripeSubscriptionId: 'sub_123', termsVersion: '2026-09-30' },
+            });
+        });
+
+        it('records nothing when no terms were asked for, as with a free trial', async () => {
+            await completed(null);
+
+            expect(auditLogService.log).not.toHaveBeenCalledWith(expect.objectContaining({ action: 'subscription_terms_accepted' }));
         });
     });
 
@@ -626,6 +829,21 @@ describe('SubscriptionService', () => {
 
             expect(subscriptionRepository.updateByStripeSubscriptionId).not.toHaveBeenCalled();
             expect(auditLogService.log).not.toHaveBeenCalled();
+        });
+
+        // Regression: premiumUntil was never moved backward, so a subscription
+        // canceled with weeks left (a refund, an immediate cancel) kept its Premium.
+        it('revokes the Premium this subscription extended when it is canceled before the period ends', async () => {
+            const periodEnd = new Date('2030-01-01T00:00:00.000Z');
+            subscriptionRepository.findByStripeSubscriptionId.mockResolvedValue({
+                userId: 'user-1', stripeSubscriptionId: 'sub_123', status: 'active', currentPeriodEnd: periodEnd,
+            });
+            userRepository.getUserById.mockResolvedValue(makeUser({ premiumUntil: periodEnd }));
+
+            await service.handleWebhookEvent({ type: 'customer.subscription.deleted', data: { object: makeStripeSubscription() } });
+
+            const [, revokedUntil] = userRepository.updatePremiumUntil.mock.calls[0];
+            expect(revokedUntil.getTime()).toBeLessThanOrEqual(Date.now());
         });
 
         it('does not revoke a premiumUntil an admin granted independently of this subscription', async () => {

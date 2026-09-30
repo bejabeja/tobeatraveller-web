@@ -5,6 +5,7 @@ import { RichText } from '../../components/RichText';
 
 const onInternalLink = (navigation) => (href) => {
   if (href === '/privacy-policy') navigation.navigate('PrivacyPolicy');
+  if (href === '/contact') navigation.navigate('Contact');
 };
 
 const TermsScreen = ({ navigation }) => {
@@ -28,7 +29,7 @@ const TermsScreen = ({ navigation }) => {
       </View>
 
       <ScrollView contentContainerStyle={[styles.body, { paddingBottom: insets.bottom + 32 }]}>
-        <Text style={styles.meta}>{lt('lastUpdated', { date: '29 May 2025' })}</Text>
+        <Text style={styles.meta}>{lt('lastUpdated', { date: '30 September 2026' })}</Text>
 
         <Section title={lt('s1Title')}>
           {lt('s1Body', { returnObjects: true }).map((p, i) => <Text key={i} style={styles.p}>{p}</Text>)}
@@ -55,6 +56,25 @@ const TermsScreen = ({ navigation }) => {
             linkStyle={styles.link}
             onInternalLink={onInternalLink(navigation)}
           />
+        </Section>
+        <Section title={lt('subscriptionsTitle')}>
+          <Text style={styles.p}>{lt('subscriptionsIntro')}</Text>
+          {lt('subscriptionsItems', { returnObjects: true }).map((item, i) => (
+            <View key={i} style={styles.bulletRow}>
+              <Text style={styles.bulletDot}>•</Text>
+              <RichText text={item} style={styles.bulletText} boldStyle={styles.bold} />
+            </View>
+          ))}
+          {lt('subscriptionsWithdrawal', { returnObjects: true }).map((paragraph, i) => (
+            <RichText
+              key={i}
+              text={paragraph}
+              style={styles.p}
+              boldStyle={styles.bold}
+              linkStyle={styles.link}
+              onInternalLink={onInternalLink(navigation)}
+            />
+          ))}
         </Section>
         <Section title={lt('s7Title')}>
           <RichText text={lt('s7Body')} style={styles.p} boldStyle={styles.bold} />

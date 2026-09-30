@@ -132,6 +132,37 @@ describe('UserService.deleteUser()', () => {
         await expect(service.deleteUser('missing')).rejects.toThrow('User not found');
     });
 
+    // Regression: deleting the account left the Stripe subscription running, so
+    // someone with Premium kept being charged with no account to see it in.
+    describe('billing', () => {
+        const buildWithBilling = (billingService) => new UserService(
+            userRepository, itinerariesRepository, {}, null, lifeDiaryRepository,
+            null, null, null, null, null, null, null, null, null, null, null, billingService
+        );
+
+        it('closes the billing account before deleting the user', async () => {
+            const calls = [];
+            const user = makeUser({ stripeCustomerId: 'cus_123' });
+            userRepository.getUserById = async () => user;
+            userRepository.deleteUser = async () => { calls.push('deleteUser'); };
+            const billingService = { closeBillingAccount: async () => { calls.push('closeBillingAccount'); } };
+
+            await buildWithBilling(billingService).deleteUser('user-1');
+
+            expect(calls).toEqual(['closeBillingAccount', 'deleteUser']);
+        });
+
+        it('does not delete the account when the billing could not be closed, so the user is not left paying with no way to cancel', async () => {
+            const deleteUser = vi.fn();
+            userRepository.deleteUser = deleteUser;
+            const billingService = { closeBillingAccount: async () => { throw new Error('stripe down'); } };
+
+            await expect(buildWithBilling(billingService).deleteUser('user-1')).rejects.toThrow('stripe down');
+
+            expect(deleteUser).not.toHaveBeenCalled();
+        });
+    });
+
     it('collects the deleted user\'s itinerary and life diary image public ids', async () => {
         const result = await service.deleteUser('user-1');
 
@@ -660,6 +691,44 @@ describe('UserService.exportUserData()', () => {
         expect(result.lifeDiaryEntries).toEqual([{
             id: 'entry-1', images: [{ id: 'img-1', entryId: 'entry-1', photoUrl: 'https://cloudinary/img.jpg' }],
         }]);
+    });
+
+    it('includes the subscription and premium data, part of what a data-subject request covers', async () => {
+        const premiumUntil = new Date('2030-01-01T00:00:00.000Z');
+        const userRepository = {
+            getUserById: async () => makeUser({ premiumUntil, stripeCustomerId: 'cus_123' }),
+            findRetiredReferralCodes: async () => [],
+        };
+        const subscriptionRepository = {
+            findByUserId: async () => [{
+                stripeSubscriptionId: 'sub_1', status: 'active', currentPeriodEnd: premiumUntil,
+                cancelAtPeriodEnd: false, createdAt: new Date('2029-01-01T00:00:00.000Z'),
+            }],
+        };
+        const service = new UserService(
+            userRepository, { findByUserId: async () => [] }, { getFollowers: async () => [], getFollowing: async () => [] },
+            null, null, null, null, null, null, null, subscriptionRepository
+        );
+
+        const { billing } = await service.exportUserData('user-1', { id: 'user-1', username: 'jane' });
+
+        expect(billing).toEqual({
+            stripeCustomerId: 'cus_123',
+            premiumUntil,
+            subscriptions: [{
+                stripeSubscriptionId: 'sub_1', status: 'active', currentPeriodEnd: premiumUntil,
+                cancelAtPeriodEnd: false, startedAt: new Date('2029-01-01T00:00:00.000Z'),
+            }],
+        });
+    });
+
+    it('exports an empty billing section for someone who never subscribed', async () => {
+        const userRepository = { getUserById: async () => makeUser(), findRetiredReferralCodes: async () => [] };
+        const service = new UserService(userRepository, { findByUserId: async () => [] }, { getFollowers: async () => [], getFollowing: async () => [] });
+
+        const { billing } = await service.exportUserData('user-1', { id: 'user-1', username: 'jane' });
+
+        expect(billing.subscriptions).toEqual([]);
     });
 
     it('omits van-log, supplies, packing-checklist, and life-diary content when those repositories are not wired', async () => {

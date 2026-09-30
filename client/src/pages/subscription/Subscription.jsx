@@ -467,6 +467,7 @@ const Subscription = () => {
           <SubscriptionFaq t={t} />
         </>
       )}
+
     </div>
   );
 };

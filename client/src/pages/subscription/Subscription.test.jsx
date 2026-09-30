@@ -4,6 +4,7 @@ import { formatDate } from "@tobeatraveller/shared";
 
 let mockMe = { id: "user-1", isPremium: false, isTrialEligible: true };
 let mockAuthUser = { id: "user-1" };
+let mockIsAuthenticated = true;
 
 const mockDispatch = jest.fn();
 jest.mock("react-redux", () => ({
@@ -12,7 +13,7 @@ jest.mock("react-redux", () => ({
 }));
 jest.mock("../../store/auth/authSelectors", () => ({
   selectAuthUser: () => mockAuthUser,
-  selectIsAuthenticated: () => true,
+  selectIsAuthenticated: () => mockIsAuthenticated,
 }));
 jest.mock("../../store/user/userInfoSelectors", () => ({ selectMe: () => mockMe }));
 jest.mock("../../store/user/userInfoActions", () => ({ setUserInfo: jest.fn() }));
@@ -43,6 +44,7 @@ describe("Subscription", () => {
   beforeEach(() => {
     mockMe = { id: "user-1", isPremium: false, isTrialEligible: true };
     mockAuthUser = { id: "user-1" };
+    mockIsAuthenticated = true;
   });
 
   // Either plan starts with the free trial the first time.
@@ -397,6 +399,42 @@ describe("Subscription", () => {
       renderPage();
 
       expect(screen.queryByRole("button", { name: "subscription.ctaSubscribeNow" })).not.toBeInTheDocument();
+    });
+  });
+  // The customer gives up the right of withdrawal only by asking for the service to
+  // start right away and acknowledging it, and that is asked on the Stripe page,
+  // next to the payment button: this page adds no step of its own.
+  describe("consent to start right away", () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+      mockMe = { id: "user-1", isPremium: false, isTrialEligible: true };
+      createCheckoutSession.mockRejectedValue(new Error("stop before leaving the page"));
+    });
+
+    it("keeps the page about the plans, with no checkbox and no dialog", () => {
+      renderPage();
+
+      expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
+
+    it("goes straight to the payment when choosing to pay, with no step in between", () => {
+      renderPage();
+
+      fireEvent.click(screen.getAllByRole("button", { name: "subscription.ctaSubscribeNow" })[1]);
+
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      expect(createCheckoutSession).toHaveBeenCalledWith("annual", { startTrial: false });
+    });
+
+    it("does the same for someone with no trial left, who is charged right away", () => {
+      mockMe = { ...mockMe, isTrialEligible: false };
+      renderPage();
+
+      fireEvent.click(screen.getAllByRole("button", { name: "subscription.ctaSubscribe" })[0]);
+
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      expect(createCheckoutSession).toHaveBeenCalledWith("monthly", { startTrial: true });
     });
   });
 });

@@ -225,6 +225,19 @@
         color: rgba(255, 255, 255, 0.75);
       }
 
+      .subscription__price-equivalent {
+        color: rgba(255, 255, 255, 0.92);
+      }
+
+      .subscription__pay-now {
+        color: rgba(255, 255, 255, 0.85);
+
+        &:hover:not(:disabled),
+        &:focus-visible {
+          color: var(--white-color);
+        }
+      }
+
       .subscription__plan-badge {
         background: var(--white-color);
         color: var(--primary-color);

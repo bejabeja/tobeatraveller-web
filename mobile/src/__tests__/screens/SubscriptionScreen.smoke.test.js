@@ -475,3 +475,39 @@ describe('choosing between the free trial and paying right away', () => {
     expect(screen.queryByText('subscription.ctaSubscribeNow')).toBeNull();
   });
 });
+
+// The customer gives up the right of withdrawal only by asking for the service to
+// start right away and acknowledging it, and that is asked on the Stripe page,
+// next to the payment button: this screen adds no step of its own.
+describe('consent to start right away', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    createCheckoutSession.mockResolvedValue({ url: 'https://checkout.stripe.com/x' });
+    jest.spyOn(Linking, 'openURL').mockResolvedValue();
+  });
+  afterEach(() => jest.restoreAllMocks());
+
+  it('keeps the screen about the plans, with no checkbox', () => {
+    render(<SubscriptionScreen navigation={{ navigate: jest.fn(), goBack: jest.fn() }} />);
+
+    expect(screen.queryByRole('checkbox')).toBeNull();
+  });
+
+  it('goes straight to the payment when choosing to pay, with no step in between', async () => {
+    render(<SubscriptionScreen navigation={{ navigate: jest.fn(), goBack: jest.fn() }} />);
+
+    await act(async () => { fireEvent.press(screen.getAllByText('subscription.ctaSubscribeNow')[1]); });
+
+    expect(createCheckoutSession).toHaveBeenCalledWith('annual', { startTrial: false });
+    expect(Linking.openURL).toHaveBeenCalledWith('https://checkout.stripe.com/x');
+  });
+
+  it('does the same for someone with no trial left, who is charged right away', async () => {
+    mockUser = { ...mockUser, isTrialEligible: false };
+    render(<SubscriptionScreen navigation={{ navigate: jest.fn(), goBack: jest.fn() }} />);
+
+    await act(async () => { fireEvent.press(screen.getAllByText('subscription.ctaSubscribe')[0]); });
+
+    expect(createCheckoutSession).toHaveBeenCalledWith('monthly', { startTrial: true });
+  });
+});

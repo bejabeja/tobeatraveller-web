@@ -359,8 +359,8 @@
     "faqAdsQuestion": "Will Premium have ads?",
     "faqAdsAnswer": "No. Premium will never have ads.",
     "faqInvoicesQuestion": "Where do I see my invoices or change my card?",
-    "faqInvoicesAnswer": "In \"Manage subscription\". Payments are handled by Stripe, and there you can see your invoices, change your card or your plan, and cancel.",
-    "manageHint": "There you can cancel, change plan, update your card and see your invoices.",
+    "faqInvoicesAnswer": "In \"Manage subscription\". Payments are handled by Stripe, and there you can see your invoices, change your card and cancel.",
+    "manageHint": "There you can cancel, update your card and see your invoices.",
     "ctaResume": "Resume subscription",
     "resumeSuccessToast": "Subscription resumed.",
     "resumeErrorToast": "Couldn't resume the subscription. Please try again.",
@@ -426,6 +426,9 @@
     "auditTrialCanceled": "{{target}} canceled the free trial",
     "auditSubscriptionCancellationScheduled": "{{target}} canceled the subscription (Premium lasts until the end of the period)",
     "auditSubscriptionResumed": "{{target}} took the cancellation back and keeps the subscription",
+    "auditSubscriptionRefunded": "Payment of {{target}} refunded: the subscription was ended and Premium removed",
+    "auditSubscriptionDisputed": "{{target}} disputed a payment: the subscription was ended and Premium removed",
+    "auditSubscriptionTermsAccepted": "{{target}} accepted the terms to subscribe",
     "auditTrialConverted": "{{target}}'s free trial became a paid subscription",
     "auditSubscriptionPaymentFailed": "The payment of {{target}}'s subscription failed",
     "auditNoticeSent": "{{actor}} sent a notice to {{target}}: \"{{message}}\"",
@@ -1453,34 +1456,48 @@
     ],
     "s6Title": "6. Privacy",
     "s6Body": "Your use of the Service is also governed by our <a href=\"/privacy-policy\">Privacy Policy</a>, which is incorporated into these terms by reference.",
-    "s7Title": "7. Itinerary visibility",
+    "subscriptionsTitle": "7. Premium subscriptions, payments and right of withdrawal",
+    "subscriptionsIntro": "Premium is an optional paid plan. These rules apply to it, in addition to the rest of these terms.",
+    "subscriptionsItems": [
+      "<strong>Payments.</strong> Payments are processed by Stripe. We never see or store your card details. The price you pay is the one shown at checkout before you confirm, and it includes the taxes that apply where you live (such as VAT) when we are required to charge them.",
+      "<strong>Free trial.</strong> A first subscription can start with a free trial that asks for no card. If the trial ends with no card on file, the subscription is canceled and you go back to the free plan. If you add a card during the trial, you are charged automatically when it ends.",
+      "<strong>Automatic renewal.</strong> Subscriptions renew automatically every month or every year, depending on the plan, until you cancel. You can cancel at any time from \"Manage subscription\"; you keep Premium until the end of the period you have already paid for.",
+      "<strong>Failed payments.</strong> If a payment fails, we keep your Premium for a few days while the payment is retried. If it cannot be collected, the subscription ends and you go back to the free plan.",
+      "<strong>Your data.</strong> When Premium ends, nothing you saved is deleted. The free plan only limits how many new entries you can add in each tool."
+    ],
+    "subscriptionsWithdrawal": [
+      "<strong>Right of withdrawal.</strong> If you are a consumer in the European Union, you have 14 days from the day you subscribe to withdraw from the purchase without giving a reason. To do so, tell us clearly that you withdraw through our <a href=\"/contact\">contact page</a>, and we will refund the payment within 14 days using the same payment method.",
+      "<strong>Starting right away.</strong> Premium starts as soon as you subscribe, so when you pay we ask you to expressly request that it starts at once and to acknowledge that you lose the right of withdrawal once the service has been fully provided. If you withdraw within the 14 days after asking it to start, you will pay a proportional amount for what you used until you told us you were withdrawing. We keep a record of the date and the version of these terms you accepted.",
+      "<strong>Other refunds.</strong> Your legal rights are not affected by these terms. Beyond them, we may refund a payment at our discretion. If a payment is fully refunded or disputed with your bank, the subscription ends and Premium is removed."
+    ],
+    "s7Title": "8. Itinerary visibility",
     "s7Body": "Itineraries marked as <strong>Public</strong> are visible to anyone, including users who are not logged in. Itineraries marked as <strong>Private</strong> are only visible to you. You can change the visibility of any itinerary at any time from the edit screen.",
-    "s8Title": "8. Intellectual property",
+    "s8Title": "9. Intellectual property",
     "s8Body": [
       "The ToBeATraveller name, logo, and design are our intellectual property. You may not use them without prior written permission.",
       "The platform code and design are not licensed for reuse without our explicit written consent."
     ],
-    "s9Title": "9. Disclaimer of warranties",
+    "s9Title": "10. Disclaimer of warranties",
     "s9Body": [
       "The Service is provided \"as is\" and \"as available\" without warranties of any kind. We do not guarantee that the Service will be uninterrupted, error-free, or that the itinerary content shared by users is accurate, complete, or safe to follow.",
       "Travel inherently involves risk. Always verify information independently before planning a trip based on content found on this platform."
     ],
-    "s10Title": "10. Limitation of liability",
+    "s10Title": "11. Limitation of liability",
     "s10Body": [
       "To the maximum extent permitted by law, ToBeATraveller shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of the Service or any content found on it.",
       "Our total liability for any claim relating to the Service shall not exceed €100."
     ],
-    "s11Title": "11. Termination",
+    "s11Title": "12. Termination",
     "s11Body": [
       "You can delete your account at any time from your profile settings. Deletion is permanent and removes all your content from the platform.",
       "We may suspend or terminate your account if you violate these terms, with or without notice depending on the severity of the violation."
     ],
-    "s12Title": "12. Changes to these terms",
+    "s12Title": "13. Changes to these terms",
     "s12Body": "We may update these terms from time to time. We will notify users of significant changes by updating the \"Last updated\" date. Continued use of the Service after changes constitutes acceptance of the updated terms.",
-    "s13Title": "13. Governing law",
-    "s13Body": "These terms are governed by the laws of Spain. Any disputes shall be subject to the exclusive jurisdiction of the courts of Spain, without prejudice to your rights as a consumer under applicable EU law.",
-    "s14Title": "14. Contact",
-    "s14Body": "For any questions about these terms, contact us at <a href=\"mailto:tobeatravellercompany@gmail.com\">tobeatravellercompany@gmail.com</a>.",
+    "s13Title": "14. Governing law",
+    "s13Body": "These terms are governed by Swiss substantive law, excluding its conflict-of-laws rules. Any disputes fall under the jurisdiction of the ordinary courts at our place of business in Switzerland, without prejudice to the mandatory consumer protection rules of the country where you live and to your right, as a consumer, to bring proceedings before the courts of your place of residence.",
+    "s14Title": "15. Contact",
+    "s14Body": "ToBeATraveller is operated from Switzerland. For any questions about these terms, contact us at <a href=\"mailto:tobeatravellercompany@gmail.com\">tobeatravellercompany@gmail.com</a>.",
     "footerPrivacyLink": "Privacy Policy",
     "footerBackHome": "Back to home"
   },
@@ -1489,7 +1506,7 @@
     "metaDescription": "How ToBeATraveller collects, uses and protects your personal data.",
     "lastUpdated": "Last updated: {{date}}",
     "s1Title": "1. Who we are",
-    "s1Body": "ToBeATraveller (\"we\", \"our\", \"us\") is a travel itinerary sharing platform. We are the data controller for the personal data collected through this service. You can contact us at <a href=\"mailto:tobeatravellercompany@gmail.com\">tobeatravellercompany@gmail.com</a>.",
+    "s1Body": "ToBeATraveller (\"we\", \"our\", \"us\") is a travel itinerary sharing platform. We are the data controller for the personal data collected through this service. You can contact us at <a href=\"mailto:tobeatravellercompany@gmail.com\">tobeatravellercompany@gmail.com</a>. We operate from Switzerland.",
     "s2Title": "2. What data we collect",
     "s2Intro": "We collect the following categories of personal data:",
     "s2Items": [
@@ -1502,7 +1519,8 @@
       "<strong>Preferences:</strong> the language you use the app in, so the emails we send you are in that language.",
       "<strong>Device data (mobile app only):</strong> if you allow notifications, we store a push token that identifies your device to the notification service, the device platform (iOS/Android) and its language. It is removed when you log out, when the device stops accepting notifications, or after 90 days without opening the app.",
       "<strong>Sign-up data:</strong> when you create an account, we record the country your request came from (derived from your IP address, which we do not otherwise store) and your browser/device type. This helps us understand where our community is growing from and does not require cookie consent, as it is read directly from the sign-up request rather than stored on your device.",
-      "<strong>Analytics data (only if you accept cookies):</strong> if you accept analytics cookies in the cookie banner, we collect approximate location (derived from your IP address), device and browser type, and which pages you visit, via PostHog. This is never collected if you decline, and session recording is disabled."
+      "<strong>Analytics data (only if you accept cookies):</strong> if you accept analytics cookies in the cookie banner, we collect approximate location (derived from your IP address), device and browser type, and which pages you visit, via PostHog. This is never collected if you decline, and session recording is disabled.",
+      "<strong>Subscription and payment data:</strong> if you subscribe to Premium, the payment is handled by Stripe and we never see or store your card details. We keep your Stripe customer identifier, your subscription status and dates, and the date and version of the terms you accepted when subscribing."
     ],
     "s3Title": "3. How we use your data",
     "s3Intro": "We use your personal data exclusively to:",
@@ -1510,10 +1528,11 @@
       "Create and manage your account.",
       "Display your public profile and itineraries to other users.",
       "Provide social features (following, comments, likes, saved trips).",
-      "Send you account-related communications if necessary (e.g. account deletion confirmation)."
+      "Send you account-related communications if necessary (e.g. account deletion confirmation).",
+      "Manage your Premium subscription and payments, including refunds and the right of withdrawal."
     ],
     "s3Body2": "We do not use your data for advertising, profiling, or selling to third parties. We do not send marketing emails.",
-    "s3Body3": "The legal basis for processing is the performance of a contract (Art. 6(1)(b) GDPR), i.e., providing the service you signed up for. For sign-up country and device data, the legal basis is our legitimate interest (Art. 6(1)(f) GDPR) in understanding where our community comes from.",
+    "s3Body3": "The legal basis for processing is the performance of a contract (Art. 6(1)(b) GDPR), i.e., providing the service you signed up for. For sign-up country and device data, the legal basis is our legitimate interest (Art. 6(1)(f) GDPR) in understanding where our community comes from. We process personal data in line with the Swiss Federal Act on Data Protection (FADP) and, for people in the European Union and the European Economic Area, with the GDPR.",
     "s4Title": "4. Third-party services",
     "s4Intro": "We use the following external services that may process your data:",
     "s4Items": [
@@ -1521,10 +1540,11 @@
       "<strong>Geoapify</strong>: used to search for destinations and places of interest when creating an itinerary. Search queries (place names) are sent to their API. See their <a href=\"https://www.geoapify.com/privacy-policy\">Privacy Policy</a>.",
       "<strong>AI itinerary generation</strong>: when you use the \"Generate with AI\" feature, the destination, trip duration, and category are sent to an AI service to generate place suggestions. No personally identifiable information is included in these requests.",
       "<strong>PostHog</strong>: used for product analytics (which pages are used, approximate location, device type), only if you accept analytics cookies in the website cookie banner or usage measurement in the app notice. Session recording is disabled. See their <a href=\"https://posthog.com/privacy\">Privacy Policy</a>.",
-      "<strong>Expo push service</strong> (Expo, with Apple Push Notification service and Firebase Cloud Messaging): used to deliver push notifications to the mobile app. It receives your device's push token and the notification text (who interacted and the trip title, never the content of comments). See their <a href=\"https://expo.dev/privacy\">Privacy Policy</a>."
+      "<strong>Expo push service</strong> (Expo, with Apple Push Notification service and Firebase Cloud Messaging): used to deliver push notifications to the mobile app. It receives your device's push token and the notification text (who interacted and the trip title, never the content of comments). See their <a href=\"https://expo.dev/privacy\">Privacy Policy</a>.",
+      "<strong>Stripe</strong>: processes the payments of Premium subscriptions. It receives your email address and payment details, and keeps the payment records it is legally required to keep. See their <a href=\"https://stripe.com/privacy\">Privacy Policy</a>."
     ],
     "s5Title": "5. Data retention",
-    "s5Body": "We retain your personal data for as long as your account is active. If you delete your account, all your personal data (profile, itineraries, comments, and social connections) is permanently deleted from our systems. Cached or backed-up copies may persist for up to 30 days before being purged.",
+    "s5Body": "We retain your personal data for as long as your account is active. If you delete your account, all your personal data (profile, itineraries, comments, and social connections) is permanently deleted from our systems. Cached or backed-up copies may persist for up to 30 days before being purged. If you delete your account, we also delete your customer at Stripe, which cancels any subscription; Stripe keeps the payment records it is required to keep by law.",
     "s6Title": "6. Your rights (GDPR)",
     "s6Intro": "If you are in the European Economic Area, you have the following rights:",
     "s6Items": [
@@ -1536,7 +1556,7 @@
       "<strong>Objection:</strong> object to processing based on legitimate interests."
     ],
     "s6Body2": "You can access and export your data at any time from <a href=\"/settings\">Settings → Your data</a>. To exercise any other right, contact us at <a href=\"mailto:tobeatravellercompany@gmail.com\">tobeatravellercompany@gmail.com</a>. We will respond within 30 days.",
-    "s6Body3": "You also have the right to lodge a complaint with your national data protection authority (in Spain: <a href=\"https://www.aepd.es\">AEPD</a>).",
+    "s6Body3": "You also have the right to lodge a complaint with a data protection authority: in Switzerland, the <a href=\"https://www.edoeb.admin.ch\">Federal Data Protection and Information Commissioner (FDPIC)</a>; if you live in the European Union or the European Economic Area, the authority of your country.",
     "s7Title": "7. Cookies and session storage",
     "s7Body": [
       "We use a single session cookie to keep you logged in. This cookie is strictly necessary for the service to function and does not require consent under ePrivacy rules.",

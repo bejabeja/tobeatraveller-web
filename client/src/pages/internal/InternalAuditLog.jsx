@@ -63,6 +63,15 @@ const AUDIT_DESCRIPTIONS = {
   subscription_resumed: (entry, t) => t("admin.auditSubscriptionResumed", {
     target: entry.targetUsername ?? entry.targetUserId,
   }),
+  subscription_terms_accepted: (entry, t) => t("admin.auditSubscriptionTermsAccepted", {
+    target: entry.targetUsername ?? entry.targetUserId,
+  }),
+  subscription_refunded: (entry, t) => t("admin.auditSubscriptionRefunded", {
+    target: entry.targetUsername ?? entry.targetUserId,
+  }),
+  subscription_disputed: (entry, t) => t("admin.auditSubscriptionDisputed", {
+    target: entry.targetUsername ?? entry.targetUserId,
+  }),
   subscription_trial_converted: (entry, t) => t("admin.auditTrialConverted", {
     target: entry.targetUsername ?? entry.targetUserId,
   }),

@@ -47,8 +47,11 @@ it("tells the steps of a subscription apart, and a trial from a paid plan", asyn
       entry("g", "subscription_trial_converted", { status: "active" }),
       entry("h", "subscription_payment_failed", { status: "past_due" }),
       entry("i", "subscription_resumed", { status: "active" }),
+      entry("j", "subscription_refunded", { chargeId: "ch_1" }),
+      entry("k", "subscription_disputed", { chargeId: "ch_1", disputeId: "dp_1" }),
+      entry("l", "subscription_terms_accepted", { termsVersion: "2026-09-30", plan: "annual", startTrial: false }),
     ],
-    total: 9,
+    total: 12,
   });
 
   render(<InternalAuditLog />);
@@ -62,4 +65,7 @@ it("tells the steps of a subscription apart, and a trial from a paid plan", asyn
   expect(screen.getByText("admin.auditTrialConverted:jane")).toBeInTheDocument();
   expect(screen.getByText("admin.auditSubscriptionPaymentFailed:jane")).toBeInTheDocument();
   expect(screen.getByText("admin.auditSubscriptionResumed:jane")).toBeInTheDocument();
+  expect(screen.getByText("admin.auditSubscriptionRefunded:jane")).toBeInTheDocument();
+  expect(screen.getByText("admin.auditSubscriptionDisputed:jane")).toBeInTheDocument();
+  expect(screen.getByText("admin.auditSubscriptionTermsAccepted:jane")).toBeInTheDocument();
 });

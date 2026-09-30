@@ -363,8 +363,8 @@
     "faqAdsQuestion": "¿Premium tendrá anuncios?",
     "faqAdsAnswer": "No. Premium nunca tendrá anuncios.",
     "faqInvoicesQuestion": "¿Dónde veo mis facturas o cambio mi tarjeta?",
-    "faqInvoicesAnswer": "En \"Gestionar suscripción\". Los pagos los gestiona Stripe, y ahí puedes ver tus facturas, cambiar tu tarjeta o tu plan, y cancelar.",
-    "manageHint": "Ahí puedes cancelar, cambiar de plan, actualizar tu tarjeta y ver tus facturas.",
+    "faqInvoicesAnswer": "En \"Gestionar suscripción\". Los pagos los gestiona Stripe, y ahí puedes ver tus facturas, cambiar tu tarjeta y cancelar.",
+    "manageHint": "Ahí puedes cancelar, actualizar tu tarjeta y ver tus facturas.",
     "ctaResume": "Reanudar suscripción",
     "resumeSuccessToast": "Suscripción reanudada.",
     "resumeErrorToast": "No se pudo reanudar la suscripción. Inténtalo de nuevo.",
@@ -431,6 +431,9 @@
     "auditTrialCanceled": "{{target}} canceló la prueba gratuita",
     "auditSubscriptionCancellationScheduled": "{{target}} canceló la suscripción (Premium dura hasta el final del periodo)",
     "auditSubscriptionResumed": "{{target}} retiró la cancelación y mantiene la suscripción",
+    "auditSubscriptionRefunded": "Pago de {{target}} reembolsado: se terminó la suscripción y se quitó Premium",
+    "auditSubscriptionDisputed": "{{target}} disputó un pago: se terminó la suscripción y se quitó Premium",
+    "auditSubscriptionTermsAccepted": "{{target}} aceptó los términos para suscribirse",
     "auditTrialConverted": "La prueba gratuita de {{target}} pasó a suscripción de pago",
     "auditSubscriptionPaymentFailed": "Falló el pago de la suscripción de {{target}}",
     "auditNoticeSent": "{{actor}} envió un aviso a {{target}}: \"{{message}}\"",
@@ -1471,34 +1474,48 @@
     ],
     "s6Title": "6. Privacidad",
     "s6Body": "El uso que hagas del Servicio también se rige por nuestra <a href=\"/privacy-policy\">Política de Privacidad</a>, que queda incorporada a estos términos por referencia.",
-    "s7Title": "7. Visibilidad del itinerario",
+    "subscriptionsTitle": "7. Suscripciones Premium, pagos y derecho de desistimiento",
+    "subscriptionsIntro": "Premium es un plan de pago opcional. Estas reglas se aplican a él, además del resto de estos términos.",
+    "subscriptionsItems": [
+      "<strong>Pagos.</strong> Los pagos los procesa Stripe. Nunca vemos ni guardamos los datos de tu tarjeta. El precio que pagas es el que se muestra en el pago antes de que confirmes, e incluye los impuestos que se aplican donde vives (como el IVA) cuando estamos obligados a cobrarlos.",
+      "<strong>Prueba gratuita.</strong> Una primera suscripción puede empezar con una prueba gratuita que no pide tarjeta. Si la prueba termina sin tarjeta registrada, la suscripción se cancela y vuelves al plan gratis. Si añades una tarjeta durante la prueba, se te cobra automáticamente cuando termine.",
+      "<strong>Renovación automática.</strong> Las suscripciones se renuevan automáticamente cada mes o cada año, según el plan, hasta que las canceles. Puedes cancelar en cualquier momento desde \"Gestionar suscripción\"; conservas Premium hasta el final del periodo que ya has pagado.",
+      "<strong>Pagos fallidos.</strong> Si un pago falla, mantenemos tu Premium unos días mientras se reintenta el cobro. Si no se puede cobrar, la suscripción termina y vuelves al plan gratis.",
+      "<strong>Tus datos.</strong> Cuando termina Premium no se borra nada de lo que guardaste. El plan gratis solo limita cuántas entradas nuevas puedes añadir en cada herramienta."
+    ],
+    "subscriptionsWithdrawal": [
+      "<strong>Derecho de desistimiento.</strong> Si eres consumidor en la Unión Europea, tienes 14 días desde el día en que te suscribes para desistir de la compra sin dar ninguna razón. Para hacerlo, comunícanos claramente que desistes a través de nuestra <a href=\"/contact\">página de contacto</a> y te devolveremos el pago en un máximo de 14 días por el mismo medio de pago.",
+      "<strong>Inicio inmediato.</strong> Premium empieza en cuanto te suscribes, así que al pagar te pedimos que solicites expresamente que empiece de inmediato y que reconozcas que pierdes el derecho de desistimiento una vez que el servicio se haya prestado por completo. Si desistes dentro de los 14 días después de pedir que empiece, pagarás un importe proporcional a lo que hayas usado hasta que nos comuniques que desistes. Guardamos constancia de la fecha y de la versión de estos términos que aceptaste.",
+      "<strong>Otros reembolsos.</strong> Estos términos no afectan a tus derechos legales. Más allá de ellos, podemos reembolsar un pago a nuestra discreción. Si un pago se reembolsa por completo o lo disputas con tu banco, la suscripción termina y se retira Premium."
+    ],
+    "s7Title": "8. Visibilidad del itinerario",
     "s7Body": "Los itinerarios marcados como <strong>Públicos</strong> son visibles para cualquiera, incluidos usuarios sin sesión iniciada. Los itinerarios marcados como <strong>Privados</strong> solo son visibles para ti. Puedes cambiar la visibilidad de cualquier itinerario en cualquier momento desde la pantalla de edición.",
-    "s8Title": "8. Propiedad intelectual",
+    "s8Title": "9. Propiedad intelectual",
     "s8Body": [
       "El nombre, logotipo y diseño de ToBeATraveller son propiedad intelectual nuestra. No puedes usarlos sin permiso previo por escrito.",
       "El código y el diseño de la plataforma no están licenciados para su reutilización sin nuestro consentimiento explícito por escrito."
     ],
-    "s9Title": "9. Exclusión de garantías",
+    "s9Title": "10. Exclusión de garantías",
     "s9Body": [
       "El Servicio se proporciona \"tal cual\" y \"según disponibilidad\", sin garantías de ningún tipo. No garantizamos que el Servicio esté libre de interrupciones o errores, ni que el contenido de los itinerarios compartidos por los usuarios sea preciso, completo o seguro de seguir.",
       "Viajar conlleva riesgos inherentes. Verifica siempre la información de forma independiente antes de planificar un viaje basándote en contenido encontrado en esta plataforma."
     ],
-    "s10Title": "10. Limitación de responsabilidad",
+    "s10Title": "11. Limitación de responsabilidad",
     "s10Body": [
       "En la máxima medida permitida por la ley, ToBeATraveller no será responsable de daños indirectos, incidentales, especiales o consecuentes derivados del uso del Servicio o de cualquier contenido encontrado en él.",
       "Nuestra responsabilidad total por cualquier reclamación relacionada con el Servicio no excederá los 100 €."
     ],
-    "s11Title": "11. Terminación",
+    "s11Title": "12. Terminación",
     "s11Body": [
       "Puedes eliminar tu cuenta en cualquier momento desde los ajustes de tu perfil. La eliminación es permanente y elimina todo tu contenido de la plataforma.",
       "Podemos suspender o cancelar tu cuenta si incumples estos términos, con o sin previo aviso según la gravedad de la infracción."
     ],
-    "s12Title": "12. Cambios en estos términos",
+    "s12Title": "13. Cambios en estos términos",
     "s12Body": "Podemos actualizar estos términos ocasionalmente. Notificaremos a los usuarios de cambios significativos actualizando la fecha de \"Última actualización\". El uso continuado del Servicio tras los cambios constituye la aceptación de los términos actualizados.",
-    "s13Title": "13. Ley aplicable",
-    "s13Body": "Estos términos se rigen por las leyes de España. Cualquier disputa estará sujeta a la jurisdicción exclusiva de los tribunales de España, sin perjuicio de tus derechos como consumidor según la legislación aplicable de la UE.",
-    "s14Title": "14. Contacto",
-    "s14Body": "Para cualquier pregunta sobre estos términos, contáctanos en <a href=\"mailto:tobeatravellercompany@gmail.com\">tobeatravellercompany@gmail.com</a>.",
+    "s13Title": "14. Ley aplicable",
+    "s13Body": "Estos términos se rigen por el derecho material suizo, con exclusión de sus normas de conflicto de leyes. Cualquier controversia será competencia de los tribunales ordinarios del lugar donde tenemos nuestro establecimiento en Suiza, sin perjuicio de las normas imperativas de protección de los consumidores del país donde vives ni de tu derecho, como consumidor, a acudir a los tribunales de tu lugar de residencia.",
+    "s14Title": "15. Contacto",
+    "s14Body": "ToBeATraveller se gestiona desde Suiza. Para cualquier pregunta sobre estos términos, contáctanos en <a href=\"mailto:tobeatravellercompany@gmail.com\">tobeatravellercompany@gmail.com</a>.",
     "footerPrivacyLink": "Política de Privacidad",
     "footerBackHome": "Volver al inicio"
   },
@@ -1507,7 +1524,7 @@
     "metaDescription": "Cómo ToBeATraveller recopila, usa y protege tus datos personales.",
     "lastUpdated": "Última actualización: {{date}}",
     "s1Title": "1. Quiénes somos",
-    "s1Body": "ToBeATraveller (\"nosotros\") es una plataforma para compartir itinerarios de viaje. Somos el responsable del tratamiento de los datos personales recogidos a través de este servicio. Puedes contactarnos en <a href=\"mailto:tobeatravellercompany@gmail.com\">tobeatravellercompany@gmail.com</a>.",
+    "s1Body": "ToBeATraveller (\"nosotros\") es una plataforma para compartir itinerarios de viaje. Somos el responsable del tratamiento de los datos personales recogidos a través de este servicio. Puedes contactarnos en <a href=\"mailto:tobeatravellercompany@gmail.com\">tobeatravellercompany@gmail.com</a>. Operamos desde Suiza.",
     "s2Title": "2. Qué datos recopilamos",
     "s2Intro": "Recopilamos las siguientes categorías de datos personales:",
     "s2Items": [
@@ -1520,7 +1537,8 @@
       "<strong>Preferencias:</strong> el idioma en el que usas la app, para escribirte los correos en ese idioma.",
       "<strong>Datos del dispositivo (solo app móvil):</strong> si permites las notificaciones, guardamos un token push que identifica tu dispositivo ante el servicio de notificaciones, la plataforma (iOS/Android) y su idioma. Se borra al cerrar sesión, cuando el dispositivo deja de aceptar notificaciones o tras 90 días sin abrir la app.",
       "<strong>Datos de registro:</strong> cuando creas una cuenta, registramos el país desde el que llegó la solicitud (a partir de tu dirección IP, que no guardamos de otra forma) y el tipo de navegador/dispositivo. Esto nos ayuda a entender de dónde crece nuestra comunidad y no requiere consentimiento de cookies, porque se lee directamente de la solicitud de registro y no se guarda nada en tu dispositivo.",
-      "<strong>Datos analíticos (solo si aceptas las cookies):</strong> si aceptas las cookies analíticas en el aviso de cookies, recopilamos ubicación aproximada (a partir de tu dirección IP), tipo de dispositivo y navegador, y qué páginas visitas, mediante PostHog. Nunca se recopila si lo rechazas, y la grabación de sesión está desactivada."
+      "<strong>Datos analíticos (solo si aceptas las cookies):</strong> si aceptas las cookies analíticas en el aviso de cookies, recopilamos ubicación aproximada (a partir de tu dirección IP), tipo de dispositivo y navegador, y qué páginas visitas, mediante PostHog. Nunca se recopila si lo rechazas, y la grabación de sesión está desactivada.",
+      "<strong>Datos de suscripción y pago:</strong> si te suscribes a Premium, el pago lo gestiona Stripe y nunca vemos ni guardamos los datos de tu tarjeta. Guardamos tu identificador de cliente de Stripe, el estado y las fechas de tu suscripción, y la fecha y la versión de los términos que aceptaste al suscribirte."
     ],
     "s3Title": "3. Cómo usamos tus datos",
     "s3Intro": "Usamos tus datos personales exclusivamente para:",
@@ -1528,10 +1546,11 @@
       "Crear y gestionar tu cuenta.",
       "Mostrar tu perfil público y tus itinerarios a otros usuarios.",
       "Ofrecer funciones sociales (seguir, comentarios, me gusta, viajes guardados).",
-      "Enviarte comunicaciones relacionadas con tu cuenta cuando sea necesario (p. ej. confirmación de eliminación de cuenta)."
+      "Enviarte comunicaciones relacionadas con tu cuenta cuando sea necesario (p. ej. confirmación de eliminación de cuenta).",
+      "Gestionar tu suscripción Premium y tus pagos, incluidos los reembolsos y el derecho de desistimiento."
     ],
     "s3Body2": "No usamos tus datos para publicidad, elaboración de perfiles ni venta a terceros. No enviamos correos de marketing.",
-    "s3Body3": "La base legal para el tratamiento es la ejecución de un contrato (art. 6.1.b RGPD), es decir, prestar el servicio al que te has suscrito. Para el país y dispositivo de registro, la base legal es nuestro interés legítimo (art. 6.1.f RGPD) en entender de dónde viene nuestra comunidad.",
+    "s3Body3": "La base legal para el tratamiento es la ejecución de un contrato (art. 6.1.b RGPD), es decir, prestar el servicio al que te has suscrito. Para el país y dispositivo de registro, la base legal es nuestro interés legítimo (art. 6.1.f RGPD) en entender de dónde viene nuestra comunidad. Tratamos los datos personales conforme a la Ley Federal suiza de Protección de Datos (LPD) y, para las personas de la Unión Europea y del Espacio Económico Europeo, conforme al RGPD.",
     "s4Title": "4. Servicios de terceros",
     "s4Intro": "Usamos los siguientes servicios externos que pueden tratar tus datos:",
     "s4Items": [
@@ -1539,10 +1558,11 @@
       "<strong>Geoapify</strong>: usado para buscar destinos y lugares de interés al crear un itinerario. Las búsquedas (nombres de lugares) se envían a su API. Consulta su <a href=\"https://www.geoapify.com/privacy-policy\">Política de Privacidad</a>.",
       "<strong>Generación de itinerarios con IA</strong>: cuando usas la función \"Generar con IA\", el destino, la duración del viaje y la categoría se envían a un servicio de IA para generar sugerencias de lugares. No se incluye información personal identificable en estas peticiones.",
       "<strong>PostHog</strong>: usado para analítica de producto (qué páginas se usan, ubicación aproximada, tipo de dispositivo), solo si aceptas las cookies analíticas en el aviso de cookies de la web o la medición de uso en el aviso de la app. La grabación de sesión está desactivada. Consulta su <a href=\"https://posthog.com/privacy\">Política de Privacidad</a>.",
-      "<strong>Servicio push de Expo</strong> (Expo, junto con Apple Push Notification service y Firebase Cloud Messaging): usado para entregar notificaciones push en la app móvil. Recibe el token push de tu dispositivo y el texto de la notificación (quién interactuó y el título del viaje, nunca el contenido de los comentarios). Consulta su <a href=\"https://expo.dev/privacy\">Política de Privacidad</a>."
+      "<strong>Servicio push de Expo</strong> (Expo, junto con Apple Push Notification service y Firebase Cloud Messaging): usado para entregar notificaciones push en la app móvil. Recibe el token push de tu dispositivo y el texto de la notificación (quién interactuó y el título del viaje, nunca el contenido de los comentarios). Consulta su <a href=\"https://expo.dev/privacy\">Política de Privacidad</a>.",
+      "<strong>Stripe</strong>: procesa los pagos de las suscripciones Premium. Recibe tu dirección de correo y los datos de pago, y conserva los registros de pago que la ley le obliga a guardar. Consulta su <a href=\"https://stripe.com/privacy\">Política de privacidad</a>."
     ],
     "s5Title": "5. Conservación de datos",
-    "s5Body": "Conservamos tus datos personales mientras tu cuenta esté activa. Si eliminas tu cuenta, todos tus datos personales (perfil, itinerarios, comentarios y conexiones sociales) se eliminan permanentemente de nuestros sistemas. Las copias en caché o de respaldo pueden persistir hasta 30 días antes de ser purgadas.",
+    "s5Body": "Conservamos tus datos personales mientras tu cuenta esté activa. Si eliminas tu cuenta, todos tus datos personales (perfil, itinerarios, comentarios y conexiones sociales) se eliminan permanentemente de nuestros sistemas. Las copias en caché o de respaldo pueden persistir hasta 30 días antes de ser purgadas. Si eliminas tu cuenta, también eliminamos tu cliente en Stripe, lo que cancela cualquier suscripción; Stripe conserva los registros de pago que la ley le obliga a guardar.",
     "s6Title": "6. Tus derechos (RGPD)",
     "s6Intro": "Si te encuentras en el Espacio Económico Europeo, tienes los siguientes derechos:",
     "s6Items": [
@@ -1554,7 +1574,7 @@
       "<strong>Oposición:</strong> oponerte al tratamiento basado en intereses legítimos."
     ],
     "s6Body2": "Puedes acceder a tus datos y exportarlos en cualquier momento desde <a href=\"/settings\">Ajustes → Tus datos</a>. Para ejercer cualquier otro derecho, contáctanos en <a href=\"mailto:tobeatravellercompany@gmail.com\">tobeatravellercompany@gmail.com</a>. Responderemos en un plazo de 30 días.",
-    "s6Body3": "También tienes derecho a presentar una reclamación ante tu autoridad nacional de protección de datos (en España: <a href=\"https://www.aepd.es\">AEPD</a>).",
+    "s6Body3": "También tienes derecho a presentar una reclamación ante una autoridad de protección de datos: en Suiza, el <a href=\"https://www.edoeb.admin.ch\">Encargado Federal de Protección de Datos y de Transparencia (PFPDT)</a>; si vives en la Unión Europea o en el Espacio Económico Europeo, la autoridad de tu país.",
     "s7Title": "7. Cookies y almacenamiento de sesión",
     "s7Body": [
       "Usamos una única cookie de sesión para mantener tu sesión iniciada. Esta cookie es estrictamente necesaria para el funcionamiento del servicio y no requiere consentimiento según las normas de ePrivacy.",

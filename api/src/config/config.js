@@ -31,6 +31,7 @@ const config = {
     stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
     stripePriceIdMonthly: process.env.STRIPE_PRICE_ID_MONTHLY,
     stripePriceIdAnnual: process.env.STRIPE_PRICE_ID_ANNUAL,
+    stripeAutomaticTax: process.env.STRIPE_AUTOMATIC_TAX === 'true',
 };
 
 export default config;

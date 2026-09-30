@@ -2,7 +2,12 @@ import { NotFoundError } from '../errors/NotFoundError.js';
 import { ConflictError } from '../errors/ConflictError.js';
 import { AUDIT_EVENTS } from '../utils/auditEvents.js';
 import { ACTIVE_SUBSCRIPTION_STATUSES, ENDED_SUBSCRIPTION_STATUSES } from '../models/subscription.js';
+import { consentLanguageFor, consentMessageFor } from '../utils/subscriptionConsent.js';
 import config from '../config/config.js';
+
+// The version of the Terms (their subscriptions section) the customer accepted,
+// recorded with the consent. Change it together with the terms it names.
+const SUBSCRIPTION_TERMS_VERSION = '2026-09-30';
 
 const PRICE_IDS_BY_PLAN = {
     monthly: config.stripePriceIdMonthly,
@@ -26,6 +31,16 @@ const TRIAL_SUBSCRIPTION_DATA = {
 // so the customer can see it and fix the card.
 const PAYMENT_FAILED_GRACE_DAYS = 3;
 const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
+
+// The customer address Checkout collects to work out the tax is kept on the
+// customer, which the tax of every later invoice depends on. Only sent when
+// Stripe Tax is switched on (STRIPE_AUTOMATIC_TAX), since Checkout refuses to
+// start until the Stripe account has its head office address, registrations and
+// the tax behavior of the prices set up.
+const AUTOMATIC_TAX_PARAMS = {
+    automatic_tax: { enabled: true },
+    customer_update: { address: 'auto' },
+};
 
 // Recent Stripe API versions moved current_period_end from the subscription
 // itself to its first item (a subscription can have several items, each with
@@ -75,12 +90,24 @@ export class SubscriptionService {
 
         const customerId = user.stripeCustomerId ?? await this._createStripeCustomer(user);
         const isFirstSubscription = existingSubscriptions.length === 0;
+        const startsFreeTrial = isFirstSubscription && startTrial;
+
+        // Paying right away starts the service at once, which is what makes the
+        // customer give up the right of withdrawal once it has been provided: it
+        // only holds if they asked for it and acknowledged it explicitly, so
+        // Stripe makes them tick a box for it right before paying. A free trial
+        // charges nothing, so there is nothing to consent to yet.
+        const language = consentLanguageFor(user.language);
+        const termsConsent = startsFreeTrial ? {} : {
+            consent_collection: { terms_of_service: 'required' },
+            custom_text: { terms_of_service_acceptance: { message: consentMessageFor(language, `${config.appUrl}/terms`) } },
+        };
 
         const session = await this.stripeClient.checkout.sessions.create({
             customer: customerId,
             mode: 'subscription',
             line_items: [{ price: PRICE_IDS_BY_PLAN[plan], quantity: 1 }],
-            subscription_data: isFirstSubscription && startTrial ? TRIAL_SUBSCRIPTION_DATA : undefined,
+            subscription_data: startsFreeTrial ? TRIAL_SUBSCRIPTION_DATA : undefined,
             // Only skips card collection when nothing is due today, which is
             // exactly the free trial case (amount due $0); a resubscribe with
             // no trial still owes the full price immediately, so Stripe still
@@ -88,11 +115,30 @@ export class SubscriptionService {
             // canceled (see TRIAL_SUBSCRIPTION_DATA), so premiumUntil expires
             // on schedule and requirePremium reverts the user to free.
             payment_method_collection: 'if_required',
+            locale: language,
+            ...termsConsent,
+            ...(config.stripeAutomaticTax && AUTOMATIC_TAX_PARAMS),
             success_url: `${config.appUrl}/subscription?checkout=success`,
             cancel_url: `${config.appUrl}/subscription?checkout=cancel`,
         });
 
         return { url: session.url, kind: 'checkout' };
+    }
+
+    // Deleting the customer also cancels its subscriptions immediately. Stripe
+    // keeps the payment records it is legally bound to keep; what is left here is
+    // no email linked to a customer. Meant to run before the account is deleted:
+    // if Stripe fails, the error is not swallowed, or the user would be left
+    // paying with no account and no customer id to cancel it with.
+    async closeBillingAccount(user) {
+        if (!user.stripeCustomerId) return;
+
+        try {
+            await this.stripeClient.customers.del(user.stripeCustomerId);
+        } catch (error) {
+            if (error.code === 'resource_missing') return;
+            throw error;
+        }
     }
 
     async getMySubscription(userId) {
@@ -162,6 +208,10 @@ export class SubscriptionService {
                 return this._handleSubscriptionUpdated(event.data.object, event.created);
             case 'customer.subscription.deleted':
                 return this._handleSubscriptionDeleted(event.data.object);
+            case 'charge.refunded':
+                return this._handleChargeRefunded(event.data.object);
+            case 'charge.dispute.created':
+                return this._handleDisputeCreated(event.data.object);
             default:
                 return;
         }
@@ -213,6 +263,16 @@ export class SubscriptionService {
             targetUserId: user.id, targetUsername: user.username,
             metadata: { stripeSubscriptionId: subscription.id, status: subscription.status },
         });
+
+        // Stripe keeps the acceptance on the session as well; this puts it next to
+        // the rest of the customer's trail, with the version of the terms in force.
+        if (session.consent?.terms_of_service === 'accepted') {
+            this.auditLogService?.log({
+                action: AUDIT_EVENTS.SUBSCRIPTION_TERMS_ACCEPTED,
+                targetUserId: user.id, targetUsername: user.username,
+                metadata: { stripeSubscriptionId: subscription.id, termsVersion: SUBSCRIPTION_TERMS_VERSION },
+            });
+        }
     }
 
     async _handleSubscriptionUpdated(subscription, eventCreatedSeconds) {
@@ -254,21 +314,62 @@ export class SubscriptionService {
     }
 
     // Counted from when Stripe reported the failure, so a late delivery does not
-    // stretch it. Stripe can roll the period forward while the subscription is
-    // still active, before the payment is attempted: what that extended for this
-    // subscription is taken back to the grace, but a Premium that reaches further
-    // for another reason (a gift, a reward) is left alone.
+    // stretch it.
     async _grantPaymentFailedGrace(existing, eventCreatedSeconds) {
         const failedAt = eventCreatedSeconds ? new Date(eventCreatedSeconds * 1000) : new Date();
-        const graceEnd = new Date(failedAt.getTime() + PAYMENT_FAILED_GRACE_DAYS * MILLISECONDS_PER_DAY);
+        await this._capPremiumFromSubscription(existing, new Date(failedAt.getTime() + PAYMENT_FAILED_GRACE_DAYS * MILLISECONDS_PER_DAY));
+    }
 
+    // Ends the Premium this subscription is responsible for at `endsAt`, sooner or
+    // later than the period it paid. Stripe can roll the period forward while the
+    // subscription is still active, before the payment is attempted, and a
+    // subscription canceled with weeks left (a refund) still has its period end
+    // stored: both are taken back to `endsAt`. A Premium that reaches further for
+    // another reason (a gift, a reward) is left alone.
+    async _capPremiumFromSubscription(existing, endsAt) {
         const user = await this.userRepository.getUserById(existing.userId);
         const premiumUntil = user?.premiumUntil ? new Date(user.premiumUntil) : null;
         const extendedByThisSubscription = premiumUntil && existing.currentPeriodEnd
             && premiumUntil.getTime() === new Date(existing.currentPeriodEnd).getTime();
-        if (premiumUntil && premiumUntil > graceEnd && !extendedByThisSubscription) return;
+        if (premiumUntil && premiumUntil > endsAt && !extendedByThisSubscription) return;
 
-        await this.userRepository.updatePremiumUntil(existing.userId, graceEnd);
+        await this.userRepository.updatePremiumUntil(existing.userId, endsAt);
+    }
+
+    async _handleChargeRefunded(charge) {
+        // Only a full refund: a partial one is a goodwill gesture, not a reversal.
+        if (!charge.refunded) return;
+        await this._endSubscriptionsOfPayment(charge.customer, AUDIT_EVENTS.SUBSCRIPTION_REFUNDED, { chargeId: charge.id });
+    }
+
+    async _handleDisputeCreated(dispute) {
+        const charge = await this.stripeClient.charges.retrieve(dispute.charge);
+        await this._endSubscriptionsOfPayment(
+            charge.customer, AUDIT_EVENTS.SUBSCRIPTION_DISPUTED, { chargeId: charge.id, disputeId: dispute.id }
+        );
+    }
+
+    // Canceling ends the access through the customer.subscription.deleted that
+    // follows. With no live subscription left there is nothing to end, which also
+    // makes a redelivered event a no-op.
+    async _endSubscriptionsOfPayment(stripeCustomerId, action, metadata) {
+        if (!stripeCustomerId) return;
+        const user = await this.userRepository.findByStripeCustomerId(stripeCustomerId);
+        if (!user) return;
+
+        const subscriptions = await this.subscriptionRepository.findByUserId(user.id);
+        const live = subscriptions.filter((subscription) => (
+            ACTIVE_SUBSCRIPTION_STATUSES.includes(subscription.status) || subscription.status === 'past_due'
+        ));
+
+        for (const subscription of live) {
+            await this.stripeClient.subscriptions.cancel(subscription.stripeSubscriptionId);
+            this.auditLogService?.log({
+                action,
+                targetUserId: user.id, targetUsername: user.username,
+                metadata: { stripeSubscriptionId: subscription.stripeSubscriptionId, ...metadata },
+            });
+        }
     }
 
     // Only changes from what was stored, so a redelivered event does not log
@@ -291,7 +392,7 @@ export class SubscriptionService {
             currentPeriodEnd: existing.currentPeriodEnd,
             cancelAtPeriodEnd: true,
         });
-        await this._syncPremiumUntil(existing.userId, new Date());
+        await this._capPremiumFromSubscription(existing, new Date());
 
         const user = await this.userRepository.getUserById(existing.userId);
         this.auditLogService?.log({
