@@ -13,7 +13,7 @@ export class SubscriptionController {
             return next(new ValidationError(result.error.errors[0]?.message || "Validation failed"));
         }
         try {
-            const session = await this.subscriptionService.createCheckoutSession(req.user.id, result.data.plan);
+            const session = await this.subscriptionService.createCheckoutSession(req.user.id, result.data.plan, { startTrial: result.data.startTrial });
             res.status(200).json(session);
         } catch (error) {
             next(error);

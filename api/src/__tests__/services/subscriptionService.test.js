@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { SubscriptionService } from '../../services/subscriptionService.js';
 
 const makeUser = (overrides = {}) => ({
@@ -118,6 +118,33 @@ describe('SubscriptionService', () => {
             await expect(service.createCheckoutSession('user-1', 'monthly')).rejects.toThrow('You already have an active subscription');
         });
 
+        // Regression: only active and trialing counted, so someone whose renewal
+        // failed could subscribe again while Stripe was still retrying the first
+        // one, and end up with two subscriptions charging.
+        it.each(['past_due', 'unpaid', 'paused'])('sends someone with a %s subscription to the billing portal instead of creating a second one', async (status) => {
+            userRepository.getUserById.mockResolvedValue(makeUser({ stripeCustomerId: 'cus_123' }));
+            subscriptionRepository.findByUserId.mockResolvedValue([makeSubscriptionRow({ status })]);
+
+            const result = await service.createCheckoutSession('user-1', 'monthly');
+
+            expect(result).toEqual({ url: 'https://billing.stripe.com/portal-1', kind: 'billing_portal' });
+            expect(stripeClient.checkout.sessions.create).not.toHaveBeenCalled();
+        });
+
+        it('says it is a checkout when it is one', async () => {
+            const result = await service.createCheckoutSession('user-1', 'monthly');
+
+            expect(result).toEqual({ url: 'https://checkout.stripe.com/session-1', kind: 'checkout' });
+        });
+
+        it('allows checking out again when the previous subscription expired before being paid', async () => {
+            subscriptionRepository.findByUserId.mockResolvedValue([makeSubscriptionRow({ status: 'incomplete_expired' })]);
+
+            const { kind } = await service.createCheckoutSession('user-1', 'monthly');
+
+            expect(kind).toBe('checkout');
+        });
+
         it('allows checking out again when the previous subscription was canceled', async () => {
             subscriptionRepository.findByUserId.mockResolvedValue([makeSubscriptionRow({ status: 'canceled' })]);
 
@@ -144,8 +171,25 @@ describe('SubscriptionService', () => {
             expect(subscriptionData.trial_settings).toEqual({ end_behavior: { missing_payment_method: 'cancel' } });
         });
 
+        // Someone who already knows they want Premium should be able to pay now
+        // instead of being pushed to a trial that ends on the free plan.
+        it('does not grant the trial when the user chooses to subscribe right away', async () => {
+            await service.createCheckoutSession('user-1', 'monthly', { startTrial: false });
+
+            expect(stripeClient.checkout.sessions.create).toHaveBeenCalledWith(
+                expect.objectContaining({ subscription_data: undefined })
+            );
+        });
+
+        it('grants the trial by default, as clients that do not say anything expect', async () => {
+            await service.createCheckoutSession('user-1', 'monthly');
+
+            const { subscription_data: subscriptionData } = stripeClient.checkout.sessions.create.mock.calls[0][0];
+            expect(subscriptionData.trial_period_days).toBe(7);
+        });
+
         it('does not grant a trial when the user has subscribed before', async () => {
-            subscriptionRepository.findByUserId.mockResolvedValue([{ id: 'past-sub' }]);
+            subscriptionRepository.findByUserId.mockResolvedValue([makeSubscriptionRow({ id: 'past-sub', status: 'canceled' })]);
 
             await service.createCheckoutSession('user-1', 'monthly');
 
@@ -334,15 +378,88 @@ describe('SubscriptionService', () => {
             expect(userRepository.updatePremiumUntil).toHaveBeenCalledWith('user-1', new Date(1893456000 * 1000));
         });
 
-        it('does not touch premium when the subscription is past_due', async () => {
-            subscriptionRepository.findByStripeSubscriptionId.mockResolvedValue({ userId: 'user-1', stripeSubscriptionId: 'sub_123' });
+        // Regression: Premium ended the moment a payment failed, while Stripe was
+        // still retrying, so the "payment failed" card was never seen and the
+        // plans were offered again.
+        describe('when a payment fails', () => {
+            const NOW = new Date('2030-06-01T12:00:00.000Z');
+            const THREE_DAYS_LATER = new Date('2030-06-04T12:00:00.000Z');
+            beforeEach(() => vi.useFakeTimers({ now: NOW }));
+            afterEach(() => vi.useRealTimers());
 
-            await service.handleWebhookEvent({
-                type: 'customer.subscription.updated',
-                data: { object: makeStripeSubscription({ status: 'past_due' }) },
+            const pastDueUpdate = (existing = {}, event = {}) => {
+                subscriptionRepository.findByStripeSubscriptionId.mockResolvedValue({
+                    userId: 'user-1', stripeSubscriptionId: 'sub_123', status: 'active', cancelAtPeriodEnd: false, ...existing,
+                });
+                return service.handleWebhookEvent({
+                    type: 'customer.subscription.updated',
+                    data: { object: makeStripeSubscription({ status: 'past_due' }) },
+                    ...event,
+                });
+            };
+
+            it('keeps Premium for a few days while Stripe retries, instead of cutting it right away', async () => {
+                userRepository.getUserById.mockResolvedValue(makeUser({ premiumUntil: new Date('2030-05-31') }));
+
+                await pastDueUpdate();
+
+                expect(userRepository.updatePremiumUntil).toHaveBeenCalledTimes(1);
+                expect(userRepository.updatePremiumUntil).toHaveBeenCalledWith('user-1', THREE_DAYS_LATER);
             });
 
-            expect(userRepository.updatePremiumUntil).not.toHaveBeenCalled();
+            it('gives only the grace, not the billing period that failed to be paid', async () => {
+                userRepository.getUserById.mockResolvedValue(makeUser({ premiumUntil: new Date('2030-05-31') }));
+
+                await pastDueUpdate({ status: 'trialing' });
+
+                expect(userRepository.updatePremiumUntil.mock.calls).toEqual([['user-1', THREE_DAYS_LATER]]);
+            });
+
+            // Stripe can roll the period forward while the subscription is still
+            // active, before the payment is attempted: Premium was already extended
+            // to a period nobody has paid.
+            it('takes back the period that was extended before the payment failed', async () => {
+                const rolledPeriodEnd = new Date('2030-07-01T00:00:00.000Z');
+                userRepository.getUserById.mockResolvedValue(makeUser({ premiumUntil: rolledPeriodEnd }));
+
+                await pastDueUpdate({ currentPeriodEnd: rolledPeriodEnd });
+
+                expect(userRepository.updatePremiumUntil.mock.calls).toEqual([['user-1', THREE_DAYS_LATER]]);
+            });
+
+            it('counts the grace from when Stripe reported the failure, not from when it is processed', async () => {
+                userRepository.getUserById.mockResolvedValue(makeUser({ premiumUntil: new Date('2030-05-31') }));
+                const failedAt = Date.parse('2030-06-01T00:00:00.000Z') / 1000;
+
+                await pastDueUpdate({}, { created: failedAt });
+
+                expect(userRepository.updatePremiumUntil).toHaveBeenCalledWith('user-1', new Date('2030-06-04T00:00:00.000Z'));
+            });
+
+            it('does not push the end of the grace forward on every retry Stripe reports', async () => {
+                await pastDueUpdate({ status: 'past_due' });
+
+                expect(userRepository.updatePremiumUntil).not.toHaveBeenCalled();
+            });
+
+            it('does not shorten a Premium that already reaches further for another reason', async () => {
+                userRepository.getUserById.mockResolvedValue(makeUser({ premiumUntil: new Date('2099-01-01') }));
+
+                await pastDueUpdate({ currentPeriodEnd: new Date('2030-07-01') });
+
+                expect(userRepository.updatePremiumUntil).not.toHaveBeenCalled();
+            });
+
+            // Regression: the row was updated first, so when granting the grace failed,
+            // Stripe's retry saw past_due already stored and never granted it.
+            it('leaves the row untouched when the grace cannot be granted, so the retry still grants it', async () => {
+                userRepository.getUserById.mockResolvedValue(makeUser({ premiumUntil: new Date('2030-05-31') }));
+                userRepository.updatePremiumUntil.mockRejectedValue(new Error('db down'));
+
+                await expect(pastDueUpdate()).rejects.toThrow('db down');
+
+                expect(subscriptionRepository.updateByStripeSubscriptionId).not.toHaveBeenCalled();
+            });
         });
 
         it('ignores updates for a subscription it has no local record of', async () => {

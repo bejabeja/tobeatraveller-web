@@ -42,6 +42,7 @@ export const updateUserTierSchema = z.object({
 
 export const createCheckoutSessionSchema = z.object({
     plan: z.enum(['monthly', 'annual']),
+    startTrial: z.boolean().default(true),
 });
 
 export const updateUserSchema = z.object({

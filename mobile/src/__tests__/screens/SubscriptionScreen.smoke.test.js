@@ -413,3 +413,65 @@ describe('coming back to the app', () => {
     expect(screen.queryByText('subscription.activationDelayedTitle')).toBeNull();
   });
 });
+
+describe('choosing between the free trial and paying right away', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    createCheckoutSession.mockResolvedValue({ url: 'https://checkout.stripe.com/x' });
+    jest.spyOn(Linking, 'openURL').mockResolvedValue();
+  });
+  afterEach(() => jest.restoreAllMocks());
+
+  it('offers to subscribe now, without the trial, on each plan', () => {
+    renderScreen();
+
+    expect(screen.getAllByText('subscription.ctaSubscribeNow')).toHaveLength(2);
+  });
+
+  it('starts the trial from the main button', async () => {
+    renderScreen();
+
+    await act(async () => { fireEvent.press(screen.getAllByText('subscription.ctaStartTrial')[0]); });
+
+    expect(createCheckoutSession).toHaveBeenCalledWith('monthly', { startTrial: true });
+  });
+
+  it('skips the trial for someone who prefers to pay now, and records which way they chose', async () => {
+    renderScreen();
+
+    await act(async () => { fireEvent.press(screen.getAllByText('subscription.ctaSubscribeNow')[1]); });
+
+    expect(createCheckoutSession).toHaveBeenCalledWith('annual', { startTrial: false });
+    expect(trackEvent).toHaveBeenCalledWith('checkout_started', { plan: 'annual', trial: false });
+  });
+
+  // Regression: the API can answer a Subscribe with the billing portal (a
+  // payment is pending on a subscription that is still alive); it was counted as a
+  // checkout that never happened, and the screen then waited for an activation.
+  it('does not count as a checkout, nor wait for an activation, what was sent to the billing portal', async () => {
+    createCheckoutSession.mockResolvedValue({ url: 'https://billing.stripe.com/x', kind: 'billing_portal' });
+    renderScreen();
+
+    await act(async () => { fireEvent.press(screen.getAllByText('subscription.ctaStartTrial')[0]); });
+
+    expect(trackEvent).not.toHaveBeenCalledWith('checkout_started', expect.anything());
+    expect(trackEvent).toHaveBeenCalledWith('subscription_portal_opened', { view: 'plans' });
+  });
+
+  it('blocks every button while a checkout is starting', async () => {
+    createCheckoutSession.mockReturnValue(new Promise(() => {}));
+    renderScreen();
+
+    await act(async () => { fireEvent.press(screen.getAllByText('subscription.ctaStartTrial')[0]); });
+    fireEvent.press(screen.getAllByText('subscription.ctaSubscribeNow')[1]);
+
+    expect(createCheckoutSession).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not offer it to someone who has no trial to skip', () => {
+    mockUser = { ...mockUser, isTrialEligible: false };
+    renderScreen();
+
+    expect(screen.queryByText('subscription.ctaSubscribeNow')).toBeNull();
+  });
+});

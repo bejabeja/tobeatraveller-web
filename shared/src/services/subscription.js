@@ -4,11 +4,11 @@ import { parseError } from "../utils/parseError";
 
 const baseUrl = () => `${getApiUrl()}/subscription`;
 
-export const createCheckoutSession = async (plan) => {
+export const createCheckoutSession = async (plan, { startTrial = true } = {}) => {
     const response = await authFetch(`${baseUrl()}/checkout-session`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan }),
+        body: JSON.stringify({ plan, startTrial }),
     });
     if (!response.ok) {
         await parseError(response, "Failed to start checkout");

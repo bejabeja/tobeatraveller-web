@@ -27,7 +27,7 @@ jest.mock("../../utils/preloadImg", () => ({ preloadImg: jest.fn() }));
 jest.mock("../../utils/analytics", () => ({ trackEvent: jest.fn() }));
 jest.mock("../../hooks/useScrollReveal", () => ({ useScrollReveal: () => null }));
 
-import { getMySubscription, createPortalSession } from "../../services/subscription";
+import { createCheckoutSession, getMySubscription, createPortalSession } from "../../services/subscription";
 import { trackEvent } from "../../utils/analytics";
 import Subscription from "./Subscription";
 
@@ -327,6 +327,76 @@ describe("Subscription", () => {
       renderPage();
 
       expect(screen.queryByText("subscription.welcomeTitle")).not.toBeInTheDocument();
+    });
+  });
+  describe("choosing between the free trial and paying right away", () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+      mockMe = { id: "user-1", isPremium: false, isTrialEligible: true };
+      createCheckoutSession.mockRejectedValue(new Error("stop before leaving the page"));
+    });
+
+    it("offers to subscribe now, without the trial, on each plan", () => {
+      renderPage();
+
+      expect(screen.getAllByRole("button", { name: "subscription.ctaSubscribeNow" })).toHaveLength(2);
+    });
+
+    it("starts the trial from the main button", () => {
+      renderPage();
+
+      fireEvent.click(screen.getAllByRole("button", { name: "subscription.ctaStartTrial" })[0]);
+
+      expect(createCheckoutSession).toHaveBeenCalledWith("monthly", { startTrial: true });
+    });
+
+    it("skips the trial for someone who prefers to pay now", () => {
+      renderPage();
+
+      fireEvent.click(screen.getAllByRole("button", { name: "subscription.ctaSubscribeNow" })[1]);
+
+      expect(createCheckoutSession).toHaveBeenCalledWith("annual", { startTrial: false });
+    });
+
+    it("records which way the traveller chose", async () => {
+      createCheckoutSession.mockResolvedValue({ url: "#" });
+      renderPage();
+
+      await act(async () => { fireEvent.click(screen.getAllByRole("button", { name: "subscription.ctaSubscribeNow" })[1]); });
+
+      expect(trackEvent).toHaveBeenCalledWith("checkout_started", { plan: "annual", trial: false });
+    });
+
+    // Regression: the API can answer a Subscribe with the billing portal (a
+    // payment is pending on a subscription that is still alive); it was counted as
+    // a checkout that never happened.
+    it("does not count as a checkout what was sent to the billing portal", async () => {
+      createCheckoutSession.mockResolvedValue({ url: "#", kind: "billing_portal" });
+      renderPage();
+
+      await act(async () => { fireEvent.click(screen.getAllByRole("button", { name: "subscription.ctaStartTrial" })[0]); });
+
+      expect(trackEvent).not.toHaveBeenCalledWith("checkout_started", expect.anything());
+      expect(trackEvent).toHaveBeenCalledWith("subscription_portal_opened", { view: "plans" });
+    });
+
+    // Regression: only the plan being started was blocked, so another button could
+    // start a second checkout session while the first was in flight.
+    it("blocks every button while a checkout is starting", () => {
+      createCheckoutSession.mockReturnValue(new Promise(() => {}));
+      renderPage();
+
+      fireEvent.click(screen.getAllByRole("button", { name: "subscription.ctaStartTrial" })[0]);
+
+      screen.getAllByRole("button", { name: /subscription\.(ctaStartTrial|ctaLoading|ctaSubscribeNow)/ })
+        .forEach((button) => expect(button).toBeDisabled());
+    });
+
+    it("does not offer it to someone who has no trial to skip", () => {
+      mockMe = { ...mockMe, isTrialEligible: false };
+      renderPage();
+
+      expect(screen.queryByRole("button", { name: "subscription.ctaSubscribeNow" })).not.toBeInTheDocument();
     });
   });
 });

@@ -4,7 +4,7 @@ import {
     createItineraryDataSchema, updateItineraryDataSchema,
     registerPushTokenSchema, createVanLogEntrySchema, vanLogEntrySchema as vanLogUpdateSchema,
     declaredCountriesSchema, contactSchema, updateLanguageSchema, updateUserTierSchema,
-    createPackingListSchema, packingListSchema, updatePackingListSchema,
+    createPackingListSchema, packingListSchema, updatePackingListSchema, createCheckoutSessionSchema,
 } from '../../utils/schemasValidation.js';
 
 const validSignupData = {
@@ -406,3 +406,16 @@ describe('packing list schemas', () => {
     });
 });
 
+describe('createCheckoutSessionSchema', () => {
+    it('starts the free trial unless the client says otherwise, so older clients keep working', () => {
+        expect(createCheckoutSessionSchema.parse({ plan: 'monthly' })).toEqual({ plan: 'monthly', startTrial: true });
+    });
+
+    it('lets the traveller subscribe right away without the trial', () => {
+        expect(createCheckoutSessionSchema.parse({ plan: 'annual', startTrial: false }).startTrial).toBe(false);
+    });
+
+    it('rejects a startTrial that is not a boolean', () => {
+        expect(createCheckoutSessionSchema.safeParse({ plan: 'annual', startTrial: 'no' }).success).toBe(false);
+    });
+});

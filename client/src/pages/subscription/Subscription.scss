@@ -885,4 +885,25 @@
       line-height: 1.6;
     }
   }
+
+  &__pay-now {
+    margin-top: 12px;
+    padding: 4px;
+    background: none;
+    border: 0;
+    font-size: 13px;
+    color: var(--text-secondary-color);
+    text-decoration: underline;
+    cursor: pointer;
+
+    &:hover:not(:disabled),
+    &:focus-visible {
+      color: var(--primary-color);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+  }
 }

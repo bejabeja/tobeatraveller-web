@@ -201,13 +201,18 @@ const SubscriptionScreen = ({ navigation }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, isPremium, dispatch, waitForActivation]);
 
-  const handleSubscribeClick = async (planId) => {
+  const handleSubscribeClick = async (planId, { startTrial = true } = {}) => {
     setLoadingPlanId(planId);
     try {
-      const { url } = await createCheckoutSession(planId);
-      trackEvent(ANALYTICS_EVENTS.CHECKOUT_STARTED, { plan: planId });
+      const { url, kind } = await createCheckoutSession(planId, { startTrial });
+      const isBillingPortal = kind === 'billing_portal';
+      if (isBillingPortal) {
+        trackEvent(ANALYTICS_EVENTS.SUBSCRIPTION_PORTAL_OPENED, { view: view.kind });
+      } else {
+        trackEvent(ANALYTICS_EVENTS.CHECKOUT_STARTED, { plan: planId, trial: startTrial && !!user?.isTrialEligible });
+      }
       await Linking.openURL(url);
-      awaitingCheckoutRef.current = true;
+      awaitingCheckoutRef.current = !isBillingPortal;
     } catch (error) {
       Alert.alert(error.message || t('subscription.checkoutErrorToast'));
     } finally {
@@ -422,18 +427,31 @@ const SubscriptionScreen = ({ navigation }) => {
                   {plan.perMonthKey && <Text style={styles.planPerMonth}>{t(plan.perMonthKey)}</Text>}
 
                   {isAuthenticated ? (
-                    <TouchableOpacity
-                      style={styles.planCta}
-                      disabled={loadingPlanId === plan.id}
-                      onPress={() => handleSubscribeClick(plan.id)}
-                    >
-                      <Text style={styles.planCtaText}>
-                        {loadingPlanId === plan.id
-                          ? t('subscription.ctaLoading')
-                          // A first subscription starts with the free trial on either plan.
-                          : t(user?.isTrialEligible ? 'subscription.ctaStartTrial' : 'subscription.ctaSubscribe')}
-                      </Text>
-                    </TouchableOpacity>
+                    <>
+                      <TouchableOpacity
+                        style={styles.planCta}
+                        disabled={loadingPlanId !== null}
+                        onPress={() => handleSubscribeClick(plan.id)}
+                      >
+                        <Text style={styles.planCtaText}>
+                          {loadingPlanId === plan.id
+                            ? t('subscription.ctaLoading')
+                            // A first subscription starts with the free trial on either plan.
+                            : t(user?.isTrialEligible ? 'subscription.ctaStartTrial' : 'subscription.ctaSubscribe')}
+                        </Text>
+                      </TouchableOpacity>
+                      {/* Whoever already knows they want Premium should not be
+                          pushed into a trial that ends on the free plan. */}
+                      {user?.isTrialEligible && (
+                        <TouchableOpacity
+                          disabled={loadingPlanId !== null}
+                          onPress={() => handleSubscribeClick(plan.id, { startTrial: false })}
+                          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        >
+                          <Text style={styles.payNow}>{t('subscription.ctaSubscribeNow')}</Text>
+                        </TouchableOpacity>
+                      )}
+                    </>
                   ) : (
                     <TouchableOpacity style={styles.planCta} onPress={() => navigation.navigate('Register')}>
                       <Text style={styles.planCtaText}>{t('subscription.ctaCreateAccount')}</Text>
@@ -636,6 +654,7 @@ const styles = StyleSheet.create({
   planPriceRow: { flexDirection: 'row', alignItems: 'baseline', marginBottom: 14 },
   planPrice: { fontSize: 30, fontWeight: '800', color: '#111827' },
   planPeriod: { fontSize: 13, color: '#6b7280', marginLeft: 6 },
+  payNow: { fontSize: 13, color: '#6b7280', textDecorationLine: 'underline', textAlign: 'center', marginTop: 12 },
   planPerMonth: { fontSize: 13, fontWeight: '600', color: '#E8743B', marginTop: -10, marginBottom: 14 },
 
   welcome: { marginTop: 8, marginBottom: 16 },

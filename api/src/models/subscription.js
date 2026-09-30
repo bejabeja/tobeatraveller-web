@@ -1,6 +1,10 @@
 // The statuses that keep premium on: paid, or in its free trial.
 export const ACTIVE_SUBSCRIPTION_STATUSES = ['active', 'trialing'];
 
+// Over for good: any other status (past_due, unpaid, paused) can still be
+// revived by paying, so it is not a reason to start a second subscription.
+export const ENDED_SUBSCRIPTION_STATUSES = ['canceled', 'incomplete_expired'];
+
 export class Subscription {
     constructor({ id, userId, stripeSubscriptionId, status, currentPeriodEnd, cancelAtPeriodEnd, createdAt, updatedAt }) {
         this.id = id;

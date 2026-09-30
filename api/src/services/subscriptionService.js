@@ -1,7 +1,7 @@
 import { NotFoundError } from '../errors/NotFoundError.js';
 import { ConflictError } from '../errors/ConflictError.js';
 import { AUDIT_EVENTS } from '../utils/auditEvents.js';
-import { ACTIVE_SUBSCRIPTION_STATUSES } from '../models/subscription.js';
+import { ACTIVE_SUBSCRIPTION_STATUSES, ENDED_SUBSCRIPTION_STATUSES } from '../models/subscription.js';
 import config from '../config/config.js';
 
 const PRICE_IDS_BY_PLAN = {
@@ -20,6 +20,12 @@ const TRIAL_SUBSCRIPTION_DATA = {
     trial_period_days: FREE_TRIAL_DAYS,
     trial_settings: { end_behavior: { missing_payment_method: 'cancel' } },
 };
+
+// A past_due subscription does not extend premiumUntil (the period that failed
+// to be paid is not granted); this is how long Premium lasts from the failure,
+// so the customer can see it and fix the card.
+const PAYMENT_FAILED_GRACE_DAYS = 3;
+const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
 
 // Recent Stripe API versions moved current_period_end from the subscription
 // itself to its first item (a subscription can have several items, each with
@@ -46,7 +52,7 @@ export class SubscriptionService {
         this.stripeClient = stripeClient;
     }
 
-    async createCheckoutSession(userId, plan) {
+    async createCheckoutSession(userId, plan, { startTrial = true } = {}) {
         const user = await this.userRepository.getUserById(userId);
         if (!user) throw new NotFoundError('User not found');
 
@@ -57,6 +63,15 @@ export class SubscriptionService {
         if (existingSubscriptions.some((subscription) => ACTIVE_SUBSCRIPTION_STATUSES.includes(subscription.status))) {
             throw new ConflictError('You already have an active subscription');
         }
+        // Still alive and waiting for a payment (past_due, unpaid, paused): a
+        // second subscription would end up charging twice. What this customer
+        // needs is to fix the payment method.
+        const hasSubscriptionWaitingForPayment = existingSubscriptions.some((subscription) => (
+            !ACTIVE_SUBSCRIPTION_STATUSES.includes(subscription.status) && !ENDED_SUBSCRIPTION_STATUSES.includes(subscription.status)
+        ));
+        if (hasSubscriptionWaitingForPayment) {
+            return { ...(await this.createPortalSession(user.id)), kind: 'billing_portal' };
+        }
 
         const customerId = user.stripeCustomerId ?? await this._createStripeCustomer(user);
         const isFirstSubscription = existingSubscriptions.length === 0;
@@ -65,7 +80,7 @@ export class SubscriptionService {
             customer: customerId,
             mode: 'subscription',
             line_items: [{ price: PRICE_IDS_BY_PLAN[plan], quantity: 1 }],
-            subscription_data: isFirstSubscription ? TRIAL_SUBSCRIPTION_DATA : undefined,
+            subscription_data: isFirstSubscription && startTrial ? TRIAL_SUBSCRIPTION_DATA : undefined,
             // Only skips card collection when nothing is due today, which is
             // exactly the free trial case (amount due $0); a resubscribe with
             // no trial still owes the full price immediately, so Stripe still
@@ -77,7 +92,7 @@ export class SubscriptionService {
             cancel_url: `${config.appUrl}/subscription?checkout=cancel`,
         });
 
-        return { url: session.url };
+        return { url: session.url, kind: 'checkout' };
     }
 
     async getMySubscription(userId) {
@@ -144,7 +159,7 @@ export class SubscriptionService {
             case 'checkout.session.completed':
                 return this._handleCheckoutCompleted(event.data.object);
             case 'customer.subscription.updated':
-                return this._handleSubscriptionUpdated(event.data.object);
+                return this._handleSubscriptionUpdated(event.data.object, event.created);
             case 'customer.subscription.deleted':
                 return this._handleSubscriptionDeleted(event.data.object);
             default:
@@ -200,12 +215,18 @@ export class SubscriptionService {
         });
     }
 
-    async _handleSubscriptionUpdated(subscription) {
+    async _handleSubscriptionUpdated(subscription, eventCreatedSeconds) {
         const existing = await this.subscriptionRepository.findByStripeSubscriptionId(subscription.id);
         if (!existing) return;
 
         const currentPeriodEnd = currentPeriodEndOf(subscription);
         const cancelAtPeriodEnd = isScheduledToCancel(subscription);
+
+        // Like the audit below, before the row changes: a retry only knows this
+        // is the first failure while the stored row is still the old one.
+        if (subscription.status === 'past_due' && existing.status !== 'past_due') {
+            await this._grantPaymentFailedGrace(existing, eventCreatedSeconds);
+        }
 
         // Resolved and logged before the row changes: Stripe delivers at least
         // once, and a retry recomputes the same transitions only while the
@@ -230,6 +251,24 @@ export class SubscriptionService {
         if (ACTIVE_SUBSCRIPTION_STATUSES.includes(subscription.status)) {
             await this._syncPremiumUntil(existing.userId, currentPeriodEnd);
         }
+    }
+
+    // Counted from when Stripe reported the failure, so a late delivery does not
+    // stretch it. Stripe can roll the period forward while the subscription is
+    // still active, before the payment is attempted: what that extended for this
+    // subscription is taken back to the grace, but a Premium that reaches further
+    // for another reason (a gift, a reward) is left alone.
+    async _grantPaymentFailedGrace(existing, eventCreatedSeconds) {
+        const failedAt = eventCreatedSeconds ? new Date(eventCreatedSeconds * 1000) : new Date();
+        const graceEnd = new Date(failedAt.getTime() + PAYMENT_FAILED_GRACE_DAYS * MILLISECONDS_PER_DAY);
+
+        const user = await this.userRepository.getUserById(existing.userId);
+        const premiumUntil = user?.premiumUntil ? new Date(user.premiumUntil) : null;
+        const extendedByThisSubscription = premiumUntil && existing.currentPeriodEnd
+            && premiumUntil.getTime() === new Date(existing.currentPeriodEnd).getTime();
+        if (premiumUntil && premiumUntil > graceEnd && !extendedByThisSubscription) return;
+
+        await this.userRepository.updatePremiumUntil(existing.userId, graceEnd);
     }
 
     // Only changes from what was stored, so a redelivered event does not log

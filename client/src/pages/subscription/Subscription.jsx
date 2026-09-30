@@ -208,11 +208,15 @@ const Subscription = () => {
     setActivationStalled(false);
   }, [isPremium, activating, activationStalled]);
 
-  const handleSubscribeClick = async (planId) => {
+  const handleSubscribeClick = async (planId, { startTrial = true } = {}) => {
     setLoadingPlanId(planId);
     try {
-      const { url } = await createCheckoutSession(planId);
-      trackEvent(ANALYTICS_EVENTS.CHECKOUT_STARTED, { plan: planId });
+      const { url, kind } = await createCheckoutSession(planId, { startTrial });
+      if (kind === "billing_portal") {
+        trackEvent(ANALYTICS_EVENTS.SUBSCRIPTION_PORTAL_OPENED, { view: view.kind });
+      } else {
+        trackEvent(ANALYTICS_EVENTS.CHECKOUT_STARTED, { plan: planId, trial: startTrial && !!userMe?.isTrialEligible });
+      }
       window.location.href = url;
     } catch (error) {
       toast.error(error.message || t("subscription.checkoutErrorToast"));
@@ -488,16 +492,30 @@ const PlanCard = ({ plan, isAuthenticated, isTrialEligible, loadingPlanId, onSub
       {plan.perMonthKey && <p className="subscription__price-equivalent">{t(plan.perMonthKey)}</p>}
 
       {isAuthenticated ? (
-        <button
-          type="button"
-          className="btn btn--primary subscription__cta"
-          disabled={loadingPlanId === plan.id}
-          onClick={() => onSubscribe(plan.id)}
-        >
-          {loadingPlanId === plan.id
-            ? t("subscription.ctaLoading")
-            : t(isTrialEligible ? "subscription.ctaStartTrial" : "subscription.ctaSubscribe")}
-        </button>
+        <>
+          <button
+            type="button"
+            className="btn btn--primary subscription__cta"
+            disabled={loadingPlanId !== null}
+            onClick={() => onSubscribe(plan.id)}
+          >
+            {loadingPlanId === plan.id
+              ? t("subscription.ctaLoading")
+              : t(isTrialEligible ? "subscription.ctaStartTrial" : "subscription.ctaSubscribe")}
+          </button>
+          {/* Whoever already knows they want Premium should not be pushed into a
+              trial that ends on the free plan. */}
+          {isTrialEligible && (
+            <button
+              type="button"
+              className="subscription__pay-now"
+              disabled={loadingPlanId !== null}
+              onClick={() => onSubscribe(plan.id, { startTrial: false })}
+            >
+              {t("subscription.ctaSubscribeNow")}
+            </button>
+          )}
+        </>
       ) : (
         // Back to the plans once signed up, to start the trial.
         <Link to="/register" state={{ redirectTo: "/subscription#subscription-plans" }} className="btn btn--primary subscription__cta">
