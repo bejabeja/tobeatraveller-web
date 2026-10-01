@@ -2,6 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import { usePageMeta } from "../../hooks/usePageMeta";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { InputForm } from "../../components/form/InputForm";
@@ -23,6 +24,7 @@ import "./Auth.scss";
 
 const Signup = () => {
   const { t, i18n } = useTranslation();
+  usePageMeta({ title: t("auth.createAccount"), description: t("auth.createAccountSubtitle") });
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();

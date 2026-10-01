@@ -2,6 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import { usePageMeta } from "../../hooks/usePageMeta";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { InputForm } from "../../components/form/InputForm";
@@ -22,6 +23,7 @@ const GUEST_PASSWORD = "testtest";
 
 const Login = () => {
   const { t } = useTranslation();
+  usePageMeta({ title: t("auth.signIn"), description: t("auth.signInSubtitle") });
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const imageAuthLoaded = useSelector(selectimageAuthLoaded);
@@ -91,7 +93,7 @@ const Login = () => {
               to="/forgot-password"
               style={{
                 alignSelf: "flex-end",
-                fontSize: "0.75rem",
+                fontSize: "0.875rem",
                 color: "var(--text-secondary-color)",
                 textDecoration: "none",
                 marginTop: "0.2rem",

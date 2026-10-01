@@ -2,6 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import { usePageMeta } from "../../hooks/usePageMeta";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useSearchParams } from "react-router-dom";
 import { resetPassword, translateAuthError } from "@tobeatraveller/shared";
@@ -16,6 +17,7 @@ import "./Auth.scss";
 
 const ResetPassword = () => {
   const { t } = useTranslation();
+  usePageMeta({ title: t("auth.setNewPassword"), description: t("auth.setNewPasswordSubtitle") });
   const dispatch = useDispatch();
   const imageAuthLoaded = useSelector(selectimageAuthLoaded);
   const [searchParams] = useSearchParams();

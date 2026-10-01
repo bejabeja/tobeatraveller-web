@@ -14,7 +14,7 @@ export const fr = {
         headline: (username) => `Bienvenue à bord, ${username} ! ✈️`,
         intro: 'Ton compte ToBeATraveller est prêt à l\'emploi. Découvre les voyages partagés par des voyageurs du monde entier, ou partage les tiens.',
         features: [
-            { emoji: '🗺️', title: 'Explore des itinéraires', description: 'Parcours des centaines de vrais voyages du monde entier' },
+            { emoji: '🗺️', title: 'Explore des itinéraires', description: 'Parcours de vrais voyages partagés par des voyageurs du monde entier' },
             { emoji: '✏️', title: 'Partage ton voyage', description: 'Crée et publie tes propres itinéraires' },
             { emoji: '👥', title: 'Connecte-toi', description: 'Suis les personnes qui inspirent ta prochaine aventure' },
         ],

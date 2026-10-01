@@ -151,7 +151,6 @@
   "home": {
     "heroTitle": "Planifica tu próxima aventura",
     "heroSubtitle": "Descubre itinerarios inspiradores, comparte tus viajes y conecta con viajeros de todo el mundo.",
-    "heroJoinNow": "Únete ahora",
     "heroGreeting": "¡Hola, {{username}}!",
     "tripsShared": "Viajes compartidos",
     "travelers": "Viajeros",
@@ -178,7 +177,6 @@
     "shareFirstTrip": "Comparte tu primer viaje →",
     "joinCommunity": "Únete a la comunidad",
     "joinCommunityDesc": "Comparte tus aventuras, descubre itinerarios inspiradores y conecta con viajeros de todo el mundo.",
-    "getStarted": "Empieza gratis",
     "noTripsYet": "Todavía no hay itinerarios.",
     "trips": "viajes",
     "destinationsCount": "{{count}} destinos",
@@ -375,7 +373,9 @@
     "trialCanceledReminder": "A partir de esa fecha volverás al plan gratis: conservas todo lo que guardaste, pero pierdes los itinerarios con IA y la edición sin conexión, y vuelven a aplicarse los límites gratis.",
     "ctaResumeTrial": "Reanudar mi prueba gratis",
     "paymentFailedTitle": "Hay un problema con tu último pago",
-    "paymentFailedDesc": "No hemos podido cobrar tu tarjeta. Actualiza tu método de pago para no perder el acceso Premium."
+    "paymentFailedDesc": "No hemos podido cobrar tu tarjeta. Actualiza tu método de pago para no perder el acceso Premium.",
+    "metaTitle": "Planes Premium",
+    "metaDescription": "Controla gastos, provisiones y tu diario en ruta, trabaja sin conexión en la app y planifica viajes con IA. 7 días de prueba gratis, sin tarjeta."
   },
   "admin": {
     "dashboardTitle": "Panel interno",
@@ -1289,6 +1289,7 @@
     "title": "Algo no ha ido bien",
     "backHome": "Volver al inicio",
     "pageNotFound": "Esta página no existe.",
+    "pageNotFoundTitle": "Página no encontrada",
     "profileNotFound": "Este perfil no existe o ha cambiado de nombre.",
     "profileLoad": "No pudimos cargar el perfil. Por favor, inténtalo más tarde.",
     "itineraryLoad": "No pudimos cargar el itinerario. Por favor, inténtalo más tarde.",

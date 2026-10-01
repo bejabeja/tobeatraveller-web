@@ -2,6 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import { usePageMeta } from "../../hooks/usePageMeta";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { forgotPassword, translateAuthError } from "@tobeatraveller/shared";
@@ -16,6 +17,7 @@ import "./Auth.scss";
 
 const ForgotPassword = () => {
   const { t } = useTranslation();
+  usePageMeta({ title: t("auth.forgotPasswordTitle"), description: t("auth.forgotPasswordSubtitle") });
   const dispatch = useDispatch();
   const imageAuthLoaded = useSelector(selectimageAuthLoaded);
   const [successEmail, setSuccessEmail] = useState(null);

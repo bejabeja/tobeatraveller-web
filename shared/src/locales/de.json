@@ -151,7 +151,6 @@
   "home": {
     "heroTitle": "Plane dein nächstes Abenteuer",
     "heroSubtitle": "Entdecke inspirierende Reisepläne, teile deine Reisen und vernetze dich mit Reisenden aus aller Welt.",
-    "heroJoinNow": "Jetzt mitmachen",
     "heroGreeting": "Hallo, {{username}}!",
     "tripsShared": "Geteilte Reisen",
     "travelers": "Reisende",
@@ -176,7 +175,6 @@
     "shareFirstTrip": "Teile deine erste Reise →",
     "joinCommunity": "Werde Teil der Community",
     "joinCommunityDesc": "Teile deine Reisen, entdecke inspirierende Reisepläne und vernetze dich mit Reisenden aus aller Welt.",
-    "getStarted": "Jetzt starten, kostenlos",
     "noTripsYet": "Noch keine Reisepläne.",
     "trips": "Reisen",
     "destinationsCount": "{{count}} Reiseziele",
@@ -371,7 +369,9 @@
     "trialCanceledReminder": "Ab diesem Datum wechselst du zurück in den kostenlosen Plan: Du behältst alles, was du gespeichert hast, verlierst aber KI-Routen und die Offline-Bearbeitung, und die kostenlosen Limits gelten wieder.",
     "ctaResumeTrial": "Kostenlosen Test fortsetzen",
     "paymentFailedTitle": "Es gibt ein Problem mit deiner letzten Zahlung",
-    "paymentFailedDesc": "Wir konnten deine Karte nicht belasten. Aktualisiere deine Zahlungsmethode, um deinen Premium-Zugang zu behalten."
+    "paymentFailedDesc": "Wir konnten deine Karte nicht belasten. Aktualisiere deine Zahlungsmethode, um deinen Premium-Zugang zu behalten.",
+    "metaTitle": "Premium-Tarife",
+    "metaDescription": "Behalte Ausgaben, Vorräte und dein Tagebuch unterwegs im Blick, arbeite offline in der App und plane Reisen mit KI. 7 Tage kostenlos testen, ohne Karte."
   },
   "admin": {
     "dashboardTitle": "Internes Dashboard",
@@ -1272,6 +1272,7 @@
     "title": "Etwas ist schiefgelaufen",
     "backHome": "Zur Startseite",
     "pageNotFound": "Diese Seite gibt es nicht.",
+    "pageNotFoundTitle": "Seite nicht gefunden",
     "profileNotFound": "Dieses Profil gibt es nicht oder es hat seinen Namen geändert.",
     "profileLoad": "Die Profilinfos konnten nicht geladen werden. Bitte versuch es später erneut.",
     "itineraryLoad": "Der Reiseplan konnte nicht geladen werden. Bitte versuch es später erneut.",

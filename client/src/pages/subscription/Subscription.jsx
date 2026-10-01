@@ -5,6 +5,7 @@ import { IoAlertCircleOutline, IoCheckmark, IoCheckmarkCircle, IoHourglassOutlin
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { usePageMeta } from "../../hooks/usePageMeta";
 import { selectAuthUser, selectIsAuthenticated } from "../../store/auth/authSelectors";
 import { selectMe } from "../../store/user/userInfoSelectors";
 import { setUserInfo } from "../../store/user/userInfoActions";
@@ -77,6 +78,7 @@ const PLANS = [
 
 const Subscription = () => {
   const { t, i18n } = useTranslation();
+  usePageMeta({ title: t("subscription.metaTitle"), description: t("subscription.metaDescription") });
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const authUser = useSelector(selectAuthUser);

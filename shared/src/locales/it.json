@@ -151,7 +151,6 @@
   "home": {
     "heroTitle": "Pianifica la tua prossima avventura",
     "heroSubtitle": "Scopri itinerari che ispirano, condividi i tuoi viaggi e connettiti con viaggiatori di tutto il mondo.",
-    "heroJoinNow": "Unisciti ora",
     "heroGreeting": "Ciao, {{username}}!",
     "tripsShared": "Viaggi condivisi",
     "travelers": "Viaggiatori",
@@ -178,7 +177,6 @@
     "shareFirstTrip": "Condividi il tuo primo viaggio →",
     "joinCommunity": "Unisciti alla community",
     "joinCommunityDesc": "Condividi i tuoi viaggi, scopri itinerari che ispirano e connettiti con viaggiatori di tutto il mondo.",
-    "getStarted": "Inizia, è gratis",
     "noTripsYet": "Ancora nessun itinerario.",
     "trips": "viaggi",
     "destinationsCount": "{{count}} destinazioni",
@@ -375,7 +373,9 @@
     "trialCanceledReminder": "Da quella data tornerai al piano gratuito: conservi tutto ciò che hai salvato, ma perdi gli itinerari con IA e la modifica offline, e tornano i limiti gratuiti.",
     "ctaResumeTrial": "Riprendi la mia prova gratuita",
     "paymentFailedTitle": "C'è un problema con il tuo ultimo pagamento",
-    "paymentFailedDesc": "Non siamo riusciti ad addebitare la tua carta. Aggiorna il metodo di pagamento per mantenere l'accesso a Premium."
+    "paymentFailedDesc": "Non siamo riusciti ad addebitare la tua carta. Aggiorna il metodo di pagamento per mantenere l'accesso a Premium.",
+    "metaTitle": "Piani Premium",
+    "metaDescription": "Tieni sotto controllo spese, scorte e diario in viaggio, lavora offline nell'app e pianifica i viaggi con l'IA. 7 giorni di prova gratuita, senza carta."
   },
   "admin": {
     "dashboardTitle": "Dashboard interna",
@@ -1289,6 +1289,7 @@
     "title": "Qualcosa è andato storto",
     "backHome": "Torna alla home",
     "pageNotFound": "Questa pagina non esiste.",
+    "pageNotFoundTitle": "Pagina non trovata",
     "profileNotFound": "Questo profilo non esiste o ha cambiato nome.",
     "profileLoad": "Non siamo riusciti a caricare le informazioni del profilo. Riprova più tardi.",
     "itineraryLoad": "Non siamo riusciti a caricare la pagina dell'itinerario. Riprova più tardi.",

@@ -297,7 +297,7 @@ const HomeScreen = ({ navigation }) => {
             onPress={() => navigation.navigate('Register')}
             activeOpacity={0.85}
           >
-            <Text style={styles.ctaBtnText}>{t('home.getStarted')}</Text>
+            <Text style={styles.ctaBtnText}>{t('nav.createAccountBtn')}</Text>
           </TouchableOpacity>
         </View>
       )}

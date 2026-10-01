@@ -16,7 +16,7 @@ export const en = {
         headline: (username) => `Welcome aboard, ${username}! ✈️`,
         intro: 'Your ToBeATraveller account is ready. Discover journeys shared by travellers around the world, or share your own.',
         features: [
-            { emoji: '🗺️', title: 'Explore itineraries', description: 'Browse hundreds of real trips from travellers worldwide' },
+            { emoji: '🗺️', title: 'Explore itineraries', description: 'Browse real trips shared by travellers worldwide' },
             { emoji: '✏️', title: 'Share your journey', description: 'Create and publish your own travel itineraries' },
             { emoji: '👥', title: 'Connect', description: 'Follow people who inspire your next adventure' },
         ],

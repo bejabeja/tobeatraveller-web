@@ -151,7 +151,6 @@
   "home": {
     "heroTitle": "Prépare ta prochaine aventure",
     "heroSubtitle": "Découvre des itinéraires inspirants, partage tes voyages et échange avec des voyageurs du monde entier.",
-    "heroJoinNow": "Rejoindre",
     "heroGreeting": "Salut, {{username}} !",
     "tripsShared": "Voyages partagés",
     "travelers": "Voyageurs",
@@ -178,7 +177,6 @@
     "shareFirstTrip": "Partage ton premier voyage →",
     "joinCommunity": "Rejoins la communauté",
     "joinCommunityDesc": "Partage tes voyages, découvre des itinéraires inspirants et échange avec des voyageurs du monde entier.",
-    "getStarted": "Commencer, c'est gratuit",
     "noTripsYet": "Aucun itinéraire pour l'instant.",
     "trips": "voyages",
     "destinationsCount": "{{count}} destinations",
@@ -375,7 +373,9 @@
     "trialCanceledReminder": "À partir de cette date, tu reviendras au plan gratuit : tu gardes tout ce que tu as enregistré, mais tu perds les itinéraires IA et l'édition hors ligne, et les limites gratuites s'appliquent de nouveau.",
     "ctaResumeTrial": "Reprendre mon essai gratuit",
     "paymentFailedTitle": "Il y a un problème avec ton dernier paiement",
-    "paymentFailedDesc": "Nous n'avons pas pu débiter ta carte. Mets à jour ton moyen de paiement pour garder ton accès Premium."
+    "paymentFailedDesc": "Nous n'avons pas pu débiter ta carte. Mets à jour ton moyen de paiement pour garder ton accès Premium.",
+    "metaTitle": "Formules Premium",
+    "metaDescription": "Suivez vos dépenses, vos provisions et votre journal en route, travaillez hors ligne dans l'app et planifiez vos voyages avec l'IA. 7 jours d'essai gratuit, sans carte."
   },
   "admin": {
     "dashboardTitle": "Tableau de bord interne",
@@ -1289,6 +1289,7 @@
     "title": "Un problème est survenu",
     "backHome": "Retour à l'accueil",
     "pageNotFound": "Cette page n'existe pas.",
+    "pageNotFoundTitle": "Page introuvable",
     "profileNotFound": "Ce profil n'existe pas ou a changé de nom.",
     "profileLoad": "Impossible de charger les infos du profil. Réessaie plus tard.",
     "itineraryLoad": "Impossible de charger la page de l'itinéraire. Réessaie plus tard.",

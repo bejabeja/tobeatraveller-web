@@ -52,7 +52,7 @@ const Hero = () => {
             <p className="hero__content__description">{t("home.heroSubtitle")}</p>
             <div className="hero__content__buttons">
               <Link to="/register" className="btn btn--primary">
-                {t("home.heroJoinNow")}
+                {t("nav.createAccountBtn")}
               </Link>
             </div>
           </>

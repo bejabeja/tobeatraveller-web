@@ -168,7 +168,7 @@ const Home = () => {
                 <h2>{t("home.joinCommunity")}</h2>
                 <p>{t("home.joinCommunityDesc")}</p>
                 <Link to="/register" className="home__cta-btn btn">
-                  {t("home.getStarted")}
+                  {t("nav.createAccountBtn")}
                 </Link>
               </div>
             )}

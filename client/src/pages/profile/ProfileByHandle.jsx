@@ -4,7 +4,6 @@ import { useParams } from "react-router-dom";
 import { usernameFromHandle } from "@tobeatraveller/shared";
 import Spinner from "../../components/spinner/Spinner";
 import { getUserByUsername } from "../../services/users";
-import Error from "../error/Error";
 import NotFound from "../error/NotFound";
 import Profile from "./Profile";
 
@@ -28,7 +27,7 @@ const ProfileByHandle = () => {
   if (!username) return <NotFound />;
   // Still showing the previous name's answer while the new one loads.
   if (found.username !== username) return <Spinner />;
-  if (found.missing) return <Error message={t("errors.profileNotFound")} />;
+  if (found.missing) return <NotFound message={t("errors.profileNotFound")} />;
   return <Profile id={found.id} />;
 };
 

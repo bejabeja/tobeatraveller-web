@@ -151,7 +151,6 @@
   "home": {
     "heroTitle": "Plan Your Next Adventure",
     "heroSubtitle": "Discover inspiring itineraries, share your journeys, and connect with travelers from around the world.",
-    "heroJoinNow": "Join Now",
     "heroGreeting": "Hi, {{username}}!",
     "tripsShared": "Trips shared",
     "travelers": "Travelers",
@@ -176,7 +175,6 @@
     "shareFirstTrip": "Share your first trip →",
     "joinCommunity": "Join the Community",
     "joinCommunityDesc": "Share your journeys, discover inspiring itineraries, and connect with travelers from around the world.",
-    "getStarted": "Get Started, It's Free",
     "noTripsYet": "No itineraries yet.",
     "trips": "trips",
     "destinationsCount": "{{count}} destinations",
@@ -371,7 +369,9 @@
     "trialCanceledReminder": "After that date you'll go back to the free plan: you keep everything you saved, but you lose AI itineraries and offline editing, and the free limits apply again.",
     "ctaResumeTrial": "Resume my free trial",
     "paymentFailedTitle": "There's a problem with your last payment",
-    "paymentFailedDesc": "We couldn't charge your card. Update your payment method to keep your Premium access."
+    "paymentFailedDesc": "We couldn't charge your card. Update your payment method to keep your Premium access.",
+    "metaTitle": "Premium plans",
+    "metaDescription": "Track expenses, supplies and your diary on the road, work offline in the app and plan trips with AI. 7-day free trial, no card needed."
   },
   "admin": {
     "dashboardTitle": "Internal dashboard",
@@ -1272,6 +1272,7 @@
     "title": "Something went wrong",
     "backHome": "Back to home",
     "pageNotFound": "This page doesn't exist.",
+    "pageNotFoundTitle": "Page not found",
     "profileNotFound": "This profile doesn't exist or has changed its name.",
     "profileLoad": "We couldn't load the profile info. Please try again later.",
     "itineraryLoad": "We couldn't load the itinerary page. Please try again later.",
