@@ -1267,7 +1267,9 @@
     "contactUsHint": "Domande, bug o idee? Scrivici.",
     "legal": "Note legali",
     "dangerZone": "Zona pericolosa",
-    "notifyOnTripReminders": "Promemoria bagagli prima di un viaggio"
+    "notifyOnTripReminders": "Promemoria bagagli prima di un viaggio",
+    "travelStyle": "Come viaggi",
+    "travelStyleNotSet": "Non indicato"
   },
   "validation": {
     "required": "Questo campo è obbligatorio",
@@ -1367,10 +1369,24 @@
     "following": "Segui già ✓",
     "continue": "Continua →",
     "skip": "Salta per ora",
-    "followPrompt": "Segui almeno 1 viaggiatore per continuare",
-    "followPromptBtn": "Segui qualcuno per continuare",
+    "followPrompt": "Segui qualche viaggiatore per riempire il tuo feed",
     "followedCount": "{{count}} seguiti ✓",
-    "readyToGo": "È tutto a posto! 🎉"
+    "readyToGo": "È tutto a posto! 🎉",
+    "subtitleStyle": "Dicci come viaggi e ti portiamo a ciò che ti aiuta di più.",
+    "subtitleStartVan": "Inizia da quello che fai ogni giorno in viaggio.",
+    "startExpense": "Registra la tua prima spesa",
+    "startExpenseHint": "Carburante, pedaggi, spesa: in viaggio si accumula.",
+    "startSupplies": "Inizia la tua lista delle scorte",
+    "startSuppliesHint": "Cosa hai a bordo e cosa devi ancora comprare.",
+    "startChecklist": "Fai la tua lista prima di partire",
+    "startChecklistHint": "Perché non resti indietro nulla quando parti."
+  },
+  "travelStyle": {
+    "question": "Come viaggi?",
+    "van": "Vivo o viaggio in van",
+    "vanHint": "Spese, scorte e il tuo diario di viaggio.",
+    "occasional": "Viaggio ogni tanto",
+    "occasionalHint": "Pianifica viaggi, condividili e riempi il tuo passaporto."
   },
   "createExperience": {
     "heroInput": "Crea un'esperienza",
@@ -1570,7 +1586,7 @@
     "s2Intro": "Raccogliamo le seguenti categorie di dati personali:",
     "s2Items": [
       "<strong>Dati dell'account:</strong> indirizzo email, nome utente e password (conservata come hash sicuro; non conserviamo mai la tua password in chiaro).",
-      "<strong>Dati del profilo:</strong> nome visualizzato, biografia, posizione, foto profilo e testo \"chi sono\" che fornisci facoltativamente.",
+      "<strong>Dati del profilo:</strong> nome visualizzato, biografia, posizione, foto profilo e testo \"chi sono\" che fornisci facoltativamente. Puoi anche dirci come viaggi (in van o ogni tanto) per iniziare da ciò che ti aiuta di più; puoi cambiarlo in «Impostazioni».",
       "<strong>Contenuti che crei:</strong> itinerari di viaggio (titolo, destinazione, date, luoghi, budget, foto), commenti, mi piace, viaggi salvati, spese del van e pagine del diario.",
       "<strong>Dati social:</strong> chi segui e chi ti segue.",
       "<strong>Dati del passaporto:</strong> i timbri che ottieni e i paesi che hai visitato, ricavati dai tuoi viaggi (una volta iniziati, esclusi quelli duplicati da un'altra persona senza modificarne le date), dalle spese e dalle pagine del diario, oltre ai paesi che segni tu. I paesi dei tuoi viaggi pubblicati e quelli che segni tu sono pubblici nel tuo passaporto; quelli dei tuoi viaggi privati, delle spese o del diario sono visibili solo a te. Le persone che ti seguono possono ricevere un avviso quando ottieni un paese o un timbro che possono vedere nel tuo passaporto, mai uno privato. Puoi modificare in qualsiasi momento i paesi che hai segnato.",

@@ -370,6 +370,11 @@ export class UserService {
         await this.userRepository.updateLanguage(id, language);
     }
 
+    // How they say they travel: it picks what the app suggests they start with.
+    async updateTravelStyle(id, travelStyle) {
+        await this.userRepository.updateTravelStyle(id, travelStyle);
+    }
+
     // Signed in, someone they already follow (or themselves) is no suggestion.
     // None left is a normal answer, not an error: they may follow everyone.
     async getFeaturedUsers(viewerId = null) {
@@ -508,6 +513,8 @@ export class UserService {
                 // Earlier codes, kept for a year after a change of username.
                 previousReferralCodes,
                 language: user.language,
+                travelStyle: user.travelStyle,
+                emailVerifiedAt: user.emailVerifiedAt ?? null,
                 createdAt: user.createdAt,
             },
             billing: {

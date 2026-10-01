@@ -1250,7 +1250,9 @@
     "contactUsHint": "Questions, bugs or ideas? Write to us.",
     "legal": "Legal",
     "dangerZone": "Danger zone",
-    "notifyOnTripReminders": "Packing reminder before a trip"
+    "notifyOnTripReminders": "Packing reminder before a trip",
+    "travelStyle": "How you travel",
+    "travelStyleNotSet": "Not set"
   },
   "validation": {
     "required": "This field is required",
@@ -1350,10 +1352,24 @@
     "following": "Following ✓",
     "continue": "Continue →",
     "skip": "Skip for now",
-    "followPrompt": "Follow at least 1 traveler to continue",
-    "followPromptBtn": "Follow someone to continue",
+    "followPrompt": "Follow a few travellers to fill your feed",
     "followedCount": "{{count}} followed ✓",
-    "readyToGo": "You're all set! 🎉"
+    "readyToGo": "You're all set! 🎉",
+    "subtitleStyle": "Tell us how you travel and we'll point you to what helps most.",
+    "subtitleStartVan": "Start with what you do every day on the road.",
+    "startExpense": "Record your first expense",
+    "startExpenseHint": "Fuel, tolls, groceries: it adds up on the road.",
+    "startSupplies": "Start your supplies list",
+    "startSuppliesHint": "What you have on board and what you still need to buy.",
+    "startChecklist": "Make your before-you-drive-off list",
+    "startChecklistHint": "So nothing stays behind when you leave."
+  },
+  "travelStyle": {
+    "question": "How do you travel?",
+    "van": "I live or travel in a van",
+    "vanHint": "Expenses, supplies and your log on the road.",
+    "occasional": "I travel from time to time",
+    "occasionalHint": "Plan trips, share them and fill your passport."
   },
   "createExperience": {
     "heroInput": "Create an Experience",
@@ -1552,7 +1568,7 @@
     "s2Intro": "We collect the following categories of personal data:",
     "s2Items": [
       "<strong>Account data:</strong> email address, username, and password (stored as a secure hash; we never store your password in plain text).",
-      "<strong>Profile data:</strong> display name, biography, location, profile photo, and \"about\" text that you optionally provide.",
+      "<strong>Profile data:</strong> display name, biography, location, profile photo, and \"about\" text that you optionally provide. You can also tell us how you travel (in a van or from time to time) to start you off with what helps most; you can change it in Settings.",
       "<strong>Content you create:</strong> travel itineraries (title, destination, dates, places, budget, photos), comments, likes, saved trips, van expenses and diary entries.",
       "<strong>Social data:</strong> who you follow and who follows you.",
       "<strong>Passport data:</strong> the stamps you earn and the countries you have been to, worked out from your trips (once started, leaving out ones cloned from someone else with their dates unchanged), expenses and diary entries, plus any countries you mark yourself. Countries from your published trips and the ones you mark yourself are public on your passport; those from your private trips, expenses or diary are visible to you alone. People who follow you may get a notice when you earn a country or stamp they can see on your passport, never a private one. You can edit the countries you marked at any time.",

@@ -1,6 +1,9 @@
+let mockMe = { id: 'user-1', username: 'jane', email: 'jane@example.com' };
+const mockDispatch = jest.fn();
+
 jest.mock('react-redux', () => ({
   useSelector: (selector) => selector(),
-  useDispatch: () => jest.fn(),
+  useDispatch: () => mockDispatch,
 }));
 
 jest.mock('react-i18next', () => ({
@@ -29,8 +32,11 @@ jest.mock('@tobeatraveller/shared', () => ({
   ...jest.requireActual('../../../../shared/src/utils/constants/languages.js'),
   ...jest.requireActual('../../../../shared/src/utils/parseRichText.js'),
   ...jest.requireActual('../../../../shared/src/utils/schemasValidation.js'),
+  ...jest.requireActual('../../../../shared/src/utils/travelStyle.js'),
   selectAuthUser: () => ({ id: 'user-1', username: 'jane' }),
-  selectMe: () => ({ id: 'user-1', username: 'jane', email: 'jane@example.com' }),
+  selectMe: () => mockMe,
+  setUserInfo: (id) => ({ type: 'setUserInfo', id }),
+  updateMyTravelStyle: jest.fn(),
   fetchNotificationPreferences: jest.fn(),
   updateNotificationPreferences: jest.fn(),
   changePassword: jest.fn(),
@@ -41,7 +47,7 @@ jest.mock('@tobeatraveller/shared', () => ({
 
 import { Alert } from 'react-native';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
-import { changePassword, fetchNotificationPreferences } from '@tobeatraveller/shared';
+import { changePassword, fetchNotificationPreferences, updateMyTravelStyle } from '@tobeatraveller/shared';
 import i18n from '../../i18n';
 import SettingsScreen from '../../screens/settings/SettingsScreen';
 
@@ -122,5 +128,68 @@ describe('changing the password', () => {
     await submitNewPassword('abcdefgh');
 
     expect(changePassword).toHaveBeenCalledWith({ currentPassword: 'old-password', newPassword: 'abcdefgh' });
+  });
+});
+
+describe('how you travel', () => {
+  beforeEach(() => {
+    mockMe = { id: 'user-1', username: 'jane', email: 'jane@example.com' };
+    jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    updateMyTravelStyle.mockResolvedValue(undefined);
+  });
+
+  it('shows what they said in its row', async () => {
+    mockMe = { ...mockMe, travelStyle: 'van' };
+    renderScreen();
+
+    expect(await screen.findByText('travelStyle.van')).toBeTruthy();
+  });
+
+  it('says it is not set for someone who skipped the question, instead of choosing for them', async () => {
+    renderScreen();
+
+    expect(await screen.findByText('settings.travelStyleNotSet')).toBeTruthy();
+  });
+
+  // Regression-in-waiting: the basic profile does not carry the answer, so "not set" was shown to someone who did choose.
+  it('does not show the row until the whole profile has arrived', async () => {
+    mockMe = null;
+    renderScreen();
+
+    expect(await screen.findByText('settings.language')).toBeTruthy();
+    expect(screen.queryByText('settings.travelStyle')).toBeNull();
+    expect(screen.queryByText('settings.travelStyleNotSet')).toBeNull();
+  });
+
+  it('unfolds both answers from its row, marking the one chosen', async () => {
+    mockMe = { ...mockMe, travelStyle: 'occasional' };
+    renderScreen();
+
+    fireEvent.press(await screen.findByText('settings.travelStyle'));
+
+    expect(screen.getByRole('button', { name: 'travelStyle.occasional', selected: true })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'travelStyle.van', selected: false })).toBeTruthy();
+  });
+
+  it('saves the new answer, refreshes the profile and folds the list', async () => {
+    renderScreen();
+    fireEvent.press(await screen.findByText('settings.travelStyle'));
+
+    await act(async () => { fireEvent.press(screen.getByText('travelStyle.van')); });
+
+    expect(updateMyTravelStyle).toHaveBeenCalledWith('van');
+    expect(mockDispatch).toHaveBeenCalledWith({ type: 'setUserInfo', id: 'user-1' });
+    expect(screen.queryByText('travelStyle.occasional')).toBeNull();
+  });
+
+  it('says it could not be saved, and does not refresh the profile as if it had been', async () => {
+    updateMyTravelStyle.mockRejectedValue(new Error('Network error'));
+    renderScreen();
+    fireEvent.press(await screen.findByText('settings.travelStyle'));
+
+    await act(async () => { fireEvent.press(screen.getByText('travelStyle.van')); });
+
+    expect(Alert.alert).toHaveBeenCalledWith('errors.somethingWrong');
+    expect(mockDispatch).not.toHaveBeenCalledWith({ type: 'setUserInfo', id: 'user-1' });
   });
 });

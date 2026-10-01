@@ -733,6 +733,31 @@ describe('UserService.exportUserData()', () => {
         }]);
     });
 
+    // Regression-in-waiting: the profile of the export is a list written by hand, so a new field is left out until it is added.
+    it('includes how the person says they travel and when they confirmed their email', async () => {
+        const emailVerifiedAt = new Date('2026-09-01T10:00:00.000Z');
+        const userRepository = {
+            getUserById: async () => makeUser({ travelStyle: 'van', emailVerifiedAt }),
+            findRetiredReferralCodes: async () => [],
+        };
+        const service = new UserService(userRepository, { findByUserId: async () => [] }, { getFollowers: async () => [], getFollowing: async () => [] });
+
+        const result = await service.exportUserData('user-1', { id: 'user-1', username: 'jane' });
+
+        expect(result.profile.travelStyle).toBe('van');
+        expect(result.profile.emailVerifiedAt).toEqual(emailVerifiedAt);
+    });
+
+    it('says they have not chosen, instead of leaving it out, when they have not', async () => {
+        const userRepository = { getUserById: async () => makeUser(), findRetiredReferralCodes: async () => [] };
+        const service = new UserService(userRepository, { findByUserId: async () => [] }, { getFollowers: async () => [], getFollowing: async () => [] });
+
+        const result = await service.exportUserData('user-1', { id: 'user-1', username: 'jane' });
+
+        expect(result.profile.travelStyle).toBeNull();
+        expect(result.profile.emailVerifiedAt).toBeNull();
+    });
+
     it('includes the subscription and premium data, part of what a data-subject request covers', async () => {
         const premiumUntil = new Date('2030-01-01T00:00:00.000Z');
         const userRepository = {
@@ -919,6 +944,17 @@ describe('UserService.updateLanguage()', () => {
         await service.updateLanguage('user-1', 'es');
 
         expect(userRepository.updateLanguage).toHaveBeenCalledWith('user-1', 'es');
+    });
+});
+
+describe('UserService.updateTravelStyle()', () => {
+    it('saves how the user says they travel', async () => {
+        const userRepository = { updateTravelStyle: vi.fn().mockResolvedValue(undefined) };
+        const service = new UserService(userRepository, {}, {});
+
+        await service.updateTravelStyle('user-1', 'van');
+
+        expect(userRepository.updateTravelStyle).toHaveBeenCalledWith('user-1', 'van');
     });
 });
 

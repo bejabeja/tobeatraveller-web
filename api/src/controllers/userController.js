@@ -1,5 +1,5 @@
 import { ValidationError } from "../errors/ValidationError.js";
-import { adminNoticeSchema, changePasswordSchema, updateLanguageSchema, updateUserRoleSchema, updateUserSchema, updateUserTierSchema } from "../utils/schemasValidation.js";
+import { adminNoticeSchema, changePasswordSchema, updateLanguageSchema, updateTravelStyleSchema, updateUserRoleSchema, updateUserSchema, updateUserTierSchema } from "../utils/schemasValidation.js";
 import { getRequestContext } from "../utils/requestContext.js";
 
 const MAX_AVATAR_SIZE = 5 * 1024 * 1024; // 5 MB
@@ -91,6 +91,19 @@ export class UserController {
         }
         try {
             await this.userService.updateLanguage(req.user.id, result.data.language);
+            res.status(204).end();
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async updateMyTravelStyle(req, res, next) {
+        const result = updateTravelStyleSchema.safeParse(req.body);
+        if (!result.success) {
+            return next(new ValidationError(result.error.errors[0]?.message || "Validation failed"));
+        }
+        try {
+            await this.userService.updateTravelStyle(req.user.id, result.data.travelStyle);
             res.status(204).end();
         } catch (error) {
             next(error);

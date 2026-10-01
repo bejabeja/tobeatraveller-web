@@ -8,7 +8,9 @@ import { selectIsAuthenticated } from "../../store/auth/authSelectors";
 import { selectMe } from "../../store/user/userInfoSelectors";
 import "./EmailVerificationBanner.scss";
 
-const VERIFY_EMAIL_PATH = "/verify-email";
+// Where it would only be in the way: the page that confirms the email, and the first steps
+// of a new account, which already have the link in their welcome email.
+const PATHS_WITHOUT_BANNER = ["/verify-email", "/welcome"];
 const TOO_MANY_REQUESTS_STATUS = 429;
 
 // Only for someone signed in whose email is known not to be confirmed: an
@@ -21,7 +23,7 @@ const EmailVerificationBanner = () => {
   const userMe = useSelector(selectMe);
   const [status, setStatus] = useState("idle");
 
-  if (!isAuthenticated || userMe?.emailVerified !== false || pathname === VERIFY_EMAIL_PATH) return null;
+  if (!isAuthenticated || userMe?.emailVerified !== false || PATHS_WITHOUT_BANNER.includes(pathname)) return null;
 
   const handleSend = async () => {
     setStatus("sending");

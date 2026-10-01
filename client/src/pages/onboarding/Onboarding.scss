@@ -78,6 +78,10 @@
     font-size: 0.875rem;
     color: var(--text-secondary-color);
     font-weight: 500;
+
+    &:focus {
+      outline: none;
+    }
   }
 
   // ── Grid ──────────────────────────────────────────────────────
@@ -224,15 +228,6 @@
 
   &__cta {
     min-width: 220px;
-
-    &--locked {
-      background: var(--surface-color);
-      color: var(--text-secondary-color);
-      border: 1.5px solid var(--border-color);
-      cursor: default;
-
-      &:hover { background: var(--surface-color); }
-    }
   }
 
   &__skip {
@@ -244,9 +239,14 @@
     font-family: inherit;
     padding: 0.25rem;
 
-    &:hover {
+    &:hover:not(:disabled) {
       color: var(--text-color);
       text-decoration: underline;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: default;
     }
   }
 }
@@ -267,7 +267,7 @@
   to   { opacity: 1; transform: translateY(0);    }
 }
 
-// With nobody to follow yet: first steps of their own.
+// The question of how they travel, and the first steps it picks.
 .onboarding__start {
   display: flex;
   flex-direction: column;
@@ -280,6 +280,11 @@
   font-size: 1.1rem;
   font-weight: 700;
   color: var(--text-color);
+
+  // Focused by the code when the step changes, not by the person: nothing to outline.
+  &:focus {
+    outline: none;
+  }
 }
 
 .onboarding__start-list {
@@ -300,6 +305,9 @@
   background: var(--white-color);
   color: inherit;
   text-decoration: none;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
   transition: border-color 0.15s, box-shadow 0.15s;
 
   &:hover,

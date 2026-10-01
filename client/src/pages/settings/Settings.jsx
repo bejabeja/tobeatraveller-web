@@ -7,7 +7,9 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { Trans, useTranslation } from "react-i18next";
-import { APP_LANGUAGES, fetchNotificationPreferences, PASSWORD_MIN_LENGTH, toAppLanguage, updateNotificationPreferences } from "@tobeatraveller/shared";
+import {
+  APP_LANGUAGES, fetchNotificationPreferences, PASSWORD_MIN_LENGTH, toAppLanguage, TRAVEL_STYLES, updateMyTravelStyle, updateNotificationPreferences,
+} from "@tobeatraveller/shared";
 import i18n from "../../i18n";
 import SelectMenu from "../../components/form/SelectMenu";
 import Spinner from "../../components/spinner/Spinner";
@@ -121,6 +123,15 @@ const Settings = () => {
     setPasswordError("");
   };
 
+  const handleTravelStyleChange = async (travelStyle) => {
+    try {
+      await updateMyTravelStyle(travelStyle);
+      dispatch(setUserInfo(userMe.id));
+    } catch {
+      toast.error(t("errors.somethingWrong"));
+    }
+  };
+
   const handleChangePassword = async () => {
     if (newPassword.trim().length < PASSWORD_MIN_LENGTH) {
       setPasswordError(t("errors.passwordMin"));
@@ -190,6 +201,22 @@ const Settings = () => {
                 onChange={(code) => i18n.changeLanguage(code)}
               />
             </div>
+            {/* Not before the whole profile has arrived: the basic one does not carry it, and
+                "not set" would be said to someone who did choose. */}
+            {meDetail && (
+              <div className="settings__row">
+                <span className="settings__row-label">{t("settings.travelStyle")}</span>
+                <SelectMenu
+                  variant="compact"
+                  className="settings__select"
+                  ariaLabel={t("settings.travelStyle")}
+                  placeholder={t("settings.travelStyleNotSet")}
+                  options={Object.values(TRAVEL_STYLES).map((style) => ({ value: style, label: t(`travelStyle.${style}`) }))}
+                  value={meDetail.travelStyle ?? ""}
+                  onChange={handleTravelStyleChange}
+                />
+              </div>
+            )}
             <SettingsActionRow label={t("editProfile.changePassword")} onClick={() => setShowPasswordModal(true)} />
           </div>
         </section>

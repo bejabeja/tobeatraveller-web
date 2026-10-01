@@ -7,7 +7,7 @@ export class User {
         id, username, email, password, location, avatarUrl, avatarPublicId,
         createdAt, updatedAt, name, followersListIds,
         followingListIds, itineraries, bio, about, totalItineraries, role, premiumUntil,
-        stripeCustomerId, referralCode, language, usernameChangedAt, emailVerifiedAt
+        stripeCustomerId, referralCode, language, usernameChangedAt, emailVerifiedAt, travelStyle
     }) {
         this.id = id;
         this.username = username;
@@ -22,6 +22,7 @@ export class User {
         this.referralCode = referralCode || null;
         this.language = language || null;
         this.usernameChangedAt = usernameChangedAt || null;
+        this.travelStyle = travelStyle || null;
         this.emailVerifiedAt = emailVerifiedAt;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
@@ -50,6 +51,7 @@ export class User {
             language: row.language,
             usernameChangedAt: row.username_changed_at,
             emailVerifiedAt: row.email_verified_at,
+            travelStyle: row.travel_style,
             createdAt: row.created_at,
             updatedAt: row.updated_at,
             name: row.name,
@@ -104,6 +106,7 @@ export class User {
             username: this.username,
             email: this.email,
             emailVerified: this.emailVerifiedAt === undefined ? undefined : this.isEmailVerified(),
+            travelStyle: this.travelStyle,
             location: this.location,
             avatarUrl: this.avatarUrl,
             avatarPublicId: this.avatarPublicId,
@@ -133,7 +136,7 @@ export class User {
     }
 
     toPublicDTO() {
-        const { email, emailVerified, premiumUntil, isTrialEligible, referralCode, usernameChangeAvailableAt: _changeAvailableAt, ...publicFields } = this.toDTO();
+        const { email, emailVerified, travelStyle, premiumUntil, isTrialEligible, referralCode, usernameChangeAvailableAt: _changeAvailableAt, ...publicFields } = this.toDTO();
         return publicFields;
     }
 

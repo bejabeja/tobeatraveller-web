@@ -13,6 +13,7 @@ export const ANALYTICS_EVENTS = Object.freeze({
     RECAP_OPENED: 'recap_opened',
     RECAP_SHARED: 'recap_shared',
     USER_SIGNED_UP: 'user_signed_up',
+    ONBOARDING_TRAVEL_STYLE_CHOSEN: 'onboarding_travel_style_chosen',
     ONBOARDING_START_STEP_CLICKED: 'onboarding_start_step_clicked',
     TRIP_CREATED: 'trip_created',
     AI_ITINERARY_GENERATED: 'ai_itinerary_generated',

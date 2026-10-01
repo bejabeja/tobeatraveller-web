@@ -4,6 +4,7 @@ import { SUPPLY_CATEGORIES, SUPPLY_UNITS, SUPPLY_WHOLE_UNITS } from "./supplyCon
 import { PACKING_CATEGORIES } from "./packingConstants.js";
 import { ROLES } from "./roles.js";
 import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from "./languages.js";
+import { TRAVEL_STYLES } from "./travelStyles.js";
 import { ISO_COUNTRY_CODES } from "./countryCodes.js";
 import { EXPERIENCE_MAX_DAYS, ITINERARY_SOURCES } from "./itinerarySources.js";
 
@@ -239,6 +240,10 @@ export const adminNoticeSchema = z.object({
 
 export const updateLanguageSchema = z.object({
     language: z.enum(SUPPORTED_LANGUAGES, { errorMap: () => ({ message: "validation.invalid" }) }),
+});
+
+export const updateTravelStyleSchema = z.object({
+    travelStyle: z.enum(TRAVEL_STYLES, { errorMap: () => ({ message: "validation.invalid" }) }),
 });
 
 export const commentSchema = z.object({

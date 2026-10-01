@@ -60,6 +60,13 @@ describe("EmailVerificationBanner", () => {
     expect(screen.queryByText(/emailVerification.bannerText/)).not.toBeInTheDocument();
   });
 
+  // Regression-in-waiting: at the first steps of a new account it competed with the one question being asked.
+  it("stays out of the way during the first steps of a new account", () => {
+    renderAt("/welcome");
+
+    expect(screen.queryByText(/emailVerification.bannerText/)).not.toBeInTheDocument();
+  });
+
   it("sends the link again and says so", async () => {
     renderAt();
 

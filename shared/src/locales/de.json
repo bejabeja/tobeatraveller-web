@@ -1250,7 +1250,9 @@
     "contactUsHint": "Fragen, Fehler oder Ideen? Schreib uns.",
     "legal": "Rechtliches",
     "dangerZone": "Gefahrenzone",
-    "notifyOnTripReminders": "Packerinnerung vor einer Reise"
+    "notifyOnTripReminders": "Packerinnerung vor einer Reise",
+    "travelStyle": "Wie du reist",
+    "travelStyleNotSet": "Nicht angegeben"
   },
   "validation": {
     "required": "Dieses Feld ist erforderlich",
@@ -1350,10 +1352,24 @@
     "following": "Gefolgt ✓",
     "continue": "Weiter →",
     "skip": "Jetzt überspringen",
-    "followPrompt": "Folge mindestens 1 Person, um fortzufahren",
-    "followPromptBtn": "Folge jemandem, um fortzufahren",
+    "followPrompt": "Folge ein paar Reisenden, um deinen Feed zu füllen",
     "followedCount": "{{count}} gefolgt ✓",
-    "readyToGo": "Alles bereit! 🎉"
+    "readyToGo": "Alles bereit! 🎉",
+    "subtitleStyle": "Sag uns, wie du reist, und wir zeigen dir, was dir am meisten hilft.",
+    "subtitleStartVan": "Fang mit dem an, was du jeden Tag unterwegs machst.",
+    "startExpense": "Erfasse deine erste Ausgabe",
+    "startExpenseHint": "Sprit, Maut, Einkäufe: unterwegs läuft das zusammen.",
+    "startSupplies": "Starte deine Vorratsliste",
+    "startSuppliesHint": "Was du an Bord hast und was du noch kaufen musst.",
+    "startChecklist": "Mach deine Liste für die Abfahrt",
+    "startChecklistHint": "Damit beim Losfahren nichts zurückbleibt."
+  },
+  "travelStyle": {
+    "question": "Wie reist du?",
+    "van": "Ich lebe oder reise im Van",
+    "vanHint": "Ausgaben, Vorräte und dein Reisetagebuch unterwegs.",
+    "occasional": "Ich reise ab und zu",
+    "occasionalHint": "Plane Reisen, teile sie und füll deinen Pass."
   },
   "createExperience": {
     "heroInput": "Erlebnis erstellen",
@@ -1552,7 +1568,7 @@
     "s2Intro": "Wir erheben die folgenden Kategorien personenbezogener Daten:",
     "s2Items": [
       "<strong>Kontodaten:</strong> E-Mail-Adresse, Benutzername und Passwort (als sicherer Hash gespeichert; wir speichern dein Passwort niemals im Klartext).",
-      "<strong>Profildaten:</strong> Anzeigename, Bio, Standort, Profilfoto und „Über mich“-Text, die du freiwillig angibst.",
+      "<strong>Profildaten:</strong> Anzeigename, Bio, Standort, Profilfoto und „Über mich“-Text, die du freiwillig angibst. Du kannst uns auch sagen, wie du reist (im Van oder ab und zu), damit wir dich mit dem beginnen lassen, was dir am meisten hilft; du kannst es unter „Einstellungen“ ändern.",
       "<strong>Von dir erstellte Inhalte:</strong> Reisepläne (Titel, Reiseziel, Daten, Orte, Budget, Fotos), Kommentare, Likes, gespeicherte Reisen, Ausgaben für den Van und Tagebucheinträge.",
       "<strong>Soziale Daten:</strong> wem du folgst und wer dir folgt.",
       "<strong>Passdaten:</strong> die Stempel, die du erhältst, und die Länder, in denen du warst, ermittelt aus deinen Reisen (sobald sie begonnen haben, ausgenommen solche, die du von jemand anderem mit unveränderten Daten kopiert hast), Ausgaben und Tagebucheinträgen, sowie Länder, die du selbst markierst. Länder aus deinen veröffentlichten Reisen und die, die du selbst markierst, sind in deinem Pass öffentlich; die aus deinen privaten Reisen, Ausgaben oder deinem Tagebuch sind nur für dich sichtbar. Personen, die dir folgen, können eine Mitteilung erhalten, wenn du ein Land oder einen Stempel erhältst, den sie in deinem Pass sehen können, niemals bei privaten. Die von dir markierten Länder kannst du jederzeit bearbeiten.",

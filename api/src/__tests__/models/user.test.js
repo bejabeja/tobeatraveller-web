@@ -255,4 +255,25 @@ describe('User model', () => {
             expect(user.toFeaturedDTO()).not.toHaveProperty('emailVerified');
         });
     });
+
+    describe('how the person travels', () => {
+        it('is not chosen until the database says so', () => {
+            expect(User.fromDb(baseRow).travelStyle).toBeNull();
+            expect(User.fromDb({ ...baseRow, travel_style: 'van' }).travelStyle).toBe('van');
+        });
+
+        it('tells the owner, as null when they have not chosen', () => {
+            expect(User.fromDb({ ...baseRow, travel_style: 'occasional' }).toDTO().travelStyle).toBe('occasional');
+            expect(User.fromDb(baseRow).toDTO().travelStyle).toBeNull();
+        });
+
+        // Regression-in-waiting: a preference nobody else needs to know.
+        it('does not show it to anyone else', () => {
+            const user = User.fromDb({ ...baseRow, travel_style: 'van' });
+
+            expect(user.toPublicDTO()).not.toHaveProperty('travelStyle');
+            expect(user.toSimpleDTO()).not.toHaveProperty('travelStyle');
+            expect(user.toFeaturedDTO()).not.toHaveProperty('travelStyle');
+        });
+    });
 });

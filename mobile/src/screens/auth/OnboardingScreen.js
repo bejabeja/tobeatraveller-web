@@ -6,35 +6,53 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
-import { followUser, getSuggestedUsers, selectAuthUser, setUserInfo, unfollowUser, ANALYTICS_EVENTS } from '@tobeatraveller/shared';
+import {
+  followUser, getSuggestedUsers, selectAuthUser, setUserInfo, startStepsFor, TRAVEL_STYLES, unfollowUser, updateMyTravelStyle,
+  ANALYTICS_EVENTS,
+} from '@tobeatraveller/shared';
 import { trackEvent } from '../../utils/analytics';
 import { useDispatch, useSelector } from 'react-redux';
 import { shadow } from '../../utils/styles';
 
 const DOTS = 3;
 
-// With nobody to follow yet, what a new traveller can start with instead.
-const START_ACTIONS = [
-  { key: 'startTrip', emoji: '🗺️', screen: 'CreateItinerary' },
-  { key: 'startPassport', emoji: '🛂', screen: 'Passport', params: (userId) => ({ userId }) },
-  { key: 'startProfile', emoji: '🙂', screen: 'EditProfile' },
+const STEPS = { STYLE: 'style', START: 'start', FOLLOW: 'follow' };
+
+const TRAVEL_STYLE_CHOICES = [
+  { style: TRAVEL_STYLES.VAN, emoji: '🚐' },
+  { style: TRAVEL_STYLES.OCCASIONAL, emoji: '🧳' },
 ];
+
+// Where each first step leads, in the app.
+const START_ACTIONS = {
+  startExpense: { emoji: '⛽', screen: 'VanLog' },
+  startSupplies: { emoji: '🛒', screen: 'Supplies' },
+  startChecklist: { emoji: '✅', screen: 'PackingChecklist' },
+  startTrip: { emoji: '🗺️', screen: 'CreateItinerary' },
+  startPassport: { emoji: '🛂', screen: 'Passport', params: (userId) => ({ userId }) },
+  startProfile: { emoji: '🙂', screen: 'EditProfile' },
+};
 
 const OnboardingScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const insets = useSafeAreaInsets();
   const authUser = useSelector(selectAuthUser);
+  const [step, setStep] = useState(STEPS.STYLE);
+  const [travelStyle, setTravelStyle] = useState(null);
   const [users, setUsers] = useState([]);
   const [following, setFollowing] = useState(new Set());
   const [loading, setLoading] = useState(true);
 
   const count = following.size;
-  const noSuggestions = !loading && users.length === 0;
-  const canContinue = count >= 1 || noSuggestions;
+
+  // Whoever they followed, and how they said they travel, show from here on.
+  const refreshUser = () => {
+    if (authUser?.id) dispatch(setUserInfo(authUser.id));
+  };
 
   const handleFinish = () => {
-    if (authUser?.id) dispatch(setUserInfo(authUser.id));
+    refreshUser();
     navigation.replace('Tabs');
   };
 
@@ -43,6 +61,17 @@ const OnboardingScreen = ({ navigation }) => {
     handleFinish();
     navigation.navigate(screen, params);
   };
+
+  const chooseTravelStyle = (style) => {
+    setTravelStyle(style);
+    setStep(STEPS.START);
+    trackEvent(ANALYTICS_EVENTS.ONBOARDING_TRAVEL_STYLE_CHOSEN, { style });
+    // The person has already moved on: if it is not saved, Settings lets them say it again.
+    updateMyTravelStyle(style).then(refreshUser).catch(() => {});
+  };
+
+  // After the first steps: someone to follow if there is anyone, the app if not.
+  const leaveStart = () => (users.length > 0 ? setStep(STEPS.FOLLOW) : handleFinish());
 
   useEffect(() => {
     // A failed request is no suggestions, not a screen loading forever.
@@ -75,13 +104,17 @@ const OnboardingScreen = ({ navigation }) => {
     }
   };
 
-  const progressLabel = noSuggestions
-    ? t('onboarding.readyToGo')
-    : count === 0
+  const progressLabel = count === 0
     ? t('onboarding.followPrompt')
     : count >= DOTS
     ? t('onboarding.readyToGo')
     : t('onboarding.followedCount', { count });
+
+  const subtitle = {
+    [STEPS.STYLE]: t('onboarding.subtitleStyle'),
+    [STEPS.START]: travelStyle === TRAVEL_STYLES.VAN ? t('onboarding.subtitleStartVan') : t('onboarding.subtitleStart'),
+    [STEPS.FOLLOW]: t('onboarding.subtitle'),
+  }[step];
 
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
@@ -93,7 +126,7 @@ const OnboardingScreen = ({ navigation }) => {
       >
         <Text style={styles.heroEmoji}>🌍</Text>
         <Text style={styles.title}>{t('onboarding.welcomeTitle')}</Text>
-        <Text style={styles.subtitle}>{noSuggestions ? t('onboarding.subtitleStart') : t('onboarding.subtitle')}</Text>
+        <Text style={styles.subtitle}>{subtitle}</Text>
       </LinearGradient>
 
       {/* Scrollable content */}
@@ -102,67 +135,80 @@ const OnboardingScreen = ({ navigation }) => {
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 110 }]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Progress dots: only while there's someone to follow. */}
-        {!noSuggestions && (
-          <View style={styles.progress}>
-            <View style={styles.dots}>
-              {Array.from({ length: DOTS }, (_, i) => (
-                <View key={i} style={[styles.dot, i < count && styles.dotFilled]} />
-              ))}
-            </View>
-            <Text style={styles.progressLabel}>{progressLabel}</Text>
-          </View>
-        )}
-
-        {loading ? (
-          <ActivityIndicator size="large" color="#E8743B" style={styles.loader} />
-        ) : noSuggestions ? (
+        {step === STEPS.STYLE && (
           <View style={styles.start}>
-            <Text style={styles.startTitle} accessibilityRole="header">{t('onboarding.startTitle')}</Text>
-            {START_ACTIONS.map(({ key, emoji, screen, params }) => (
-              <TouchableOpacity key={key} style={styles.startAction} onPress={() => {
-                  trackEvent(ANALYTICS_EVENTS.ONBOARDING_START_STEP_CLICKED, { step: key });
-                  startWith(screen, params?.(authUser?.id));
-                }} accessibilityRole="button">
+            <Text style={styles.startTitle} accessibilityRole="header">{t('travelStyle.question')}</Text>
+            {TRAVEL_STYLE_CHOICES.map(({ style, emoji }) => (
+              <TouchableOpacity key={style} style={styles.startAction} onPress={() => chooseTravelStyle(style)} accessibilityRole="button">
                 <Text style={styles.startEmoji}>{emoji}</Text>
                 <View style={styles.startText}>
-                  <Text style={styles.startActionTitle}>{t(`onboarding.${key}`)}</Text>
-                  <Text style={styles.startActionHint}>{t(`onboarding.${key}Hint`)}</Text>
+                  <Text style={styles.startActionTitle}>{t(`travelStyle.${style}`)}</Text>
+                  <Text style={styles.startActionHint}>{t(`travelStyle.${style}Hint`)}</Text>
                 </View>
               </TouchableOpacity>
             ))}
           </View>
-        ) : (
-          <View style={styles.grid}>
-            {users.map(user => (
-              <UserCard
-                key={user.id}
-                user={user}
-                isFollowing={following.has(user.id)}
-                onToggle={() => toggleFollow(user.id)}
-                t={t}
-              />
-            ))}
+        )}
+
+        {step === STEPS.START && (
+          <View style={styles.start}>
+            <Text style={styles.startTitle} accessibilityRole="header">{t('onboarding.startTitle')}</Text>
+            {startStepsFor(travelStyle).map((key) => {
+              const { emoji, screen, params } = START_ACTIONS[key];
+              return (
+                <TouchableOpacity key={key} style={styles.startAction} onPress={() => {
+                    trackEvent(ANALYTICS_EVENTS.ONBOARDING_START_STEP_CLICKED, { step: key });
+                    startWith(screen, params?.(authUser?.id));
+                  }} accessibilityRole="button">
+                  <Text style={styles.startEmoji}>{emoji}</Text>
+                  <View style={styles.startText}>
+                    <Text style={styles.startActionTitle}>{t(`onboarding.${key}`)}</Text>
+                    <Text style={styles.startActionHint}>{t(`onboarding.${key}Hint`)}</Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
           </View>
+        )}
+
+        {step === STEPS.FOLLOW && (
+          <>
+            <View style={styles.progress}>
+              <View style={styles.dots}>
+                {Array.from({ length: DOTS }, (_, i) => (
+                  <View key={i} style={[styles.dot, i < count && styles.dotFilled]} />
+                ))}
+              </View>
+              <Text style={styles.progressLabel}>{progressLabel}</Text>
+            </View>
+            <View style={styles.grid}>
+              {users.map(user => (
+                <UserCard
+                  key={user.id}
+                  user={user}
+                  isFollowing={following.has(user.id)}
+                  onToggle={() => toggleFollow(user.id)}
+                  t={t}
+                />
+              ))}
+            </View>
+          </>
         )}
       </ScrollView>
 
       {/* Fixed footer */}
       <View style={[styles.footer, { paddingBottom: insets.bottom + 16 }]}>
-        <TouchableOpacity
-          style={[styles.ctaBtn, !canContinue && styles.ctaBtnLocked]}
-          onPress={handleFinish}
-          activeOpacity={0.85}
-          disabled={!canContinue}
-        >
-          <Text style={[styles.ctaBtnText, !canContinue && styles.ctaBtnTextLocked]}>
-            {canContinue ? t('onboarding.continue') : t('onboarding.followPromptBtn')}
-          </Text>
-        </TouchableOpacity>
-        {/* With nothing to follow, "Continue" already skips. */}
-        {!noSuggestions && (
-          <TouchableOpacity onPress={handleFinish} activeOpacity={0.7}>
-            <Text style={styles.skip}>{t('onboarding.skip')}</Text>
+        {step === STEPS.FOLLOW ? (
+          <TouchableOpacity style={styles.ctaBtn} onPress={handleFinish} activeOpacity={0.85}>
+            <Text style={styles.ctaBtnText}>{t('onboarding.continue')}</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            onPress={step === STEPS.STYLE ? () => setStep(STEPS.START) : leaveStart}
+            disabled={step === STEPS.START && loading}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.skip, step === STEPS.START && loading && styles.skipDisabled]}>{t('onboarding.skip')}</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -346,12 +392,9 @@ const styles = StyleSheet.create({
     width: '100%', backgroundColor: '#E8743B',
     borderRadius: 999, paddingVertical: 14, alignItems: 'center',
   },
-  ctaBtnLocked: {
-    backgroundColor: '#e5e7eb',
-  },
   ctaBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
-  ctaBtnTextLocked: { color: '#9ca3af' },
-  skip: { fontSize: 13, color: '#9ca3af' },
+  skip: { fontSize: 14, color: '#6b7280', paddingVertical: 8 },
+  skipDisabled: { opacity: 0.5 },
 });
 
 export default OnboardingScreen;

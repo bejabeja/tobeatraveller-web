@@ -13,7 +13,8 @@ import { useTranslation } from 'react-i18next';
 import i18n from '../../i18n';
 import {
   APP_LANGUAGES, changePassword, deleteMyAccount, exportMyData, fetchNotificationPreferences,
-  logoutUser, PASSWORD_MIN_LENGTH, selectAuthUser, selectMe, toAppLanguage, updateNotificationPreferences,
+  logoutUser, PASSWORD_MIN_LENGTH, selectAuthUser, selectMe, setUserInfo, toAppLanguage, TRAVEL_STYLES, updateMyTravelStyle,
+  updateNotificationPreferences,
 } from '@tobeatraveller/shared';
 import { shadow } from '../../utils/styles';
 import { RichText } from '../../components/RichText';
@@ -84,6 +85,7 @@ const SettingsScreen = ({ navigation }) => {
   const currentLang = toAppLanguage(i18n.language);
   const currentLanguage = APP_LANGUAGES.find(language => language.code === currentLang);
   const [languagesOpen, setLanguagesOpen] = useState(false);
+  const [travelStyleOpen, setTravelStyleOpen] = useState(false);
 
   const [deleting, setDeleting] = useState(false);
   const [deleteInput, setDeleteInput] = useState('');
@@ -148,6 +150,16 @@ const SettingsScreen = ({ navigation }) => {
     setNewPassword('');
     setConfirmNewPassword('');
     setPasswordError('');
+  };
+
+  const handleTravelStyleChange = async (travelStyle) => {
+    setTravelStyleOpen(false);
+    try {
+      await updateMyTravelStyle(travelStyle);
+      dispatch(setUserInfo(user.id));
+    } catch {
+      Alert.alert(t('errors.somethingWrong'));
+    }
   };
 
   const handleChangePassword = async () => {
@@ -235,6 +247,27 @@ const SettingsScreen = ({ navigation }) => {
                 onPress={() => { i18n.changeLanguage(code); setLanguagesOpen(false); }}
               />
             ))}
+            {/* Not before the whole profile has arrived: the basic one does not carry it, and
+                "not set" would be said to someone who did choose. */}
+            {!!meDetail && (
+              <>
+                <SettingsRow
+                  label={t('settings.travelStyle')}
+                  value={meDetail.travelStyle ? t(`travelStyle.${meDetail.travelStyle}`) : t('settings.travelStyleNotSet')}
+                  expanded={travelStyleOpen}
+                  onPress={() => setTravelStyleOpen(open => !open)}
+                />
+                {travelStyleOpen && Object.values(TRAVEL_STYLES).map(style => (
+                  <SettingsRow
+                    key={style}
+                    option
+                    label={t(`travelStyle.${style}`)}
+                    selected={style === meDetail.travelStyle}
+                    onPress={() => handleTravelStyleChange(style)}
+                  />
+                ))}
+              </>
+            )}
             <SettingsRow
               label={t('editProfile.changePassword')}
               expanded={showPasswordForm}

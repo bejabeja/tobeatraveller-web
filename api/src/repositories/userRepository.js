@@ -278,6 +278,11 @@ export class UserRepository {
         await db.query("UPDATE users SET language = $1 WHERE id = $2", [language, id]);
     }
 
+    // A preference, not a profile edit: updated_at is left alone, like the language.
+    async updateTravelStyle(id, travelStyle) {
+        await db.query("UPDATE users SET travel_style = $1 WHERE id = $2", [travelStyle, id]);
+    }
+
     async findByRole(role) {
         const result = await db.query(
             "SELECT * FROM users WHERE role = $1",

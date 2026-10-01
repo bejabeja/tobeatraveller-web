@@ -1267,7 +1267,9 @@
     "contactUsHint": "Une question, un bug ou une idée ? Écrivez-nous.",
     "legal": "Mentions légales",
     "dangerZone": "Zone de danger",
-    "notifyOnTripReminders": "Rappel des bagages avant un voyage"
+    "notifyOnTripReminders": "Rappel des bagages avant un voyage",
+    "travelStyle": "Comment tu voyages",
+    "travelStyleNotSet": "Non indiqué"
   },
   "validation": {
     "required": "Ce champ est obligatoire",
@@ -1367,10 +1369,24 @@
     "following": "Abonné ✓",
     "continue": "Continuer →",
     "skip": "Passer pour l'instant",
-    "followPrompt": "Suis au moins 1 voyageur pour continuer",
-    "followPromptBtn": "Suis quelqu'un pour continuer",
+    "followPrompt": "Suis quelques voyageurs pour remplir ton fil",
     "followedCount": "{{count}} suivis ✓",
-    "readyToGo": "Tout est prêt ! 🎉"
+    "readyToGo": "Tout est prêt ! 🎉",
+    "subtitleStyle": "Dis-nous comment tu voyages et on t'oriente vers ce qui t'aide le plus.",
+    "subtitleStartVan": "Commence par ce que tu fais chaque jour sur la route.",
+    "startExpense": "Enregistre ta première dépense",
+    "startExpenseHint": "Carburant, péages, courses : ça s'accumule sur la route.",
+    "startSupplies": "Commence ta liste de provisions",
+    "startSuppliesHint": "Ce que tu as à bord et ce qu'il te reste à acheter.",
+    "startChecklist": "Fais ta liste d'avant le départ",
+    "startChecklistHint": "Pour que rien ne reste derrière quand tu pars."
+  },
+  "travelStyle": {
+    "question": "Comment voyages-tu ?",
+    "van": "Je vis ou je voyage en van",
+    "vanHint": "Dépenses, provisions et ton journal de route.",
+    "occasional": "Je voyage de temps en temps",
+    "occasionalHint": "Planifie des voyages, partage-les et remplis ton passeport."
   },
   "createExperience": {
     "heroInput": "Créer une expérience",
@@ -1570,7 +1586,7 @@
     "s2Intro": "Nous collectons les catégories de données personnelles suivantes :",
     "s2Items": [
       "<strong>Données de compte :</strong> adresse e-mail, nom d'utilisateur et mot de passe (stocké sous forme de hachage sécurisé ; nous ne stockons jamais ton mot de passe en clair).",
-      "<strong>Données de profil :</strong> nom affiché, biographie, localisation, photo de profil et texte « À propos », que tu fournis de manière facultative.",
+      "<strong>Données de profil :</strong> nom affiché, biographie, localisation, photo de profil et texte « À propos », que tu fournis de manière facultative. Tu peux aussi nous dire comment tu voyages (en van ou de temps en temps) pour commencer par ce qui t'aide le plus ; tu peux le modifier dans « Paramètres ».",
       "<strong>Contenu que tu crées :</strong> itinéraires de voyage (titre, destination, dates, lieux, budget, photos), commentaires, j'aime, voyages enregistrés, dépenses du van et entrées du journal.",
       "<strong>Données sociales :</strong> les personnes que tu suis et celles qui te suivent.",
       "<strong>Données du passeport :</strong> les tampons que tu obtiens et les pays que tu as visités, déduits de tes voyages (une fois commencés, à l'exception de ceux dupliqués depuis quelqu'un d'autre sans en modifier les dates), de tes dépenses et des entrées de ton journal, ainsi que les pays que tu marques toi-même. Les pays issus de tes voyages publiés et ceux que tu marques toi-même sont publics sur ton passeport ; ceux issus de tes voyages privés, de tes dépenses ou de ton journal ne sont visibles que par toi. Les personnes qui te suivent peuvent recevoir un avis lorsque tu obtiens un pays ou un tampon qu'elles peuvent voir sur ton passeport, jamais un pays ou un tampon privé. Tu peux modifier à tout moment les pays que tu as marqués.",

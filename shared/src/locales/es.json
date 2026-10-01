@@ -1267,7 +1267,9 @@
     "contactUsHint": "¿Dudas, errores o ideas? Escríbenos.",
     "legal": "Legal",
     "dangerZone": "Zona de peligro",
-    "notifyOnTripReminders": "Recordatorio de equipaje antes de un viaje"
+    "notifyOnTripReminders": "Recordatorio de equipaje antes de un viaje",
+    "travelStyle": "Cómo viajas",
+    "travelStyleNotSet": "Sin indicar"
   },
   "validation": {
     "required": "Este campo es obligatorio",
@@ -1367,10 +1369,24 @@
     "following": "Siguiendo ✓",
     "continue": "Continuar →",
     "skip": "Omitir por ahora",
-    "followPrompt": "Sigue al menos 1 viajero para continuar",
-    "followPromptBtn": "Sigue a alguien para continuar",
+    "followPrompt": "Sigue a algunos viajeros para llenar tu feed",
     "followedCount": "{{count}} seguidos ✓",
-    "readyToGo": "¡Todo listo! 🎉"
+    "readyToGo": "¡Todo listo! 🎉",
+    "subtitleStyle": "Cuéntanos cómo viajas y te llevamos a lo que más te ayuda.",
+    "subtitleStartVan": "Empieza por lo que haces cada día en ruta.",
+    "startExpense": "Registra tu primer gasto",
+    "startExpenseHint": "Gasoil, peajes, compra: en ruta se acumula.",
+    "startSupplies": "Empieza tu lista de provisiones",
+    "startSuppliesHint": "Lo que llevas a bordo y lo que aún tienes que comprar.",
+    "startChecklist": "Haz tu lista de antes de arrancar",
+    "startChecklistHint": "Para que no se quede nada atrás al salir."
+  },
+  "travelStyle": {
+    "question": "¿Cómo viajas?",
+    "van": "Vivo o viajo en furgo",
+    "vanHint": "Gastos, provisiones y tu registro en ruta.",
+    "occasional": "Viajo de vez en cuando",
+    "occasionalHint": "Planifica viajes, compártelos y llena tu pasaporte."
   },
   "createExperience": {
     "heroInput": "Crea una Experiencia",
@@ -1570,7 +1586,7 @@
     "s2Intro": "Recopilamos las siguientes categorías de datos personales:",
     "s2Items": [
       "<strong>Datos de cuenta:</strong> correo electrónico, nombre de usuario y contraseña (almacenada como hash seguro; nunca guardamos tu contraseña en texto plano).",
-      "<strong>Datos de perfil:</strong> nombre visible, biografía, ubicación, foto de perfil y el texto \"sobre mí\" que proporciones opcionalmente.",
+      "<strong>Datos de perfil:</strong> nombre visible, biografía, ubicación, foto de perfil y el texto \"sobre mí\" que proporciones opcionalmente. También puedes contarnos cómo viajas (en furgo o de vez en cuando) para empezar por lo que más te ayuda; puedes cambiarlo en Ajustes.",
       "<strong>Contenido que creas:</strong> itinerarios de viaje (título, destino, fechas, lugares, presupuesto, fotos), comentarios, me gusta, viajes guardados, gastos del registro de la furgoneta y entradas del diario.",
       "<strong>Datos sociales:</strong> a quién sigues y quién te sigue.",
       "<strong>Datos del pasaporte:</strong> los sellos que consigues y los países en los que has estado, calculados a partir de tus viajes (ya empezados, sin contar los que has clonado de otra persona sin cambiar sus fechas), gastos y entradas del diario, además de los países que marques tú a mano. Los países de tus viajes publicados y los que marques a mano son públicos en tu pasaporte; los que salen de tus viajes privados, tus gastos o tu diario solo los ves tú. Quienes te siguen pueden recibir un aviso cuando consigues un país o sello de los que ven en tu pasaporte, nunca de los privados. Puedes editar los países marcados en cualquier momento.",

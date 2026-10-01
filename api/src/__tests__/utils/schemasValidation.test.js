@@ -4,7 +4,7 @@ import {
     createItineraryDataSchema, updateItineraryDataSchema,
     registerPushTokenSchema, createVanLogEntrySchema, vanLogEntrySchema as vanLogUpdateSchema,
     declaredCountriesSchema, contactSchema, updateLanguageSchema, updateUserTierSchema,
-    createPackingListSchema, packingListSchema, updatePackingListSchema, createCheckoutSessionSchema,
+    createPackingListSchema, packingListSchema, updatePackingListSchema, createCheckoutSessionSchema, updateTravelStyleSchema,
 } from '../../utils/schemasValidation.js';
 
 const validSignupData = {
@@ -404,6 +404,19 @@ describe('messages a person can run into', () => {
         const result = contactSchema.safeParse({ name: 'Ana', email: 'ana@example.com', reason: 'bug', subject: 'Hola' });
 
         expect(result.error.errors[0].message).toBe('validation.required');
+    });
+});
+
+describe('updateTravelStyleSchema', () => {
+    it.each(['van', 'occasional'])('accepts %s', (travelStyle) => {
+        expect(updateTravelStyleSchema.safeParse({ travelStyle }).success).toBe(true);
+    });
+
+    it.each([[undefined], [''], ['boat'], [null], [1]])('rejects %s with the message the apps translate', (travelStyle) => {
+        const result = updateTravelStyleSchema.safeParse({ travelStyle });
+
+        expect(result.success).toBe(false);
+        expect(result.error.errors[0].message).toBe('validation.invalid');
     });
 });
 

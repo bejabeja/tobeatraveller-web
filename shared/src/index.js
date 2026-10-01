@@ -63,6 +63,7 @@ export { formatTimeAgo, timeAgo } from './utils/timeAgo.js';
 export { translateAuthError } from './utils/authErrorMessages.js';
 export * from './utils/schemasValidation.js';
 export * from './utils/itineraryDraft.js';
+export * from './utils/travelStyle.js';
 export * from './utils/constants/colors.js';
 export * from './utils/constants/constants.js';
 export * from './utils/constants/currencies.js';

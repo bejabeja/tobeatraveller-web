@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { followUser, getSuggestedUsers, selectAuthUser, setUserInfo, unfollowUser } from "@tobeatraveller/shared";
+import {
+  followUser, getSuggestedUsers, selectAuthUser, setUserInfo, startStepsFor, TRAVEL_STYLES, unfollowUser, updateMyTravelStyle,
+} from "@tobeatraveller/shared";
 import { trackEvent } from "../../utils/analytics";
 import { ANALYTICS_EVENTS } from "../../utils/analyticsEvents";
 import { generateAvatar } from "../../utils/constants/constants";
@@ -10,12 +12,22 @@ import "./Onboarding.scss";
 
 const DOTS = 3;
 
-// With nobody to follow yet, what a new traveller can start with instead.
-const START_ACTIONS = [
-  { key: "startTrip", emoji: "🗺️", path: () => "/create-itinerary" },
-  { key: "startPassport", emoji: "🛂", path: (userId) => `/profile/${userId}/passport` },
-  { key: "startProfile", emoji: "🙂", path: (userId) => `/profile/edit/${userId}` },
+const STEPS = { STYLE: "style", START: "start", FOLLOW: "follow" };
+
+const TRAVEL_STYLE_CHOICES = [
+  { style: TRAVEL_STYLES.VAN, emoji: "🚐" },
+  { style: TRAVEL_STYLES.OCCASIONAL, emoji: "🧳" },
 ];
+
+// Where each first step leads, on the web.
+const START_ACTIONS = {
+  startExpense: { emoji: "⛽", path: () => "/van-log" },
+  startSupplies: { emoji: "🛒", path: () => "/supplies" },
+  startChecklist: { emoji: "✅", path: () => "/packing-checklist" },
+  startTrip: { emoji: "🗺️", path: () => "/create-itinerary" },
+  startPassport: { emoji: "🛂", path: (userId) => `/profile/${userId}/passport` },
+  startProfile: { emoji: "🙂", path: (userId) => `/profile/edit/${userId}` },
+};
 
 const Onboarding = () => {
   const { t } = useTranslation();
@@ -24,13 +36,20 @@ const Onboarding = () => {
   const location = useLocation();
   const redirectTo = location.state?.redirectTo;
   const authUser = useSelector(selectAuthUser);
+  const [step, setStep] = useState(STEPS.STYLE);
+  const [travelStyle, setTravelStyle] = useState(null);
   const [users, setUsers] = useState([]);
   const [following, setFollowing] = useState(new Set());
   const [loading, setLoading] = useState(true);
 
   const count = following.size;
-  const noSuggestions = !loading && users.length === 0;
-  const canContinue = count >= 1 || noSuggestions;
+  const stepHeadingRef = useRef(null);
+
+  // The button that was pressed is gone with its step: without this, keyboard and
+  // screen reader users are left on nothing and do not know the screen changed.
+  useEffect(() => {
+    stepHeadingRef.current?.focus();
+  }, [step]);
 
   useEffect(() => {
     // A failed request is no suggestions, not a page loading forever.
@@ -63,9 +82,17 @@ const Onboarding = () => {
     }
   };
 
-  // Whoever they followed shows on their profile from here on.
+  // Whoever they followed, and how they said they travel, show from here on.
   const refreshUser = () => {
     if (authUser?.id) dispatch(setUserInfo(authUser.id));
+  };
+
+  const chooseTravelStyle = (style) => {
+    setTravelStyle(style);
+    setStep(STEPS.START);
+    trackEvent(ANALYTICS_EVENTS.ONBOARDING_TRAVEL_STYLE_CHOSEN, { style });
+    // The person has already moved on: if it is not saved, Settings lets them say it again.
+    updateMyTravelStyle(style).then(refreshUser).catch(() => {});
   };
 
   const handleFinish = () => {
@@ -73,101 +100,118 @@ const Onboarding = () => {
     navigate(redirectTo || "/");
   };
 
-  const progressLabel = noSuggestions
-    ? t("onboarding.readyToGo")
-    : count === 0
+  // After the first steps: someone to follow if there is anyone, the app if not.
+  const leaveStart = () => (users.length > 0 ? setStep(STEPS.FOLLOW) : handleFinish());
+
+  const progressLabel = count === 0
     ? t("onboarding.followPrompt")
     : count >= DOTS
     ? t("onboarding.readyToGo")
     : t("onboarding.followedCount", { count });
+
+  const subtitle = {
+    [STEPS.STYLE]: t("onboarding.subtitleStyle"),
+    [STEPS.START]: travelStyle === TRAVEL_STYLES.VAN ? t("onboarding.subtitleStartVan") : t("onboarding.subtitleStart"),
+    [STEPS.FOLLOW]: t("onboarding.subtitle"),
+  }[step];
 
   return (
     <div className="onboarding">
       <div className="onboarding__hero">
         <span className="onboarding__hero-emoji">🌍</span>
         <h1 className="onboarding__title">{t("onboarding.welcomeTitle")}</h1>
-        <p className="onboarding__subtitle">{noSuggestions ? t("onboarding.subtitleStart") : t("onboarding.subtitle")}</p>
+        <p className="onboarding__subtitle">{subtitle}</p>
       </div>
 
       <div className="onboarding__inner">
-        {!noSuggestions && (
-          <div className="onboarding__progress">
-            <div className="onboarding__dots">
-              {Array.from({ length: DOTS }, (_, i) => (
-                <span key={i} className={`onboarding__dot${i < count ? " onboarding__dot--filled" : ""}`} />
+        {step === STEPS.STYLE && (
+          <>
+            <section className="onboarding__start" aria-labelledby="onboarding-style">
+              <h2 id="onboarding-style" className="onboarding__start-title" ref={stepHeadingRef} tabIndex={-1}>{t("travelStyle.question")}</h2>
+              <ul className="onboarding__start-list">
+                {TRAVEL_STYLE_CHOICES.map(({ style, emoji }) => (
+                  <li key={style}>
+                    <button type="button" className="onboarding__start-action" onClick={() => chooseTravelStyle(style)}>
+                      <span className="onboarding__start-emoji" aria-hidden="true">{emoji}</span>
+                      <span className="onboarding__start-text">
+                        <strong>{t(`travelStyle.${style}`)}</strong>
+                        <span>{t(`travelStyle.${style}Hint`)}</span>
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+            <div className="onboarding__footer">
+              <button type="button" className="onboarding__skip" onClick={() => setStep(STEPS.START)}>
+                {t("onboarding.skip")}
+              </button>
+            </div>
+          </>
+        )}
+
+        {step === STEPS.START && (
+          <>
+            <section className="onboarding__start" aria-labelledby="onboarding-start">
+              <h2 id="onboarding-start" className="onboarding__start-title" ref={stepHeadingRef} tabIndex={-1}>{t("onboarding.startTitle")}</h2>
+              <ul className="onboarding__start-list">
+                {startStepsFor(travelStyle).map((key) => (
+                  <li key={key}>
+                    <Link
+                      to={START_ACTIONS[key].path(authUser?.id)}
+                      className="onboarding__start-action"
+                      onClick={() => {
+                        trackEvent(ANALYTICS_EVENTS.ONBOARDING_START_STEP_CLICKED, { step: key });
+                        refreshUser();
+                      }}
+                    >
+                      <span className="onboarding__start-emoji" aria-hidden="true">{START_ACTIONS[key].emoji}</span>
+                      <span className="onboarding__start-text">
+                        <strong>{t(`onboarding.${key}`)}</strong>
+                        <span>{t(`onboarding.${key}Hint`)}</span>
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+            <div className="onboarding__footer">
+              <button type="button" className="onboarding__skip" onClick={leaveStart} disabled={loading}>
+                {t("onboarding.skip")}
+              </button>
+            </div>
+          </>
+        )}
+
+        {step === STEPS.FOLLOW && (
+          <>
+            <div className="onboarding__progress">
+              <div className="onboarding__dots">
+                {Array.from({ length: DOTS }, (_, i) => (
+                  <span key={i} className={`onboarding__dot${i < count ? " onboarding__dot--filled" : ""}`} />
+                ))}
+              </div>
+              <p className="onboarding__progress-label" ref={stepHeadingRef} tabIndex={-1}>{progressLabel}</p>
+            </div>
+            <div className="onboarding__grid">
+              {users.map((user, i) => (
+                <UserCard
+                  key={user.id}
+                  user={user}
+                  index={i}
+                  isFollowing={following.has(user.id)}
+                  onToggle={() => toggleFollow(user.id)}
+                  t={t}
+                />
               ))}
             </div>
-            <p className="onboarding__progress-label">{progressLabel}</p>
-          </div>
+            <div className="onboarding__footer">
+              <button className="onboarding__cta btn btn--primary" onClick={handleFinish}>
+                {t("onboarding.continue")}
+              </button>
+            </div>
+          </>
         )}
-
-        {loading ? (
-          <div className="onboarding__grid">
-            {Array.from({ length: 8 }, (_, i) => (
-              <div key={i} className="onboarding__card onboarding__card--skeleton" style={{ "--i": i }}>
-                <div className="onboarding__card-photo skeleton" />
-                <div className="onboarding__card-body">
-                  <div className="skeleton onboarding__skeleton-line" />
-                  <div className="skeleton onboarding__skeleton-line onboarding__skeleton-line--short" />
-                  <div className="skeleton onboarding__skeleton-btn" />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : noSuggestions ? (
-          <section className="onboarding__start" aria-labelledby="onboarding-start">
-            <h2 id="onboarding-start" className="onboarding__start-title">{t("onboarding.startTitle")}</h2>
-            <ul className="onboarding__start-list">
-              {START_ACTIONS.map(({ key, emoji, path }) => (
-                <li key={key}>
-                  <Link
-                    to={path(authUser?.id)}
-                    className="onboarding__start-action"
-                    onClick={() => {
-                      trackEvent(ANALYTICS_EVENTS.ONBOARDING_START_STEP_CLICKED, { step: key });
-                      refreshUser();
-                    }}
-                  >
-                    <span className="onboarding__start-emoji" aria-hidden="true">{emoji}</span>
-                    <span className="onboarding__start-text">
-                      <strong>{t(`onboarding.${key}`)}</strong>
-                      <span>{t(`onboarding.${key}Hint`)}</span>
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </section>
-        ) : (
-          <div className="onboarding__grid">
-            {users.map((user, i) => (
-              <UserCard
-                key={user.id}
-                user={user}
-                index={i}
-                isFollowing={following.has(user.id)}
-                onToggle={() => toggleFollow(user.id)}
-                t={t}
-              />
-            ))}
-          </div>
-        )}
-
-        <div className="onboarding__footer">
-          <button
-            className={`onboarding__cta btn${canContinue ? " btn--primary" : " onboarding__cta--locked"}`}
-            onClick={handleFinish}
-            disabled={!canContinue}
-          >
-            {canContinue ? t("onboarding.continue") : t("onboarding.followPromptBtn")}
-          </button>
-          {/* With nothing to follow, "Continue" already skips. */}
-          {!noSuggestions && (
-            <button className="onboarding__skip" onClick={handleFinish}>
-              {t("onboarding.skip")}
-            </button>
-          )}
-        </div>
       </div>
     </div>
   );
