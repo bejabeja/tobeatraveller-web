@@ -11,6 +11,8 @@ import { contactSchema } from '../../utils/schemasValidation.js';
 import { passwordChangedTemplate } from '../../emails/templates/passwordChanged.js';
 import { passwordResetTemplate } from '../../emails/templates/passwordReset.js';
 import { referralRewardTemplate } from '../../emails/templates/referralReward.js';
+import { trialEndedTemplate } from '../../emails/templates/trialEnded.js';
+import { trialEndingTemplate } from '../../emails/templates/trialEnding.js';
 import { welcomeTemplate } from '../../emails/templates/welcome.js';
 
 const USER_EMAILS = {
@@ -20,6 +22,8 @@ const USER_EMAILS = {
     accountDeleted: (language) => accountDeletedTemplate({ username: 'ana', language }),
     referralReward: (language) => referralRewardTemplate({ username: 'ana', friendUsername: 'bob', language }),
     contactConfirmation: (language) => contactConfirmationTemplate({ name: 'Ana', language }),
+    trialEnding: (language) => trialEndingTemplate({ username: 'ana', endsAt: '2026-10-05T10:00:00Z', hasPaymentMethod: false, language }),
+    trialEnded: (language) => trialEndedTemplate({ username: 'ana', language }),
 };
 
 // Every key, nested ones included, as "a.b.c"; arrays by index.
@@ -35,6 +39,7 @@ describe('user emails', () => {
     });
 
     const LANGUAGES = [['es', es], ['fr', fr], ['it', italian], ['de', de]];
+    const copyOf = (language) => ({ en, es, fr, it: italian, de })[language];
     it.each(Object.keys(USER_EMAILS).flatMap(name => LANGUAGES.map(([language, copy]) => [name, language, copy])))(
         'writes the %s email in %s, as a page in that language',
         (name, language, copy) => {
@@ -53,6 +58,15 @@ describe('user emails', () => {
 
         expect(subject).toBe(en.welcome.subject);
         expect(html).toContain('<html lang="en"');
+    });
+
+    it.each(['en', 'es', 'fr', 'it', 'de'])('says in %s whether the card will be charged when the trial ends', (language) => {
+        const withCard = trialEndingTemplate({ username: 'ana', endsAt: '2026-10-05T10:00:00Z', hasPaymentMethod: true, language }).html;
+        const noCard = trialEndingTemplate({ username: 'ana', endsAt: '2026-10-05T10:00:00Z', hasPaymentMethod: false, language }).html;
+
+        expect(withCard).not.toBe(noCard);
+        expect(withCard).toContain(copyOf(language).trialEnding.ctaWithCard);
+        expect(noCard).toContain(copyOf(language).trialEnding.ctaNoCard);
     });
 
     it('keeps the reset link and the account details in any language', () => {

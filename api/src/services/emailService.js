@@ -6,6 +6,8 @@ import { contactTemplate } from '../emails/templates/contact.js';
 import { passwordChangedTemplate } from '../emails/templates/passwordChanged.js';
 import { passwordResetTemplate } from '../emails/templates/passwordReset.js';
 import { referralRewardTemplate } from '../emails/templates/referralReward.js';
+import { trialEndedTemplate } from '../emails/templates/trialEnded.js';
+import { trialEndingTemplate } from '../emails/templates/trialEnding.js';
 import { welcomeTemplate } from '../emails/templates/welcome.js';
 import { logger } from '../utils/logger.js';
 
@@ -73,6 +75,16 @@ export class EmailService {
 
     async sendAccountDeleted({ username, email, language }) {
         const { subject, html } = accountDeletedTemplate({ username, language });
+        await this._send({ to: email, subject, html });
+    }
+
+    async sendTrialEnding({ username, email, endsAt, hasPaymentMethod, language }) {
+        const { subject, html } = trialEndingTemplate({ username, endsAt, hasPaymentMethod, language });
+        await this._send({ to: email, subject, html });
+    }
+
+    async sendTrialEnded({ username, email, language }) {
+        const { subject, html } = trialEndedTemplate({ username, language });
         await this._send({ to: email, subject, html });
     }
 

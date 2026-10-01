@@ -68,4 +68,15 @@ export class SubscriptionController {
             res.status(500).json({ error: 'Webhook handling failed' });
         }
     }
+
+    // Hit by Vercel Cron (see vercel.json), authenticated via requireCronSecret
+    // instead of a user session.
+    async sendTrialRemindersScheduled(req, res, next) {
+        try {
+            const result = await this.subscriptionService.sendTrialEndingReminders();
+            res.status(200).json(result);
+        } catch (error) {
+            next(error);
+        }
+    }
 }

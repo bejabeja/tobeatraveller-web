@@ -36,6 +36,10 @@
         {
             "path": "/packing-checklist/scheduled-remind",
             "schedule": "0 8 * * *"
+        },
+        {
+            "path": "/subscription/scheduled-trial-reminders",
+            "schedule": "0 10 * * *"
         }
     ]
 }

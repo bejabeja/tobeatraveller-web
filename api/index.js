@@ -29,6 +29,7 @@ import { createPackingChecklistRouter } from './src/routes/packingChecklistRoute
 import { createLifeDiaryRouter } from './src/routes/lifeDiaryRouter.js';
 import { createSubscriptionRouter } from './src/routes/subscriptionRouter.js';
 import { createSubscriptionWebhookRouter } from './src/routes/subscriptionWebhookRouter.js';
+import { createSubscriptionCronRouter } from './src/routes/subscriptionCronRouter.js';
 import { createReferralRouter } from './src/routes/referralRouter.js';
 import { createPushTokensRouter } from './src/routes/pushTokensRouter.js';
 
@@ -63,6 +64,7 @@ app.use('/supplies', authenticate, createSuppliesRouter());
 // Auth lives inside the router: its scheduled reminders run on the cron secret.
 app.use('/packing-checklist', createPackingChecklistRouter());
 app.use('/life-diary', authenticate, createLifeDiaryRouter());
+app.use('/subscription/scheduled-trial-reminders', createSubscriptionCronRouter());
 app.use('/subscription', authenticate, createSubscriptionRouter());
 // Same again: the purge of earlier invite codes runs on the cron secret.
 app.use('/referrals', createReferralRouter());

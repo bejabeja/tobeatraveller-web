@@ -1,6 +1,7 @@
 import { NotFoundError } from '../errors/NotFoundError.js';
 import { ConflictError } from '../errors/ConflictError.js';
 import { AUDIT_EVENTS } from '../utils/auditEvents.js';
+import { logger } from '../utils/logger.js';
 import { ACTIVE_SUBSCRIPTION_STATUSES, ENDED_SUBSCRIPTION_STATUSES } from '../models/subscription.js';
 import { consentLanguageFor, consentMessageFor } from '../utils/subscriptionConsent.js';
 import config from '../config/config.js';
@@ -32,6 +33,11 @@ const TRIAL_SUBSCRIPTION_DATA = {
 const PAYMENT_FAILED_GRACE_DAYS = 3;
 const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
 
+// A trial with no card ends on its own, so the reminder goes out while there
+// is still time to subscribe; it is sent by the daily job to every trial that
+// ends within this many days.
+const TRIAL_REMINDER_DAYS_BEFORE_END = 2;
+
 // The customer address Checkout collects to work out the tax is kept on the
 // customer, which the tax of every later invoice depends on. Only sent when
 // Stripe Tax is switched on (STRIPE_AUTOMATIC_TAX), since Checkout refuses to
@@ -60,11 +66,12 @@ const currentPeriodEndOf = (subscription) => {
 const isScheduledToCancel = (subscription) => !!(subscription.cancel_at_period_end || subscription.cancel_at);
 
 export class SubscriptionService {
-    constructor(subscriptionRepository, userRepository, auditLogService, stripeClient) {
+    constructor(subscriptionRepository, userRepository, auditLogService, stripeClient, emailService) {
         this.subscriptionRepository = subscriptionRepository;
         this.userRepository = userRepository;
         this.auditLogService = auditLogService;
         this.stripeClient = stripeClient;
+        this.emailService = emailService;
     }
 
     async createCheckoutSession(userId, plan, { startTrial = true } = {}) {
@@ -194,6 +201,43 @@ export class SubscriptionService {
         });
 
         return { url: session.url };
+    }
+
+    // Hit by the daily job (see vercel.json). Each trial is claimed before its
+    // email goes out, so overlapping runs do not send it twice, and released
+    // when the send fails so the next run tries again.
+    async sendTrialEndingReminders(now = new Date()) {
+        const deadline = new Date(now.getTime() + TRIAL_REMINDER_DAYS_BEFORE_END * MILLISECONDS_PER_DAY);
+        const trials = await this.subscriptionRepository.findTrialsEndingBefore(deadline);
+
+        let sent = 0;
+        for (const trial of trials) {
+            if (!(await this.subscriptionRepository.claimTrialReminder(trial.id))) continue;
+            try {
+                await this._sendTrialEndingEmail(trial);
+                sent += 1;
+            } catch (error) {
+                await this.subscriptionRepository.releaseTrialReminder(trial.id);
+                logger.error('[subscription] trial reminder failed:', error);
+            }
+        }
+        return { sent };
+    }
+
+    async _sendTrialEndingEmail(trial) {
+        const user = await this.userRepository.getUserById(trial.userId);
+        if (!user) return;
+
+        // The email says whether the card will be charged, so it asks Stripe
+        // instead of assuming that a trial that started with no card still has none.
+        const stripeSubscription = await this.stripeClient.subscriptions.retrieve(trial.stripeSubscriptionId);
+        await this.emailService.sendTrialEnding({
+            username: user.username,
+            email: user.email,
+            endsAt: trial.currentPeriodEnd,
+            hasPaymentMethod: !!stripeSubscription.default_payment_method,
+            language: user.language,
+        });
     }
 
     verifyWebhookEvent(payload, signature) {
@@ -400,6 +444,13 @@ export class SubscriptionService {
             targetUserId: existing.userId, targetUsername: user?.username,
             metadata: { stripeSubscriptionId: subscription.id, previousStatus: existing.status },
         });
+
+        // Only a trial that never became a paid subscription: for anyone else the
+        // cancellation was theirs, or a refund, and has its own trail.
+        if (existing.status === 'trialing' && user) {
+            this.emailService?.sendTrialEnded({ username: user.username, email: user.email, language: user.language })
+                .catch(err => logger.error('[email] trial ended failed:', err));
+        }
     }
 
     // Never moves premiumUntil backward from whatever is already stored: a

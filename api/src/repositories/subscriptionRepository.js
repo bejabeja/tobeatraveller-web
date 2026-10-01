@@ -50,4 +50,34 @@ export class SubscriptionRepository {
         );
         return result.rows[0].exists;
     }
+
+    async findTrialsEndingBefore(deadline) {
+        const result = await client.query(
+            `SELECT * FROM subscriptions
+             WHERE status = 'trialing'
+               AND trial_reminder_sent_at IS NULL
+               AND current_period_end > NOW()
+               AND current_period_end <= $1`,
+            [deadline]
+        );
+        return result.rows.map(Subscription.fromDb);
+    }
+
+    // Atomic, so two runs of the reminder job at once cannot both send it.
+    async claimTrialReminder(id) {
+        const result = await client.query(
+            `UPDATE subscriptions SET trial_reminder_sent_at = NOW()
+             WHERE id = $1 AND trial_reminder_sent_at IS NULL
+             RETURNING id`,
+            [id]
+        );
+        return result.rows.length > 0;
+    }
+
+    async releaseTrialReminder(id) {
+        await client.query(
+            `UPDATE subscriptions SET trial_reminder_sent_at = NULL WHERE id = $1`,
+            [id]
+        );
+    }
 }

@@ -36,6 +36,7 @@ describe('SubscriptionService', () => {
     let userRepository;
     let auditLogService;
     let stripeClient;
+    let emailService;
     let service;
 
     beforeEach(() => {
@@ -44,6 +45,9 @@ describe('SubscriptionService', () => {
             findByStripeSubscriptionId: vi.fn(async () => null),
             updateByStripeSubscriptionId: vi.fn(async (stripeSubscriptionId, data) => makeSubscriptionRow({ stripeSubscriptionId, ...data })),
             findByUserId: vi.fn(async () => []),
+            findTrialsEndingBefore: vi.fn(async () => []),
+            claimTrialReminder: vi.fn(async () => true),
+            releaseTrialReminder: vi.fn(async () => {}),
         };
         userRepository = {
             getUserById: vi.fn(async () => makeUser()),
@@ -64,7 +68,11 @@ describe('SubscriptionService', () => {
             charges: { retrieve: vi.fn(async () => ({ id: 'ch_1', customer: 'cus_123' })) },
             webhooks: { constructEvent: vi.fn() },
         };
-        service = new SubscriptionService(subscriptionRepository, userRepository, auditLogService, stripeClient);
+        emailService = {
+            sendTrialEnding: vi.fn(async () => {}),
+            sendTrialEnded: vi.fn(async () => {}),
+        };
+        service = new SubscriptionService(subscriptionRepository, userRepository, auditLogService, stripeClient, emailService);
     });
 
     describe('createCheckoutSession()', () => {
@@ -859,6 +867,112 @@ describe('SubscriptionService', () => {
             });
 
             expect(userRepository.updatePremiumUntil).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('sendTrialEndingReminders()', () => {
+        const NOW = new Date('2026-10-01T10:00:00Z');
+        const trial = (overrides = {}) => makeSubscriptionRow({
+            id: 'trial-1', status: 'trialing', currentPeriodEnd: new Date('2026-10-03T08:00:00Z'), ...overrides,
+        });
+
+        it('looks for the trials that end within the next two days', async () => {
+            await service.sendTrialEndingReminders(NOW);
+
+            expect(subscriptionRepository.findTrialsEndingBefore).toHaveBeenCalledWith(new Date('2026-10-03T10:00:00Z'));
+        });
+
+        it('tells whoever is in the trial when it ends, in their language, without mentioning a charge if there is no card', async () => {
+            subscriptionRepository.findTrialsEndingBefore.mockResolvedValue([trial()]);
+            userRepository.getUserById.mockResolvedValue(makeUser({ language: 'es' }));
+
+            const result = await service.sendTrialEndingReminders(NOW);
+
+            expect(emailService.sendTrialEnding).toHaveBeenCalledWith({
+                username: 'miriam',
+                email: 'miriam@example.com',
+                endsAt: new Date('2026-10-03T08:00:00Z'),
+                hasPaymentMethod: false,
+                language: 'es',
+            });
+            expect(result).toEqual({ sent: 1 });
+        });
+
+        it('warns that the card will be charged when a payment method was added during the trial', async () => {
+            subscriptionRepository.findTrialsEndingBefore.mockResolvedValue([trial()]);
+            stripeClient.subscriptions.retrieve.mockResolvedValue(makeStripeSubscription({ status: 'trialing', default_payment_method: 'pm_1' }));
+
+            await service.sendTrialEndingReminders(NOW);
+
+            expect(emailService.sendTrialEnding.mock.calls[0][0].hasPaymentMethod).toBe(true);
+        });
+
+        it('does not send it twice when another run already took that trial', async () => {
+            subscriptionRepository.findTrialsEndingBefore.mockResolvedValue([trial()]);
+            subscriptionRepository.claimTrialReminder.mockResolvedValue(false);
+
+            const result = await service.sendTrialEndingReminders(NOW);
+
+            expect(emailService.sendTrialEnding).not.toHaveBeenCalled();
+            expect(result).toEqual({ sent: 0 });
+        });
+
+        it('gives the trial back for the next run when the email fails, and carries on with the others', async () => {
+            subscriptionRepository.findTrialsEndingBefore.mockResolvedValue([trial({ id: 'trial-1' }), trial({ id: 'trial-2' })]);
+            emailService.sendTrialEnding.mockRejectedValueOnce(new Error('brevo down'));
+
+            const result = await service.sendTrialEndingReminders(NOW);
+
+            expect(subscriptionRepository.releaseTrialReminder).toHaveBeenCalledWith('trial-1');
+            expect(subscriptionRepository.releaseTrialReminder).not.toHaveBeenCalledWith('trial-2');
+            expect(emailService.sendTrialEnding).toHaveBeenCalledTimes(2);
+            expect(result).toEqual({ sent: 1 });
+        });
+
+        it('sends nothing for an account that no longer exists', async () => {
+            subscriptionRepository.findTrialsEndingBefore.mockResolvedValue([trial()]);
+            userRepository.getUserById.mockResolvedValue(null);
+
+            await service.sendTrialEndingReminders(NOW);
+
+            expect(emailService.sendTrialEnding).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('handleWebhookEvent() / customer.subscription.deleted / trial email', () => {
+        const deleted = () => ({ type: 'customer.subscription.deleted', data: { object: makeStripeSubscription({ status: 'canceled' }) } });
+
+        it('tells the traveller the trial is over when it ended without becoming a paid subscription', async () => {
+            subscriptionRepository.findByStripeSubscriptionId.mockResolvedValue(makeSubscriptionRow({ status: 'trialing' }));
+            userRepository.getUserById.mockResolvedValue(makeUser({ language: 'fr' }));
+
+            await service.handleWebhookEvent(deleted());
+
+            expect(emailService.sendTrialEnded).toHaveBeenCalledWith({ username: 'miriam', email: 'miriam@example.com', language: 'fr' });
+        });
+
+        it('does not send it to someone who canceled a paid subscription', async () => {
+            subscriptionRepository.findByStripeSubscriptionId.mockResolvedValue(makeSubscriptionRow({ status: 'active' }));
+
+            await service.handleWebhookEvent(deleted());
+
+            expect(emailService.sendTrialEnded).not.toHaveBeenCalled();
+        });
+
+        it('does not send it again when Stripe redelivers the event', async () => {
+            subscriptionRepository.findByStripeSubscriptionId.mockResolvedValue(makeSubscriptionRow({ status: 'canceled' }));
+
+            await service.handleWebhookEvent(deleted());
+
+            expect(emailService.sendTrialEnded).not.toHaveBeenCalled();
+        });
+
+        it('still processes the cancellation when the email cannot be sent', async () => {
+            subscriptionRepository.findByStripeSubscriptionId.mockResolvedValue(makeSubscriptionRow({ status: 'trialing' }));
+            emailService.sendTrialEnded.mockRejectedValue(new Error('brevo down'));
+
+            await expect(service.handleWebhookEvent(deleted())).resolves.not.toThrow();
+            expect(subscriptionRepository.updateByStripeSubscriptionId).toHaveBeenCalled();
         });
     });
 });
