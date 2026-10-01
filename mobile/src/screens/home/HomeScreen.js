@@ -15,11 +15,12 @@ import {
   selectFeaturedItineraries, selectFeaturedItinerariesLoading,
   selectFeaturedUsers, selectFeaturedUsersLoading,
   selectFeed, selectFeedLoading,
-  selectAuthUser, selectIsAuthenticated, selectMe, selectUnreadCount,
+  selectAuthUser, selectIsAuthenticated, selectMe, selectUnreadCount, TRAVEL_STYLES,
 } from '@tobeatraveller/shared';
 import { EmailVerificationBanner } from '../../components/EmailVerificationBanner';
 import ItineraryCard from '../../components/ItineraryCard';
 import NextTripCard from '../../components/NextTripCard';
+import VanToday from '../../components/VanToday';
 import { ItineraryCardSkeleton, UserAvatarSkeleton } from '../../components/Skeleton';
 import { COLORS, shadow } from '../../utils/styles';
 
@@ -77,6 +78,7 @@ const HomeScreen = ({ navigation }) => {
   const unreadCount = useSelector(selectUnreadCount);
   const me = useSelector(selectMe);
   const authUser = useSelector(selectAuthUser);
+  const isInAVan = isAuthenticated && me?.travelStyle === TRAVEL_STYLES.VAN;
 
   useEffect(() => {
     if (!itineraries?.length) dispatch(initFeaturedItineraries());
@@ -151,6 +153,9 @@ const HomeScreen = ({ navigation }) => {
       </LinearGradient>
 
       {isAuthenticated && <EmailVerificationBanner />}
+
+      {/* Whoever said they live in a van starts the day from what a van needs. */}
+      {isInAVan && <VanToday navigation={navigation} userId={me.id} />}
 
       {/* Following feed */}
       {isAuthenticated && tab === 'following' && (

@@ -190,6 +190,17 @@
     "prepareTrip": "Get packing",
     "tripListProgress": "{{name}}: {{checked}} of {{total}} done"
   },
+  "vanToday": {
+    "title": "Your van today",
+    "addExpense": "Add an expense",
+    "monthTitle": "This month",
+    "monthNothing": "Nothing spent yet",
+    "shoppingTitle": "Shopping list",
+    "shoppingCount_one": "{{count}} thing to buy",
+    "shoppingCount_other": "{{count}} things to buy",
+    "shoppingNothing": "Nothing to buy",
+    "unavailable": "Not available right now"
+  },
   "explore": {
     "clearSearch": "Clear search",
     "title": "Explore the world",

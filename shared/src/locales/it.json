@@ -193,6 +193,18 @@
     "prepareTrip": "Prepara il bagaglio",
     "tripListProgress": "{{name}}: {{checked}} su {{total}} pronti"
   },
+  "vanToday": {
+    "title": "Il tuo van oggi",
+    "addExpense": "Aggiungi una spesa",
+    "monthTitle": "Questo mese",
+    "monthNothing": "Ancora nessuna spesa",
+    "shoppingTitle": "Lista della spesa",
+    "shoppingCount_one": "{{count}} cosa da comprare",
+    "shoppingCount_other": "{{count}} cose da comprare",
+    "shoppingCount_many": "{{count}} cose da comprare",
+    "shoppingNothing": "Niente da comprare",
+    "unavailable": "Non disponibile ora"
+  },
   "explore": {
     "clearSearch": "Cancella la ricerca",
     "title": "Esplora il mondo",

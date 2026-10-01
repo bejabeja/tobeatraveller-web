@@ -193,6 +193,18 @@
     "prepareTrip": "Préparer les bagages",
     "tripListProgress": "{{name}} : {{checked}} sur {{total}} prêts"
   },
+  "vanToday": {
+    "title": "Ton van aujourd'hui",
+    "addExpense": "Ajouter une dépense",
+    "monthTitle": "Ce mois-ci",
+    "monthNothing": "Rien dépensé pour l'instant",
+    "shoppingTitle": "Liste de courses",
+    "shoppingCount_one": "{{count}} chose à acheter",
+    "shoppingCount_other": "{{count}} choses à acheter",
+    "shoppingCount_many": "{{count}} choses à acheter",
+    "shoppingNothing": "Rien à acheter",
+    "unavailable": "Indisponible pour l'instant"
+  },
   "explore": {
     "clearSearch": "Effacer la recherche",
     "title": "Explore le monde",

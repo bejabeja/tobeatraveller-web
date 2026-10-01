@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   IoCloseOutline, IoDownloadOutline, IoEllipsisVertical, IoFlashOutline, IoFunnelOutline,
   IoMapOutline, IoReceiptOutline, IoSearchOutline, IoWalletOutline,
@@ -69,6 +69,8 @@ const VanLog = () => {
   const [deleting, setDeleting] = useState(false);
   // null = closed; `entry` null = adding (optionally for a given trip), set = editing it.
   const [entryModal, setEntryModal] = useState(null);
+  const location = useLocation();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("entries");
   const [groupBy, setGroupBy] = useState("month");
   const [openMenuId, setOpenMenuId] = useState(null);
@@ -140,6 +142,14 @@ const VanLog = () => {
   const openEdit = (entry) => setEntryModal({ entry, tripId: "" });
   const openQuickAdd = (tripId = "") => setEntryModal({ entry: null, tripId });
   const closeEntryModal = () => setEntryModal(null);
+
+  // The Home of someone in a van sends them straight to adding an expense. Asked for
+  // once: the request is dropped from the history so going back does not reopen it.
+  useEffect(() => {
+    if (!location.state?.quickAdd) return;
+    setEntryModal({ entry: null, tripId: "" });
+    navigate(location.pathname, { replace: true, state: null });
+  }, [location, navigate]);
   const handleEntrySaved = () => {
     closeEntryModal();
     refresh();

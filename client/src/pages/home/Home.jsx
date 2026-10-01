@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { selectIsAuthenticated } from "../../store/auth/authSelectors.js";
+import { selectMe } from "../../store/user/userInfoSelectors.js";
 
 import { Link } from "react-router-dom";
 import FeatureShowcase from "../../components/featureShowcase/FeatureShowcase.jsx";
@@ -13,10 +14,12 @@ import {
   selectFeaturedItineraries, selectFeaturedItinerariesLoading,
   selectFeed, selectFeedLoading, selectFeedPage, selectFeedTotalPages,
   selectStats,
+  TRAVEL_STYLES,
   initFeaturedUsers,
   selectFeaturedUsers,
   selectFeaturedUsersLoading,
 } from "@tobeatraveller/shared";
+import VanToday from "../../components/home/VanToday.jsx";
 import WorldMap from "../../components/home/WorldMap.jsx";
 import LoadingButton from "../../components/LoadingButton.jsx";
 import { FEATURES } from "../../utils/constants/constants.js";
@@ -26,6 +29,9 @@ const Home = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(selectIsAuthenticated);
+  const userMe = useSelector(selectMe);
+  // Whoever said they live in a van starts the day from what a van needs.
+  const isInAVan = isAuthenticated && userMe?.travelStyle === TRAVEL_STYLES.VAN;
   const [tab, setTab] = useState("featured");
 
   const featuredItineraries = useSelector(selectFeaturedItineraries);
@@ -70,6 +76,12 @@ const Home = () => {
               <span className="home__stats-label">{t("home.destinations")}</span>
             </div>
           </div>
+        </div>
+      )}
+
+      {isInAVan && (
+        <div className="section__container">
+          <VanToday />
         </div>
       )}
 
