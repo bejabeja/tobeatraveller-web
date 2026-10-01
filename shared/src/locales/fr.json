@@ -74,6 +74,7 @@
     "alreadyHaveAccount": "Tu as déjà un compte ?",
     "emailInUse": "Cet e-mail est déjà enregistré.",
     "invalidCredentials": "E-mail ou mot de passe incorrect.",
+    "tooManyAttempts": "Trop de tentatives. Patientez quelques minutes et réessayez.",
     "usernameNotAvailable": "Ce nom d'utilisateur n'est pas disponible. Choisis-en un autre.",
     "exploreWithout": "Explorer sans compte →",
     "continueAsGuest": "Continuer en mode invité",

@@ -74,6 +74,7 @@
     "alreadyHaveAccount": "Du hast schon ein Konto?",
     "emailInUse": "Diese E-Mail-Adresse ist bereits registriert.",
     "invalidCredentials": "E-Mail oder Passwort ist falsch.",
+    "tooManyAttempts": "Zu viele Versuche. Warte ein paar Minuten und versuche es erneut.",
     "usernameNotAvailable": "Dieser Benutzername ist nicht verfügbar. Bitte wähle einen anderen.",
     "exploreWithout": "Ohne Konto entdecken →",
     "continueAsGuest": "Als Gast fortfahren",

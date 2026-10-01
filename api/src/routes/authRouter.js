@@ -1,5 +1,9 @@
 import { Router } from "express";
 import { AuthController } from "../controllers/authController.js";
+import {
+    failedLoginPerAccountRateLimit, failedLoginPerIpRateLimit,
+    passwordResetPerAccountRateLimit, passwordResetPerIpRateLimit, signupPerIpRateLimit,
+} from "../middlewares/authRateLimit.js";
 import { FollowRepository } from "../repositories/followRepository.js";
 import { ItineraryRepository } from "../repositories/itineraryRepository.js";
 import { PasswordResetRepository } from "../repositories/passwordResetRepository.js";
@@ -27,11 +31,11 @@ export const createAuthRouter = () => {
     const authService = new AuthService(userRepository, emailService, passwordResetRepository, auditLogService);
     const authController = new AuthController(userService, authService);
 
-    router.post("/create", authController.create.bind(authController));
-    router.post("/login", authController.login.bind(authController));
+    router.post("/create", signupPerIpRateLimit, authController.create.bind(authController));
+    router.post("/login", failedLoginPerIpRateLimit, failedLoginPerAccountRateLimit, authController.login.bind(authController));
     router.post("/refresh", authController.refresh.bind(authController));
     router.post("/logout", authController.logout.bind(authController));
-    router.post("/forgot-password", authController.forgotPassword.bind(authController));
+    router.post("/forgot-password", passwordResetPerIpRateLimit, passwordResetPerAccountRateLimit, authController.forgotPassword.bind(authController));
     router.post("/reset-password", authController.resetPassword.bind(authController));
 
     return router;

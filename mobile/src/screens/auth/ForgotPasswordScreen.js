@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
-import { forgotPassword } from '@tobeatraveller/shared';
+import { forgotPassword, translateAuthError } from '@tobeatraveller/shared';
 import { RichText } from '../../components/RichText';
 
 const ForgotPasswordScreen = ({ navigation }) => {
@@ -27,7 +27,7 @@ const ForgotPasswordScreen = ({ navigation }) => {
       await forgotPassword(email.trim().toLowerCase());
       setSent(true);
     } catch (err) {
-      setError(err.message || t('errors.somethingWrong'));
+      setError(translateAuthError(t, err.message) || t('errors.somethingWrong'));
     } finally {
       setLoading(false);
     }

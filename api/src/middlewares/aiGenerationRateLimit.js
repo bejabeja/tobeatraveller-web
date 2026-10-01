@@ -1,5 +1,6 @@
 import rateLimit from "express-rate-limit";
 import { TooManyRequestsError } from "../errors/TooManyRequestsError.js";
+import { RATE_LIMIT_BEHIND_VERCEL } from "./rateLimitOptions.js";
 
 const rateLimitHandler = (message) => (req, res, next) => next(new TooManyRequestsError(message));
 
@@ -7,6 +8,7 @@ const rateLimitHandler = (message) => (req, res, next) => next(new TooManyReques
 // hammering the (Groq-billed) AI endpoint, independent of the monthly quota
 // enforced in itineraryService.js.
 export const perUserAiRateLimit = rateLimit({
+    ...RATE_LIMIT_BEHIND_VERCEL,
     windowMs: 60 * 1000,
     limit: 5,
     keyGenerator: (req) => req.user?.id,
@@ -20,6 +22,7 @@ export const perUserAiRateLimit = rateLimit({
 // same time (e.g. credential stuffing) can't blow past Groq's own shared
 // rate limits.
 export const globalAiRateLimit = rateLimit({
+    ...RATE_LIMIT_BEHIND_VERCEL,
     windowMs: 60 * 1000,
     limit: 60,
     standardHeaders: true,
