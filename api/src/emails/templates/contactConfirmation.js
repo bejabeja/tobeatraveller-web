@@ -1,4 +1,5 @@
 import config from '../../config/config.js';
+import { escapeXml as escapeHtml } from '../../utils/xmlEscape.js';
 import { emailCopy } from '../copy.js';
 import { layout } from '../layout.js';
 
@@ -18,7 +19,7 @@ export const contactConfirmationTemplate = ({ name, language }) => {
                 <tr>
                   <td>
                     <h1 style="margin:0 0 10px;font-size:26px;font-weight:800;color:#111827;line-height:1.2;">
-                      ${text.headline(name)}
+                      ${text.headline(escapeHtml(name))}
                     </h1>
                     <p style="margin:0;font-size:15px;color:${MUTED};line-height:1.6;">
                       ${text.intro}

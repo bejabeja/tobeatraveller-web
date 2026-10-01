@@ -6,6 +6,7 @@ import {
   IoChevronForward,
   IoGiftOutline,
   IoJournalOutline,
+  IoMailOutline,
   IoSettingsOutline,
   IoSparkles,
 } from "react-icons/io5";
@@ -49,6 +50,7 @@ const Account = () => {
     {
       items: [
         { to: "/settings", Icon: IoSettingsOutline, label: t("settings.title") },
+        { to: "/contact", Icon: IoMailOutline, label: t("settings.contactUs") },
         { to: "/logout", Icon: GoSignOut, label: t("auth.logout"), mobileOnly: true, danger: true },
       ],
     },

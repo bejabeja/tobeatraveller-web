@@ -493,6 +493,12 @@ const SubscriptionScreen = ({ navigation }) => {
             ))}
           </>
         )}
+
+        <TouchableOpacity style={styles.helpRow} onPress={() => navigation.navigate('Contact')}>
+          <Text style={styles.helpText}>
+            {t('subscription.helpText')} <Text style={styles.helpLink}>{t('subscription.helpLink')}</Text>
+          </Text>
+        </TouchableOpacity>
       </ScrollView>
     </View>
   );
@@ -676,6 +682,9 @@ const styles = StyleSheet.create({
     gap: 12, paddingVertical: 14,
   },
   faqQuestion: { flex: 1, fontSize: 15, fontWeight: '600', color: '#111827' },
+  helpRow: { alignItems: 'center', paddingVertical: 24, paddingHorizontal: 16 },
+  helpText: { fontSize: 14, color: '#6b7280', textAlign: 'center' },
+  helpLink: { color: '#E8743B', fontWeight: '600' },
   faqAnswer: { fontSize: 14, color: '#6b7280', lineHeight: 20, paddingBottom: 16 },
   planCta: {
     backgroundColor: '#E8743B', borderRadius: 999,

@@ -15,10 +15,21 @@ import {
   CONTACT_NAME_MAX_LENGTH,
   CONTACT_SUBJECT_MAX_LENGTH,
   CONTACT_MESSAGE_MAX_LENGTH,
+  CONTACT_REASONS,
 } from '@tobeatraveller/shared';
 import { shadow } from '../../utils/styles';
 
 const CONTACT_EMAIL = 'tobeatravellercompany@gmail.com';
+const RATE_LIMITED_STATUS = 429;
+
+const REASON_LABEL_KEYS = {
+  payment: 'contact.reasonPayment',
+  account: 'contact.reasonAccount',
+  bug: 'contact.reasonBug',
+  idea: 'contact.reasonIdea',
+  feedback: 'contact.reasonFeedback',
+  other: 'contact.reasonOther',
+};
 
 const ContactScreen = ({ navigation }) => {
   const { t, i18n } = useTranslation();
@@ -30,6 +41,7 @@ const ContactScreen = ({ navigation }) => {
   const [fields, setFields] = useState({
     name: me?.name || me?.username || '',
     email: me?.email || '',
+    reason: '',
     subject: '',
     message: '',
   });
@@ -77,10 +89,10 @@ const ContactScreen = ({ navigation }) => {
     try {
       await sendContact({ ...fields, language: i18n.resolvedLanguage });
       setSent(true);
-    } catch {
+    } catch (error) {
       Alert.alert(
         t('errors.somethingWrong'),
-        t('errors.couldNotSend'),
+        error.status === RATE_LIMITED_STATUS ? `${t('contact.rateLimited')} ${CONTACT_EMAIL}.` : t('errors.couldNotSend'),
         [
           { text: t('common.cancel'), style: 'cancel' },
           { text: t('contact.emailUsDirectly'), onPress: () => Linking.openURL(`mailto:${CONTACT_EMAIL}`) },
@@ -129,11 +141,33 @@ const ContactScreen = ({ navigation }) => {
             </Text>
 
             <View style={styles.card}>
+              <View style={styles.field}>
+                <Text style={styles.label}>{t('contact.reason')}</Text>
+                <View style={styles.chips} accessibilityRole="radiogroup">
+                  {CONTACT_REASONS.map(reason => {
+                    const selected = fields.reason === reason;
+                    return (
+                      <TouchableOpacity
+                        key={reason}
+                        style={[styles.chip, selected && styles.chipSelected]}
+                        onPress={() => set('reason', reason)}
+                        accessibilityRole="radio"
+                        accessibilityState={{ checked: selected }}
+                      >
+                        <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{t(REASON_LABEL_KEYS[reason])}</Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+                {errors.reason ? <Text style={styles.errorText}>{errors.reason}</Text> : null}
+              </View>
+
               <Field label={t('contact.yourName')} error={errors.name}>
                 <TextInput
                   style={[styles.input, errors.name && styles.inputError]}
                   value={fields.name}
                   onChangeText={v => set('name', v)}
+                  accessibilityLabel={t('contact.yourName')}
                   placeholder={t('contact.namePlaceholder')}
                   placeholderTextColor="#9ca3af"
                   autoComplete="name"
@@ -146,6 +180,7 @@ const ContactScreen = ({ navigation }) => {
                   style={[styles.input, errors.email && styles.inputError]}
                   value={fields.email}
                   onChangeText={v => set('email', v)}
+                  accessibilityLabel={t('contact.yourEmail')}
                   placeholder={t('contact.emailPlaceholder')}
                   placeholderTextColor="#9ca3af"
                   keyboardType="email-address"
@@ -159,6 +194,7 @@ const ContactScreen = ({ navigation }) => {
                   style={[styles.input, errors.subject && styles.inputError]}
                   value={fields.subject}
                   onChangeText={v => set('subject', v)}
+                  accessibilityLabel={t('contact.subject')}
                   placeholder={t('contact.subjectPlaceholder')}
                   placeholderTextColor="#9ca3af"
                   maxLength={CONTACT_SUBJECT_MAX_LENGTH}
@@ -170,12 +206,14 @@ const ContactScreen = ({ navigation }) => {
                   style={[styles.input, styles.textarea, errors.message && styles.inputError]}
                   value={fields.message}
                   onChangeText={v => set('message', v)}
+                  accessibilityLabel={t('contact.message')}
                   placeholder={t('contact.messagePlaceholder')}
                   placeholderTextColor="#9ca3af"
                   multiline
                   maxLength={CONTACT_MESSAGE_MAX_LENGTH}
                   textAlignVertical="top"
                 />
+                <Text style={styles.counter}>{fields.message.length} / {CONTACT_MESSAGE_MAX_LENGTH}</Text>
               </Field>
             </View>
 
@@ -185,6 +223,12 @@ const ContactScreen = ({ navigation }) => {
               disabled={loading}
             >
               <Text style={styles.btnText}>{loading ? t('contact.sending') : t('contact.send')}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => Linking.openURL(`mailto:${CONTACT_EMAIL}`)} style={styles.direct}>
+              <Text style={styles.directText}>
+                {t('contact.orEmail')} <Text style={styles.directLink}>{CONTACT_EMAIL}</Text>
+              </Text>
             </TouchableOpacity>
           </ScrollView>
         )}
@@ -231,6 +275,18 @@ const styles = StyleSheet.create({
   },
   textarea: { minHeight: 120 },
   inputError: { borderColor: '#dc2626' },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  chip: {
+    borderWidth: 1.5, borderColor: '#dde3ec', borderRadius: 999,
+    backgroundColor: '#f7f9fc', paddingVertical: 8, paddingHorizontal: 14,
+  },
+  chipSelected: { borderColor: '#E8743B', backgroundColor: '#E8743B' },
+  chipText: { fontSize: 14, fontWeight: '600', color: '#374151' },
+  chipTextSelected: { color: '#fff' },
+  counter: { fontSize: 12, color: '#6b7280', textAlign: 'right', marginTop: 4 },
+  direct: { alignItems: 'center', paddingVertical: 8 },
+  directText: { fontSize: 14, color: '#6b7280', textAlign: 'center' },
+  directLink: { color: '#E8743B', fontWeight: '600' },
   errorText: { fontSize: 12, color: '#dc2626', marginTop: 4 },
 
   btn: {

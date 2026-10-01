@@ -1,6 +1,7 @@
 import { parseError } from "../utils/parseError";
 import { getApiUrl } from "../utils/apiConfig";
 import { tokenStorage } from "../utils/tokenStorage";
+import { authFetch } from "../utils/authFetch";
 import { setCachedAuthUser } from "../utils/cachedAuthUser";
 
 const baseUrl = () => getApiUrl();
@@ -53,11 +54,13 @@ export const resetPassword = async (token, newPassword) => {
 };
 
 // `language` is the app's, for the confirmation sent back to the sender.
-export const sendContact = async ({ name, email, subject, message, language }) => {
-    const response = await fetch(`${baseUrl()}/contact`, {
+// Open to anyone, but a signed-in sender goes with their token, so whoever answers
+// can see the account and plan behind the message.
+export const sendContact = async ({ name, email, reason, subject, message, language }) => {
+    const response = await authFetch(`${baseUrl()}/contact`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, subject, message, language }),
+        body: JSON.stringify({ name, email, reason, subject, message, language }),
     });
     if (!response.ok) await parseError(response, 'Contact failed');
     return response.json();

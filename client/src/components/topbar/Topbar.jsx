@@ -4,6 +4,7 @@ import {
   IoCardOutline,
   IoChevronDownOutline,
   IoGiftOutline,
+  IoMailOutline,
   IoNotificationsOutline,
   IoSearchOutline,
   IoSettingsOutline,
@@ -112,6 +113,10 @@ const Topbar = ({ onOpenSearch }) => {
             <Link to="/invite" className="topbar__menu-item" onClick={() => setMenuOpen(false)}>
               <IoGiftOutline className="topbar__menu-icon" />
               <span>{t("referral.accountCardTitle")}</span>
+            </Link>
+            <Link to="/contact" className="topbar__menu-item" onClick={() => setMenuOpen(false)}>
+              <IoMailOutline className="topbar__menu-icon" />
+              <span>{t("settings.contactUs")}</span>
             </Link>
             <div className="topbar__menu-divider" />
             <Link to="/logout" className="topbar__menu-item topbar__menu-item--danger">

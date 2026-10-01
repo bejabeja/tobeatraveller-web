@@ -20,13 +20,15 @@ export const createDevRouter = () => {
     res.send(html);
   });
 
-  // Preview: GET /dev/emails/contact?name=Jane&email=jane@example.com&subject=Hello&message=Test
+  // Preview: GET /dev/emails/contact?name=Jane&email=jane@example.com&reason=bug&subject=Hello&message=Test (add &anonymous=1 for a sender without a session)
   router.get('/emails/contact', (req, res) => {
     const { html } = contactTemplate({
       name: req.query.name || 'Jane Doe',
       email: req.query.email || 'jane@example.com',
+      reason: req.query.reason || 'payment',
       subject: req.query.subject || 'Question about the app',
       message: req.query.message || 'Hi! I wanted to ask about...',
+      account: req.query.anonymous ? null : { id: 'preview-user-id', username: 'jane', isPremium: true, subscriptionStatus: 'active', accountEmail: null },
     });
     res.send(html);
   });
@@ -80,8 +82,10 @@ export const createDevRouter = () => {
         await emailService.sendContactNotification({
           name: 'Jane Doe',
           email: 'jane@example.com',
+          reason: 'other',
           subject: 'Test contact message',
           message: 'This is a test message sent from the dev email tester.',
+          account: null,
         });
       } else if (type === 'password-reset') {
         await emailService.sendPasswordReset({

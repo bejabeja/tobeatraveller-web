@@ -50,8 +50,8 @@ export class EmailService {
         await this._send({ to: email, subject, html });
     }
 
-    async sendContactNotification({ name, email, subject, message }) {
-        const { subject: emailSubject, html } = contactTemplate({ name, email, subject, message });
+    async sendContactNotification({ name, email, reason, subject, message, account }) {
+        const { subject: emailSubject, html } = contactTemplate({ name, email, reason, subject, message, account });
         // Notification goes to the contact recipient (inbox), not the sender address
         await this._send({ to: this.contactRecipientEmail, subject: emailSubject, html, replyTo: email });
     }

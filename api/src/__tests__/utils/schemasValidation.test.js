@@ -306,7 +306,7 @@ describe('declaredCountriesSchema', () => {
 
 describe('language', () => {
     const validSignup = { ...validSignupData, password: 'secret1', confirmPassword: 'secret1' };
-    const validContact = { name: 'Jane', email: 'jane@example.com', subject: 'Hello', message: 'A message long enough' };
+    const validContact = { name: 'Jane', email: 'jane@example.com', reason: 'other', subject: 'Hello', message: 'A message long enough' };
 
     it('takes the language of the app on signup, and allows leaving it out', () => {
         expect(signupSchema.safeParse({ ...validSignup, language: 'es' }).data.language).toBe('es');
@@ -371,9 +371,25 @@ describe('messages a person can run into', () => {
     });
 
     it('fall back to a shared key instead of Zod\'s English default', () => {
-        const result = contactSchema.safeParse({ name: 'Ana', email: 'ana@example.com', subject: 'Hola' });
+        const result = contactSchema.safeParse({ name: 'Ana', email: 'ana@example.com', reason: 'bug', subject: 'Hola' });
 
         expect(result.error.errors[0].message).toBe('validation.required');
+    });
+});
+
+describe('contactSchema reason', () => {
+    const validContact = { name: 'Jane', email: 'jane@example.com', subject: 'Hello', message: 'A message long enough' };
+
+    it.each(['payment', 'account', 'bug', 'idea', 'feedback', 'other'])('accepts %s', (reason) => {
+        expect(contactSchema.safeParse({ ...validContact, reason }).success).toBe(true);
+    });
+
+    it('asks to pick one when it is missing', () => {
+        expect(contactSchema.safeParse(validContact).error.errors[0].message).toBe('validation.reasonRequired');
+    });
+
+    it('rejects a reason that is not offered', () => {
+        expect(contactSchema.safeParse({ ...validContact, reason: 'spam' }).error.errors[0].message).toBe('validation.reasonRequired');
     });
 });
 

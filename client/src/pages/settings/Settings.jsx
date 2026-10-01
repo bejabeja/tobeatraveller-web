@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import {
-  IoArrowBackOutline, IoChevronForward, IoCloudDownloadOutline, IoDocumentTextOutline,
+  IoArrowBackOutline, IoChevronForward, IoCloudDownloadOutline, IoDocumentTextOutline, IoMailOutline,
   IoNotificationsOutline, IoPersonOutline, IoWarningOutline,
 } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
@@ -231,6 +231,21 @@ const Settings = () => {
               hint={t("editProfile.yourDataDesc")}
               onClick={handleExportData}
               disabled={isExporting}
+            />
+          </div>
+        </section>
+
+        <section className="ep__section settings__group">
+          <div className="ep__section-heading">
+            <IoMailOutline aria-hidden="true" />
+            <h2 className="ep__section-label">{t("settings.help")}</h2>
+          </div>
+          <div className="settings__rows">
+            <SettingsActionRow
+              as={Link}
+              to="/contact"
+              label={t("settings.contactUs")}
+              hint={t("settings.contactUsHint")}
             />
           </div>
         </section>

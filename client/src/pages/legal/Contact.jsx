@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -12,13 +12,25 @@ import {
   CONTACT_NAME_MAX_LENGTH,
   CONTACT_SUBJECT_MAX_LENGTH,
   CONTACT_MESSAGE_MAX_LENGTH,
+  CONTACT_REASONS,
 } from "../../utils/schemasValidation";
 import "./Legal.scss";
 import "./Contact.scss";
 const CONTACT_EMAIL = "tobeatravellercompany@gmail.com";
+const RATE_LIMITED_STATUS = 429;
+
+const REASON_LABEL_KEYS = {
+  payment: "contact.reasonPayment",
+  account: "contact.reasonAccount",
+  bug: "contact.reasonBug",
+  idea: "contact.reasonIdea",
+  feedback: "contact.reasonFeedback",
+  other: "contact.reasonOther",
+};
 
 const Contact = () => {
   const { t, i18n } = useTranslation();
+  const formId = useId();
   const dispatch = useDispatch();
   const meDetail = useSelector(selectMe);
   const meLoading = useSelector(selectMeLoading);
@@ -38,6 +50,7 @@ const Contact = () => {
   const [fields, setFields] = useState({
     name: me?.name || me?.username || "",
     email: me?.email || "",
+    reason: "",
     subject: "",
     message: "",
   });
@@ -56,7 +69,7 @@ const Contact = () => {
       email: autofilledRef.current.email ? (me.email || prev.email) : prev.email,
     }));
   }, [me]);
-  const [status, setStatus] = useState("idle"); // idle | sending | success | error
+  const [status, setStatus] = useState("idle"); // idle | sending | success | error | rateLimited
   const [errors, setErrors] = useState({});
 
   const validate = () => {
@@ -87,11 +100,16 @@ const Contact = () => {
     try {
       await sendContact({ ...fields, language: i18n.resolvedLanguage });
       setStatus("success");
-      setFields((prev) => ({ ...prev, subject: "", message: "" }));
-    } catch {
-      setStatus("error");
+      setFields((prev) => ({ ...prev, reason: "", subject: "", message: "" }));
+    } catch (error) {
+      setStatus(error.status === RATE_LIMITED_STATUS ? "rateLimited" : "error");
     }
   };
+
+  const fieldProps = (name) => ({
+    id: `${formId}-${name}`,
+    error: errors[name],
+  });
 
   return (
     <div className="legal section__container">
@@ -102,7 +120,7 @@ const Contact = () => {
 
       <div className="contact">
         {status === "success" ? (
-          <div className="contact__success">
+          <div className="contact__success" role="status">
             <span className="contact__success-icon" aria-hidden="true">✓</span>
             <h2>{t("contact.sent")}</h2>
             <p>{t("contact.sentDesc")}</p>
@@ -115,55 +133,96 @@ const Contact = () => {
           </div>
         ) : (
           <form className="contact__form" onSubmit={handleSubmit} noValidate>
+            <fieldset className="contact__reasons" aria-describedby={errors.reason ? `${formId}-reason-error` : undefined}>
+              <legend className="contact__label">{t("contact.reason")}</legend>
+              <div className="contact__chips">
+                {CONTACT_REASONS.map((reason) => (
+                  <label
+                    key={reason}
+                    className={`contact__chip${fields.reason === reason ? " contact__chip--selected" : ""}`}
+                  >
+                    <input
+                      type="radio"
+                      name="reason"
+                      value={reason}
+                      checked={fields.reason === reason}
+                      onChange={handleChange}
+                      aria-invalid={errors.reason ? "true" : undefined}
+                    />
+                    {t(REASON_LABEL_KEYS[reason])}
+                  </label>
+                ))}
+              </div>
+              {errors.reason && (
+                <span id={`${formId}-reason-error`} className="contact__field-error" role="alert">{errors.reason}</span>
+              )}
+            </fieldset>
+
             <div className="contact__row">
-              <Field label={t("contact.yourName")} error={errors.name}>
-                <input
-                  type="text"
-                  name="name"
-                  value={fields.name}
-                  onChange={handleChange}
-                  placeholder={t("contact.namePlaceholder")}
-                  autoComplete="name"
-                  maxLength={CONTACT_NAME_MAX_LENGTH}
-                />
+              <Field label={t("contact.yourName")} {...fieldProps("name")}>
+                {(inputProps) => (
+                  <input
+                    {...inputProps}
+                    type="text"
+                    name="name"
+                    value={fields.name}
+                    onChange={handleChange}
+                    placeholder={t("contact.namePlaceholder")}
+                    autoComplete="name"
+                    maxLength={CONTACT_NAME_MAX_LENGTH}
+                  />
+                )}
               </Field>
-              <Field label={t("contact.yourEmail")} error={errors.email}>
-                <input
-                  type="email"
-                  name="email"
-                  value={fields.email}
-                  onChange={handleChange}
-                  placeholder={t("contact.emailPlaceholder")}
-                  autoComplete="email"
-                />
+              <Field label={t("contact.yourEmail")} {...fieldProps("email")}>
+                {(inputProps) => (
+                  <input
+                    {...inputProps}
+                    type="email"
+                    name="email"
+                    value={fields.email}
+                    onChange={handleChange}
+                    placeholder={t("contact.emailPlaceholder")}
+                    autoComplete="email"
+                  />
+                )}
               </Field>
             </div>
 
-            <Field label={t("contact.subject")} error={errors.subject}>
-              <input
-                type="text"
-                name="subject"
-                value={fields.subject}
-                onChange={handleChange}
-                placeholder={t("contact.subjectPlaceholder")}
-                maxLength={CONTACT_SUBJECT_MAX_LENGTH}
-              />
+            <Field label={t("contact.subject")} {...fieldProps("subject")}>
+              {(inputProps) => (
+                <input
+                  {...inputProps}
+                  type="text"
+                  name="subject"
+                  value={fields.subject}
+                  onChange={handleChange}
+                  placeholder={t("contact.subjectPlaceholder")}
+                  maxLength={CONTACT_SUBJECT_MAX_LENGTH}
+                />
+              )}
             </Field>
 
-            <Field label={t("contact.message")} error={errors.message}>
-              <textarea
-                name="message"
-                value={fields.message}
-                onChange={handleChange}
-                placeholder={t("contact.messagePlaceholder")}
-                rows={6}
-                maxLength={CONTACT_MESSAGE_MAX_LENGTH}
-              />
+            <Field
+              label={t("contact.message")}
+              hint={`${fields.message.length} / ${CONTACT_MESSAGE_MAX_LENGTH}`}
+              {...fieldProps("message")}
+            >
+              {(inputProps) => (
+                <textarea
+                  {...inputProps}
+                  name="message"
+                  value={fields.message}
+                  onChange={handleChange}
+                  placeholder={t("contact.messagePlaceholder")}
+                  rows={6}
+                  maxLength={CONTACT_MESSAGE_MAX_LENGTH}
+                />
+              )}
             </Field>
 
-            {status === "error" && (
-              <p className="contact__error">
-                {t("contact.errorMsg")}{" "}
+            {(status === "error" || status === "rateLimited") && (
+              <p className="contact__error" role="alert">
+                {t(status === "rateLimited" ? "contact.rateLimited" : "contact.errorMsg")}{" "}
                 <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
               </p>
             )}
@@ -179,6 +238,10 @@ const Contact = () => {
             </div>
           </form>
         )}
+
+        <p className="contact__direct">
+          {t("contact.orEmail")} <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+        </p>
       </div>
 
       <div className="legal__footer">
@@ -189,12 +252,21 @@ const Contact = () => {
   );
 };
 
-const Field = ({ label, error, children }) => (
-  <div className={`contact__field${error ? " contact__field--error" : ""}`}>
-    <label className="contact__label">{label}</label>
-    {children}
-    {error && <span className="contact__field-error">{error}</span>}
-  </div>
-);
+// Takes its input as a function so the label, the error and the counter are
+// tied to it (for, aria-invalid, aria-describedby) in one place.
+const Field = ({ id, label, error, hint, children }) => {
+  const errorId = `${id}-error`;
+  const hintId = `${id}-hint`;
+  const describedBy = [error && errorId, hint && hintId].filter(Boolean).join(" ") || undefined;
+
+  return (
+    <div className={`contact__field${error ? " contact__field--error" : ""}`}>
+      <label className="contact__label" htmlFor={id}>{label}</label>
+      {children({ id, "aria-invalid": error ? "true" : undefined, "aria-describedby": describedBy })}
+      {hint && <span id={hintId} className="contact__hint">{hint}</span>}
+      {error && <span id={errorId} className="contact__field-error" role="alert">{error}</span>}
+    </div>
+  );
+};
 
 export default Contact;

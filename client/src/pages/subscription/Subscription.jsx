@@ -468,6 +468,9 @@ const Subscription = () => {
         </>
       )}
 
+      <p className="subscription__help section__container">
+        {t("subscription.helpText")} <Link to="/contact">{t("subscription.helpLink")}</Link>
+      </p>
     </div>
   );
 };

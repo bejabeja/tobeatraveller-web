@@ -208,11 +208,13 @@ export const updateItineraryDataSchema = z.object({
 const CONTACT_NAME_MAX_LENGTH = 100;
 const CONTACT_SUBJECT_MAX_LENGTH = 150;
 const CONTACT_MESSAGE_MAX_LENGTH = 1000;
+const CONTACT_REASONS = ["payment", "account", "bug", "idea", "feedback", "other"];
 const COMMENT_MAX_LENGTH = 500;
 
 export const contactSchema = z.object({
     name: z.string().min(2, "validation.nameMin").max(CONTACT_NAME_MAX_LENGTH, "validation.tooLong"),
     email: z.string().email("validation.emailInvalid"),
+    reason: z.enum(CONTACT_REASONS, { message: "validation.reasonRequired" }),
     subject: z.string().min(2, "validation.subjectMin").max(CONTACT_SUBJECT_MAX_LENGTH, "validation.tooLong"),
     message: z.string().min(10, "validation.messageMin").max(CONTACT_MESSAGE_MAX_LENGTH, "validation.tooLong"),
     // For the confirmation sent back: the form can be sent without an account.

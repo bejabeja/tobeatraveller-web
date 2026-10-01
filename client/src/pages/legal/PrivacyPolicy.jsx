@@ -5,7 +5,7 @@ import RichText from "../../components/RichText";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import "./Legal.scss";
 
-const LAST_UPDATED = "30 September 2026";
+const LAST_UPDATED = "1 October 2026";
 
 const PrivacyPolicy = () => {
   const { t } = useTranslation();

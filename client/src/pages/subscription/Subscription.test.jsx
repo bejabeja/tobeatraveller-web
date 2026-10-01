@@ -289,6 +289,14 @@ describe("Subscription", () => {
       });
     });
 
+    it("keeps a way to contact us for someone who is already Premium", async () => {
+      mockMe = { id: "user-1", isPremium: true };
+      getMySubscription.mockResolvedValue(null);
+      renderPage();
+
+      expect(screen.getByRole("link", { name: "subscription.helpLink" })).toHaveAttribute("href", "/contact");
+    });
+
     it("does not pitch the FAQ to someone who is already Premium", async () => {
       mockMe = { id: "user-1", isPremium: true };
       getMySubscription.mockResolvedValue(null);

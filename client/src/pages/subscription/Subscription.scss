@@ -847,10 +847,23 @@
   &__faq {
     max-width: 720px;
     padding-top: 0;
-    padding-bottom: 88px;
+    padding-bottom: 32px;
 
     .subscription__features-title {
       margin-bottom: 20px;
+    }
+  }
+
+  &__help {
+    max-width: 720px;
+    padding-bottom: 88px;
+    text-align: center;
+    font-size: 15px;
+    color: var(--text-secondary-color);
+
+    a {
+      color: var(--primary-color);
+      font-weight: 600;
     }
   }
 

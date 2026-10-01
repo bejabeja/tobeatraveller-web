@@ -1,13 +1,18 @@
 import { Router } from 'express';
 import { ContactController } from '../controllers/emailController.js';
+import { optionalAuthenticate } from '../middlewares/authenticate.js';
+import { perEmailContactRateLimit, perIpContactRateLimit } from '../middlewares/contactRateLimit.js';
+import { SubscriptionRepository } from '../repositories/subscriptionRepository.js';
+import { UserRepository } from '../repositories/userRepository.js';
+import { ContactService } from '../services/contactService.js';
 import { EmailService } from '../services/emailService.js';
 
 export const createEmailRouter = () => {
     const router = Router();
-    const emailService = new EmailService();
-    const contactController = new ContactController(emailService);
+    const contactService = new ContactService(new EmailService(), new UserRepository(), new SubscriptionRepository());
+    const contactController = new ContactController(contactService);
 
-    router.post('/contact', contactController.sendContact.bind(contactController));
+    router.post('/contact', perIpContactRateLimit, perEmailContactRateLimit, optionalAuthenticate, contactController.sendContact.bind(contactController));
 
     return router;
 };

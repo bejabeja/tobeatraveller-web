@@ -175,10 +175,12 @@ export const createItinerarySchema = z
 export const CONTACT_NAME_MAX_LENGTH = 100;
 export const CONTACT_SUBJECT_MAX_LENGTH = 150;
 export const CONTACT_MESSAGE_MAX_LENGTH = 1000;
+export const CONTACT_REASONS = ["payment", "account", "bug", "idea", "feedback", "other"];
 
 export const contactSchema = z.object({
     name: z.string().min(2, "validation.nameMin").max(CONTACT_NAME_MAX_LENGTH, "validation.tooLong"),
     email: z.string().email("validation.emailInvalid"),
+    reason: z.enum(CONTACT_REASONS, { message: "validation.reasonRequired" }),
     subject: z.string().min(2, "validation.subjectMin").max(CONTACT_SUBJECT_MAX_LENGTH, "validation.tooLong"),
     message: z.string().min(10, "validation.messageMin").max(CONTACT_MESSAGE_MAX_LENGTH, "validation.tooLong"),
 });
