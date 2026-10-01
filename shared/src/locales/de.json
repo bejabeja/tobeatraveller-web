@@ -1130,7 +1130,12 @@
     "endDateAfterStart": "Das Enddatum muss nach dem Startdatum liegen",
     "budgetRequired": "Gültiges Budget erforderlich",
     "currencyRequired": "Währung erforderlich",
-    "errorCreate": "Der Reiseplan konnte nicht erstellt werden. Bitte versuch es erneut."
+    "errorCreate": "Der Reiseplan konnte nicht erstellt werden. Bitte versuch es erneut.",
+    "draftTitle": "Du hast eine unfertige Reise",
+    "draftDesc": "„{{title}}“, gespeichert am {{date}}. Dort weitermachen, wo du aufgehört hast?",
+    "draftContinue": "Weitermachen",
+    "draftDiscard": "Neu beginnen",
+    "draftNote": "Fotos werden in Entwürfen nicht gespeichert: Du musst sie erneut hinzufügen."
   },
   "editItinerary": {
     "title": "Reiseplan bearbeiten",
@@ -1599,7 +1604,8 @@
     "s7Body": [
       "Wir verwenden ein einziges Sitzungscookie, damit du angemeldet bleibst. Dieses Cookie ist für die Funktion des Dienstes unbedingt erforderlich und benötigt nach den ePrivacy-Vorschriften keine Einwilligung.",
       "Wenn du im Cookie-Banner, das bei deinem ersten Besuch angezeigt wird, Analyse-Cookies akzeptierst, laden wir zusätzlich PostHog, um die in Abschnitt 4 beschriebenen Analysedaten zu erheben. Bevor du zustimmst, wird nichts geladen, was mit Analyse zu tun hat, und du kannst deine Auswahl jederzeit über „Cookie-Einstellungen“ in der Fußzeile ändern. Wir verwenden keine Werbe-Cookies oder Tracking-Pixel.",
-      "In der App werden Authentifizierungstokens im sicheren Speicher des Geräts statt in Cookies gespeichert. Die App fragt beim ersten Mal, ob sie messen darf, wie sie genutzt wird; bevor du zustimmst, wird nichts geladen, was mit Analyse zu tun hat, und du kannst das jederzeit in den Einstellungen ändern."
+      "In der App werden Authentifizierungstokens im sicheren Speicher des Geräts statt in Cookies gespeichert. Die App fragt beim ersten Mal, ob sie messen darf, wie sie genutzt wird; bevor du zustimmst, wird nichts geladen, was mit Analyse zu tun hat, und du kannst das jederzeit in den Einstellungen ändern.",
+      "Während du eine Reise erstellst, wird ein Entwurf auf deinem eigenen Gerät gespeichert (nicht auf unseren Servern), damit du ihn nicht verlierst, wenn du die Seite oder die App schließt. Er wird gelöscht, wenn du die Reise veröffentlichst, wenn du ihn verwirfst, wenn du dich abmeldest und in jedem Fall nach 30 Tagen. Fotos werden darin nicht gespeichert. Diese Speicherung ist für das, was du vom Dienst verlangt hast, unbedingt erforderlich und erfordert daher keine Einwilligung."
     ],
     "s8Title": "8. Datensicherheit",
     "s8Body": "Passwörter werden vor dem Speichern mit einem sicheren Algorithmus gehasht. Alle Daten werden über HTTPS übertragen. Wir treffen angemessene technische und organisatorische Maßnahmen, um deine Daten zu schützen, auch wenn kein System völlig frei von Risiken ist.",

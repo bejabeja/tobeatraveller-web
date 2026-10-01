@@ -1,5 +1,6 @@
 import { clearOutbox } from '../offline/outbox';
 import { resetAnalytics } from './analytics';
+import { clearAllItineraryDrafts } from './itineraryDraftStorage';
 import { cacheClearAll } from './offlineCache';
 import { unregisterCurrentPushToken } from './pushNotifications';
 
@@ -9,5 +10,5 @@ import { unregisterCurrentPushToken } from './pushNotifications';
 export const clearDeviceSessionData = async () => {
   await unregisterCurrentPushToken();
   resetAnalytics();
-  await Promise.all([clearOutbox(), cacheClearAll()]);
+  await Promise.all([clearOutbox(), cacheClearAll(), clearAllItineraryDrafts()]);
 };

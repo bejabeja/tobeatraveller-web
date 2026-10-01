@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator, Alert, KeyboardAvoidingView, Modal,
@@ -11,7 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   aiPaceOptions, createItinerary, DEFAULT_AI_PACE, GENERATE_TIMEOUT_MESSAGE, generateSmartItinerary,
-  isPremiumRequiredError, itineraryCategories, NEW_ITINERARY_DEFAULT_VISIBILITY, placeCategories,
+  isPremiumRequiredError, ITINERARY_DRAFT_KINDS, itineraryCategories, NEW_ITINERARY_DEFAULT_VISIBILITY, placeCategories,
   reverseGeocode, searchDestinations, selectAuthUser, selectMe,
   setUserInfo, setUserInfoItineraries,
   stepNameHintKey, ANALYTICS_EVENTS, TRIP_KINDS, experienceDates, isCalendarDay, tripCreatedProperties,
@@ -23,6 +23,8 @@ import { GEOAPIFY_KEY } from '../../utils/config';
 import ExperienceStartDate from '../../components/ExperienceStartDate';
 import { PhotoPickerCard } from '../../components/PhotoPickerCard';
 import { useCurrentLocation } from '../../hooks/useCurrentLocation';
+import { useItineraryDraft } from '../../hooks/useItineraryDraft';
+import { ItineraryDraftPrompt } from '../../components/ItineraryDraftPrompt';
 import { UseCurrentLocationButton } from '../../components/UseCurrentLocationButton';
 
 const CATEGORY_EMOJI = {
@@ -40,6 +42,10 @@ const MOODS = [
   { key: 'grounding', emoji: '🌿' },
   { key: 'indulgent', emoji: '🍷' },
 ];
+
+// Long enough not to write on every keystroke, short enough that losing the app loses almost nothing.
+const DRAFT_SAVE_DELAY_MS = 600;
+const REVIEW_STEP = 1;
 
 const PlanExperienceScreen = ({ navigation }) => {
   const { t, i18n } = useTranslation();
@@ -83,6 +89,46 @@ const PlanExperienceScreen = ({ navigation }) => {
   const [locQuery, setLocQuery]         = useState('');
   const [locResults, setLocResults]     = useState([]);
   const [locSearching, setLocSearching] = useState(false);
+
+  const { pendingDraft, loaded: draftLoaded, resolvePending, save: saveDraft, clear: clearDraft } = useItineraryDraft(me?.id, ITINERARY_DRAFT_KINDS.AI_PLAN);
+  // The plan the AI wrote is what is worth keeping: it cost a generation to get.
+  const hasProgress = steps.length > 0 || !!destination?.name;
+
+  useEffect(() => {
+    if (!draftLoaded || pendingDraft) return undefined;
+    if (!hasProgress) {
+      clearDraft();
+      return undefined;
+    }
+    const values = { title, destination, destQuery, days, startDateText, category, travelers, intention, isPublic, places: steps };
+    const timer = setTimeout(
+      () => saveDraft({ values, step: phase === 'review' ? REVIEW_STEP : 0, pace }),
+      DRAFT_SAVE_DELAY_MS,
+    );
+    return () => clearTimeout(timer);
+  }, [draftLoaded, pendingDraft, hasProgress, title, destination, destQuery, days, startDateText, category, travelers, intention, isPublic, steps, phase, pace, saveDraft, clearDraft]);
+
+  const restoreDraft = () => {
+    const saved = pendingDraft.values;
+    setTitle(saved.title ?? '');
+    setDestination(saved.destination ?? null);
+    setDestQuery(saved.destQuery ?? saved.destination?.name ?? '');
+    setDays(saved.days ?? 7);
+    setStartDateText(saved.startDateText ?? '');
+    setCategory(saved.category ?? 'adventure');
+    setTravelers(saved.travelers ?? 1);
+    setIntention(saved.intention ?? '');
+    setIsPublic(saved.isPublic ?? NEW_ITINERARY_DEFAULT_VISIBILITY);
+    setSteps(saved.places ?? []);
+    if (pendingDraft.pace) setPace(pendingDraft.pace);
+    setPhase(pendingDraft.step === REVIEW_STEP && saved.places?.length > 0 ? 'review' : 'input');
+    resolvePending();
+  };
+
+  const discardDraft = () => {
+    clearDraft();
+    resolvePending();
+  };
 
   // ─── Destination search ───────────────────────────────────────────────────
   const searchDestination = (text) => {
@@ -285,6 +331,7 @@ const PlanExperienceScreen = ({ navigation }) => {
       trackEvent(ANALYTICS_EVENTS.TRIP_CREATED, tripCreatedProperties({
         kind: TRIP_KINDS.EXPERIENCE, isPublic, places: body.places.length, days, hasDate: Boolean(body.startDate),
       }));
+      clearDraft();
       if (me?.id) { dispatch(setUserInfo(me.id)); dispatch(setUserInfoItineraries()); }
       navigation.navigate('Tabs', { screen: 'Profile' });
     } catch (err) {
@@ -303,6 +350,8 @@ const PlanExperienceScreen = ({ navigation }) => {
   });
   const dayNumbers = Object.keys(dayMap).map(Number).sort((a, b) => a - b);
   const isMultiDay = dayNumbers.length > 1;
+
+  if (pendingDraft) return <ItineraryDraftPrompt draft={pendingDraft} onContinue={restoreDraft} onDiscard={discardDraft} />;
 
   return (
     <View style={ls.root}>

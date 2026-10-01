@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import {
@@ -26,9 +26,11 @@ import {
 } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { aiPaceOptions, DEFAULT_AI_PACE, experienceDates, isPremiumRequiredError, stepNameHintKey } from "@tobeatraveller/shared";
+import { aiPaceOptions, DEFAULT_AI_PACE, experienceDates, isPremiumRequiredError, ITINERARY_DRAFT_KINDS, stepNameHintKey } from "@tobeatraveller/shared";
 import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState";
+import ItineraryDraftPrompt from "../../components/itineraryDraft/ItineraryDraftPrompt";
 import Modal from "../../components/modal/Modal";
+import { useItineraryDraft } from "../../hooks/useItineraryDraft";
 import ImageUpload from "../itinerary/sectionsForm/ImageUpload";
 import { GENERATE_TIMEOUT_MESSAGE, generateSmartItinerary } from "../../services/itineraries";
 import { createItinerary } from "../../services/itinerary";
@@ -127,6 +129,10 @@ const EditableStep = ({ step, isLast, onEdit }) => {
   );
 };
 
+// Long enough not to write on every keystroke, short enough that closing the tab loses almost nothing.
+const DRAFT_SAVE_DELAY_MS = 600;
+const REVIEW_STEP = 1;
+
 // ─── Main component ───────────────────────────────────────────────────────────
 const CreateExperience = () => {
   const { t, i18n } = useTranslation();
@@ -160,6 +166,46 @@ const CreateExperience = () => {
   const [locQuery, setLocQuery]         = useState("");
   const [locResults, setLocResults]     = useState([]);
   const [locSearching, setLocSearching] = useState(false);
+
+  const { pendingDraft, resolvePending, save: saveDraft, clear: clearDraft } = useItineraryDraft(authUser?.id, ITINERARY_DRAFT_KINDS.AI_PLAN);
+  // The plan the AI wrote is what is worth keeping: it cost a generation to get.
+  const hasProgress = steps.length > 0 || !!destination?.name;
+
+  useEffect(() => {
+    if (pendingDraft) return undefined;
+    if (!hasProgress) {
+      clearDraft();
+      return undefined;
+    }
+    const values = { title, destination, destQuery, days, startDate, category, travelers, intention, isPublic, places: steps };
+    const timer = setTimeout(
+      () => saveDraft({ values, step: phase === "review" ? REVIEW_STEP : 0, pace }),
+      DRAFT_SAVE_DELAY_MS,
+    );
+    return () => clearTimeout(timer);
+  }, [pendingDraft, hasProgress, title, destination, destQuery, days, startDate, category, travelers, intention, isPublic, steps, phase, pace, saveDraft, clearDraft]);
+
+  const restoreDraft = () => {
+    const saved = pendingDraft.values;
+    setTitle(saved.title ?? "");
+    setDestination(saved.destination ?? null);
+    setDestQuery(saved.destQuery ?? saved.destination?.name ?? "");
+    setDays(saved.days ?? 7);
+    setStartDate(saved.startDate ?? null);
+    setCategory(saved.category ?? "adventure");
+    setTravelers(saved.travelers ?? 1);
+    setIntention(saved.intention ?? "");
+    setIsPublic(saved.isPublic ?? NEW_ITINERARY_DEFAULT_VISIBILITY);
+    setSteps(saved.places ?? []);
+    if (pendingDraft.pace) setPace(pendingDraft.pace);
+    setPhase(pendingDraft.step === REVIEW_STEP && saved.places?.length > 0 ? "review" : "input");
+    resolvePending();
+  };
+
+  const discardDraft = () => {
+    clearDraft();
+    resolvePending();
+  };
 
   const searchTimer = useRef(null);
   const locTimer    = useRef(null);
@@ -341,6 +387,7 @@ const CreateExperience = () => {
         kind: TRIP_KINDS.EXPERIENCE, isPublic, places: body.places.length, days, hasDate: Boolean(body.startDate),
       }));
       toast.success(ce("savedSuccess"));
+      clearDraft();
       dispatch(setUserInfo(userMe.id));
       dispatch(setUserInfoItineraries());
       navigate(`/profile/${authUser?.id}`);
@@ -369,6 +416,14 @@ const CreateExperience = () => {
     return (
       <div className="cexp section__container">
         <FeatureLoadState status="premium" feature="aiItineraries" />
+      </div>
+    );
+  }
+
+  if (pendingDraft) {
+    return (
+      <div className="cexp section__container">
+        <ItineraryDraftPrompt draft={pendingDraft} onContinue={restoreDraft} onDiscard={discardDraft} />
       </div>
     );
   }

@@ -1,12 +1,14 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
-import { useFieldArray, useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
+import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { DEFAULT_AI_PACE } from "@tobeatraveller/shared";
 import Modal from "../../../components/modal/Modal";
+import ItineraryDraftPrompt from "../../../components/itineraryDraft/ItineraryDraftPrompt";
+import { useItineraryDraft } from "../../../hooks/useItineraryDraft";
 import SubmitButton from "../../../components/form/SubmitButton";
 import { createItinerary } from "../../../services/itinerary";
 import { setUserInfo, setUserInfoItineraries } from "../../../store/user/userInfoActions";
@@ -26,6 +28,8 @@ import { ANALYTICS_EVENTS, TRIP_KINDS, tripCreatedProperties } from "../../../ut
 import "./CreateItinerary.scss";
 
 const TOTAL_STEPS = 5;
+// Long enough not to write on every keystroke, short enough that closing the tab loses almost nothing.
+const DRAFT_SAVE_DELAY_MS = 600;
 
 const STEP_META = [
   { emoji: "📍", titleKey: "step0Title", hintKey: "step0Hint" },
@@ -52,7 +56,7 @@ const CreateItinerary = () => {
   const myTripsPath = `/profile/${authUser?.id}`;
 
   const today = new Date().toISOString().split("T")[0];
-  const { control, handleSubmit, setFocus, formState: { errors }, watch, setValue } = useForm({
+  const { control, handleSubmit, setFocus, formState: { errors }, watch, setValue, reset, getValues } = useForm({
     resolver: zodResolver(createItinerarySchema),
     defaultValues: {
       imageUrl: "",
@@ -69,6 +73,9 @@ const CreateItinerary = () => {
       isPublic: NEW_ITINERARY_DEFAULT_VISIBILITY,
     },
   });
+
+  const { pendingDraft, resolvePending, save: saveDraft, clear: clearDraft } = useItineraryDraft(authUser?.id);
+  const formValues = useWatch({ control });
 
   const startDate = watch("startDate");
   const endDate = watch("endDate");
@@ -104,6 +111,30 @@ const CreateItinerary = () => {
   };
 
   const hasProgress = !!(titleVal || destVal?.name || fields.length > 0);
+
+  useEffect(() => {
+    if (pendingDraft) return undefined;
+    if (!hasProgress) {
+      clearDraft();
+      return undefined;
+    }
+    const timer = setTimeout(() => saveDraft({ values: getValues(), days, step, pace }), DRAFT_SAVE_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [pendingDraft, hasProgress, formValues, days, step, pace, getValues, saveDraft, clearDraft]);
+
+  const restoreDraft = () => {
+    reset({ ...getValues(), ...pendingDraft.values });
+    setDays(pendingDraft.days);
+    if (pendingDraft.pace) setPace(pendingDraft.pace);
+    setStep(Math.min(pendingDraft.step, TOTAL_STEPS - 1));
+    resolvePending();
+  };
+
+  const discardDraft = () => {
+    clearDraft();
+    resolvePending();
+  };
+
   const handleCancel = () => {
     if (hasProgress) setShowExitConfirm(true);
     else navigate(myTripsPath);
@@ -163,6 +194,7 @@ const CreateItinerary = () => {
       trackEvent(ANALYTICS_EVENTS.TRIP_CREATED, tripCreatedProperties({
         kind: TRIP_KINDS.ITINERARY, isPublic: data.isPublic, places: body.places.length, days: days.length,
       }));
+      clearDraft();
       dispatch(setUserInfo(userMe.id));
       dispatch(setUserInfoItineraries());
       navigate(`/profile/${userMe.id}`);
@@ -170,6 +202,14 @@ const CreateItinerary = () => {
   };
 
   const meta = STEP_META[step];
+
+  if (pendingDraft) {
+    return (
+      <section className="create-itinerary section__container">
+        <ItineraryDraftPrompt draft={pendingDraft} onContinue={restoreDraft} onDiscard={discardDraft} />
+      </section>
+    );
+  }
 
   return (
     <section className="create-itinerary section__container">
@@ -264,7 +304,7 @@ const CreateItinerary = () => {
       <Modal
         isOpen={showExitConfirm}
         onClose={() => setShowExitConfirm(false)}
-        onConfirm={() => navigate(myTripsPath)}
+        onConfirm={() => { clearDraft(); navigate(myTripsPath); }}
         title={t("editProfile.discardChanges")}
         description={t("editProfile.discardChangesDesc")}
         confirmText={t("common.discard")}

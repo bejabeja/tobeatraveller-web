@@ -1,5 +1,5 @@
 import * as ImagePicker from 'expo-image-picker';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator, Alert, Image, KeyboardAvoidingView,
   Platform, ScrollView, StyleSheet, Text, TextInput,
@@ -9,7 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
-  createItinerary, NEW_ITINERARY_DEFAULT_VISIBILITY, reverseGeocode, searchDestinations, selectAuthUser, selectMe,
+  createItinerary, hasItineraryDraftProgress, NEW_ITINERARY_DEFAULT_VISIBILITY, reverseGeocode, searchDestinations, selectAuthUser, selectMe,
   setUserInfo, setUserInfoItineraries, ANALYTICS_EVENTS, TRIP_KINDS, tripCreatedProperties,
 } from '@tobeatraveller/shared';
 import { trackEvent } from '../../utils/analytics';
@@ -20,7 +20,12 @@ import {
 import { shadow } from '../../utils/styles';
 import { GEOAPIFY_KEY } from '../../utils/config';
 import { useCurrentLocation } from '../../hooks/useCurrentLocation';
+import { useItineraryDraft } from '../../hooks/useItineraryDraft';
+import { ItineraryDraftPrompt } from '../../components/ItineraryDraftPrompt';
 import { UseCurrentLocationButton } from '../../components/UseCurrentLocationButton';
+
+// Long enough not to write on every keystroke, short enough that losing the app loses almost nothing.
+const DRAFT_SAVE_DELAY_MS = 600;
 
 const CreateItineraryScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -52,6 +57,8 @@ const CreateItineraryScreen = ({ navigation }) => {
   const [places, setPlaces] = useState([]);
   const [days, setDays] = useState([1]);
   const [errors, setErrors] = useState({});
+
+  const { pendingDraft, loaded: draftLoaded, resolvePending, save: saveDraft, clear: clearDraft } = useItineraryDraft(me?.id);
 
   const destTimer = useRef(null);
   const pickGalleryPhotos = useGalleryPicker([], newPhotos, setNewPhotos);
@@ -135,6 +142,40 @@ const CreateItineraryScreen = ({ navigation }) => {
     return Object.keys(e).length === 0;
   };
 
+  useEffect(() => {
+    if (!draftLoaded || pendingDraft) return undefined;
+    const values = { title, destination, description, category, startDate, endDate, budget, currency, travellers, isPublic, places };
+    if (!hasItineraryDraftProgress(values)) {
+      clearDraft();
+      return undefined;
+    }
+    const timer = setTimeout(() => saveDraft({ values, days, step: 0 }), DRAFT_SAVE_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [draftLoaded, pendingDraft, title, destination, description, category, startDate, endDate, budget, currency, travellers, isPublic, places, days, saveDraft, clearDraft]);
+
+  const restoreDraft = () => {
+    const saved = pendingDraft.values;
+    setTitle(saved.title ?? '');
+    setDestination(saved.destination ?? null);
+    setDestQuery(saved.destination?.name ?? '');
+    setDescription(saved.description ?? '');
+    setCategory(saved.category ?? 'other');
+    setStartDate(saved.startDate ?? today);
+    setEndDate(saved.endDate ?? today);
+    setBudget(saved.budget ?? '');
+    setCurrency(saved.currency ?? 'EUR');
+    setTravellers(saved.travellers ?? 1);
+    setIsPublic(saved.isPublic ?? NEW_ITINERARY_DEFAULT_VISIBILITY);
+    setPlaces(saved.places ?? []);
+    setDays(pendingDraft.days);
+    resolvePending();
+  };
+
+  const discardDraft = () => {
+    clearDraft();
+    resolvePending();
+  };
+
   const handleSave = async () => {
     if (!validate()) return;
     if (isPublic) {
@@ -183,6 +224,7 @@ const CreateItineraryScreen = ({ navigation }) => {
       trackEvent(ANALYTICS_EVENTS.TRIP_CREATED, tripCreatedProperties({
         kind: TRIP_KINDS.ITINERARY, isPublic, places: body.places.length, days: days.length,
       }));
+      clearDraft();
       if (me?.id) {
         dispatch(setUserInfo(me.id));
         dispatch(setUserInfoItineraries());
@@ -210,9 +252,11 @@ const CreateItineraryScreen = ({ navigation }) => {
     if (!hasProgress) { navigation.goBack(); return; }
     Alert.alert(t('editProfile.discardChanges'), t('editProfile.discardChangesDesc'), [
       { text: t('common.cancel'), style: 'cancel' },
-      { text: t('common.discard'), style: 'destructive', onPress: () => navigation.goBack() },
+      { text: t('common.discard'), style: 'destructive', onPress: () => { clearDraft(); navigation.goBack(); } },
     ]);
   };
+
+  if (pendingDraft) return <ItineraryDraftPrompt draft={pendingDraft} onContinue={restoreDraft} onDiscard={discardDraft} />;
 
   return (
     <View style={ls.root}>
@@ -405,6 +449,7 @@ const CreateItineraryScreen = ({ navigation }) => {
 };
 
 const ls = StyleSheet.create({
+
   root: { flex: 1, backgroundColor: '#f8fafc' },
 
   header: {

@@ -1130,7 +1130,12 @@
     "endDateAfterStart": "End date must be after start",
     "budgetRequired": "Valid budget required",
     "currencyRequired": "Currency required",
-    "errorCreate": "Failed to create itinerary. Please try again."
+    "errorCreate": "Failed to create itinerary. Please try again.",
+    "draftTitle": "You have an unfinished trip",
+    "draftDesc": "“{{title}}”, saved on {{date}}. Pick up where you left off?",
+    "draftContinue": "Continue",
+    "draftDiscard": "Start a new one",
+    "draftNote": "Photos are not kept in drafts: you will need to add them again."
   },
   "editItinerary": {
     "title": "Edit Itinerary",
@@ -1599,7 +1604,8 @@
     "s7Body": [
       "We use a single session cookie to keep you logged in. This cookie is strictly necessary for the service to function and does not require consent under ePrivacy rules.",
       "If you accept analytics cookies in the cookie banner shown on your first visit, we also load PostHog to collect the analytics data described in section 4. Nothing analytics-related loads until you accept, and you can change your choice at any time from \"Cookie preferences\" in the footer. We do not use advertising cookies or tracking pixels.",
-      "In the app, authentication tokens are stored in the device's secure storage rather than cookies. The app asks the first time whether it may measure how it is used; nothing analytics-related loads until you accept, and you can change it at any time in Settings."
+      "In the app, authentication tokens are stored in the device's secure storage rather than cookies. The app asks the first time whether it may measure how it is used; nothing analytics-related loads until you accept, and you can change it at any time in Settings.",
+      "While you create a trip, a draft of it is kept on your own device (not on our servers) so you do not lose it if you close the page or the app. It is removed when you publish the trip, when you discard it, when you sign out, and in any case after 30 days. Photos are not kept in it. This storage is strictly necessary for what you asked the service to do, so it does not require consent."
     ],
     "s8Title": "8. Data security",
     "s8Body": "Passwords are hashed using a secure algorithm before being stored. All data is transmitted over HTTPS. We apply reasonable technical and organisational measures to protect your data, though no system is completely immune to risk.",

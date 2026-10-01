@@ -1145,7 +1145,12 @@
     "endDateAfterStart": "La date de fin doit être après la date de début",
     "budgetRequired": "Budget valide obligatoire",
     "currencyRequired": "Devise obligatoire",
-    "errorCreate": "Impossible de créer l'itinéraire. Réessaie."
+    "errorCreate": "Impossible de créer l'itinéraire. Réessaie.",
+    "draftTitle": "Vous avez un voyage inachevé",
+    "draftDesc": "« {{title}} », enregistré le {{date}}. Reprendre là où vous vous étiez arrêté ?",
+    "draftContinue": "Continuer",
+    "draftDiscard": "En commencer un nouveau",
+    "draftNote": "Les photos ne sont pas conservées dans les brouillons : vous devrez les ajouter à nouveau."
   },
   "editItinerary": {
     "title": "Modifier l'itinéraire",
@@ -1617,7 +1622,8 @@
     "s7Body": [
       "Nous utilisons un seul cookie de session pour maintenir ta session ouverte. Ce cookie est strictement nécessaire au fonctionnement du service et ne requiert pas de consentement au titre de la réglementation ePrivacy.",
       "Si tu acceptes les cookies d'analyse dans le bandeau cookies affiché lors de ta première visite, nous chargeons également PostHog pour collecter les données d'analyse décrites à la section 4. Rien de lié à l'analyse n'est chargé tant que tu n'as pas accepté, et tu peux modifier ton choix à tout moment depuis « Préférences cookies » en bas de page. Nous n'utilisons ni cookies publicitaires ni pixels de suivi.",
-      "Dans l'appli, les jetons d'authentification sont stockés dans le stockage sécurisé de l'appareil plutôt que dans des cookies. L'appli te demande la première fois si elle peut mesurer son utilisation ; rien de lié à l'analyse n'est chargé tant que tu n'as pas accepté, et tu peux modifier ce choix à tout moment dans les Paramètres."
+      "Dans l'appli, les jetons d'authentification sont stockés dans le stockage sécurisé de l'appareil plutôt que dans des cookies. L'appli te demande la première fois si elle peut mesurer son utilisation ; rien de lié à l'analyse n'est chargé tant que tu n'as pas accepté, et tu peux modifier ce choix à tout moment dans les Paramètres.",
+      "Pendant que vous créez un voyage, un brouillon est conservé sur votre propre appareil (pas sur nos serveurs) afin que vous ne le perdiez pas si vous fermez la page ou l'app. Il est supprimé lorsque vous publiez le voyage, lorsque vous l'abandonnez, lorsque vous vous déconnectez et, dans tous les cas, au bout de 30 jours. Les photos n'y sont pas conservées. Ce stockage est strictement nécessaire à ce que vous avez demandé au service, il ne requiert donc pas de consentement."
     ],
     "s8Title": "8. Sécurité des données",
     "s8Body": "Les mots de passe sont hachés à l'aide d'un algorithme sécurisé avant d'être stockés. Toutes les données sont transmises via HTTPS. Nous appliquons des mesures techniques et organisationnelles raisonnables pour protéger tes données, même si aucun système n'est totalement à l'abri des risques.",

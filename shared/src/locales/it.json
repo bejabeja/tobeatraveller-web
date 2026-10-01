@@ -1145,7 +1145,12 @@
     "endDateAfterStart": "La data di fine deve essere successiva a quella di inizio",
     "budgetRequired": "Inserisci un budget valido",
     "currencyRequired": "Valuta obbligatoria",
-    "errorCreate": "Impossibile creare l'itinerario. Riprova."
+    "errorCreate": "Impossibile creare l'itinerario. Riprova.",
+    "draftTitle": "Hai un viaggio non terminato",
+    "draftDesc": "«{{title}}», salvato il {{date}}. Vuoi riprendere da dove avevi lasciato?",
+    "draftContinue": "Continua",
+    "draftDiscard": "Iniziane uno nuovo",
+    "draftNote": "Le foto non vengono conservate nelle bozze: dovrai aggiungerle di nuovo."
   },
   "editItinerary": {
     "title": "Modifica itinerario",
@@ -1617,7 +1622,8 @@
     "s7Body": [
       "Usiamo un solo cookie di sessione per mantenere l'accesso. Questo cookie è strettamente necessario al funzionamento del servizio e, secondo la normativa ePrivacy, non richiede consenso.",
       "Se accetti i cookie analitici nel banner dei cookie mostrato alla tua prima visita, carichiamo anche PostHog per raccogliere i dati analitici descritti nella sezione 4. Nulla di legato all'analisi viene caricato finché non accetti, e puoi cambiare la tua scelta in qualsiasi momento da \"Preferenze cookie\" nel piè di pagina. Non usiamo cookie pubblicitari né pixel di tracciamento.",
-      "Nell'app, i token di autenticazione sono conservati nell'archivio sicuro del dispositivo anziché nei cookie. La prima volta l'app ti chiede se può misurarne l'utilizzo; nulla di legato all'analisi viene caricato finché non accetti, e puoi cambiare la scelta in qualsiasi momento nelle Impostazioni."
+      "Nell'app, i token di autenticazione sono conservati nell'archivio sicuro del dispositivo anziché nei cookie. La prima volta l'app ti chiede se può misurarne l'utilizzo; nulla di legato all'analisi viene caricato finché non accetti, e puoi cambiare la scelta in qualsiasi momento nelle Impostazioni.",
+      "Mentre crei un viaggio, una bozza viene conservata sul tuo dispositivo (non sui nostri server) per non perderla se chiudi la pagina o l'app. Viene eliminata quando pubblichi il viaggio, quando la scarti, quando esci dall'account e, in ogni caso, dopo 30 giorni. Le foto non vengono conservate. Questo archivio è strettamente necessario per ciò che hai chiesto al servizio, quindi non richiede il consenso."
     ],
     "s8Title": "8. Sicurezza dei dati",
     "s8Body": "Le password vengono sottoposte a hash con un algoritmo sicuro prima di essere conservate. Tutti i dati vengono trasmessi tramite HTTPS. Applichiamo misure tecniche e organizzative ragionevoli per proteggere i tuoi dati, anche se nessun sistema è completamente immune dai rischi.",

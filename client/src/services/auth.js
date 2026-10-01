@@ -1,3 +1,4 @@
+import { clearAllItineraryDrafts } from '../utils/itineraryDraftStorage';
 import { parseError } from "../utils/parseError";
 
 const baseUrl = import.meta.env.VITE_API_URL;
@@ -55,6 +56,7 @@ export const logout = async () => {
 
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
+    clearAllItineraryDrafts();
 
     return response.json();
 }
