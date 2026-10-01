@@ -65,31 +65,41 @@ export class AuthService {
         }
     }
 
-    refreshAccessTokenFromToken(refreshToken) {
+    // The refresh token of a session opened before the account's last password
+    // change opens nothing any more, nor does one of an account that is gone. The
+    // access token it came with is left to run out: it lasts an hour at most, and
+    // checking it on every request would put the database on each one.
+    async _verifyRefreshToken(refreshToken) {
+        let decoded;
         try {
-            const decoded = jwt.verify(refreshToken, config.jwtRefreshSecret);
-            return this.generateAccessToken({ id: decoded.id, username: decoded.username, role: decoded.role });
+            decoded = jwt.verify(refreshToken, config.jwtRefreshSecret);
         } catch {
             throw new AuthError('Unauthorized: Invalid refresh token');
         }
+
+        const user = await this.userRepository.getUserById(decoded.id);
+        const validFromSeconds = user?.sessionsValidFrom ? Math.floor(new Date(user.sessionsValidFrom).getTime() / 1000) : 0;
+        if (!user || decoded.iat < validFromSeconds) throw new AuthError('Unauthorized: Session ended');
+        return decoded;
+    }
+
+    async refreshAccessTokenFromToken(refreshToken) {
+        const decoded = await this._verifyRefreshToken(refreshToken);
+        return this.generateAccessToken({ id: decoded.id, username: decoded.username, role: decoded.role });
     }
 
     async refreshAccessToken(refreshToken, res, req) {
-        try {
-            const decodedRefresh = jwt.verify(refreshToken, config.jwtRefreshSecret);
-            const newAccessToken = this.generateAccessToken({ id: decodedRefresh.id, username: decodedRefresh.username, role: decodedRefresh.role });
+        const decodedRefresh = await this._verifyRefreshToken(refreshToken);
+        const newAccessToken = this.generateAccessToken({ id: decodedRefresh.id, username: decodedRefresh.username, role: decodedRefresh.role });
 
-            res.cookie('access_token', newAccessToken, {
-                httpOnly: true,
-                secure: config.nodeEnv === 'production',
-                sameSite: 'None',
-                maxAge: 60 * 60 * 1000, // 1 hour
-            });
+        res.cookie('access_token', newAccessToken, {
+            httpOnly: true,
+            secure: config.nodeEnv === 'production',
+            sameSite: 'None',
+            maxAge: 60 * 60 * 1000, // 1 hour
+        });
 
-            req.user = { id: decodedRefresh.id, username: decodedRefresh.username, role: decodedRefresh.role };
-        } catch (error) {
-            throw new AuthError('Unauthorized: Invalid refresh token');
-        }
+        req.user = { id: decodedRefresh.id, username: decodedRefresh.username, role: decodedRefresh.role };
     }
 
     setAuthCookies(res, accessToken, refreshToken) {

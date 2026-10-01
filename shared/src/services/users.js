@@ -1,6 +1,7 @@
 import { parseError } from "../utils/parseError";
 import { getApiUrl } from "../utils/apiConfig";
 import { authFetch } from "../utils/authFetch";
+import { tokenStorage } from "../utils/tokenStorage";
 
 const baseUrl = () => `${getApiUrl()}/users`;
 const UNAUTHORIZED = 401;
@@ -89,7 +90,12 @@ export const changePassword = async ({ currentPassword, newPassword }) => {
     if (!response.ok) {
         await parseError(response, 'Failed to update password');
     }
-    return response.json();
+    const data = await response.json();
+    // The new password closed every session, this device's too: the one it is given
+    // replaces it, or the next renewal would sign out whoever just changed it.
+    if (data.accessToken) await tokenStorage.setItem('access_token', data.accessToken);
+    if (data.refreshToken) await tokenStorage.setItem('refresh_token', data.refreshToken);
+    return data;
 };
 
 // How the user says they travel, to start them off with what helps most.

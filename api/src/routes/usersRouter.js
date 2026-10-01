@@ -22,6 +22,7 @@ import { VanLogRepository } from "../repositories/vanLogRepository.js";
 import { auditLogService } from "../services/sharedAuditLogService.js";
 import { BadgeService } from "../services/badgeService.js";
 import { CloudinaryService } from "../services/cloudinaryService.js";
+import { AuthService } from "../services/authService.js";
 import { EmailService } from "../services/emailService.js";
 import { NotificationsService } from "../services/notificationsService.js";
 import { PushNotificationsService } from "../services/pushNotificationsService.js";
@@ -59,7 +60,7 @@ export const createUsersRouter = () => {
         new SubscriptionService(subscriptionRepository, userRepository, auditLogService, stripeClient)
     );
     const cloudinaryService = new CloudinaryService();
-    const userController = new UserController(userService, cloudinaryService);
+    const userController = new UserController(userService, cloudinaryService, new AuthService(userRepository));
     const staffOnly = requireRole(...STAFF_ROLES);
 
     router.get("/", authenticate, userController.getAllUsers.bind(userController));

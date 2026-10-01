@@ -50,7 +50,7 @@ export class AuthController {
             return next(new ValidationError("Refresh token is required"));
         }
         try {
-            const accessToken = this.authService.refreshAccessTokenFromToken(refreshToken);
+            const accessToken = await this.authService.refreshAccessTokenFromToken(refreshToken);
             return res.status(200).json({ accessToken });
         } catch (error) {
             next(error);

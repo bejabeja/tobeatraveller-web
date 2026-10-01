@@ -265,10 +265,15 @@ export class UserRepository {
         return result.rows.length > 0;
     }
 
-    async updatePassword(id, hashedPassword) {
+    // A new password ends every session opened with the old one, in the same
+    // statement so one cannot happen without the other. The moment is the server's
+    // (whole seconds, like the `iat` of a token), not the database's: the two clocks
+    // may differ, and a session started right after must not look older than this.
+    async updatePassword(id, hashedPassword, now = new Date()) {
+        const sessionsValidFrom = new Date(Math.floor(now.getTime() / 1000) * 1000);
         await db.query(
-            "UPDATE users SET password = $1, updated_at = NOW() WHERE id = $2",
-            [hashedPassword, id]
+            "UPDATE users SET password = $1, sessions_valid_from = $2, updated_at = NOW() WHERE id = $3",
+            [hashedPassword, sessionsValidFrom, id]
         );
     }
 

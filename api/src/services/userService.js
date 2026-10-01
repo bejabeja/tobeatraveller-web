@@ -362,6 +362,10 @@ export class UserService {
             action: AUDIT_EVENTS.PASSWORD_CHANGED,
             ipAddress: ip, userAgent,
         });
+
+        // For the controller to open a new session on the device that changed it: the
+        // new password ended all the others, this one included.
+        return user.toSimpleDTO();
     }
 
     // The language the user last used the app in, for the emails sent to

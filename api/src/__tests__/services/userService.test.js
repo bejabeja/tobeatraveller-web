@@ -932,7 +932,15 @@ describe('UserService.changePassword()', () => {
         const emailService = { sendPasswordChanged: vi.fn().mockRejectedValue(new Error('brevo down')) };
         service = new UserService(userRepository, {}, {}, emailService);
 
-        await expect(service.changePassword('user-1', 'correct-password', 'new-password')).resolves.toBeUndefined();
+        await expect(service.changePassword('user-1', 'correct-password', 'new-password')).resolves.toMatchObject({ id: 'user-1' });
+    });
+
+    // The new password ends every session, this device's included: the caller opens a new one for who it was.
+    it('says who it changed it for, so a new session can be opened on this device', async () => {
+        const who = await service.changePassword('user-1', 'correct-password', 'new-password');
+
+        expect(who).toMatchObject({ id: 'user-1', username: 'jane' });
+        expect(who).not.toHaveProperty('password');
     });
 });
 

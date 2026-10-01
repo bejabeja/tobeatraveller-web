@@ -7,7 +7,7 @@ export class User {
         id, username, email, password, location, avatarUrl, avatarPublicId,
         createdAt, updatedAt, name, followersListIds,
         followingListIds, itineraries, bio, about, totalItineraries, role, premiumUntil,
-        stripeCustomerId, referralCode, language, usernameChangedAt, emailVerifiedAt, travelStyle
+        stripeCustomerId, referralCode, language, usernameChangedAt, emailVerifiedAt, travelStyle, sessionsValidFrom
     }) {
         this.id = id;
         this.username = username;
@@ -23,6 +23,7 @@ export class User {
         this.language = language || null;
         this.usernameChangedAt = usernameChangedAt || null;
         this.travelStyle = travelStyle || null;
+        this.sessionsValidFrom = sessionsValidFrom || null;
         this.emailVerifiedAt = emailVerifiedAt;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
@@ -52,6 +53,7 @@ export class User {
             usernameChangedAt: row.username_changed_at,
             emailVerifiedAt: row.email_verified_at,
             travelStyle: row.travel_style,
+            sessionsValidFrom: row.sessions_valid_from,
             createdAt: row.created_at,
             updatedAt: row.updated_at,
             name: row.name,

@@ -12,9 +12,10 @@ function extractCloudinaryPublicId(url) {
 }
 
 export class UserController {
-    constructor(userService, cloudinaryService) {
+    constructor(userService, cloudinaryService, authService) {
         this.userService = userService;
         this.cloudinaryService = cloudinaryService;
+        this.authService = authService;
     }
 
     async getAllUsers(req, res, next) {
@@ -117,10 +118,15 @@ export class UserController {
         }
         try {
             const { id } = req.user;
-            await this.userService.changePassword(
+            const user = await this.userService.changePassword(
                 id, result.data.currentPassword, result.data.newPassword, getRequestContext(req)
             );
-            res.status(200).json({ message: "Password updated successfully" });
+            // The new password closed every session, this device's too: it gets a new one,
+            // so changing the password does not sign out the person who is changing it.
+            const accessToken = this.authService.generateAccessToken(user);
+            const refreshToken = this.authService.generateRefreshToken(user);
+            this.authService.setAuthCookies(res, accessToken, refreshToken);
+            res.status(200).json({ message: "Password updated successfully", accessToken, refreshToken });
         } catch (error) {
             next(error);
         }
