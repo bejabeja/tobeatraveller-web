@@ -11,7 +11,7 @@ import { fetchNotifications, fetchUnreadCount, markNotificationsRead } from '../
 import { registerPushToken, unregisterPushToken } from '../../services/pushTokens.js';
 import { getMyPassportLeaderboard, getUserPassport, updateMyDeclaredCountries } from '../../services/passport.js';
 import { getMyRecap } from '../../services/recap.js';
-import { sendContact } from '../../services/auth.js';
+import { resendVerificationEmail, sendContact } from '../../services/auth.js';
 import { getUserForAuth, getUserById, updateUser, deleteMyAccount, exportMyData, getSuggestedUsers } from '../../services/users.js';
 
 const FAKE_TOKEN = 'test-access-token';
@@ -56,6 +56,7 @@ const AUTHENTICATED_CALLS = [
     ['updateMyDeclaredCountries', () => updateMyDeclaredCountries(['JP'])],
     ['getMyPassportLeaderboard', () => getMyPassportLeaderboard()],
     ['getMyRecap', () => getMyRecap()],
+    ['resendVerificationEmail', () => resendVerificationEmail()],
     // Open to anyone, but a signed-in sender must go with the token or support loses who wrote.
     ['sendContact', () => sendContact({ name: 'Ana', email: 'ana@example.com', reason: 'bug', subject: 'Hola', message: 'Un mensaje largo' })],
 ];

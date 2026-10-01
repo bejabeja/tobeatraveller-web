@@ -69,6 +69,11 @@ export const updateUserSchema = z.object({
         .nullable(),
 });
 
+// A password shorter than this is guessed in minutes. Sign-in has no minimum, so
+// that accounts made when it was 6 can still get in.
+// Keep in sync with shared/src/utils/schemasValidation.js (api/ has no dependency on shared/).
+const PASSWORD_MIN_LENGTH = 8;
+
 export const signupSchema = z.object({
     username: z.string()
         .min(2, "validation.usernameMin")
@@ -79,8 +84,8 @@ export const signupSchema = z.object({
         .email("validation.emailInvalid")
         .min(1, "validation.emailRequired"),
     password: z.string()
-        .min(6, "validation.passwordMin")
-        .refine((password) => password.trim().length >= 6, "validation.passwordMin"),
+        .min(PASSWORD_MIN_LENGTH, "validation.passwordMin")
+        .refine((password) => password.trim().length >= PASSWORD_MIN_LENGTH, "validation.passwordMin"),
     confirmPassword: z.string(),
     location: z.string().max(50, "validation.tooLong").optional().or(z.literal("")),
     termsAccepted: z.literal(true, {
@@ -104,18 +109,22 @@ export const signupSchema = z.object({
 
 export const loginSchema = z.object({
     email: z.string().email("validation.emailInvalid").min(1, "validation.emailRequired"),
-    password: z.string().min(6, "validation.passwordMin"),
+    password: z.string().min(1, "validation.passwordRequired"),
 });
 
 export const forgotPasswordSchema = z.object({
     email: z.string().email(),
 });
 
+export const verifyEmailSchema = z.object({
+    token: z.string().min(64),
+});
+
 export const resetPasswordSchema = z.object({
     token: z.string().min(64),
     newPassword: z.string()
-        .min(6)
-        .refine((password) => password.trim().length >= 6, "validation.passwordMin"),
+        .min(PASSWORD_MIN_LENGTH, "validation.passwordMin")
+        .refine((password) => password.trim().length >= PASSWORD_MIN_LENGTH, "validation.passwordMin"),
 });
 
 // Keep in sync with shared/src/utils/constants/constants.js#itineraryCategories and
@@ -337,8 +346,8 @@ export const createPackingItemSchema = packingItemSchema.extend(clientGeneratedI
 export const changePasswordSchema = z.object({
     currentPassword: z.string().min(1, "validation.currentPasswordRequired"),
     newPassword: z.string()
-        .min(6, "validation.passwordMin")
-        .refine((password) => password.trim().length >= 6, "validation.passwordMin"),
+        .min(PASSWORD_MIN_LENGTH, "validation.passwordMin")
+        .refine((password) => password.trim().length >= PASSWORD_MIN_LENGTH, "validation.passwordMin"),
 }).refine((data) => data.currentPassword !== data.newPassword, {
     message: "validation.passwordSameAsCurrent",
     path: ["newPassword"],

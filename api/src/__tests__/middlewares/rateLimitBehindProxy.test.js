@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 // index.js trusts the proxy: on Vercel the address in X-Forwarded-For is the client's own.
 const LIMITERS = [
     ['contact', 'contactRateLimit', 'perIpContactRateLimit'],
+    ['confirmation email', 'emailVerificationRateLimit', 'perIpResendVerificationRateLimit'],
     ['sign in', 'authRateLimit', 'failedLoginPerIpRateLimit'],
     ['sign up', 'authRateLimit', 'signupPerIpRateLimit'],
     ['AI generation', 'aiGenerationRateLimit', 'globalAiRateLimit'],

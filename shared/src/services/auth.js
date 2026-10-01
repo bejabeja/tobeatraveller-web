@@ -53,6 +53,24 @@ export const resetPassword = async (token, newPassword) => {
     return response.json();
 };
 
+// The link in the email lands on the web, whatever app the person signed up from.
+export const verifyEmail = async (token) => {
+    const response = await fetch(`${baseUrl()}/auth/verify-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token }),
+    });
+    if (!response.ok) await parseError(response, 'Email verification failed');
+    return response.json();
+};
+
+// For whoever is signed in and has not confirmed yet: it needs their token.
+export const resendVerificationEmail = async () => {
+    const response = await authFetch(`${baseUrl()}/auth/resend-verification`, { method: 'POST' });
+    if (!response.ok) await parseError(response, 'Could not send the confirmation email');
+    return response.json();
+};
+
 // `language` is the app's, for the confirmation sent back to the sender.
 // Open to anyone, but a signed-in sender goes with their token, so whoever answers
 // can see the account and plan behind the message.

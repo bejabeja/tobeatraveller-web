@@ -6,6 +6,7 @@ import { contactTemplate } from '../emails/templates/contact.js';
 import { passwordChangedTemplate } from '../emails/templates/passwordChanged.js';
 import { passwordResetTemplate } from '../emails/templates/passwordReset.js';
 import { referralRewardTemplate } from '../emails/templates/referralReward.js';
+import { verifyEmailTemplate } from '../emails/templates/verifyEmail.js';
 import { trialEndedTemplate } from '../emails/templates/trialEnded.js';
 import { trialEndingTemplate } from '../emails/templates/trialEnding.js';
 import { welcomeTemplate } from '../emails/templates/welcome.js';
@@ -47,8 +48,8 @@ export class EmailService {
         }
     }
 
-    async sendWelcome({ username, email, language }) {
-        const { subject, html } = welcomeTemplate({ username, language });
+    async sendWelcome({ username, email, verifyToken, language }) {
+        const { subject, html } = welcomeTemplate({ username, verifyToken, language });
         await this._send({ to: email, subject, html });
     }
 
@@ -61,6 +62,11 @@ export class EmailService {
     async sendContactConfirmation({ name, email, language }) {
         const { subject, html } = contactConfirmationTemplate({ name, language });
         await this._send({ to: email, subject, html, replyTo: this.contactRecipientEmail });
+    }
+
+    async sendVerifyEmail({ username, email, token, language }) {
+        const { subject, html } = verifyEmailTemplate({ username, token, language });
+        await this._send({ to: email, subject, html });
     }
 
     async sendPasswordReset({ username, email, token, language }) {

@@ -19,9 +19,23 @@ export const it = {
             { emoji: '👥', title: 'Connettiti', description: 'Segui le persone che ispirano la tua prossima avventura' },
         ],
         cta: 'Inizia a esplorare →',
+        verifyIntro: 'Ancora un passaggio: conferma il tuo indirizzo e-mail così potremo contattarti riguardo al tuo account.',
+        verifyCta: 'Conferma la mia e-mail →',
         questions: (contactLink) => `Hai domande? Rispondi a questa email o visita la nostra ${contactLink('pagina dei contatti')}.`,
         footer: `Ricevi questa email perché hai creato un account su ToBeATraveller.<br/>
                  Se non l'hai creato tu, puoi ignorarla.`,
+    },
+    verifyEmail: {
+        subject: 'Conferma il tuo indirizzo e-mail',
+        title: 'Conferma la tua e-mail',
+        preheader: 'Conferma la tua e-mail per completare la configurazione del tuo account ToBeATraveller',
+        headline: 'Conferma la tua e-mail',
+        intro: (username) => `Ciao ${username}, conferma che questo è il tuo indirizzo e-mail così potremo contattarti riguardo al tuo account. Basta un clic.`,
+        cta: 'Conferma la mia e-mail →',
+        expiry: '⏱ Questo link scade tra <strong>48 ore</strong>. Se è scaduto, accedi e richiedine uno nuovo dall\'avviso in alto.',
+        fallback: 'Se il pulsante non funziona, copia e incolla questo indirizzo nel browser:',
+        footer: `Ricevi questa e-mail perché questo indirizzo è stato usato per creare un account su ToBeATraveller.<br/>
+                 Se non sei stato tu, puoi ignorare questa e-mail.`,
     },
     passwordReset: {
         subject: 'Reimposta la tua password',

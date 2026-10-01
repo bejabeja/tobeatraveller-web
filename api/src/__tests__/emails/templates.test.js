@@ -11,6 +11,7 @@ import { contactSchema } from '../../utils/schemasValidation.js';
 import { passwordChangedTemplate } from '../../emails/templates/passwordChanged.js';
 import { passwordResetTemplate } from '../../emails/templates/passwordReset.js';
 import { referralRewardTemplate } from '../../emails/templates/referralReward.js';
+import { verifyEmailTemplate } from '../../emails/templates/verifyEmail.js';
 import { trialEndedTemplate } from '../../emails/templates/trialEnded.js';
 import { trialEndingTemplate } from '../../emails/templates/trialEnding.js';
 import { welcomeTemplate } from '../../emails/templates/welcome.js';
@@ -24,6 +25,7 @@ const USER_EMAILS = {
     contactConfirmation: (language) => contactConfirmationTemplate({ name: 'Ana', language }),
     trialEnding: (language) => trialEndingTemplate({ username: 'ana', endsAt: '2026-10-05T10:00:00Z', hasPaymentMethod: false, language }),
     trialEnded: (language) => trialEndedTemplate({ username: 'ana', language }),
+    verifyEmail: (language) => verifyEmailTemplate({ username: 'ana', token: 'tok-1', language }),
 };
 
 // Every key, nested ones included, as "a.b.c"; arrays by index.
@@ -67,6 +69,21 @@ describe('user emails', () => {
         expect(withCard).not.toBe(noCard);
         expect(withCard).toContain(copyOf(language).trialEnding.ctaWithCard);
         expect(noCard).toContain(copyOf(language).trialEnding.ctaNoCard);
+    });
+
+    it.each(['en', 'es', 'fr', 'it', 'de'])('puts the confirmation link, for that token, in the email in %s', (language) => {
+        const { html } = verifyEmailTemplate({ username: 'ana', token: 'tok-1', language });
+
+        expect(html).toContain('/verify-email?token=tok-1');
+    });
+
+    it.each(['en', 'es', 'fr', 'it', 'de'])('welcomes with a confirmation button only when there is a link, in %s', (language) => {
+        const withLink = welcomeTemplate({ username: 'ana', verifyToken: 'tok-1', language }).html;
+        const withoutLink = welcomeTemplate({ username: 'ana', language }).html;
+
+        expect(withLink).toContain('/verify-email?token=tok-1');
+        expect(withLink).toContain(copyOf(language).welcome.verifyCta);
+        expect(withoutLink).not.toContain('verify-email');
     });
 
     it('keeps the reset link and the account details in any language', () => {

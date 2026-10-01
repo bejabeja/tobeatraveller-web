@@ -6,6 +6,7 @@ import CookieConsentBanner from "./components/cookieConsent/CookieConsentBanner"
 import Footer from "./components/footer/Footer";
 import GlobalSearch from "./components/navbar/GlobalSearch";
 import Navbar from "./components/navbar/Navbar";
+import EmailVerificationBanner from "./components/emailVerification/EmailVerificationBanner";
 import Topbar from "./components/topbar/Topbar";
 import Spinner from "./components/spinner/Spinner";
 import InternalGuard from "./pages/InternalGuard";
@@ -45,6 +46,7 @@ const ResetPassword = lazy(() => import("./pages/auth/ResetPassword"));
 const Explore = lazy(() => import("./pages/explore/Explore"));
 const Community = lazy(() => import("./pages/community/Community"));
 const Contact = lazy(() => import("./pages/legal/Contact"));
+const VerifyEmail = lazy(() => import("./pages/auth/VerifyEmail"));
 const PrivacyPolicy = lazy(() => import("./pages/legal/PrivacyPolicy"));
 const Terms = lazy(() => import("./pages/legal/Terms"));
 const Profile = lazy(() => import("./pages/profile/Profile"));
@@ -172,6 +174,7 @@ const App = () => {
       </div>
       <div className={`main-content${isAuthRoute ? " main-content--auth" : ""}`}>
         {isAuthenticated && !isAuthRoute && <Topbar onOpenSearch={() => setSearchOpen(true)} />}
+        {isAuthenticated && !isAuthRoute && <EmailVerificationBanner />}
         <main className="content">
           <Suspense fallback={<Spinner />}>
             <Routes>
@@ -188,6 +191,7 @@ const App = () => {
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/verify-email" element={<VerifyEmail />} />
 
               {/* routes to decide if private or not */}
               <Route path="/friend-profile/:id" element={<Profile />} />

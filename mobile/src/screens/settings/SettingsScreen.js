@@ -13,7 +13,7 @@ import { useTranslation } from 'react-i18next';
 import i18n from '../../i18n';
 import {
   APP_LANGUAGES, changePassword, deleteMyAccount, exportMyData, fetchNotificationPreferences,
-  logoutUser, selectAuthUser, selectMe, toAppLanguage, updateNotificationPreferences,
+  logoutUser, PASSWORD_MIN_LENGTH, selectAuthUser, selectMe, toAppLanguage, updateNotificationPreferences,
 } from '@tobeatraveller/shared';
 import { shadow } from '../../utils/styles';
 import { RichText } from '../../components/RichText';
@@ -151,7 +151,7 @@ const SettingsScreen = ({ navigation }) => {
   };
 
   const handleChangePassword = async () => {
-    if (newPassword.length < 6) {
+    if (newPassword.trim().length < PASSWORD_MIN_LENGTH) {
       setPasswordError(t('errors.passwordMin'));
       return;
     }

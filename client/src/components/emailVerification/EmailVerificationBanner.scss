@@ -1,0 +1,40 @@
+.email-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem 1rem;
+  padding: 0.6rem 1rem;
+  background: #fff7ed;
+  border-bottom: 1px solid #fed7aa;
+  color: #9a3412;
+  font-size: 0.875rem;
+
+  &__text {
+    margin: 0;
+    width: auto;
+    text-align: center;
+  }
+
+  &__send {
+    width: auto;
+    padding: 0.25rem 0.9rem;
+    border: 1.5px solid currentColor;
+    border-radius: 999px;
+    background: transparent;
+    color: inherit;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+  }
+
+  &__sent {
+    width: auto;
+    font-weight: 700;
+  }
+}

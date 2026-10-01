@@ -8,7 +8,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { ANALYTICS_EVENTS, checkUsernameAvailable, registerUser, selectAuthError, translateAuthError } from '@tobeatraveller/shared';
+import { ANALYTICS_EVENTS, checkUsernameAvailable, PASSWORD_MIN_LENGTH, registerUser, selectAuthError, translateAuthError } from '@tobeatraveller/shared';
 import { trackEvent } from '../../utils/analytics';
 import { shadow, textShadow } from '../../utils/styles';
 import { RichText } from '../../components/RichText';
@@ -66,7 +66,7 @@ const RegisterScreen = ({ navigation }) => {
     else if (username.length > 50) e.username = t('errors.usernameMax');
     else if (/\s/.test(username)) e.username = t('errors.usernameNoSpaces');
     if (!password) e.password = t('errors.passwordRequired');
-    else if (password.length < 6) e.password = t('errors.passwordMin');
+    else if (password.length < PASSWORD_MIN_LENGTH) e.password = t('errors.passwordMin');
     if (!confirmPassword) e.confirmPassword = t('errors.confirmPasswordRequired');
     else if (password !== confirmPassword) e.confirmPassword = t('errors.passwordsDontMatch');
     if (!ageConfirmed) e.ageConfirmed = t('errors.ageConfirmRequired');

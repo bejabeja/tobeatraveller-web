@@ -19,9 +19,23 @@ export const fr = {
             { emoji: '👥', title: 'Connecte-toi', description: 'Suis les personnes qui inspirent ta prochaine aventure' },
         ],
         cta: 'Commencer à explorer →',
+        verifyIntro: 'Une dernière étape : confirmez votre adresse e-mail pour que nous puissions vous joindre au sujet de votre compte.',
+        verifyCta: 'Confirmer mon e-mail →',
         questions: (contactLink) => `Une question ? Réponds à cet e-mail ou consulte notre ${contactLink('page de contact')}.`,
         footer: `Tu reçois cet e-mail parce que tu as créé un compte sur ToBeATraveller.<br/>
                  Si ce n'était pas toi, tu peux l'ignorer.`,
+    },
+    verifyEmail: {
+        subject: 'Confirmez votre adresse e-mail',
+        title: 'Confirmez votre e-mail',
+        preheader: 'Confirmez votre e-mail pour terminer la configuration de votre compte ToBeATraveller',
+        headline: 'Confirmez votre e-mail',
+        intro: (username) => `Bonjour ${username}, confirmez que cette adresse est bien la vôtre pour que nous puissions vous joindre au sujet de votre compte. Cela ne prend qu'un clic.`,
+        cta: 'Confirmer mon e-mail →',
+        expiry: '⏱ Ce lien expire dans <strong>48 heures</strong>. S\'il a expiré, connectez-vous et demandez-en un nouveau depuis le bandeau en haut de la page.',
+        fallback: 'Si le bouton ne fonctionne pas, copiez et collez cette adresse dans votre navigateur :',
+        footer: `Vous recevez cet e-mail parce que cette adresse a été utilisée pour créer un compte sur ToBeATraveller.<br/>
+                 Si ce n'était pas vous, vous pouvez ignorer cet e-mail.`,
     },
     passwordReset: {
         subject: 'Réinitialise ton mot de passe',

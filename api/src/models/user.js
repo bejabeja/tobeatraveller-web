@@ -7,7 +7,7 @@ export class User {
         id, username, email, password, location, avatarUrl, avatarPublicId,
         createdAt, updatedAt, name, followersListIds,
         followingListIds, itineraries, bio, about, totalItineraries, role, premiumUntil,
-        stripeCustomerId, referralCode, language, usernameChangedAt
+        stripeCustomerId, referralCode, language, usernameChangedAt, emailVerifiedAt
     }) {
         this.id = id;
         this.username = username;
@@ -22,6 +22,7 @@ export class User {
         this.referralCode = referralCode || null;
         this.language = language || null;
         this.usernameChangedAt = usernameChangedAt || null;
+        this.emailVerifiedAt = emailVerifiedAt;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.name = name || null;
@@ -48,6 +49,7 @@ export class User {
             referralCode: row.referral_code,
             language: row.language,
             usernameChangedAt: row.username_changed_at,
+            emailVerifiedAt: row.email_verified_at,
             createdAt: row.created_at,
             updatedAt: row.updated_at,
             name: row.name,
@@ -81,6 +83,17 @@ export class User {
         return this.followingListIds.length;
     }
 
+    isEmailVerified() {
+        return !!this.emailVerifiedAt;
+    }
+
+    // null: the account has not confirmed it. undefined: the database has no such
+    // column yet (the code went out before the migration), which says nothing about
+    // the person, so nobody is treated as unconfirmed for it.
+    isEmailUnconfirmed() {
+        return this.emailVerifiedAt === null;
+    }
+
     isPremium() {
         return !!this.premiumUntil && new Date(this.premiumUntil) > new Date();
     }
@@ -90,6 +103,7 @@ export class User {
             id: this.id,
             username: this.username,
             email: this.email,
+            emailVerified: this.emailVerifiedAt === undefined ? undefined : this.isEmailVerified(),
             location: this.location,
             avatarUrl: this.avatarUrl,
             avatarPublicId: this.avatarPublicId,
@@ -119,7 +133,7 @@ export class User {
     }
 
     toPublicDTO() {
-        const { email, premiumUntil, isTrialEligible, referralCode, usernameChangeAvailableAt: _changeAvailableAt, ...publicFields } = this.toDTO();
+        const { email, emailVerified, premiumUntil, isTrialEligible, referralCode, usernameChangeAvailableAt: _changeAvailableAt, ...publicFields } = this.toDTO();
         return publicFields;
     }
 

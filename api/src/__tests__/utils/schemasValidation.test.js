@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-    signupSchema, resetPasswordSchema, vanLogEntrySchema,
+    signupSchema, loginSchema, changePasswordSchema, resetPasswordSchema, vanLogEntrySchema,
     createItineraryDataSchema, updateItineraryDataSchema,
     registerPushTokenSchema, createVanLogEntrySchema, vanLogEntrySchema as vanLogUpdateSchema,
     declaredCountriesSchema, contactSchema, updateLanguageSchema, updateUserTierSchema,
@@ -15,24 +15,54 @@ const validSignupData = {
     ageConfirmed: true,
 };
 
-// Regression coverage: a password made only of spaces used to satisfy min(6),
+// Regression coverage: a password made only of spaces used to satisfy the minimum length,
 // since length alone was checked and the value was never trimmed. Signup would
 // succeed with a password nobody could reasonably type back (whitespace-only).
 describe('signupSchema rejects whitespace-only passwords', () => {
     it('fails when the password is only spaces, even if it reaches the minimum length', () => {
-        const result = signupSchema.safeParse({ ...validSignupData, password: '      ' });
+        const result = signupSchema.safeParse({ ...validSignupData, password: '        ' });
 
         expect(result.success).toBe(false);
     });
 
-    it('still accepts a normal password of at least 6 characters', () => {
+    it('still accepts a normal password of at least 8 characters', () => {
         const result = signupSchema.safeParse({
             ...validSignupData,
-            password: 'abcdef',
-            confirmPassword: 'abcdef',
+            password: 'abcdefgh',
+            confirmPassword: 'abcdefgh',
         });
 
         expect(result.success).toBe(true);
+    });
+});
+
+describe('password minimum length', () => {
+    const signupWith = (password) => signupSchema.safeParse({ ...validSignupData, password, confirmPassword: password });
+
+    it('asks for 8 characters to sign up, not 6', () => {
+        expect(signupWith('abcdefg').error.errors[0].message).toBe('validation.passwordMin');
+        expect(signupWith('abcdefgh').success).toBe(true);
+    });
+
+    it('asks for 8 characters to reset a password', () => {
+        const token = 'a'.repeat(64);
+
+        expect(resetPasswordSchema.safeParse({ token, newPassword: 'abcdefg' }).success).toBe(false);
+        expect(resetPasswordSchema.safeParse({ token, newPassword: 'abcdefgh' }).success).toBe(true);
+    });
+
+    it('asks for 8 characters to change a password', () => {
+        expect(changePasswordSchema.safeParse({ currentPassword: 'old', newPassword: 'abcdefg' }).success).toBe(false);
+        expect(changePasswordSchema.safeParse({ currentPassword: 'old', newPassword: 'abcdefgh' }).success).toBe(true);
+    });
+
+    // Regression-in-waiting: accounts made when the minimum was 6 must still be able to sign in.
+    it('lets someone sign in with the 6-character password they created years ago', () => {
+        expect(loginSchema.safeParse({ email: 'ana@example.com', password: 'abc123' }).success).toBe(true);
+    });
+
+    it('still asks for a password to sign in', () => {
+        expect(loginSchema.safeParse({ email: 'ana@example.com', password: '' }).error.errors[0].message).toBe('validation.passwordRequired');
     });
 });
 
@@ -196,16 +226,16 @@ describe('resetPasswordSchema rejects whitespace-only passwords', () => {
     it('fails when newPassword is only spaces', () => {
         const result = resetPasswordSchema.safeParse({
             token: 'a'.repeat(64),
-            newPassword: '      ',
+            newPassword: '        ',
         });
 
         expect(result.success).toBe(false);
     });
 
-    it('still accepts a normal newPassword of at least 6 characters', () => {
+    it('still accepts a normal newPassword of at least 8 characters', () => {
         const result = resetPasswordSchema.safeParse({
             token: 'a'.repeat(64),
-            newPassword: 'abcdef',
+            newPassword: 'abcdefgh',
         });
 
         expect(result.success).toBe(true);
@@ -305,7 +335,7 @@ describe('declaredCountriesSchema', () => {
 });
 
 describe('language', () => {
-    const validSignup = { ...validSignupData, password: 'secret1', confirmPassword: 'secret1' };
+    const validSignup = { ...validSignupData, password: 'secret123', confirmPassword: 'secret123' };
     const validContact = { name: 'Jane', email: 'jane@example.com', reason: 'other', subject: 'Hello', message: 'A message long enough' };
 
     it('takes the language of the app on signup, and allows leaving it out', () => {
@@ -329,7 +359,7 @@ describe('language', () => {
 // username (up to 50), so being invited by someone with a long name made the
 // whole signup fail.
 describe('signupSchema referral code', () => {
-    const validSignup = { ...validSignupData, password: 'abcdef', confirmPassword: 'abcdef' };
+    const validSignup = { ...validSignupData, password: 'abcdefgh', confirmPassword: 'abcdefgh' };
 
     it('accepts a code as long as the longest username', () => {
         const result = signupSchema.safeParse({ ...validSignup, referralCode: 'a'.repeat(50) });

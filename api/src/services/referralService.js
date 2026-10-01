@@ -2,8 +2,9 @@ import { AUDIT_EVENTS } from '../utils/auditEvents.js';
 import { referralCodeFromUsername } from '../utils/referralCode.js';
 
 // Both sides win (Dropbox-style), rewarded only once the invitee shows real
-// engagement (their first itinerary), not at signup: guards against
-// fake-account farming while still being generous enough to be worth sharing.
+// engagement (their first itinerary) and has confirmed their email, not at
+// signup: guards against fake-account farming while still being generous
+// enough to be worth sharing.
 const REFERRAL_REWARD_DAYS = 30;
 const REWARD_DURATION_MS = REFERRAL_REWARD_DAYS * 24 * 60 * 60 * 1000;
 
@@ -107,6 +108,11 @@ export class ReferralService {
     async rewardFirstItinerary(referredUserId, itineraryId = null) {
         const referral = await this.referralRepository.findPendingByReferredUserId(referredUserId);
         if (!referral) return;
+
+        // An address nobody has confirmed proves nothing: the reward stays pending
+        // and is paid when they confirm it (see EmailVerificationService).
+        const invited = await this.userRepository.getUserById(referredUserId);
+        if (!invited || invited.isEmailUnconfirmed()) return;
 
         const referrerCapped = await this._referrerHitMonthlyLimit(referral.referrerId);
 

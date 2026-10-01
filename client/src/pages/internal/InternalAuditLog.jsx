@@ -37,6 +37,7 @@ const AUDIT_DESCRIPTIONS = {
   password_reset_completed: (entry, t) => t("admin.auditPasswordResetCompleted", {
     actor: entry.actorUsername ?? entry.actorId,
   }),
+  email_verified: (entry, t) => t("admin.auditEmailVerified", { actor: entry.actorUsername ?? entry.actorId }),
   data_exported: (entry, t) => t("admin.auditDataExported", { actor: entry.actorUsername }),
   audit_log_purged: (entry, t) => t("admin.auditLogPurged", {
     actor: entry.actorUsername, deletedCount: entry.metadata?.deletedCount,

@@ -472,7 +472,8 @@
     "sendNoticeTitle": "Enviar un aviso a {{username}}",
     "sendNoticePlaceholder": "Escribe el mensaje que recibirá este usuario...",
     "noticeSent": "Aviso enviado",
-    "noticeSendError": "No se pudo enviar el aviso. Inténtalo de nuevo."
+    "noticeSendError": "No se pudo enviar el aviso. Inténtalo de nuevo.",
+    "auditEmailVerified": "{{actor}} confirmó su correo"
   },
   "profile": {
     "shareProfile": "Compartir perfil",
@@ -1076,6 +1077,23 @@
     "headerTitle": "Ayuda y contacto",
     "emailUsDirectly": "Escríbenos directamente"
   },
+  "emailVerification": {
+    "bannerText": "Confirma tu correo: te hemos enviado un enlace a {{email}}.",
+    "bannerSend": "Enviar de nuevo",
+    "bannerSending": "Enviando…",
+    "bannerSent": "Enlace enviado. Revisa tu bandeja de entrada.",
+    "sendFailed": "No hemos podido enviarlo. Inténtalo de nuevo en un momento.",
+    "tooMany": "Has pedido varios enlaces. Inténtalo de nuevo dentro de una hora.",
+    "pageTitle": "Confirma tu correo",
+    "verifying": "Confirmando tu correo…",
+    "successTitle": "Correo confirmado",
+    "successDesc": "¡Gracias! Tu dirección ya está confirmada.",
+    "errorTitle": "Este enlace no funciona",
+    "errorDesc": "Puede que haya caducado o que ya se haya usado.",
+    "resend": "Enviarme un enlace nuevo",
+    "errorSignedOut": "Inicia sesión y pide uno nuevo desde el aviso de la parte superior.",
+    "alreadyConfirmed": "Tu correo ya está confirmado."
+  },
   "itinerariesSection": {
     "noTripsYet": "Todavía no hay viajes",
     "shareFirst": "Comparte tu primer itinerario con la comunidad",
@@ -1256,7 +1274,8 @@
     "usernameMin": "El nombre de usuario debe tener al menos 2 caracteres",
     "usernameMax": "El nombre de usuario puede tener como máximo 50 caracteres",
     "usernameNoSpaces": "El nombre de usuario no puede tener espacios",
-    "passwordMin": "La contraseña debe tener al menos 6 caracteres",
+    "passwordMin": "La contraseña debe tener al menos 8 caracteres",
+    "passwordRequired": "Escribe tu contraseña",
     "passwordsMismatch": "Las contraseñas no coinciden",
     "titleRequired": "El título es obligatorio",
     "placeFromList": "Elige un lugar de la lista",
@@ -1303,7 +1322,7 @@
     "invalidEmail": "Correo electrónico inválido",
     "invalidEmailAddress": "Dirección de correo electrónico inválida",
     "passwordRequired": "La contraseña es obligatoria",
-    "passwordMin": "La contraseña debe tener al menos 6 caracteres",
+    "passwordMin": "La contraseña debe tener al menos 8 caracteres",
     "usernameRequired": "El nombre de usuario es obligatorio",
     "usernameMin": "Mínimo 2 caracteres",
     "usernameMax": "Máximo 50 caracteres",

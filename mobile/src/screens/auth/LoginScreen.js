@@ -38,7 +38,6 @@ const LoginScreen = ({ navigation, route }) => {
     if (!email.trim()) e.email = t('errors.emailRequired');
     else if (!/\S+@\S+\.\S+/.test(email)) e.email = t('errors.invalidEmailAddress');
     if (!password) e.password = t('errors.passwordRequired');
-    else if (password.length < 6) e.password = t('errors.passwordMin');
     setErrors(e);
     return Object.keys(e).length === 0;
   };

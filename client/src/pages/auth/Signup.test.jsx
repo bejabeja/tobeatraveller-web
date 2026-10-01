@@ -22,11 +22,11 @@ import Signup from "./Signup";
 const renderSignup = (path = "/register") => render(<MemoryRouter initialEntries={[path]}><Signup /></MemoryRouter>);
 
 // Waits for the username check: the button stays disabled while it runs.
-const fillAndSubmit = async () => {
+const fillAndSubmit = async (password = "secret123") => {
   fireEvent.change(screen.getByLabelText("auth.emailLabel"), { target: { value: "ana@example.com" } });
   fireEvent.change(screen.getByLabelText("auth.usernameLabel"), { target: { value: "ana" } });
-  fireEvent.change(screen.getByLabelText("auth.passwordLabel"), { target: { value: "secret1" } });
-  fireEvent.change(screen.getByLabelText("auth.confirmPasswordLabel"), { target: { value: "secret1" } });
+  fireEvent.change(screen.getByLabelText("auth.passwordLabel"), { target: { value: password } });
+  fireEvent.change(screen.getByLabelText("auth.confirmPasswordLabel"), { target: { value: password } });
   screen.getAllByRole("checkbox").forEach((checkbox) => fireEvent.click(checkbox));
   await screen.findByText("auth.usernameAvailable", {}, { timeout: 2000 });
   fireEvent.click(screen.getByRole("button", { name: "auth.createAccount" }));
@@ -60,5 +60,27 @@ describe("Signup invite code", () => {
 
     await waitFor(() => expect(createUser).toHaveBeenCalled());
     expect(createUser.mock.calls[0][0].referralCode).toBeUndefined();
+  });
+});
+
+describe("Signup password", () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  // Regression-in-waiting: it used to take 6 characters, which is guessed in minutes.
+  it("does not create the account with a password of 7 characters, and says what it needs", async () => {
+    renderSignup();
+
+    await fillAndSubmit("secret1");
+
+    expect(await screen.findAllByText("validation.passwordMin")).not.toHaveLength(0);
+    expect(createUser).not.toHaveBeenCalled();
+  });
+
+  it("creates the account with a password of 8 characters", async () => {
+    renderSignup();
+
+    await fillAndSubmit("secret12");
+
+    await waitFor(() => expect(createUser).toHaveBeenCalled());
   });
 });

@@ -8,6 +8,7 @@ const makeUser = (overrides = {}) => ({
   referralCode: null,
   premiumUntil: null,
   isPremium() { return !!this.premiumUntil && new Date(this.premiumUntil) > new Date(); },
+  isEmailUnconfirmed() { return false; },
   ...overrides,
 });
 
@@ -189,6 +190,40 @@ describe('ReferralService', () => {
 
       expect(userRepository.updatePremiumUntil).not.toHaveBeenCalled();
       expect(referralRepository.markRewarded).not.toHaveBeenCalled();
+    });
+
+    describe('when the invited person has not confirmed their email', () => {
+      const unverified = (id) => makeUser({ id, isEmailUnconfirmed: () => id === 'new-user' });
+
+      beforeEach(() => {
+        referralRepository.findPendingByReferredUserId.mockResolvedValue({
+          id: 'referral-1', referrerId: 'referrer-1', referredUserId: 'new-user',
+        });
+        userRepository.getUserById.mockImplementation(async (id) => unverified(id));
+      });
+
+      it('grants nobody anything', async () => {
+        await service.rewardFirstItinerary('new-user');
+
+        expect(userRepository.updatePremiumUntil).not.toHaveBeenCalled();
+      });
+
+      // Regression-in-waiting: marking it rewarded here would lose the reward for good.
+      it('leaves the referral pending, so it is paid once they confirm', async () => {
+        await service.rewardFirstItinerary('new-user');
+
+        expect(referralRepository.markRewarded).not.toHaveBeenCalled();
+      });
+
+      it('pays it on the next try, once the email is confirmed', async () => {
+        await service.rewardFirstItinerary('new-user');
+        userRepository.getUserById.mockImplementation(async (id) => makeUser({ id }));
+
+        await service.rewardFirstItinerary('new-user');
+
+        expect(referralRepository.markRewarded).toHaveBeenCalledWith('referral-1');
+        expect(userRepository.updatePremiumUntil).toHaveBeenCalledTimes(2);
+      });
     });
 
     it('grants 30 days of premium to both the referrer and the referred user, from today', async () => {

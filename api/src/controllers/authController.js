@@ -1,13 +1,14 @@
 import { AuthError } from '../errors/AuthError.js';
 import { ValidationError } from '../errors/ValidationError.js';
-import { loginSchema, signupSchema, forgotPasswordSchema, resetPasswordSchema } from '../utils/schemasValidation.js';
+import { loginSchema, signupSchema, forgotPasswordSchema, resetPasswordSchema, verifyEmailSchema } from '../utils/schemasValidation.js';
 import { logger } from '../utils/logger.js';
 import { getRequestContext } from '../utils/requestContext.js';
 
 export class AuthController {
-    constructor(userService, authService) {
+    constructor(userService, authService, emailVerificationService) {
         this.userService = userService;
         this.authService = authService;
+        this.emailVerificationService = emailVerificationService;
     }
 
     async create(req, res, next) {
@@ -90,6 +91,28 @@ export class AuthController {
         try {
             await this.authService.resetPassword(result.data.token, result.data.newPassword, getRequestContext(req));
             return res.status(200).json({ message: "Password updated successfully" });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async verifyEmail(req, res, next) {
+        const result = verifyEmailSchema.safeParse(req.body);
+        if (!result.success) {
+            return next(new ValidationError("Invalid token"));
+        }
+        try {
+            await this.emailVerificationService.verify(result.data.token, getRequestContext(req));
+            return res.status(200).json({ message: "Email confirmed" });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async resendVerification(req, res, next) {
+        try {
+            const { alreadyVerified } = await this.emailVerificationService.sendVerification(req.user.id);
+            return res.status(200).json({ alreadyVerified });
         } catch (error) {
             next(error);
         }

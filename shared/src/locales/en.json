@@ -465,7 +465,8 @@
     "sendNoticeTitle": "Send a notice to {{username}}",
     "sendNoticePlaceholder": "Write the message this user will receive...",
     "noticeSent": "Notice sent",
-    "noticeSendError": "Could not send the notice. Please try again."
+    "noticeSendError": "Could not send the notice. Please try again.",
+    "auditEmailVerified": "{{actor}} confirmed their email"
   },
   "profile": {
     "shareProfile": "Share profile",
@@ -1077,6 +1078,23 @@
     "headerTitle": "Help and contact",
     "emailUsDirectly": "Email us directly"
   },
+  "emailVerification": {
+    "bannerText": "Confirm your email: we sent a link to {{email}}.",
+    "bannerSend": "Send it again",
+    "bannerSending": "Sending…",
+    "bannerSent": "Link sent. Check your inbox.",
+    "sendFailed": "We couldn't send it. Try again in a moment.",
+    "tooMany": "You asked for several links. Try again in an hour or so.",
+    "pageTitle": "Confirm your email",
+    "verifying": "Confirming your email…",
+    "successTitle": "Email confirmed",
+    "successDesc": "Thanks! Your address is confirmed.",
+    "errorTitle": "This link doesn't work",
+    "errorDesc": "It may have expired or already been used.",
+    "resend": "Send me a new link",
+    "errorSignedOut": "Sign in and ask for a new link from the notice at the top.",
+    "alreadyConfirmed": "Your email is already confirmed."
+  },
   "itinerariesSection": {
     "noTripsYet": "No trips yet",
     "shareFirst": "Share your first itinerary with the community",
@@ -1239,7 +1257,8 @@
     "usernameMin": "Username must be at least 2 characters",
     "usernameMax": "Username can be at most 50 characters",
     "usernameNoSpaces": "Username can't contain spaces",
-    "passwordMin": "Password must be at least 6 characters",
+    "passwordMin": "Password must be at least 8 characters",
+    "passwordRequired": "Enter your password",
     "passwordsMismatch": "Passwords don't match",
     "titleRequired": "Title is required",
     "placeFromList": "Choose a place from the list",
@@ -1286,7 +1305,7 @@
     "invalidEmail": "Invalid email",
     "invalidEmailAddress": "Invalid email address",
     "passwordRequired": "Password is required",
-    "passwordMin": "Password must be at least 6 characters",
+    "passwordMin": "Password must be at least 8 characters",
     "usernameRequired": "Username is required",
     "usernameMin": "At least 2 characters",
     "usernameMax": "Max 50 characters",

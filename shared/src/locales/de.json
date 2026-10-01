@@ -465,7 +465,8 @@
     "sendNoticeTitle": "Eine Mitteilung an {{username}} senden",
     "sendNoticePlaceholder": "Schreibe die Nachricht, die dieser Nutzer erhält...",
     "noticeSent": "Mitteilung gesendet",
-    "noticeSendError": "Die Mitteilung konnte nicht gesendet werden. Bitte versuche es erneut."
+    "noticeSendError": "Die Mitteilung konnte nicht gesendet werden. Bitte versuche es erneut.",
+    "auditEmailVerified": "{{actor}} hat die E-Mail bestätigt"
   },
   "profile": {
     "shareProfile": "Profil teilen",
@@ -1077,6 +1078,23 @@
     "headerTitle": "Hilfe und Kontakt",
     "emailUsDirectly": "Schreib uns eine E-Mail"
   },
+  "emailVerification": {
+    "bannerText": "Bestätige deine E-Mail: Wir haben einen Link an {{email}} gesendet.",
+    "bannerSend": "Erneut senden",
+    "bannerSending": "Wird gesendet…",
+    "bannerSent": "Link gesendet. Sieh in deinem Posteingang nach.",
+    "sendFailed": "Das hat nicht geklappt. Versuche es gleich noch einmal.",
+    "tooMany": "Du hast mehrere Links angefordert. Versuche es in etwa einer Stunde erneut.",
+    "pageTitle": "Bestätige deine E-Mail",
+    "verifying": "Deine E-Mail wird bestätigt…",
+    "successTitle": "E-Mail bestätigt",
+    "successDesc": "Danke! Deine Adresse ist bestätigt.",
+    "errorTitle": "Dieser Link funktioniert nicht",
+    "errorDesc": "Er ist möglicherweise abgelaufen oder wurde schon verwendet.",
+    "resend": "Neuen Link senden",
+    "errorSignedOut": "Melde dich an und fordere über den Hinweis oben einen neuen an.",
+    "alreadyConfirmed": "Deine E-Mail ist bereits bestätigt."
+  },
   "itinerariesSection": {
     "noTripsYet": "Noch keine Reisen",
     "shareFirst": "Teile deinen ersten Reiseplan mit der Community",
@@ -1239,7 +1257,8 @@
     "usernameMin": "Der Benutzername muss mindestens 2 Zeichen haben",
     "usernameMax": "Der Benutzername darf höchstens 50 Zeichen haben",
     "usernameNoSpaces": "Der Benutzername darf keine Leerzeichen enthalten",
-    "passwordMin": "Das Passwort muss mindestens 6 Zeichen haben",
+    "passwordMin": "Das Passwort muss mindestens 8 Zeichen haben",
+    "passwordRequired": "Gib dein Passwort ein",
     "passwordsMismatch": "Die Passwörter stimmen nicht überein",
     "titleRequired": "Der Titel ist erforderlich",
     "placeFromList": "Wähle einen Ort aus der Liste",
@@ -1286,7 +1305,7 @@
     "invalidEmail": "Ungültige E-Mail-Adresse",
     "invalidEmailAddress": "Ungültige E-Mail-Adresse",
     "passwordRequired": "Passwort ist erforderlich",
-    "passwordMin": "Das Passwort muss mindestens 6 Zeichen lang sein",
+    "passwordMin": "Das Passwort muss mindestens 8 Zeichen lang sein",
     "usernameRequired": "Benutzername ist erforderlich",
     "usernameMin": "Mindestens 2 Zeichen",
     "usernameMax": "Max. 50 Zeichen",

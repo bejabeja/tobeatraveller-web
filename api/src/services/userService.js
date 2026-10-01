@@ -38,7 +38,7 @@ export class UserService {
         inventoryRepository = null, shoppingListRepository = null, packingChecklistRepository = null,
         subscriptionRepository = null, referralService = null, pushTokensRepository = null,
         badgeRepository = null, packingListRepository = null, notificationsService = null,
-        subscriptionService = null
+        subscriptionService = null, emailVerificationService = null
     ) {
         this.userRepository = userRepository;
         this.itinerariesRepository = itinerariesRepository;
@@ -57,6 +57,7 @@ export class UserService {
         this.packingListRepository = packingListRepository;
         this.notificationsService = notificationsService;
         this.subscriptionService = subscriptionService;
+        this.emailVerificationService = emailVerificationService;
     }
 
     async create(userData, { ip, userAgent } = {}) {
@@ -85,7 +86,8 @@ export class UserService {
 
         const savedUser = await this.userRepository.save(userToSave);
 
-        this.emailService?.sendWelcome({ username, email, language: savedUser.language })
+        const verifyToken = await this._issueVerificationToken(savedUser.id);
+        this.emailService?.sendWelcome({ username, email, verifyToken, language: savedUser.language })
             .catch(err => logger.error('[email] welcome failed:', err));
 
         if (referralCode) {
@@ -94,6 +96,17 @@ export class UserService {
         }
 
         return savedUser;
+    }
+
+    // Not being able to issue it must not stop the signup: the notice in the app
+    // offers a new one.
+    async _issueVerificationToken(userId) {
+        try {
+            return await this.emailVerificationService?.issueToken(userId);
+        } catch (error) {
+            logger.error('[email verification] could not issue the token at signup:', error);
+            return undefined;
+        }
     }
 
     async getAllUsers() {

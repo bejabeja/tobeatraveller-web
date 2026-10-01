@@ -17,6 +17,7 @@ import {
   selectFeed, selectFeedLoading,
   selectAuthUser, selectIsAuthenticated, selectMe, selectUnreadCount,
 } from '@tobeatraveller/shared';
+import { EmailVerificationBanner } from '../../components/EmailVerificationBanner';
 import ItineraryCard from '../../components/ItineraryCard';
 import NextTripCard from '../../components/NextTripCard';
 import { ItineraryCardSkeleton, UserAvatarSkeleton } from '../../components/Skeleton';
@@ -148,6 +149,8 @@ const HomeScreen = ({ navigation }) => {
           </View>
         )}
       </LinearGradient>
+
+      {isAuthenticated && <EmailVerificationBanner />}
 
       {/* Following feed */}
       {isAuthenticated && tab === 'following' && (

@@ -221,4 +221,38 @@ describe('User model', () => {
             expect(dto).not.toHaveProperty('password');
         });
     });
+
+    describe('email confirmation', () => {
+        it('is not confirmed until the database says when', () => {
+            expect(User.fromDb({ ...baseRow, email_verified_at: null }).isEmailVerified()).toBe(false);
+            expect(User.fromDb({ ...baseRow, email_verified_at: new Date('2026-09-01') }).isEmailVerified()).toBe(true);
+        });
+
+        it('tells the owner whether it is confirmed', () => {
+            expect(User.fromDb({ ...baseRow, email_verified_at: null }).toDTO().emailVerified).toBe(false);
+            expect(User.fromDb({ ...baseRow, email_verified_at: new Date() }).toDTO().emailVerified).toBe(true);
+        });
+
+        // Regression: the code went out before the migration, and with no column every account looked unconfirmed.
+        it('says nothing about it while the database has no such column, instead of calling everyone unconfirmed', () => {
+            const user = User.fromDb(baseRow);
+
+            expect(user.isEmailUnconfirmed()).toBe(false);
+            expect(JSON.parse(JSON.stringify(user.toDTO()))).not.toHaveProperty('emailVerified');
+        });
+
+        it('is unconfirmed only when the database says so, with no date', () => {
+            expect(User.fromDb({ ...baseRow, email_verified_at: null }).isEmailUnconfirmed()).toBe(true);
+            expect(User.fromDb({ ...baseRow, email_verified_at: new Date() }).isEmailUnconfirmed()).toBe(false);
+        });
+
+        // Regression-in-waiting: who has not confirmed is nobody else's business.
+        it('does not show it to anyone else', () => {
+            const user = User.fromDb({ ...baseRow, email_verified_at: new Date() });
+
+            expect(user.toPublicDTO()).not.toHaveProperty('emailVerified');
+            expect(user.toSimpleDTO()).not.toHaveProperty('emailVerified');
+            expect(user.toFeaturedDTO()).not.toHaveProperty('emailVerified');
+        });
+    });
 });

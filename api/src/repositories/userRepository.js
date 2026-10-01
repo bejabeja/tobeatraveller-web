@@ -255,6 +255,16 @@ export class UserRepository {
         return result.rows.length ? User.fromDb(result.rows[0]) : null;
     }
 
+    // Only the first confirmation counts, and the profile's last change (what the
+    // sitemap reports) is not touched by it.
+    async markEmailVerified(id) {
+        const result = await db.query(
+            "UPDATE users SET email_verified_at = NOW() WHERE id = $1 AND email_verified_at IS NULL RETURNING id",
+            [id]
+        );
+        return result.rows.length > 0;
+    }
+
     async updatePassword(id, hashedPassword) {
         await db.query(
             "UPDATE users SET password = $1, updated_at = NOW() WHERE id = $2",

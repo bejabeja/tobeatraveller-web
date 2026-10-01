@@ -7,7 +7,7 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { Trans, useTranslation } from "react-i18next";
-import { APP_LANGUAGES, fetchNotificationPreferences, toAppLanguage, updateNotificationPreferences } from "@tobeatraveller/shared";
+import { APP_LANGUAGES, fetchNotificationPreferences, PASSWORD_MIN_LENGTH, toAppLanguage, updateNotificationPreferences } from "@tobeatraveller/shared";
 import i18n from "../../i18n";
 import SelectMenu from "../../components/form/SelectMenu";
 import Spinner from "../../components/spinner/Spinner";
@@ -122,7 +122,7 @@ const Settings = () => {
   };
 
   const handleChangePassword = async () => {
-    if (newPassword.length < 6) {
+    if (newPassword.trim().length < PASSWORD_MIN_LENGTH) {
       setPasswordError(t("errors.passwordMin"));
       return;
     }

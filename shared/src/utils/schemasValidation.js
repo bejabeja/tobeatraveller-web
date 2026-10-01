@@ -45,6 +45,10 @@ export const updateUserSchema = z.object({
         .nullable(),
 });
 
+// A password shorter than this is guessed in minutes. Sign-in has no minimum, so
+// that accounts made when it was 6 can still get in.
+export const PASSWORD_MIN_LENGTH = 8;
+
 export const signupSchema = z.object({
     email: z
         .string()
@@ -55,8 +59,8 @@ export const signupSchema = z.object({
         .max(50, "validation.usernameMax")
         .regex(/^\S+$/, "validation.usernameNoSpaces"),
     password: z.string()
-        .min(6, "validation.passwordMin")
-        .refine((password) => password.trim().length >= 6, "validation.passwordMin"),
+        .min(PASSWORD_MIN_LENGTH, "validation.passwordMin")
+        .refine((password) => password.trim().length >= PASSWORD_MIN_LENGTH, "validation.passwordMin"),
     confirmPassword: z.string(),
     // Optional; a code is its owner's username, so it's at most as long.
     referralCode: z.string().trim().max(50, "validation.tooLong").optional(),
@@ -67,7 +71,7 @@ export const signupSchema = z.object({
 
 export const loginSchema = z.object({
     email: z.string().email("validation.emailInvalid").min(1, "validation.emailRequired"),
-    password: z.string().min(6, "validation.passwordMin"),
+    password: z.string().min(1, "validation.passwordRequired"),
 });
 
 export const forgotPasswordSchema = z.object({
@@ -76,8 +80,8 @@ export const forgotPasswordSchema = z.object({
 
 export const resetPasswordSchema = z.object({
     newPassword: z.string()
-        .min(6, "validation.passwordMin")
-        .refine((password) => password.trim().length >= 6, "validation.passwordMin"),
+        .min(PASSWORD_MIN_LENGTH, "validation.passwordMin")
+        .refine((password) => password.trim().length >= PASSWORD_MIN_LENGTH, "validation.passwordMin"),
     confirmPassword: z.string(),
 }).refine((data) => data.newPassword === data.confirmPassword, {
     message: "validation.passwordsMismatch",

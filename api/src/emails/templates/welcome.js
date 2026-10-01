@@ -17,7 +17,28 @@ const feature = (emoji, title, desc) => `
 
 const contactLink = (label) => `<a href="${config.appUrl}/contact" style="color:${BRAND};text-decoration:none;font-weight:600;">${label}</a>`;
 
-export const welcomeTemplate = ({ username, language }) => {
+const confirmBlock = (text, token) => `
+              <!-- Confirm the address -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:28px;">
+                <tr>
+                  <td align="center" style="padding:20px;border:1px solid #e5e7eb;border-radius:10px;">
+                    <p style="margin:0 0 14px;font-size:14px;color:#374151;line-height:1.6;">${text.verifyIntro}</p>
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td style="border-radius:8px;background-color:${BRAND};">
+                          <a href="${config.appUrl}/verify-email?token=${token}" target="_blank"
+                             style="display:inline-block;padding:13px 28px;color:#ffffff;font-size:14px;font-weight:700;text-decoration:none;border-radius:8px;">
+                            ${text.verifyCta}
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+`;
+
+export const welcomeTemplate = ({ username, verifyToken, language }) => {
     const copy = emailCopy(language);
     const text = copy.welcome;
     return {
@@ -40,6 +61,8 @@ export const welcomeTemplate = ({ username, language }) => {
                   </td>
                 </tr>
               </table>
+
+              ${verifyToken ? confirmBlock(text, verifyToken) : ''}
 
               <!-- Feature highlights -->
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"

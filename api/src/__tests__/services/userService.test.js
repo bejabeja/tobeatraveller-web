@@ -542,6 +542,46 @@ describe('UserService.create()', () => {
         expect(emailService.sendWelcome).toHaveBeenCalledWith({ username: 'jane', email: 'jane@example.com', language: 'es' });
     });
 
+    describe('confirming the email at signup', () => {
+        const signup = { username: 'jane', email: 'jane@example.com', password: 'secret123', language: 'es' };
+        let emailService;
+        let emailVerificationService;
+
+        beforeEach(() => {
+            userRepository.save = async (user) => makeUser({ ...user, id: 'new-user-id' });
+            emailService = { sendWelcome: vi.fn().mockResolvedValue(undefined) };
+            emailVerificationService = { issueToken: vi.fn().mockResolvedValue('token-abc') };
+        });
+
+        const serviceWithVerification = (verification) => new UserService(
+            userRepository, { findPublicByUserId: async () => [] }, {}, emailService,
+            null, null, null, null, null, null, null, null, null, null, null, null, null, verification,
+        );
+
+        it('puts the confirmation link in the welcome email, for the account just created', async () => {
+            await serviceWithVerification(emailVerificationService).create(signup);
+
+            expect(emailVerificationService.issueToken).toHaveBeenCalledWith('new-user-id');
+            expect(emailService.sendWelcome).toHaveBeenCalledWith(expect.objectContaining({ verifyToken: 'token-abc', language: 'es' }));
+        });
+
+        // Regression-in-waiting: the notice in the app offers a new link, so a failure here must not cost the signup.
+        it('still creates the account and welcomes them when the link cannot be issued', async () => {
+            emailVerificationService.issueToken.mockRejectedValue(new Error('db down'));
+
+            await expect(serviceWithVerification(emailVerificationService).create(signup)).resolves.toBeDefined();
+
+            expect(emailService.sendWelcome).toHaveBeenCalledTimes(1);
+            expect(emailService.sendWelcome.mock.calls[0][0].verifyToken).toBeUndefined();
+        });
+
+        it('welcomes them without a link when confirmation is not wired in', async () => {
+            await serviceWithVerification(null).create(signup);
+
+            expect(emailService.sendWelcome.mock.calls[0][0].verifyToken).toBeUndefined();
+        });
+    });
+
     // Signing up from an older app that doesn't send it.
     it('leaves the language unknown when the signup does not say it', async () => {
         let savedUser;
