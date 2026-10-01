@@ -86,6 +86,15 @@ describe('user emails', () => {
         expect(withoutLink).not.toContain('verify-email');
     });
 
+    it.each(['en', 'es', 'fr', 'it', 'de'])('sends the welcome button to the account, not to the community, in %s', (language) => {
+        const { html } = USER_EMAILS.welcome(language);
+
+        const cta = copyOf(language).welcome.cta;
+        const href = html.match(new RegExp(`<a href="([^"]*)"[^>]*>\\s*${cta}`))[1];
+
+        expect(href).not.toContain('/explore');
+    });
+
     it('keeps the reset link and the account details in any language', () => {
         expect(USER_EMAILS.passwordReset('es').html).toContain('/reset-password?token=token-1');
         expect(USER_EMAILS.referralReward('es').html).toContain('@bob');

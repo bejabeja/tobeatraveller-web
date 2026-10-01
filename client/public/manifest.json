@@ -1,7 +1,7 @@
 {
   "name": "ToBeATraveller",
   "short_name": "ToBeATraveller",
-  "description": "Discover, share and plan travel itineraries with the community.",
+  "description": "Track your expenses and supplies on the road, plan trips and share your routes with other travellers.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

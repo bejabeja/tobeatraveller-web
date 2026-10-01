@@ -85,7 +85,7 @@ export const welcomeTemplate = ({ username, verifyToken, language }) => {
                     <table role="presentation" cellspacing="0" cellpadding="0" border="0">
                       <tr>
                         <td style="border-radius:8px;background-color:${BRAND};">
-                          <a href="${config.appUrl}/explore" target="_blank"
+                          <a href="${config.appUrl}/" target="_blank"
                              style="display:inline-block;padding:15px 32px;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;border-radius:8px;letter-spacing:0.2px;">
                             ${text.cta}
                           </a>

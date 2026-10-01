@@ -5,7 +5,8 @@ import "./FeatureShowcase.scss";
 
 // Only the features with an actual app screen to show; "noAds" has no
 // screen of its own, so it's left out of this tabbed tour.
-const SHOWCASE_FEATURE_IDS = ["aiItineraries", "vanLog", "supplies", "packingChecklist", "lifeDiary"];
+// In the order of a day on the road: what is spent, what is on board, what is to do before driving off.
+const SHOWCASE_FEATURE_IDS = ["vanLog", "supplies", "packingChecklist", "lifeDiary", "aiItineraries"];
 const SHOWCASE_FEATURES = SHOWCASE_FEATURE_IDS
   .map((id) => PREMIUM_FEATURES.find((feature) => feature.id === id))
   .filter(Boolean);

@@ -13,6 +13,15 @@ beforeEach(() => { mockLanguage = "es"; });
 it("shows the screenshot in the visitor's language", () => {
   render(<FeatureShowcase />);
 
+  expect(screen.getByRole("img")).toHaveAttribute("src", "/images/showcase/es/vanLog.webp");
+});
+
+it("starts with the expenses tool and leaves the AI planner for last", () => {
+  render(<FeatureShowcase />);
+
+  const tabs = screen.getAllByRole("tab");
+  expect(tabs[0]).toHaveAttribute("aria-selected", "true");
+  fireEvent.click(tabs[tabs.length - 1]);
   expect(screen.getByRole("img")).toHaveAttribute("src", "/images/showcase/es/aiItineraries.webp");
 });
 

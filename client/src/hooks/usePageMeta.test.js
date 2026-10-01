@@ -63,8 +63,8 @@ describe("usePageMeta", () => {
 
     unmount();
 
-    expect(document.title).toBe("ToBeATraveller");
-    expect(getMeta("og:title", "property")).toBe("ToBeATraveller");
+    expect(document.title).toBe("ToBeATraveller: your life on the road");
+    expect(getMeta("og:title", "property")).toBe("ToBeATraveller: your life on the road");
     expect(getMeta("og:description", "property")).not.toBe("desc");
     expect(getMeta("og:image", "property")).not.toBe("https://cdn/img.jpg");
     expect(getMeta("twitter:image")).not.toBe("https://cdn/img.jpg");

@@ -1,7 +1,8 @@
 import { useEffect } from "react";
 
 const DEFAULT_TITLE = "ToBeATraveller";
-const DEFAULT_DESCRIPTION = "Discover, share and plan travel itineraries with the community.";
+const DEFAULT_PAGE_TITLE = "ToBeATraveller: your life on the road";
+const DEFAULT_DESCRIPTION = "Track your expenses and supplies on the road, plan trips and share your routes with other travellers.";
 const DEFAULT_IMAGE_PATH = "/images/hero.jpg";
 const DESCRIPTION_MAX_LENGTH = 160;
 
@@ -37,14 +38,14 @@ export const usePageMeta = ({ title, description, image, type = "website" }) => 
     setMetaTag("twitter:image", resolvedImage);
 
     return () => {
-      document.title = DEFAULT_TITLE;
+      document.title = DEFAULT_PAGE_TITLE;
       setMetaTag("description", DEFAULT_DESCRIPTION);
-      setMetaTag("og:title", DEFAULT_TITLE, "property");
+      setMetaTag("og:title", DEFAULT_PAGE_TITLE, "property");
       setMetaTag("og:description", DEFAULT_DESCRIPTION, "property");
       setMetaTag("og:type", "website", "property");
       setMetaTag("og:url", window.location.origin, "property");
       setMetaTag("og:image", defaultImage, "property");
-      setMetaTag("twitter:title", DEFAULT_TITLE);
+      setMetaTag("twitter:title", DEFAULT_PAGE_TITLE);
       setMetaTag("twitter:description", DEFAULT_DESCRIPTION);
       setMetaTag("twitter:image", defaultImage);
     };
