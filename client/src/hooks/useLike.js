@@ -2,7 +2,7 @@ import toast from "react-hot-toast";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { checkIsLiked, toggleLike } from "../services/likes";
 import { selectIsAuthenticated } from "../store/auth/authSelectors";
 import { trackEvent } from "../utils/analytics";
@@ -12,6 +12,7 @@ export const useLike = (itineraryId, initialLikesCount = 0) => {
     const { t } = useTranslation();
     const isAuthenticated = useSelector(selectIsAuthenticated);
     const navigate = useNavigate();
+    const { pathname, search } = useLocation();
     const [isLiked, setIsLiked] = useState(false);
     const [likesCount, setLikesCount] = useState(initialLikesCount);
     const [isToggling, setIsToggling] = useState(false);
@@ -40,7 +41,7 @@ export const useLike = (itineraryId, initialLikesCount = 0) => {
         e.stopPropagation();
 
         if (!isAuthenticated) {
-            navigate("/login");
+            navigate("/login", { state: { redirectTo: `${pathname}${search}` } });
             return;
         }
         if (isToggling) return;

@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { DEFAULT_AI_PACE } from "@tobeatraveller/shared";
+import { DEFAULT_AI_PACE, localCalendarDay } from "@tobeatraveller/shared";
 import Modal from "../../../components/modal/Modal";
 import ItineraryDraftPrompt from "../../../components/itineraryDraft/ItineraryDraftPrompt";
 import { useItineraryDraft } from "../../../hooks/useItineraryDraft";
@@ -55,7 +55,7 @@ const CreateItinerary = () => {
   // Your trips live in your profile.
   const myTripsPath = `/profile/${authUser?.id}`;
 
-  const today = new Date().toISOString().split("T")[0];
+  const today = localCalendarDay();
   const { control, handleSubmit, setFocus, formState: { errors }, watch, setValue, reset, getValues } = useForm({
     resolver: zodResolver(createItinerarySchema),
     defaultValues: {
@@ -188,7 +188,7 @@ const CreateItinerary = () => {
     try {
       await toast.promise(createItinerary(formData), {
         loading: t("itinerary.createItinerary") + "...",
-        success: <b>{t("itinerary.createItinerary")} 🎉</b>,
+        success: <b>{t("itinerary.createdSuccess")} 🎉</b>,
         error: <b>{t("errors.somethingWrong")}</b>,
       });
       trackEvent(ANALYTICS_EVENTS.TRIP_CREATED, tripCreatedProperties({
@@ -202,6 +202,7 @@ const CreateItinerary = () => {
   };
 
   const meta = STEP_META[step];
+  const incompleteHintKey = !canAdvance ? `itinerary.step${step}Incomplete` : null;
 
   if (pendingDraft) {
     return (
@@ -298,6 +299,7 @@ const CreateItinerary = () => {
             <SubmitButton label={t("itinerary.createItineraryBtn")} />
           )}
         </div>
+        {incompleteHintKey && <p className="ci-wizard__nav-hint" role="status">{t(incompleteHintKey)}</p>}
 
       </form>
 

@@ -77,6 +77,13 @@
   padding-top: 0.5rem;
 }
 
+.ci-wizard__nav-hint {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--text-secondary-color);
+  text-align: right;
+}
+
 .ci-wizard__next {
   margin-left: auto;
 }

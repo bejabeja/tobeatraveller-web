@@ -13,7 +13,7 @@ import { GoPeople } from "react-icons/go";
 import { MdArrowBack, MdOutlineAttachMoney, MdOutlineCalendarMonth, MdOutlineLocationOn, MdOutlineShare } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { getCategoryIcon } from "../../assets/icons.js";
 import Modal from "../../components/modal/Modal.jsx";
 import TripActionsMenu from "../../components/itineraries/TripActionsMenu.jsx";
@@ -66,6 +66,7 @@ const Itinerary = () => {
   const [userItinerary, setUserItinerary] = useState(null);
   const [isFavorite, setIsFavorite] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [hoveredPlaceIndex, setHoveredPlaceIndex] = useState(null);
   const [selectedPlaceIndex, setSelectedPlaceIndex] = useState(null);
   const mapPanToRef = useRef(null);
@@ -109,7 +110,10 @@ const Itinerary = () => {
   }, [itinerary, isAuthenticated]);
 
   const itineraryDescription = itinerary?.description
-    || (itinerary && `A ${itinerary.tripTotalDays}-day trip to ${itinerary.location?.name || 'an amazing destination'}`);
+    || (itinerary && t("itinerary.metaDescriptionFallback", {
+      count: itinerary.tripTotalDays,
+      destination: itinerary.location?.name || t("itinerary.metaDestinationFallback"),
+    }));
 
   const itineraryImage = optimizedCloudinaryUrl(itinerary?.photoUrl, { width: 1200 });
 
@@ -184,10 +188,8 @@ const Itinerary = () => {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onConfirm={async () => {
-          await handleRemove();
-          setIsModalOpen(false);
-        }}
+        onConfirm={handleRemove}
+        loading={isDeleting}
         title={t("itinerary.confirmDeletion")}
         description={t("itinerary.deleteDesc")}
         confirmText={t("itinerary.delete")}
@@ -197,6 +199,7 @@ const Itinerary = () => {
   );
 
   async function handleRemove() {
+    setIsDeleting(true);
     try {
       await deleteItinerary(itinerary.id);
       toast.success(t("itinerary.deletedSuccess"));
@@ -205,6 +208,7 @@ const Itinerary = () => {
       dispatch(setUserInfoItineraries());
     } catch {
       toast.error(t("itinerary.deleteFailed"));
+      setIsDeleting(false);
     }
   }
 };
@@ -221,6 +225,8 @@ const Hero = ({
   t,
 }) => {
   const { i18n } = useTranslation();
+  const { pathname, search } = useLocation();
+  const loginState = { redirectTo: `${pathname}${search}` };
   const { isLiked, likesCount, handleToggleLike } = useLike(itinerary.id, itinerary.likesCount);
 
   const handleShare = async () => {
@@ -239,7 +245,7 @@ const Hero = ({
   };
 
   const handleClone = async () => {
-    if (!isAuthenticated) { navigate("/login"); return; }
+    if (!isAuthenticated) { navigate("/login", { state: loginState }); return; }
     try {
       const cloned = await cloneItinerary(itinerary.id);
       trackEvent(ANALYTICS_EVENTS.TRIP_CLONED);
@@ -251,7 +257,7 @@ const Hero = ({
   };
 
   const handleSave = async () => {
-    if (!isAuthenticated) { navigate("/login"); return; }
+    if (!isAuthenticated) { navigate("/login", { state: loginState }); return; }
     const wasFavorite = isFavorite;
     setIsFavorite(!wasFavorite);
     try {
@@ -483,9 +489,19 @@ const Place = ({ place, number, onMouseEnter, onMouseLeave, onClick, isSelected 
   return (
     <div
       className={`place${hasBody ? "" : " place--compact"}${isSelected ? " place--selected" : ""}`}
+      role="button"
+      tabIndex={0}
+      aria-pressed={isSelected}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
+      onFocus={onMouseEnter}
+      onBlur={onMouseLeave}
       onClick={onClick}
+      onKeyDown={(event) => {
+        if (event.target !== event.currentTarget || (event.key !== "Enter" && event.key !== " ")) return;
+        event.preventDefault();
+        onClick();
+      }}
     >
       <div className="place__header">
         <span className="place__number">{number}</span>

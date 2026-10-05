@@ -174,7 +174,7 @@ const Comments = ({ itineraryId, isAuthenticated }) => {
       ) : (
         <div className="comments__login-message">
           <p>
-            <Link to="/login">{t("comments.logIn")}</Link> {t("comments.loginToComment")}
+            <Link to="/login" state={{ redirectTo: `${location.pathname}${location.search}` }}>{t("comments.logIn")}</Link> {t("comments.loginToComment")}
           </p>
         </div>
       )}
