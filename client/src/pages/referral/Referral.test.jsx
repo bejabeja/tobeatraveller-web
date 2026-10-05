@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
 jest.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key) => key }) }));
 jest.mock("react-hot-toast", () => ({ __esModule: true, default: { success: jest.fn(), error: jest.fn() } }));
@@ -53,5 +53,27 @@ describe("Referral page", () => {
     expect(screen.getByText("referral.inviteStatusRewarded")).toBeInTheDocument();
     expect(screen.getByText("referral.inviteStatusPending")).toBeInTheDocument();
     expect(screen.queryByText("referral.firstInviteHint")).not.toBeInTheDocument();
+  });
+
+  // Regression-in-waiting: the invite rule has a monthly cap, and the page promised a month per friend with no mention of it.
+  it("tells how many rewards can be earned in a month", async () => {
+    getMyReferralInfo.mockResolvedValue({ referralCode: "tbat", invited: 0, rewarded: 0, invites: [], monthlyRewardLimit: 10 });
+
+    render(<Referral />);
+
+    expect(await screen.findByText("referral.monthlyLimitNote")).toBeInTheDocument();
+  });
+
+  // Regression-in-waiting: a failed load left disabled buttons and an empty link, with only a toast that was gone in seconds.
+  it("says the link could not be loaded and lets them try again", async () => {
+    getMyReferralInfo.mockRejectedValueOnce(new Error("offline"));
+    getMyReferralInfo.mockResolvedValueOnce({ referralCode: "tbat", invited: 0, rewarded: 0, invites: [] });
+
+    render(<Referral />);
+    expect(await screen.findByText(/referral.loadErrorToast/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "common.retry" }));
+
+    await waitFor(() => expect(screen.queryByText(/referral.loadErrorToast/)).not.toBeInTheDocument());
+    expect(await screen.findByText("tbat")).toBeInTheDocument();
   });
 });

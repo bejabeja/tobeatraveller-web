@@ -1,6 +1,6 @@
 jest.mock('@react-navigation/native', () => {
   const { useEffect } = jest.requireActual('react');
-  return { useFocusEffect: (callback) => { useEffect(() => callback(), []); } };
+  return { useFocusEffect: (callback) => { useEffect(() => callback(), [callback]); } };
 });
 jest.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key) => key }) }));
 jest.mock('expo-linear-gradient', () => ({ LinearGradient: ({ children }) => children }));
@@ -12,7 +12,7 @@ jest.mock('@tobeatraveller/shared', () => ({
 jest.mock('../../utils/config', () => ({ WEB_URL: 'https://tobeatraveller.test' }));
 
 import { getMyReferralInfo } from '@tobeatraveller/shared';
-import { act, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import ReferralScreen from '../../screens/referral/ReferralScreen';
 
@@ -49,4 +49,25 @@ it('shows who was invited once there is someone', async () => {
   expect(screen.getByText('@ana')).toBeTruthy();
   expect(screen.getByText('referral.inviteStatusPending')).toBeTruthy();
   expect(screen.queryByText('referral.firstInviteHint')).toBeNull();
+});
+
+it('tells how many rewards can be earned in a month', async () => {
+  getMyReferralInfo.mockResolvedValue({ referralCode: 'tbat', invited: 0, rewarded: 0, invites: [], monthlyRewardLimit: 10 });
+
+  await renderScreen();
+
+  expect(screen.getByText('referral.monthlyLimitNote')).toBeTruthy();
+});
+
+// Regression-in-waiting: a failed load was silent, leaving disabled buttons and an empty link.
+it('says the link could not be loaded and lets them try again', async () => {
+  getMyReferralInfo.mockRejectedValueOnce(new Error('offline'));
+  getMyReferralInfo.mockResolvedValueOnce({ referralCode: 'tbat', invited: 0, rewarded: 0, invites: [] });
+
+  await renderScreen();
+  expect(screen.getByText('referral.loadErrorToast')).toBeTruthy();
+  await act(async () => { fireEvent.press(screen.getByText('common.retry')); });
+
+  expect(screen.queryByText('referral.loadErrorToast')).toBeNull();
+  expect(screen.getByText('https://tobeatraveller.test/register?ref=tbat')).toBeTruthy();
 });

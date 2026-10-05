@@ -23,6 +23,8 @@ const ReferralScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const [info, setInfo] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [loadAttempt, setLoadAttempt] = useState(0);
   const [copied, setCopied] = useState(false);
   const copiedTimeoutRef = useRef(null);
 
@@ -34,13 +36,19 @@ const ReferralScreen = ({ navigation }) => {
   useFocusEffect(
     useCallback(() => {
       let cancelled = false;
+      setLoadFailed(false);
       getMyReferralInfo()
         .then((data) => { if (!cancelled) setInfo(data); })
-        .catch(() => {})
+        .catch(() => { if (!cancelled) setLoadFailed(true); })
         .finally(() => { if (!cancelled) setLoading(false); });
       return () => { cancelled = true; };
-    }, [])
+    }, [loadAttempt])
   );
+
+  const retryLoad = () => {
+    setLoading(true);
+    setLoadAttempt((attempt) => attempt + 1);
+  };
 
   const inviteLink = info?.referralCode ? `${WEB_URL}/register?ref=${info.referralCode}` : '';
 
@@ -105,6 +113,14 @@ const ReferralScreen = ({ navigation }) => {
             <Text style={styles.shareBtnText}>{t('referral.shareButton')}</Text>
           </TouchableOpacity>
 
+          {loadFailed && (
+            <View style={styles.loadError} accessibilityRole="alert">
+              <Text style={styles.loadErrorText}>{t('referral.loadErrorToast')}</Text>
+              <TouchableOpacity onPress={retryLoad} accessibilityRole="button">
+                <Text style={styles.loadErrorRetry}>{t('common.retry')}</Text>
+              </TouchableOpacity>
+            </View>
+          )}
           <Text style={styles.linkLabel}>{t('referral.linkLabel')}</Text>
           <View style={styles.linkRow}>
             <Text style={styles.linkText} selectable numberOfLines={1}>
@@ -139,6 +155,9 @@ const ReferralScreen = ({ navigation }) => {
               <Text style={styles.stepText}>{t(`referral.${key}`)}</Text>
             </View>
           ))}
+          {!!info?.monthlyRewardLimit && (
+            <Text style={styles.limitNote}>{t('referral.monthlyLimitNote', { limit: info.monthlyRewardLimit })}</Text>
+          )}
         </View>
 
         {!loading && info && (
@@ -222,6 +241,10 @@ const styles = StyleSheet.create({
     ...shadow(2, 0.05, 6, 2),
   },
   sectionTitle: { fontSize: 15, fontWeight: '700', color: '#111827' },
+  limitNote: { fontSize: 12, color: '#6b7280', lineHeight: 17, marginTop: 4 },
+  loadError: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 10 },
+  loadErrorText: { flex: 1, fontSize: 13, color: '#b91c1c' },
+  loadErrorRetry: { fontSize: 13, fontWeight: '700', color: '#E8743B' },
 
   shareBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,

@@ -1,3 +1,5 @@
+import { MONTHLY_REFERRAL_REWARD_LIMIT } from '../services/referralService.js';
+
 export class ReferralController {
     constructor(referralService) {
         this.referralService = referralService;
@@ -10,7 +12,8 @@ export class ReferralController {
                 this.referralService.getStats(req.user.id),
                 this.referralService.getInvites(req.user.id),
             ]);
-            res.status(200).json({ referralCode, ...stats, invites });
+            // The cap is told with the rewards: whoever shares the link should know it before counting on them.
+            res.status(200).json({ referralCode, ...stats, invites, monthlyRewardLimit: MONTHLY_REFERRAL_REWARD_LIMIT });
         } catch (error) {
             next(error);
         }

@@ -14,7 +14,7 @@ const REWARD_DURATION_MS = REFERRAL_REWARD_DAYS * 24 * 60 * 60 * 1000;
 // rewarded once, enforced by the `referrals.referred_user_id` UNIQUE
 // constraint), so this only bounds the payout, not genuine sharing.
 // Generous enough that no real power-user invite streak would hit it.
-const MONTHLY_REFERRAL_REWARD_LIMIT = 10;
+export const MONTHLY_REFERRAL_REWARD_LIMIT = 10;
 
 export class ReferralService {
     constructor(

@@ -19,13 +19,20 @@ const Referral = () => {
   const { t } = useTranslation();
   const [info, setInfo] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
 
-  useEffect(() => {
+  const loadInfo = () => {
+    setLoading(true);
+    setLoadFailed(false);
     getMyReferralInfo()
       .then(setInfo)
-      .catch(() => toast.error(t("referral.loadErrorToast")))
+      .catch(() => setLoadFailed(true))
       .finally(() => setLoading(false));
-  }, [t]);
+  };
+
+  useEffect(() => {
+    loadInfo();
+  }, []);
 
   const inviteLink = info?.referralCode
     ? `${window.location.origin}/register?ref=${info.referralCode}`
@@ -91,6 +98,12 @@ const Referral = () => {
             </a>
           </div>
 
+          {loadFailed && (
+            <p className="error-message" role="alert">
+              {t("referral.loadErrorToast")}{" "}
+              <button type="button" className="referral__retry" onClick={loadInfo}>{t("common.retry")}</button>
+            </p>
+          )}
           <label className="referral__link-label" htmlFor="referral-link">{t("referral.linkLabel")}</label>
           <div className="referral__link-row">
             <input
@@ -128,6 +141,9 @@ const Referral = () => {
             );
           })}
         </ol>
+        {info?.monthlyRewardLimit && (
+          <p className="referral__limit-note">{t("referral.monthlyLimitNote", { limit: info.monthlyRewardLimit })}</p>
+        )}
       </section>
 
       {!loading && info && (
