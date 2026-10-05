@@ -78,7 +78,7 @@ const Supplies = () => {
   useEffect(() => () => {
     Object.values(pendingPurchases.current).forEach(({ item, timeoutId }) => {
       clearTimeout(timeoutId);
-      markShoppingListItemPurchased(item.id).catch(() => {});
+      markShoppingListItemPurchased(item.id).catch(() => toast.error(s("saveError")));
     });
     toast.dismiss(PURCHASE_UNDO_TOAST_ID);
   }, []);

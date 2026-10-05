@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { within } from "@testing-library/react";
 
 jest.mock("react-redux", () => ({ useDispatch: () => jest.fn(), useSelector: (selector) => selector() }));
 jest.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key) => key, i18n: { language: "es" } }) }));
@@ -100,5 +101,45 @@ describe("right after publishing a trip", () => {
 
     await screen.findByText("Algarve");
     expect(screen.queryByText("itinerary.publishedTitle")).not.toBeInTheDocument();
+  });
+});
+
+describe("the places of a trip", () => {
+  const renderTrip = (places) => {
+    getItineraryById.mockResolvedValue({ ...TRIP, places });
+    return render(
+      <MemoryRouter initialEntries={["/itinerary/t1"]}>
+        <Routes>
+          <Route path="/itinerary/:id" element={<Itinerary />} />
+          <Route path="/explore" element={<p>explore page</p>} />
+        </Routes>
+      </MemoryRouter>
+    );
+  };
+
+  it("links a place with coordinates to the directions, outside the button that selects it", async () => {
+    renderTrip([{ name: "Faro", latitude: "37.0194", longitude: "-7.9322", dayNumber: 1 }]);
+
+    const link = await screen.findByRole("link", { name: /itinerary.directions/ });
+
+    expect(link).toHaveAttribute("href", "https://www.google.com/maps/dir/?api=1&destination=37.0194,-7.9322");
+    expect(link.closest('[role="button"]')).toBeNull();
+    expect(within(screen.getByRole("button", { name: /Faro/ })).queryByRole("link")).toBeNull();
+  });
+
+  it("offers no directions for a place without coordinates", async () => {
+    renderTrip([{ name: "Somewhere", dayNumber: 1 }]);
+
+    await screen.findByText("Somewhere");
+
+    expect(screen.queryByRole("link", { name: /itinerary.directions/ })).not.toBeInTheDocument();
+  });
+
+  it("takes whoever arrived on the trip from a shared link to Explore, instead of out of the site", async () => {
+    renderTrip([]);
+
+    fireEvent.click(await screen.findByRole("button", { name: "common.back" }));
+
+    expect(await screen.findByText("explore page")).toBeInTheDocument();
   });
 });

@@ -90,3 +90,23 @@ describe("Comments deep-link scroll/highlight", () => {
     expect(trackEvent).toHaveBeenCalledWith(ANALYTICS_EVENTS.COMMENT_POSTED);
   });
 });
+
+describe("Comments when they cannot be loaded", () => {
+  beforeEach(() => {
+    jest.spyOn(console, "error").mockImplementation(() => {});
+  });
+  afterEach(() => jest.restoreAllMocks());
+
+  it("says so and lets them retry, instead of inviting to be the first to comment", async () => {
+    getCommentsByItineraryId.mockRejectedValueOnce(new Error("network")).mockResolvedValueOnce(COMMENTS);
+    renderAtHash("");
+
+    expect(await screen.findByText(/comments.loadFailed/)).toBeInTheDocument();
+    expect(screen.queryByText("comments.beFirst")).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "common.retry" }));
+
+    expect(await screen.findByText("first comment")).toBeInTheDocument();
+    expect(screen.queryByText(/comments.loadFailed/)).not.toBeInTheDocument();
+  });
+});

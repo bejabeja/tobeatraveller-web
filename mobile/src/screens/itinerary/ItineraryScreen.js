@@ -2,7 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useRef, useState } from 'react';
 import {
-  Alert, findNodeHandle, Image, Platform, ScrollView, Share,
+  Alert, findNodeHandle, Image, Linking, Platform, ScrollView, Share,
   StyleSheet, Text, TextInput, TouchableOpacity, View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -24,7 +24,7 @@ import {
   deleteItinerary, getCommentsByItineraryId,
   getItineraryById, getUserById, removeFavorite, toggleLike,
   selectIsAuthenticated, selectMe, MAX_COMMENT_LENGTH, updateCommentsCount, setUserInfo, setUserInfoItineraries,
-  COMMENT_HIGHLIGHT_DURATION_MS, formatBudgetAmount, formatTimeAgo, formatTripDates, tripCategoryLabelKey, ANALYTICS_EVENTS, TRIP_SHARE_METHODS, TRIP_SHARE_SOURCES,
+  COMMENT_HIGHLIGHT_DURATION_MS, formatBudgetAmount, formatTimeAgo, formatTripDates, placeDirectionsUrl, tripCategoryLabelKey, ANALYTICS_EVENTS, TRIP_SHARE_METHODS, TRIP_SHARE_SOURCES,
 } from '@tobeatraveller/shared';
 import { trackEvent } from '../../utils/analytics';
 
@@ -530,6 +530,7 @@ const TimelineStep = ({ place, isLast }) => {
   const { t } = useTranslation();
   const cfg = getStepConfig(place.category);
   const dimColor = cfg.color + '25';
+  const directionsUrl = placeDirectionsUrl(place);
   return (
     <View style={tl.row}>
       <View style={tl.col}>
@@ -550,6 +551,16 @@ const TimelineStep = ({ place, isLast }) => {
             <Text style={tl.address}>{place.address}</Text>
           </View>
         ) : null}
+        {directionsUrl ? (
+          <TouchableOpacity
+            style={tl.directions}
+            onPress={() => Linking.openURL(directionsUrl)}
+            accessibilityRole="link"
+            accessibilityLabel={t('itinerary.directions')}
+          >
+            <Ionicons name="navigate-outline" size={18} color={COLORS.primary} />
+          </TouchableOpacity>
+        ) : null}
       </View>
     </View>
   );
@@ -563,7 +574,7 @@ const tl = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center', flexShrink: 0,
   },
   connector: { width: 2, flex: 1, minHeight: 12, backgroundColor: '#E5E7EB', marginVertical: 3 },
-  content: { flex: 1, paddingBottom: 20, paddingTop: 1 },
+  content: { flex: 1, paddingBottom: 20, paddingTop: 1, paddingRight: 36 },
   contentLast: { paddingBottom: 4 },
   badge: {
     alignSelf: 'flex-start', borderRadius: 6,
@@ -574,6 +585,10 @@ const tl = StyleSheet.create({
   desc: { fontSize: 13, color: '#6b7280', lineHeight: 19, marginBottom: 2 },
   addressRow: { flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 3 },
   address: { fontSize: 12, color: '#9CA3AF' },
+  directions: {
+    position: 'absolute', top: 0, right: 0, width: 36, height: 36,
+    alignItems: 'center', justifyContent: 'center',
+  },
 });
 
 // ─── Map component (native only) ─────────────────────────────────────────────

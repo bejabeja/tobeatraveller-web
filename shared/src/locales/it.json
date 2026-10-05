@@ -605,6 +605,7 @@
   "itinerary": {
     "shareTrip": "Condividi viaggio",
     "cloneTrip": "Clona viaggio",
+    "directions": "Indicazioni",
     "saveTrip": "Salva viaggio",
     "unsaveTrip": "Rimuovi dai salvati",
     "noMap": "Nessuna mappa per questo viaggio",
@@ -1079,6 +1080,7 @@
     "posting": "Pubblicazione…",
     "delete": "Elimina",
     "couldNotPost": "Impossibile pubblicare il commento. Riprova.",
+    "loadFailed": "Impossibile caricare i commenti.",
     "couldNotDelete": "Impossibile eliminare il commento. Riprova.",
     "confirmDeletion": "Conferma eliminazione",
     "deleteDesc": "Vuoi davvero eliminare questo commento? Questa azione non si può annullare.",

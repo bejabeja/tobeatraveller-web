@@ -11,6 +11,7 @@ import {
   APP_LANGUAGES, fetchNotificationPreferences, PASSWORD_MIN_LENGTH, toAppLanguage, TRAVEL_STYLES, updateMyTravelStyle, updateNotificationPreferences,
 } from "@tobeatraveller/shared";
 import i18n from "../../i18n";
+import { useGoBack } from "../../hooks/useGoBack";
 import SelectMenu from "../../components/form/SelectMenu";
 import Spinner from "../../components/spinner/Spinner";
 import { REOPEN_COOKIE_PREFERENCES_EVENT } from "../../utils/analytics";
@@ -22,6 +23,8 @@ import { selectMe, selectMeLoading } from "../../store/user/userInfoSelectors";
 import "../../components/modal/Modal.scss";
 import "../profile/EditProfile.scss";
 import "./Settings.scss";
+
+const HOME_PATH = "/";
 
 const NOTIFICATION_PREFERENCE_TOGGLES = [
   { key: "notifyOnComment", labelKey: "settings.notifyOnComment" },
@@ -51,6 +54,7 @@ const Settings = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const goBack = useGoBack(HOME_PATH);
   const meDetail = useSelector(selectMe);
   const meLoading = useSelector(selectMeLoading);
   const authUser = useSelector(selectAuthUser);
@@ -179,7 +183,7 @@ const Settings = () => {
     <div className="ep">
       {/* Sticky header */}
       <header className="ep__header">
-        <button type="button" className="ep__back" onClick={() => navigate(-1)} aria-label={t("common.back")}>
+        <button type="button" className="ep__back" onClick={goBack} aria-label={t("common.back")}>
           <IoArrowBackOutline />
         </button>
         <h1 className="ep__title">{t("settings.title")}</h1>

@@ -595,6 +595,7 @@
   "itinerary": {
     "shareTrip": "Reise teilen",
     "cloneTrip": "Reise klonen",
+    "directions": "Route anzeigen",
     "saveTrip": "Reise speichern",
     "unsaveTrip": "Aus Gespeicherten entfernen",
     "noMap": "Keine Karte für diese Reise",
@@ -1062,6 +1063,7 @@
     "posting": "Wird gepostet…",
     "delete": "Löschen",
     "couldNotPost": "Der Kommentar konnte nicht gepostet werden. Bitte versuch es erneut.",
+    "loadFailed": "Die Kommentare konnten nicht geladen werden.",
     "couldNotDelete": "Der Kommentar konnte nicht gelöscht werden. Bitte versuch es erneut.",
     "confirmDeletion": "Löschen bestätigen",
     "deleteDesc": "Möchtest du diesen Kommentar wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",

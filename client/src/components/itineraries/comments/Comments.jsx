@@ -23,6 +23,7 @@ const Comments = ({ itineraryId, isAuthenticated }) => {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState(null);
   const [highlightedCommentId, setHighlightedCommentId] = useState(null);
@@ -35,9 +36,11 @@ const Comments = ({ itineraryId, isAuthenticated }) => {
     try {
       const response = await getCommentsByItineraryId(itineraryId);
       setComments(response);
+      setLoadFailed(false);
       dispatch(updateCommentsCount(itineraryId, response.length));
     } catch (error) {
       console.error("Failed to fetch comments", error);
+      setLoadFailed(true);
     }
   };
 
@@ -129,6 +132,11 @@ const Comments = ({ itineraryId, isAuthenticated }) => {
               </div>
             </div>
           ))
+        ) : loadFailed ? (
+          <p className="comments__empty" role="alert">
+            {t("comments.loadFailed")}{" "}
+            <button type="button" className="comments__retry" onClick={fetchComments}>{t("common.retry")}</button>
+          </p>
         ) : (
           <p className="comments__empty">{t("comments.beFirst")}</p>
         )}

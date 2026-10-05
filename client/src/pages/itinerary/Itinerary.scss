@@ -292,6 +292,7 @@
 }
 
 .place {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -315,6 +316,12 @@
   &--selected {
     background: rgba(0, 119, 182, 0.06);
     border-left-color: #005f92;
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
   }
 
   &__header {
@@ -365,6 +372,30 @@
     color: var(--text-secondary-color);
     margin: 0;
     padding-left: 2.1rem;
+  }
+
+  &__directions {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    font-size: 1.15rem;
+    color: var(--primary-color);
+    transition: background 0.15s ease;
+
+    &:hover,
+    &:focus-visible {
+      background: rgba(0, 0, 0, 0.06);
+    }
+  }
+
+  &--with-directions &__content {
+    padding-right: 2rem;
   }
 }
 

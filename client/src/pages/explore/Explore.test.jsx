@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { Link, MemoryRouter } from "react-router-dom";
+import { Link, MemoryRouter, useLocation } from "react-router-dom";
 
 const mockDispatch = jest.fn(() => Promise.resolve());
 jest.mock("react-redux", () => ({ useDispatch: () => mockDispatch, useSelector: (selector) => selector() }));
@@ -7,7 +7,12 @@ jest.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key) => key, i1
 jest.mock("../../store/auth/authSelectors.js", () => ({ selectIsAuthenticated: () => true }));
 jest.mock("../../hooks/usePageMeta.js", () => ({ usePageMeta: jest.fn() }));
 jest.mock("../../components/home/WorldMap.jsx", () => () => <div data-testid="world-map" />);
-jest.mock("../../components/filters/Filters.jsx", () => ({ onChange }) => <button type="button" onClick={() => onChange({})}>reset filters</button>);
+jest.mock("../../components/filters/Filters.jsx", () => ({ onChange }) => (
+  <>
+    <button type="button" onClick={() => onChange({})}>reset filters</button>
+    <button type="button" onClick={() => onChange({ query: "Lisbon", category: "roadtrip" })}>search Lisbon</button>
+  </>
+));
 jest.mock("../../components/itineraries/ItinerariesSection.jsx", () => () => null);
 jest.mock("../../components/LoadingButton.jsx", () => () => null);
 jest.mock("@tobeatraveller/shared", () => ({
@@ -22,13 +27,20 @@ jest.mock("@tobeatraveller/shared", () => ({
   selectExploreTotalItems: () => 0,
   selectExploreTotalPages: () => 1,
   formatNumber: (value) => String(value),
+  itineraryCategories: [{ value: "roadtrip" }, { value: "relax" }],
 }));
 
 import Explore from "./Explore";
 
+const AddressProbe = () => {
+  const { pathname, search } = useLocation();
+  return <span data-testid="address">{pathname}{search}</span>;
+};
+
 const renderExplore = (path = "/explore") => render(
   <MemoryRouter initialEntries={[path]}>
     <Link to="/explore?location=Lisboa">pick Lisboa on the map</Link>
+    <AddressProbe />
     <Explore />
   </MemoryRouter>,
 );
@@ -79,5 +91,50 @@ describe("Explore: the map", () => {
     fireEvent.click(screen.getByRole("link", { name: "pick Lisboa on the map" }));
 
     expect(mockDispatch).toHaveBeenCalledWith({ type: "init-explore", params: expect.objectContaining({ query: "Lisboa" }) });
+  });
+});
+
+describe("Explore: filters and sort in the address", () => {
+  it("opens as it was left: the filters and the sort come from the address", () => {
+    renderExplore("/explore?category=roadtrip&budgetMax=500&sort=cheapest");
+
+    expect(mockDispatch).toHaveBeenCalledWith({
+      type: "init-explore",
+      params: expect.objectContaining({ category: "roadtrip", budgetMax: "500", sortBy: "cheapest" }),
+    });
+  });
+
+  it("writes the sort to the address, so going back from a trip finds it", () => {
+    renderExplore();
+
+    fireEvent.click(screen.getByRole("button", { name: "explore.sortLiked" }));
+
+    expect(screen.getByTestId("address")).toHaveTextContent("/explore?sort=liked");
+  });
+
+  it("writes a search to the address and keeps what else the address carried", () => {
+    renderExplore("/explore?utm_source=newsletter");
+
+    fireEvent.click(screen.getByRole("button", { name: "search Lisbon" }));
+
+    expect(screen.getByTestId("address")).toHaveTextContent("utm_source=newsletter");
+    expect(screen.getByTestId("address")).toHaveTextContent("location=Lisbon");
+    expect(screen.getByTestId("address")).toHaveTextContent("category=roadtrip");
+  });
+
+  // The router can show the page's own write of the address after the filters have moved on (typing
+  // fast): taking it for a destination chosen on the map would put the old search back.
+  it("does not take its own late change of the address for a destination chosen on the map", () => {
+    render(
+      <MemoryRouter initialEntries={["/explore"]}>
+        <Link to="/explore?location=Faro" state={{ exploreAddressSync: true }}>late write of the address</Link>
+        <Explore />
+      </MemoryRouter>,
+    );
+    mockDispatch.mockClear();
+
+    fireEvent.click(screen.getByRole("link", { name: "late write of the address" }));
+
+    expect(mockDispatch).not.toHaveBeenCalledWith({ type: "init-explore", params: expect.objectContaining({ query: "Faro" }) });
   });
 });

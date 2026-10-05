@@ -107,7 +107,7 @@ const PackingList = () => {
   useEffect(() => () => {
     Object.entries(pendingDeletes.current).forEach(([itemId, timeoutId]) => {
       clearTimeout(timeoutId);
-      deletePackingChecklistItem(itemId).catch(() => {});
+      deletePackingChecklistItem(itemId).catch(() => toast.error(p("deleteError")));
     });
   }, []);
 

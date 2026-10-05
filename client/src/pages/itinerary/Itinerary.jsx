@@ -10,7 +10,7 @@ import {
   FaTrashAlt,
 } from "react-icons/fa";
 import { GoPeople } from "react-icons/go";
-import { MdArrowBack, MdOutlineAttachMoney, MdOutlineCalendarMonth, MdOutlineLocationOn, MdOutlineShare } from "react-icons/md";
+import { MdArrowBack, MdOutlineAttachMoney, MdOutlineDirections, MdOutlineCalendarMonth, MdOutlineLocationOn, MdOutlineShare } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
@@ -20,6 +20,7 @@ import PublishedNotice from "../../components/itineraries/PublishedNotice.jsx";
 import TripActionsMenu from "../../components/itineraries/TripActionsMenu.jsx";
 import TripLists from "../../components/itineraries/TripLists.jsx";
 import Spinner from "../../components/spinner/Spinner.jsx";
+import { useGoBack } from "../../hooks/useGoBack.js";
 import { useLike } from "../../hooks/useLike.js";
 import {
   addFavorite,
@@ -44,7 +45,7 @@ import { selectMe } from "../../store/user/userInfoSelectors.js";
 import { optimizedCloudinaryUrl } from "../../utils/cloudinaryUrl.js";
 import { getCurrencySymbol } from "../../utils/constants/currencies.js";
 import { buildItineraryJsonLd } from "../../utils/jsonLd.js";
-import { formatBudgetAmount, formatTripDates, tripCategoryLabelKey } from "@tobeatraveller/shared";
+import { formatBudgetAmount, formatTripDates, placeDirectionsUrl, tripCategoryLabelKey } from "@tobeatraveller/shared";
 import { returnToState } from "../../utils/returnTo";
 import { shareTrip } from "../../utils/shareTrip";
 import { trackEvent } from "../../utils/analytics";
@@ -54,6 +55,7 @@ import Error from "../error/Error.jsx";
 
 // "Other" says nothing about the trip, so it gets no badge.
 const OTHER_CATEGORY_KEY = "tripCategories.other";
+const EXPLORE_PATH = "/explore";
 
 const Itinerary = () => {
   const { t } = useTranslation();
@@ -256,6 +258,7 @@ const Hero = ({
   const location = useLocation();
   const loginState = returnToState(location);
   const { isLiked, likesCount, handleToggleLike } = useLike(itinerary.id, itinerary.likesCount);
+  const goBack = useGoBack(EXPLORE_PATH);
 
   const handleClone = async () => {
     if (!isAuthenticated) { navigate("/login", { state: loginState }); return; }
@@ -301,7 +304,7 @@ const Hero = ({
       <div className="itinerary__hero-overlay" />
 
       <div className="itinerary__hero-back">
-        <button type="button" className="action-icon-btn" onClick={() => navigate(-1)} title={t("common.back")} aria-label={t("common.back")}>
+        <button type="button" className="action-icon-btn" onClick={goBack} title={t("common.back")} aria-label={t("common.back")}>
           <MdArrowBack />
         </button>
       </div>
@@ -497,35 +500,55 @@ const Places = ({ itinerary, onHoverPlace, onPlaceClick, selectedPlaceIndex, t }
 };
 
 const Place = ({ place, number, onMouseEnter, onMouseLeave, onClick, isSelected }) => {
+  const { t } = useTranslation();
+  const directionsUrl = placeDirectionsUrl(place);
   const Icon = getCategoryIcon(place.category) || FaCity;
   const hasBody = place.description || place.address;
+  // The link sits beside the button that selects the place, not inside it: a button has no links within.
   return (
     <div
-      className={`place${hasBody ? "" : " place--compact"}${isSelected ? " place--selected" : ""}`}
-      role="button"
-      tabIndex={0}
-      aria-pressed={isSelected}
+      className={`place${hasBody ? "" : " place--compact"}${isSelected ? " place--selected" : ""}${directionsUrl ? " place--with-directions" : ""}`}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
-      onFocus={onMouseEnter}
-      onBlur={onMouseLeave}
       onClick={onClick}
-      onKeyDown={(event) => {
-        if (event.target !== event.currentTarget || (event.key !== "Enter" && event.key !== " ")) return;
-        event.preventDefault();
-        onClick();
-      }}
     >
-      <div className="place__header">
-        <span className="place__number">{number}</span>
-        <Icon className="place__icon" />
-        <h3 className="place__name">{place.name}</h3>
+      <div
+        className="place__content"
+        role="button"
+        tabIndex={0}
+        aria-pressed={isSelected}
+        onFocus={onMouseEnter}
+        onBlur={onMouseLeave}
+        onKeyDown={(event) => {
+          if (event.target !== event.currentTarget || (event.key !== "Enter" && event.key !== " ")) return;
+          event.preventDefault();
+          onClick();
+        }}
+      >
+        <div className="place__header">
+          <span className="place__number">{number}</span>
+          <Icon className="place__icon" />
+          <h3 className="place__name">{place.name}</h3>
+        </div>
+        {place.description && (
+          <p className="place__description">{place.description}</p>
+        )}
+        {place.address && (
+          <p className="place__address">{place.address}</p>
+        )}
       </div>
-      {place.description && (
-        <p className="place__description">{place.description}</p>
-      )}
-      {place.address && (
-        <p className="place__address">{place.address}</p>
+      {directionsUrl && (
+        <a
+          className="place__directions"
+          href={directionsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          title={t("itinerary.directions")}
+          aria-label={t("itinerary.directions")}
+          onClick={(event) => event.stopPropagation()}
+        >
+          <MdOutlineDirections aria-hidden="true" />
+        </a>
       )}
     </div>
   );

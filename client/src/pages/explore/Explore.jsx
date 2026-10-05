@@ -10,6 +10,7 @@ import Filters from "../../components/filters/Filters.jsx";
 import WorldMap from "../../components/home/WorldMap.jsx";
 import { usePageMeta } from "../../hooks/usePageMeta.js";
 import { returnToState } from "../../utils/returnTo.js";
+import { exploreSearchParamsFromState, exploreStateFromSearchParams } from "../../utils/exploreUrlState.js";
 import { selectIsAuthenticated } from "../../store/auth/authSelectors.js";
 
 import {
@@ -27,6 +28,10 @@ import {
 } from "@tobeatraveller/shared";
 
 import "./Explore.scss";
+
+// Marks the address changes this page makes itself. The router can show one a moment after the
+// filters have moved on (typing fast), and it must not be taken for a destination chosen elsewhere.
+const EXPLORE_ADDRESS_SYNC = "exploreAddressSync";
 
 const Explore = () => {
   const { t, i18n } = useTranslation();
@@ -53,13 +58,12 @@ const Explore = () => {
   ];
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const initialQuery = searchParams.get("location") ?? "";
+  // Read once: from then on the page is the one that writes the address (below).
+  const [initialState] = useState(() => exploreStateFromSearchParams(searchParams));
 
-  const [defaultQuery, setDefaultQuery] = useState(initialQuery);
-  const [filters, setFilters] = useState(
-    initialQuery ? { query: initialQuery } : {}
-  );
-  const [sortBy, setSortBy] = useState("recent");
+  const [defaultFilters, setDefaultFilters] = useState(initialState.filters);
+  const [filters, setFilters] = useState(initialState.filters);
+  const [sortBy, setSortBy] = useState(initialState.sortBy);
   const [filterResetKey, setFilterResetKey] = useState(0);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [mapOpen, setMapOpen] = useState(true);
@@ -68,14 +72,23 @@ const Explore = () => {
   // here is the same page, so the filters must follow the address themselves.
   const locationParam = searchParams.get("location") ?? "";
   useEffect(() => {
-    if (!locationParam || locationParam === (filters.query ?? "")) return;
+    if (location.state?.[EXPLORE_ADDRESS_SYNC] || !locationParam || locationParam === (filters.query ?? "")) return;
     setFilters({ query: locationParam });
-    setDefaultQuery(locationParam);
+    setDefaultFilters({ query: locationParam });
     setFilterResetKey((key) => key + 1);
     // Each visit to the address counts, not only a different one: the same pin chosen again after
     // clearing the filters is the same address.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [locationParam, location.key]);
+
+  // Filters and sort live in the address too, so going back from a trip finds the list as it was left.
+  useEffect(() => {
+    const nextSearchParams = exploreSearchParamsFromState({ filters, sortBy }, searchParams);
+    if (nextSearchParams.toString() !== searchParams.toString()) {
+      setSearchParams(nextSearchParams, { replace: true, state: { [EXPLORE_ADDRESS_SYNC]: true } });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters, sortBy]);
 
   useEffect(() => {
     setHasLoadedOnce(false);
@@ -94,8 +107,7 @@ const Explore = () => {
 
   const clearAllFilters = () => {
     setFilters({});
-    setSearchParams({});
-    setDefaultQuery("");
+    setDefaultFilters({});
     setFilterResetKey((k) => k + 1);
   };
 
@@ -111,7 +123,7 @@ const Explore = () => {
         <Filters
           key={filterResetKey}
           onChange={setFilters}
-          defaultValues={defaultQuery ? { query: defaultQuery } : {}}
+          defaultValues={defaultFilters}
         />
       </div>
 
