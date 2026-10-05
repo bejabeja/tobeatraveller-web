@@ -4,12 +4,15 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { findNextTrip, listsForTrip, localCalendarDay } from "@tobeatraveller/shared";
 import { getPackingLists } from "../../services/packingChecklist";
+import { useUnfinishedDraft } from "../../hooks/useUnfinishedDraft";
+import { selectAuthUser } from "../../store/auth/authSelectors";
 import { selectMyItineraries, selectMyItinerariesLoaded } from "../../store/user/userInfoSelectors";
 
 const NextTrip = () => {
   const { t } = useTranslation();
   const itineraries = useSelector(selectMyItineraries);
   const loaded = useSelector(selectMyItinerariesLoaded);
+  const draft = useUnfinishedDraft(useSelector(selectAuthUser)?.id);
   const next = loaded ? findNextTrip(itineraries, localCalendarDay()) : null;
   const nextTripId = next?.itinerary.id;
   // Undefined until its lists are known: offering to start one before (or
@@ -33,8 +36,19 @@ const NextTrip = () => {
     </Link>
   );
 
+  // What they left half done comes first when they have no trip coming: it is the next
+  // thing they were doing. With one coming it is a link under it, not a second card.
   if (!next) {
-    return (
+    return draft ? (
+      <div className="hero__next-trip">
+        <Link to={draft.path} className="hero__next-trip-card">
+          <span className="hero__next-trip-label">{t("home.draftLabel")}</span>
+          <span className="hero__next-trip-title">{draft.name || t("home.draftUnnamed")}</span>
+          <span className="hero__next-trip-when">{t("home.draftContinue")} →</span>
+        </Link>
+        <div className="hero__next-trip-links">{planTrip}</div>
+      </div>
+    ) : (
       <div className="hero__next-trip hero__next-trip--none">
         <p className="hero__next-trip-title">{t("home.noNextTrip")}</p>
         {planTrip}
@@ -63,6 +77,11 @@ const NextTrip = () => {
         ) : (
           <Link to={`/packing-checklist?forTrip=${itinerary.id}`} className="hero__plan-link">
             🎒 {t("home.prepareTrip")}
+          </Link>
+        )}
+        {draft && (
+          <Link to={draft.path} className="hero__plan-link">
+            ✏️ {t("home.draftLabel")}: {draft.name || t("home.draftUnnamed")}
           </Link>
         )}
         {planTrip}

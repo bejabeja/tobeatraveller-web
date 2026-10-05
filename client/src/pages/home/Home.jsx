@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { selectIsAuthenticated } from "../../store/auth/authSelectors.js";
-import { selectMe } from "../../store/user/userInfoSelectors.js";
+import { selectMe, selectMeError } from "../../store/user/userInfoSelectors.js";
 
 import { Link } from "react-router-dom";
 import FeatureShowcase from "../../components/featureShowcase/FeatureShowcase.jsx";
@@ -10,6 +10,7 @@ import Hero from "../../components/hero/Hero.jsx";
 import ItinerariesSection from "../../components/itineraries/ItinerariesSection.jsx";
 import UsersSection from "../../components/users/UsersSection.jsx";
 import {
+  chooseHomeTab, HOME_TAB_PATIENCE_MS, HOME_TABS,
   initFeaturedItineraries, initFeed, initStats,
   selectFeaturedItineraries, selectFeaturedItinerariesLoading,
   selectFeed, selectFeedLoading, selectFeedPage, selectFeedTotalPages,
@@ -20,7 +21,8 @@ import {
   selectFeaturedUsersLoading,
 } from "@tobeatraveller/shared";
 import VanToday from "../../components/home/VanToday.jsx";
-import YourTravel from "../../components/home/YourTravel.jsx";
+import HomeNews from "../../components/home/HomeNews.jsx";
+import PassportSummary from "../../components/home/PassportSummary.jsx";
 import WorldMap from "../../components/home/WorldMap.jsx";
 import LoadingButton from "../../components/LoadingButton.jsx";
 import { FEATURES } from "../../utils/constants/constants.js";
@@ -31,9 +33,12 @@ const Home = () => {
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const userMe = useSelector(selectMe);
+  const meError = useSelector(selectMeError);
   // Whoever said they live in a van starts the day from what a van needs.
   const isInAVan = isAuthenticated && userMe?.travelStyle === TRAVEL_STYLES.VAN;
-  const [tab, setTab] = useState("featured");
+  // Until they choose, the feed of the people they follow is what opens, if it has anything.
+  const [chosenTab, setChosenTab] = useState(null);
+  const [feedChecked, setFeedChecked] = useState(false);
 
   const featuredItineraries = useSelector(selectFeaturedItineraries);
   const featuredItinerariesLoading = useSelector(selectFeaturedItinerariesLoading);
@@ -55,8 +60,26 @@ const Home = () => {
     dispatch(initFeaturedUsers());
   }, [isAuthenticated, dispatch]);
   useEffect(() => {
-    if (isAuthenticated && tab === "following") dispatch(initFeed(1));
-  }, [isAuthenticated, tab, dispatch]);
+    if (!isAuthenticated) return;
+    Promise.resolve(dispatch(initFeed(1))).then(() => setFeedChecked(true));
+  }, [isAuthenticated, dispatch]);
+
+  const [patienceElapsed, setPatienceElapsed] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setPatienceElapsed(true), HOME_TAB_PATIENCE_MS);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const { tab, isDecided: isTabDecided } = chooseHomeTab({
+    isAuthenticated,
+    chosenTab,
+    hasProfile: Boolean(userMe),
+    profileFailed: Boolean(meError),
+    feedChecked,
+    followsAnyone: (userMe?.followingListIds?.length ?? 0) > 0,
+    feedHasTrips: feed.length > 0,
+    patienceElapsed,
+  });
 
   return (
     <section className="home">
@@ -89,7 +112,13 @@ const Home = () => {
       {/* Whoever does not live in a van, once the profile says so: not before, or it would flash for those who do. */}
       {isAuthenticated && userMe && !isInAVan && (
         <div className="section__container">
-          <YourTravel userId={userMe.id} />
+          <PassportSummary userId={userMe.id} />
+        </div>
+      )}
+
+      {isAuthenticated && (
+        <div className="section__container">
+          <HomeNews />
         </div>
       )}
 
@@ -99,22 +128,24 @@ const Home = () => {
         {isAuthenticated && (
           <div className="home__tabs">
             <button
-              className={`home__tab${tab === "featured" ? " home__tab--active" : ""}`}
-              onClick={() => setTab("featured")}
+              className={`home__tab${isTabDecided && tab === HOME_TABS.DISCOVER ? " home__tab--active" : ""}`}
+              onClick={() => setChosenTab(HOME_TABS.DISCOVER)}
             >
               {t("home.tabDiscover")}
             </button>
             <button
-              className={`home__tab${tab === "following" ? " home__tab--active" : ""}`}
-              onClick={() => setTab("following")}
+              className={`home__tab${isTabDecided && tab === HOME_TABS.FOLLOWING ? " home__tab--active" : ""}`}
+              onClick={() => setChosenTab(HOME_TABS.FOLLOWING)}
             >
               {t("home.tabFollowing")}
             </button>
           </div>
         )}
 
+        {isAuthenticated && !isTabDecided && <ItinerariesSection itineraries={[]} isLoading />}
+
         {/* Following feed */}
-        {isAuthenticated && tab === "following" && (
+        {isAuthenticated && isTabDecided && tab === HOME_TABS.FOLLOWING && (
           <div className="home__users">
             {feed.length === 0 && !feedLoading ? (
               <div className="home__feed-empty">
@@ -147,13 +178,13 @@ const Home = () => {
         )}
 
         {/* Featured / Discover tab */}
-        {(!isAuthenticated || tab === "featured") && (
+        {(!isAuthenticated || (isTabDecided && tab === HOME_TABS.DISCOVER)) && (
           <>
             <div className="home__users">
               <div className="home__section-header">
                 <h2>{t("home.featuredTrips")}</h2>
                 <Link to="/explore" className="home__see-all">{t("common.seeAll")}</Link>
-                <p>{t("home.featuredSubtitle")}</p>
+                {!isAuthenticated && <p>{t("home.featuredSubtitle")}</p>}
               </div>
               <ItinerariesSection
                 itineraries={featuredItineraries}
@@ -165,18 +196,21 @@ const Home = () => {
               <div className="home__section-header">
                 <h2>{t("home.peopleYouMayLike")}</h2>
                 <Link to="/community" className="home__see-all">{t("common.seeAll")}</Link>
-                <p>{t("home.peopleSubtitle")}</p>
+                {!isAuthenticated && <p>{t("home.peopleSubtitle")}</p>}
               </div>
               <UsersSection users={featuredUsers} isLoading={featuredUsersLoading} />
             </div>
             )}
-            <div className="home__destinations">
-              <div className="home__section-header">
-                <h2>{t("home.exploreTheWorld")}</h2>
-                <p>{t("home.exploreSubtitle")}</p>
+            {/* The map is for choosing where to look: whoever is in has it in Explore. */}
+            {!isAuthenticated && (
+              <div className="home__destinations">
+                <div className="home__section-header">
+                  <h2>{t("home.exploreTheWorld")}</h2>
+                  <p>{t("home.exploreSubtitle")}</p>
+                </div>
+                <WorldMap />
               </div>
-              <WorldMap />
-            </div>
+            )}
             {/* Real content (trips, people, the map) comes first so a
                 logged-out visitor sees the community is real before the
                 pitch for what's behind sign-up; showing this pitch above

@@ -7,6 +7,7 @@ import { IoSearchOutline } from "react-icons/io5";
 import LoadingButton from "../../components/LoadingButton.jsx";
 import ItinerariesSection from "../../components/itineraries/ItinerariesSection.jsx";
 import Filters from "../../components/filters/Filters.jsx";
+import WorldMap from "../../components/home/WorldMap.jsx";
 import { usePageMeta } from "../../hooks/usePageMeta.js";
 import { returnToState } from "../../utils/returnTo.js";
 import { selectIsAuthenticated } from "../../store/auth/authSelectors.js";
@@ -61,6 +62,20 @@ const Explore = () => {
   const [sortBy, setSortBy] = useState("recent");
   const [filterResetKey, setFilterResetKey] = useState(0);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+  const [mapOpen, setMapOpen] = useState(true);
+
+  // A destination chosen on the map (it goes to /explore?location=...) while already
+  // here is the same page, so the filters must follow the address themselves.
+  const locationParam = searchParams.get("location") ?? "";
+  useEffect(() => {
+    if (!locationParam || locationParam === (filters.query ?? "")) return;
+    setFilters({ query: locationParam });
+    setDefaultQuery(locationParam);
+    setFilterResetKey((key) => key + 1);
+    // Each visit to the address counts, not only a different one: the same pin chosen again after
+    // clearing the filters is the same address.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [locationParam, location.key]);
 
   useEffect(() => {
     setHasLoadedOnce(false);
@@ -101,6 +116,22 @@ const Explore = () => {
       </div>
 
       <div className="explore__results">
+        {/* The way in by place: for whoever does not know yet what to search. Out of the way once they search. */}
+        {!hasActiveFilters && (
+          <section className="explore__map" aria-labelledby="explore-map-title">
+            <div className="explore__map-header">
+              <div>
+                <h2 id="explore-map-title" className="explore__map-title">{t("home.exploreTheWorld")}</h2>
+                <p className="explore__map-subtitle">{t("home.exploreSubtitle")}</p>
+              </div>
+              <button type="button" className="explore__map-toggle" onClick={() => setMapOpen((open) => !open)} aria-expanded={mapOpen}>
+                {t(mapOpen ? "explore.hideMap" : "explore.showMap")}
+              </button>
+            </div>
+            {mapOpen && <WorldMap />}
+          </section>
+        )}
+
         <div className="explore__results-header">
           <div className="explore__results-header-top">
             <div className="explore__results-title-row">

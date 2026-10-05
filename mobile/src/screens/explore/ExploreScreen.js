@@ -7,13 +7,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-  initExploreItineraries, itineraryCategories,
+  getDestinations, initExploreItineraries, itineraryCategories,
   loadMoreExploreItineraries, selectExploreItineraries,
   selectExploreItinerariesLoading, selectExploreItinerariesLoadingMore,
   selectExplorePage, selectExploreTotalItems, selectExploreTotalPages, formatNumber,
 } from '@tobeatraveller/shared';
 import { Ionicons } from '@expo/vector-icons';
 import ItineraryCard from '../../components/ItineraryCard';
+import WorldMapSection from '../../components/WorldMapSection';
 import { ItineraryCardSkeleton } from '../../components/Skeleton';
 import { buildSkeletonItems, FILLER_ITEM_ID, padForTwoColumns } from '../../utils/gridListHelpers';
 import { COLORS, shadow } from '../../utils/styles';
@@ -64,6 +65,20 @@ const ExploreScreen = ({ navigation, route }) => {
   const [draft, setDraft] = useState({});
 
   const searchTimer = useRef(null);
+  const [destinations, setDestinations] = useState([]);
+
+  useEffect(() => {
+    getDestinations().then(setDestinations).catch(() => {});
+  }, []);
+
+  // A destination picked on the map of the Home arrives as a parameter, and this screen stays
+  // mounted as a tab: only the first one would be read from the initial state.
+  // `requestedAt` tells a new request for the same destination (after clearing the search) from the old one.
+  const destinationParam = route?.params?.destination;
+  const requestedAt = route?.params?.requestedAt;
+  useEffect(() => {
+    if (destinationParam) setSearch(destinationParam);
+  }, [destinationParam, requestedAt]);
   const hasMore = currentPage < totalPages;
   const advancedCount = [budgetMin, budgetMax, durationMin, durationMax, travelersCount].filter(Boolean).length;
   const activeFilters = !!(search || category || advancedCount);
@@ -221,6 +236,10 @@ const ExploreScreen = ({ navigation, route }) => {
             tintColor={COLORS.primary}
           />
         }
+        // The way in by place, for whoever has not searched yet; out of the way once they do.
+        ListHeaderComponent={!activeFilters && destinations.length > 0 ? (
+          <WorldMapSection destinations={destinations} onSelectDestination={setSearch} style={styles.mapInList} />
+        ) : null}
         ListEmptyComponent={
           !loading ? (
             <View style={styles.emptyState}>
@@ -454,6 +473,8 @@ const styles = StyleSheet.create({
   sortLabelSelected: { color: '#fff', fontWeight: '600' },
 
   list: { padding: 12 },
+  // The list already has its own margin: the map lines up with the cards.
+  mapInList: { paddingHorizontal: 0, paddingTop: 0, marginBottom: 12 },
   row: { gap: 12, marginBottom: 12 },
   gridItem: { flex: 1 },
   gridItemHalf: { flex: 0, width: '47.5%' },

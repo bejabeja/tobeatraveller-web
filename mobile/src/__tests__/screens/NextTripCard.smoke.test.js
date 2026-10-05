@@ -1,9 +1,11 @@
 let mockTrips = [];
+let mockDraft = null;
 let mockRefocus;
 jest.mock('@react-navigation/native', () => {
   const { useEffect } = require('react');
   return { useFocusEffect: (callback) => { mockRefocus = callback; useEffect(() => callback(), [callback]); } };
 });
+jest.mock('../../hooks/useUnfinishedDraft', () => ({ useUnfinishedDraft: () => mockDraft }));
 jest.mock('react-redux', () => ({ useSelector: (selector) => selector() }));
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key, vars) => (vars ? `${key}:${Object.values(vars).join('/')}` : key) }),
@@ -12,6 +14,7 @@ jest.mock('@tobeatraveller/shared', () => ({
   ...jest.requireActual('../../../../shared/src/utils/nextTrip.js'),
   ...jest.requireActual('../../../../shared/src/utils/packingLists.js'),
   getPackingLists: jest.fn(() => Promise.resolve({ lists: [] })),
+  selectAuthUser: () => ({ id: 'u1' }),
   selectMyItineraries: () => mockTrips,
   selectMyItinerariesLoaded: () => true,
 }));
@@ -20,7 +23,10 @@ import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { getPackingLists } from '@tobeatraveller/shared';
 import NextTripCard from '../../components/NextTripCard';
 
-beforeEach(() => jest.useFakeTimers({ now: new Date(2026, 8, 27, 10) }));
+beforeEach(() => {
+  mockDraft = null;
+  jest.useFakeTimers({ now: new Date(2026, 8, 27, 10) });
+});
 afterEach(() => jest.useRealTimers());
 
 it('shows the trip under way and opens it', () => {
@@ -99,4 +105,44 @@ it("doesn't offer to start a list when the lists couldn't be loaded", async () =
   await act(async () => {});
 
   expect(screen.queryByText('🎒 home.prepareTrip')).toBeNull();
+});
+
+describe('with a trip left unfinished', () => {
+  const DRAFT = { kind: 'itinerary', name: 'Escapada a Lisboa', screen: 'CreateItinerary' };
+
+  // Regression-in-waiting: a trip left half done was only found by opening the form again, by chance.
+  it('puts it where the question would be when they have no trip coming', () => {
+    mockTrips = [];
+    mockDraft = DRAFT;
+    const navigation = { navigate: jest.fn() };
+    render(<NextTripCard navigation={navigation} />);
+
+    fireEvent.press(screen.getByText('Escapada a Lisboa'));
+
+    expect(navigation.navigate).toHaveBeenCalledWith('CreateItinerary');
+    expect(screen.queryByText('home.noNextTrip')).toBeNull();
+  });
+
+  it('sends an AI plan back to the AI plan, not to the form', () => {
+    mockTrips = [];
+    mockDraft = { kind: 'experience', name: 'Lisboa', screen: 'PlanExperience' };
+    const navigation = { navigate: jest.fn() };
+    render(<NextTripCard navigation={navigation} />);
+
+    fireEvent.press(screen.getByText('Lisboa'));
+
+    expect(navigation.navigate).toHaveBeenCalledWith('PlanExperience');
+  });
+
+  it('keeps the trip coming as the card, with the unfinished one as a link under it', () => {
+    mockTrips = [{ id: 't2', title: 'Lisboa', startDate: '2026-10-02', endDate: '2026-10-05' }];
+    mockDraft = DRAFT;
+    const navigation = { navigate: jest.fn() };
+    render(<NextTripCard navigation={navigation} />);
+
+    fireEvent.press(screen.getByText(/Escapada a Lisboa/));
+
+    expect(screen.getByText('Lisboa')).toBeTruthy();
+    expect(navigation.navigate).toHaveBeenCalledWith('CreateItinerary');
+  });
 });

@@ -4,13 +4,15 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
-  findNextTrip, getPackingLists, listsForTrip, localCalendarDay, selectMyItineraries, selectMyItinerariesLoaded,
+  findNextTrip, getPackingLists, listsForTrip, localCalendarDay, selectAuthUser, selectMyItineraries, selectMyItinerariesLoaded,
 } from '@tobeatraveller/shared';
+import { useUnfinishedDraft } from '../hooks/useUnfinishedDraft';
 
 const NextTripCard = ({ navigation }) => {
   const { t } = useTranslation();
   const itineraries = useSelector(selectMyItineraries);
   const loaded = useSelector(selectMyItinerariesLoaded);
+  const draft = useUnfinishedDraft(useSelector(selectAuthUser)?.id);
   const next = loaded ? findNextTrip(itineraries, localCalendarDay()) : null;
   const nextTripId = next?.itinerary.id;
   // Undefined until its lists are known: offering to start one before (or
@@ -33,6 +35,25 @@ const NextTripCard = ({ navigation }) => {
   if (!loaded) return null;
 
   const planTrip = () => navigation.navigate('CreateItinerary');
+
+  // What they left half done comes first when they have no trip coming: it is the next
+  // thing they were doing. With one coming it is a link under it, not a second card.
+  if (!next && draft) {
+    return (
+      <View style={styles.wrap}>
+        <TouchableOpacity style={styles.card} onPress={() => navigation.navigate(draft.screen)} accessibilityRole="button" activeOpacity={0.8}>
+          <Text style={styles.label}>{t('home.draftLabel')}</Text>
+          <Text style={styles.title} numberOfLines={1}>{draft.name || t('home.draftUnnamed')}</Text>
+          <Text style={styles.when} numberOfLines={1}>{t('home.draftContinue')} →</Text>
+        </TouchableOpacity>
+        <View style={styles.links}>
+          <TouchableOpacity onPress={planTrip} accessibilityRole="button" hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <Text style={styles.planLink}>{t('home.planTrip')}</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
 
   if (!next) {
     return (
@@ -77,6 +98,11 @@ const NextTripCard = ({ navigation }) => {
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
             <Text style={styles.planLink}>🎒 {t('home.prepareTrip')}</Text>
+          </TouchableOpacity>
+        )}
+        {draft && (
+          <TouchableOpacity onPress={() => navigation.navigate(draft.screen)} accessibilityRole="button" hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <Text style={styles.planLink}>✏️ {t('home.draftLabel')}: {draft.name || t('home.draftUnnamed')}</Text>
           </TouchableOpacity>
         )}
         <TouchableOpacity onPress={planTrip} accessibilityRole="button" hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>

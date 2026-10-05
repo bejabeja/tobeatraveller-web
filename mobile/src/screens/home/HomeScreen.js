@@ -1,11 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  Image, Platform, RefreshControl, ScrollView,
+  Image, RefreshControl, ScrollView,
   StyleSheet, Text, TouchableOpacity, View,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { WebView } from 'react-native-webview';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
@@ -15,60 +14,26 @@ import {
   selectFeaturedItineraries, selectFeaturedItinerariesLoading,
   selectFeaturedUsers, selectFeaturedUsersLoading,
   selectFeed, selectFeedLoading,
-  refreshUnreadCount, selectAuthUser, selectIsAuthenticated, selectMe, selectUnreadCount, TRAVEL_STYLES,
+  chooseHomeTab, greetingName, HOME_TAB_PATIENCE_MS, HOME_TABS, initNotifications, refreshUnreadCount, selectAuthUser, selectMeError, selectIsAuthenticated, selectMe, selectUnreadCount, TRAVEL_STYLES,
 } from '@tobeatraveller/shared';
 import { EmailVerificationBanner } from '../../components/EmailVerificationBanner';
 import ItineraryCard from '../../components/ItineraryCard';
 import NextTripCard from '../../components/NextTripCard';
 import VanToday from '../../components/VanToday';
-import YourTravel from '../../components/YourTravel';
+import HomeNews from '../../components/HomeNews';
+import PassportSummary from '../../components/PassportSummary';
+import WorldMapSection from '../../components/WorldMapSection';
 import { ItineraryCardSkeleton, UserAvatarSkeleton } from '../../components/Skeleton';
 import { COLORS, shadow } from '../../utils/styles';
-
-const buildMapHTML = (destinations) => `<!DOCTYPE html>
-<html>
-<head>
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <style>
-    *{margin:0;padding:0;box-sizing:border-box}
-    html,body,#map{width:100%;height:100%}
-    .pin{background:#E8743B;color:#fff;border-radius:50%;border:2px solid #fff;
-      width:32px;height:32px;display:flex;align-items:center;justify-content:center;
-      font-size:11px;font-weight:800;font-family:sans-serif;
-      box-shadow:0 2px 6px rgba(232,116,59,.5);cursor:pointer}
-  </style>
-</head>
-<body>
-<div id="map"></div>
-<script>
-  var map=L.map('map',{zoomControl:false,attributionControl:false}).setView([20,10],2);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:10,minZoom:1}).addTo(map);
-  ${JSON.stringify(destinations)}.forEach(function(d){
-    var lat=parseFloat(d.lat),lon=parseFloat(d.lon);
-    if(isNaN(lat)||isNaN(lon))return;
-    var icon=L.divIcon({className:'',
-      html:'<div class="pin">'+(d.count>99?'99+':d.count)+'</div>',
-      iconSize:[32,32],iconAnchor:[16,16]});
-    L.marker([lat,lon],{icon:icon}).addTo(map).on('click',function(){
-      (window.ReactNativeWebView||window.parent).postMessage
-        ?window.ReactNativeWebView
-          ?window.ReactNativeWebView.postMessage(d.name)
-          :window.parent.postMessage({type:'destClick',name:d.name},'*')
-        :null;
-    });
-  });
-</script>
-</body>
-</html>`;
 
 const HomeScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const insets = useSafeAreaInsets();
   const [destinations, setDestinations] = useState([]);
-  const [tab, setTab] = useState('discover');
+  // Until they choose, the feed of the people they follow is what opens, if it has anything.
+  const [chosenTab, setChosenTab] = useState(null);
+  const [feedChecked, setFeedChecked] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const itineraries = useSelector(selectFeaturedItineraries);
   const itinerariesLoading = useSelector(selectFeaturedItinerariesLoading);
@@ -79,13 +44,18 @@ const HomeScreen = ({ navigation }) => {
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const unreadCount = useSelector(selectUnreadCount);
   const me = useSelector(selectMe);
+  const meError = useSelector(selectMeError);
   const authUser = useSelector(selectAuthUser);
   const isInAVan = isAuthenticated && me?.travelStyle === TRAVEL_STYLES.VAN;
 
   useEffect(() => {
     if (!itineraries?.length) dispatch(initFeaturedItineraries());
-    getDestinations().then(setDestinations).catch(() => {});
   }, [dispatch]);
+
+  // The map is for whoever has not signed in; the others have it in Explore.
+  useEffect(() => {
+    if (!isAuthenticated) getDestinations().then(setDestinations).catch(() => {});
+  }, [isAuthenticated]);
 
   // Asked again on signing in or out: signed in, it leaves out who they follow.
   useEffect(() => {
@@ -93,16 +63,35 @@ const HomeScreen = ({ navigation }) => {
   }, [isAuthenticated, dispatch]);
 
   useEffect(() => {
-    if (isAuthenticated && tab === 'following') dispatch(initFeed(1));
-  }, [isAuthenticated, tab, dispatch]);
+    if (!isAuthenticated) return;
+    Promise.resolve(dispatch(initFeed(1))).then(() => setFeedChecked(true));
+  }, [isAuthenticated, dispatch]);
+
+  const [patienceElapsed, setPatienceElapsed] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setPatienceElapsed(true), HOME_TAB_PATIENCE_MS);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const { tab, isDecided: isTabDecided } = chooseHomeTab({
+    isAuthenticated,
+    chosenTab,
+    hasProfile: Boolean(me),
+    profileFailed: Boolean(meError),
+    feedChecked,
+    followsAnyone: (me?.followingListIds?.length ?? 0) > 0,
+    feedHasTrips: feed.length > 0,
+    patienceElapsed,
+  });
 
   const handleRefresh = async () => {
     setRefreshing(true);
     await Promise.allSettled([
       dispatch(initFeaturedItineraries()),
       dispatch(initFeaturedUsers()),
-      isAuthenticated && tab === 'following' ? dispatch(initFeed(1)) : null,
+      isAuthenticated ? dispatch(initFeed(1)) : null,
       isAuthenticated ? dispatch(refreshUnreadCount()) : null,
+      isAuthenticated ? dispatch(initNotifications()) : null,
     ]);
     setRefreshing(false);
   };
@@ -124,7 +113,7 @@ const HomeScreen = ({ navigation }) => {
         <View style={styles.heroRow}>
           {isAuthenticated ? (
             <Text style={[styles.heroTitle, styles.heroGreeting]} numberOfLines={1}>
-              {t('home.heroGreeting', { username: me?.username ?? authUser?.username })}
+              {t('home.heroGreeting', { username: greetingName({ name: me?.name, username: me?.username ?? authUser?.username }) })}
             </Text>
           ) : (
             <View style={styles.heroHeading}>
@@ -151,16 +140,16 @@ const HomeScreen = ({ navigation }) => {
         {isAuthenticated && (
           <View style={styles.tabs}>
             <TouchableOpacity
-              style={[styles.tab, tab === 'discover' && styles.tabActive]}
-              onPress={() => setTab('discover')}
+              style={[styles.tab, isTabDecided && tab === HOME_TABS.DISCOVER && styles.tabActive]}
+              onPress={() => setChosenTab(HOME_TABS.DISCOVER)}
             >
-              <Text style={[styles.tabText, tab === 'discover' && styles.tabTextActive]}>{t('home.tabDiscover')}</Text>
+              <Text style={[styles.tabText, isTabDecided && tab === HOME_TABS.DISCOVER && styles.tabTextActive]}>{t('home.tabDiscover')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.tab, tab === 'following' && styles.tabActive]}
-              onPress={() => setTab('following')}
+              style={[styles.tab, isTabDecided && tab === HOME_TABS.FOLLOWING && styles.tabActive]}
+              onPress={() => setChosenTab(HOME_TABS.FOLLOWING)}
             >
-              <Text style={[styles.tabText, tab === 'following' && styles.tabTextActive]}>{t('home.tabFollowing')}</Text>
+              <Text style={[styles.tabText, isTabDecided && tab === HOME_TABS.FOLLOWING && styles.tabTextActive]}>{t('home.tabFollowing')}</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -172,10 +161,22 @@ const HomeScreen = ({ navigation }) => {
       {isInAVan && <VanToday navigation={navigation} userId={me.id} />}
 
       {/* Whoever does not live in a van, once the profile says so: not before, or it would flash for those who do. */}
-      {isAuthenticated && me && !isInAVan && <YourTravel navigation={navigation} userId={me.id} />}
+      {isAuthenticated && me && !isInAVan && <PassportSummary navigation={navigation} userId={me.id} />}
+
+      {isAuthenticated && <HomeNews navigation={navigation} />}
+
+      {isAuthenticated && !isTabDecided && (
+        <View style={styles.section}>
+          <View style={styles.grid}>
+            {Array.from({ length: 4 }, (_, i) => (
+              <View key={`sk-${i}`} style={styles.gridItem}><ItineraryCardSkeleton /></View>
+            ))}
+          </View>
+        </View>
+      )}
 
       {/* Following feed */}
-      {isAuthenticated && tab === 'following' && (
+      {isAuthenticated && isTabDecided && tab === HOME_TABS.FOLLOWING && (
         <View style={styles.section}>
           {feedLoading ? (
             <View style={styles.grid}>
@@ -217,19 +218,19 @@ const HomeScreen = ({ navigation }) => {
         </View>
       )}
 
-      {/* World Map: only in discover tab */}
-      {(!isAuthenticated || tab === 'discover') && destinations.length > 0 && (
-        <WorldMapSection destinations={destinations} navigation={navigation} t={t} />
+      {/* World Map: for visitors */}
+      {!isAuthenticated && destinations.length > 0 && (
+        <WorldMapSection destinations={destinations} onSelectDestination={(name) => navigation.navigate('Explore', { destination: name, requestedAt: Date.now() })} />
       )}
 
       {/* Featured Itineraries + People: only in discover tab */}
-      {(!isAuthenticated || tab === 'discover') && (
+      {(!isAuthenticated || (isTabDecided && tab === HOME_TABS.DISCOVER)) && (
       <>
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <View style={styles.sectionHeading}>
             <Text style={styles.sectionTitle}>{t('home.featuredTrips')}</Text>
-            <Text style={styles.sectionSubtitle}>{t('home.featuredSubtitle')}</Text>
+            {!isAuthenticated && <Text style={styles.sectionSubtitle}>{t('home.featuredSubtitle')}</Text>}
           </View>
           <TouchableOpacity onPress={() => navigation.navigate('Explore')}>
             <Text style={styles.seeAll}>{t('common.seeAll')}</Text>
@@ -262,7 +263,7 @@ const HomeScreen = ({ navigation }) => {
         <View style={styles.sectionHeader}>
           <View style={styles.sectionHeading}>
             <Text style={styles.sectionTitle}>{t('home.peopleYouMayLike')}</Text>
-            <Text style={styles.sectionSubtitle}>{t('home.peopleSubtitle')}</Text>
+            {!isAuthenticated && <Text style={styles.sectionSubtitle}>{t('home.peopleSubtitle')}</Text>}
           </View>
           <TouchableOpacity onPress={() => navigation.navigate('Community')}>
             <Text style={styles.seeAll}>{t('common.seeAll')}</Text>
@@ -420,89 +421,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24, paddingVertical: 12,
   },
   ctaBtnText: { fontSize: 14, fontWeight: '700', color: COLORS.accent },
-
-  // World map
-  mapSection: { paddingHorizontal: 16, paddingTop: 20 },
-  mapContainer: {
-    borderRadius: 14, overflow: 'hidden', height: 220,
-    ...shadow(2, 0.08, 8, 3),
-  },
-  map: { flex: 1 },
-  destChips: { gap: 8, paddingVertical: 4 },
-  destChip: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    backgroundColor: '#fff', borderRadius: 12, padding: 10,
-    borderWidth: 1, borderColor: '#e5e7eb',
-    ...shadow(1, 0.05, 4, 1),
-  },
-  destChipName: { fontSize: 13, fontWeight: '600', color: '#111827' },
-  destChipCount: {
-    fontSize: 11, fontWeight: '700', color: '#fff',
-    backgroundColor: COLORS.primary, borderRadius: 999,
-    paddingVertical: 1, paddingHorizontal: 6,
-  },
 });
-
-// ─── World Map Section ─────────────────────────────────────────────────────────
-const WorldMapSection = ({ destinations, navigation, t }) => {
-  const webViewRef = useRef(null);
-
-  const goToDestination = (name) => {
-    navigation.navigate('Explore', { destination: name });
-  };
-
-  const handleWebViewMessage = (event) => {
-    const name = event.nativeEvent.data;
-    if (name) goToDestination(name);
-  };
-
-  // On web (Expo web), listen to postMessage from iframe
-  useEffect(() => {
-    if (Platform.OS !== 'web') return;
-    const handler = (e) => {
-      if (e.data?.type === 'destClick' && e.data?.name) goToDestination(e.data.name);
-    };
-    window.addEventListener('message', handler);
-    return () => window.removeEventListener('message', handler);
-  }, []);
-
-  const html = buildMapHTML(destinations);
-
-  return (
-    <View style={styles.mapSection}>
-      <View style={styles.sectionHeader}>
-        <View>
-          <Text style={styles.sectionTitle}>{t('home.exploreTheWorld')}</Text>
-          <Text style={styles.sectionSubtitle}>{t('home.destinationsCount', { count: destinations.length })}</Text>
-        </View>
-      </View>
-
-      {Platform.OS === 'web' ? (
-        /* Expo web: chips fallback since WebView is native-only */
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.destChips}>
-          {destinations.map((dest, i) => (
-            <TouchableOpacity key={i} style={styles.destChip} onPress={() => goToDestination(dest.name)}>
-              <Text style={styles.destChipName}>{dest.name}</Text>
-              <Text style={styles.destChipCount}>{dest.count}</Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      ) : (
-        /* Native (APK): full Leaflet map via WebView, free, no API key */
-        <View style={styles.mapContainer}>
-          <WebView
-            ref={webViewRef}
-            source={{ html }}
-            style={styles.map}
-            scrollEnabled={false}
-            onMessage={handleWebViewMessage}
-            originWhitelist={['*']}
-            javaScriptEnabled
-          />
-        </View>
-      )}
-    </View>
-  );
-};
 
 export default HomeScreen;

@@ -8,6 +8,7 @@ import {
   selectIsAuthenticated,
   selectimageHeroLoaded,
 } from "../../store/auth/authSelectors";
+import { greetingName } from "@tobeatraveller/shared";
 import { selectMe } from "../../store/user/userInfoSelectors";
 import { heroImage } from "../../utils/constants/constants";
 import { preloadImg } from "../../utils/preloadImg";
@@ -42,7 +43,7 @@ const Hero = () => {
           // own next trip instead of the marketing copy shown to visitors.
           <>
             <h1 className="hero__content__title">
-              {t("home.heroGreeting", { username: userMe?.username ?? authUser?.username })}
+              {t("home.heroGreeting", { username: greetingName({ name: userMe?.name, username: userMe?.username ?? authUser?.username }) })}
             </h1>
             <NextTrip />
           </>
