@@ -19,7 +19,7 @@ import SupplyFormScreen from '../../screens/supplies/SupplyFormScreen';
 const INITIAL_METRICS = { frame: { x: 0, y: 0, width: 390, height: 844 }, insets: { top: 0, left: 0, right: 0, bottom: 0 } };
 const renderForm = (params) => render(
   <SafeAreaProvider initialMetrics={INITIAL_METRICS}>
-    <SupplyFormScreen navigation={{ goBack: jest.fn() }} route={{ params }} />
+    <SupplyFormScreen navigation={{ goBack: jest.fn(), addListener: jest.fn(() => jest.fn()) }} route={{ params }} />
   </SafeAreaProvider>
 );
 

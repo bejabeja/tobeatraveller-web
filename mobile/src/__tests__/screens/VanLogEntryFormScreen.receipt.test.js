@@ -67,7 +67,7 @@ const existingEntry = {
 };
 
 const renderForm = (entry) => {
-  const navigation = { goBack: jest.fn() };
+  const navigation = { goBack: jest.fn(), addListener: jest.fn(() => jest.fn()) };
   render(
     <SafeAreaProvider initialMetrics={INITIAL_METRICS}>
       <VanLogEntryFormScreen navigation={navigation} route={{ params: entry ? { entry } : {} }} />

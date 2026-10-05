@@ -14,6 +14,7 @@ import {
 import { shadow } from '../../utils/styles';
 import { GEOAPIFY_KEY } from '../../utils/config';
 import { useCurrentLocation } from '../../hooks/useCurrentLocation';
+import { useDiscardGuard } from '../../hooks/useDiscardGuard';
 import DateField from '../../components/DateField';
 import { UseCurrentLocationButton } from '../../components/UseCurrentLocationButton';
 import { newEntityId, runOrQueue } from '../../offline/outbox';
@@ -67,17 +68,13 @@ const VanLogEntryFormScreen = ({ navigation, route }) => {
   const [saving, setSaving] = useState(false);
   const [submitError, setSubmitError] = useState(null);
   const [isDirty, setIsDirty] = useState(false);
+  const leaveWithoutAsking = useDiscardGuard(navigation, isDirty);
 
   const searchTimer = useRef(null);
   const { getCurrentLocation, getLocationIfPermitted, loading: locating } = useCurrentLocation();
 
-  const handleBack = () => {
-    if (!isDirty) { navigation.goBack(); return; }
-    Alert.alert(t('editProfile.discardChanges'), t('editProfile.discardChangesDesc'), [
-      { text: t('editProfile.keepEditing'), style: 'cancel' },
-      { text: t('editProfile.discard'), style: 'destructive', onPress: () => navigation.goBack() },
-    ]);
-  };
+  // The guard asks if there are unsaved changes, so going back is just going back.
+  const handleBack = () => navigation.goBack();
 
   const searchLocation = (text) => {
     setLocationQuery(text);
@@ -216,6 +213,7 @@ const VanLogEntryFormScreen = ({ navigation, route }) => {
         label: payload.title || t(`vanLog.category.${payload.category}`),
       });
       await syncReceiptPhoto(entityId, queued);
+      leaveWithoutAsking();
       navigation.goBack();
     } catch (err) {
       setSubmitError(err?.message || t('vanLog.saveError'));

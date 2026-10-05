@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
+import { useDiscardGuard } from '../../hooks/useDiscardGuard';
 import { supplyCategories, supplyItemSchema, supplyUnits, translateValidationMessage } from '@tobeatraveller/shared';
 import { newEntityId, runOrQueue } from '../../offline/outbox';
 import { CHANGE_KINDS, COLLECTIONS } from '../../offline/pendingChanges';
@@ -34,14 +35,10 @@ const SupplyFormScreen = ({ navigation, route }) => {
   const [saving, setSaving] = useState(false);
   const [submitError, setSubmitError] = useState(null);
   const [isDirty, setIsDirty] = useState(false);
+  const leaveWithoutAsking = useDiscardGuard(navigation, isDirty);
 
-  const handleBack = () => {
-    if (!isDirty) { navigation.goBack(); return; }
-    Alert.alert(t('editProfile.discardChanges'), t('editProfile.discardChangesDesc'), [
-      { text: t('editProfile.keepEditing'), style: 'cancel' },
-      { text: t('editProfile.discard'), style: 'destructive', onPress: () => navigation.goBack() },
-    ]);
-  };
+  // The guard asks if there are unsaved changes, so going back is just going back.
+  const handleBack = () => navigation.goBack();
 
   const handleNameChange = (value) => {
     setName(value);
@@ -90,6 +87,7 @@ const SupplyFormScreen = ({ navigation, route }) => {
         payload: isEditing ? payload : { ...payload, id: entityId },
         label: payload.name,
       });
+      leaveWithoutAsking();
       navigation.goBack();
     } catch (err) {
       setSubmitError(err?.message || s('saveError'));

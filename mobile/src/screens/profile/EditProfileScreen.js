@@ -17,6 +17,7 @@ import {
 import { shadow } from '../../utils/styles';
 import { GEOAPIFY_KEY, WEB_URL } from '../../utils/config';
 import { useCurrentLocation } from '../../hooks/useCurrentLocation';
+import { useDiscardGuard } from '../../hooks/useDiscardGuard';
 import { UseCurrentLocationButton } from '../../components/UseCurrentLocationButton';
 
 // The API's answer when the name changed less than 30 days ago (e.g. on
@@ -44,6 +45,7 @@ const EditProfileScreen = ({ navigation }) => {
   const [errors, setErrors] = useState({});
   const [submitError, setSubmitError] = useState(null);
   const [isDirty, setIsDirty] = useState(false);
+  const leaveWithoutAsking = useDiscardGuard(navigation, isDirty || Boolean(avatarUri) || removeAvatar);
 
   const usernameTimer = useRef(null);
   const { getCurrentLocation, loading: locating } = useCurrentLocation();
@@ -142,16 +144,8 @@ const EditProfileScreen = ({ navigation }) => {
     setIsDirty(true);
   };
 
-  const handleCancel = () => {
-    if (isDirty || avatarUri || removeAvatar) {
-      Alert.alert(t('editProfile.discardChanges'), t('editProfile.discardChangesDesc'), [
-        { text: t('editProfile.keepEditing'), style: 'cancel' },
-        { text: t('editProfile.discard'), style: 'destructive', onPress: () => navigation.goBack() },
-      ]);
-    } else {
-      navigation.goBack();
-    }
-  };
+  // The guard asks if there are unsaved changes, so cancelling is just going back.
+  const handleCancel = () => navigation.goBack();
 
   const hasPhoto = Boolean(avatarUri) || Boolean(user?.avatarUrl?.includes('res.cloudinary.com'));
   // Changed less than 30 days ago: locked until then (the API refuses it too).
@@ -186,6 +180,7 @@ const EditProfileScreen = ({ navigation }) => {
       const refreshes = [dispatch(initAuthUser())];
       if (user?.id) refreshes.push(dispatch(setUserInfo(user.id)));
       await Promise.all(refreshes);
+      leaveWithoutAsking();
       navigation.goBack();
     } catch (err) {
       setSubmitError(err?.message?.startsWith(USERNAME_COOLDOWN_ERROR)

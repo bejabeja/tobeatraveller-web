@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
@@ -7,6 +7,7 @@ import { IoLockClosedOutline } from "react-icons/io5";
 import { Link } from "react-router-dom";
 import { isLifeDiaryCapReachedError, localCalendarDay } from "@tobeatraveller/shared";
 import { InputForm, TextAreaForm } from "../../components/form/InputForm";
+import Modal from "../../components/modal/Modal";
 import AutocompleteObjectInput from "../../components/form/AutocompleteObjectInput";
 import SubmitButton from "../../components/form/SubmitButton";
 import GalleryUpload from "../itinerary/sectionsForm/GalleryUpload";
@@ -50,7 +51,7 @@ const LifeDiaryFormModal = ({ entry, onClose, onSaved, initialCapReached = false
   const d = (key, vars) => t(`lifeDiary.${key}`, vars);
   const isEditing = !!entry;
 
-  const { control, handleSubmit, watch, setValue, formState: { errors, isSubmitting } } = useForm({
+  const { control, handleSubmit, watch, setValue, formState: { errors, isSubmitting, isDirty } } = useForm({
     resolver: zodResolver(lifeDiaryEntrySchema),
     defaultValues: buildDefaultValues(entry),
   });
@@ -60,6 +61,23 @@ const LifeDiaryFormModal = ({ entry, onClose, onSaved, initialCapReached = false
   // Only meaningful for a new entry: editing an existing one must never be
   // blocked by the cap, since it doesn't add a net-new entry.
   const [capReached, setCapReached] = useState(!isEditing && initialCapReached);
+  const [confirmingDiscard, setConfirmingDiscard] = useState(false);
+
+  const initialPhotoIds = (entry?.images ?? []).map((photo) => photo.id).join();
+  const photosChanged = photos.map((photo) => (photo instanceof File ? "new" : photo.id)).join() !== initialPhotoIds;
+  const hasUnsavedChanges = (isDirty || photosChanged) && !capReached;
+
+  // A long entry is not worth losing to a stray click outside or the Escape key.
+  const requestClose = () => {
+    if (hasUnsavedChanges) setConfirmingDiscard(true);
+    else onClose();
+  };
+
+  useEffect(() => {
+    const onKey = (event) => { if (event.key === "Escape" && !confirmingDiscard) requestClose(); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  });
 
   const onSubmit = async (data) => {
     const hasLocation = data.location?.name;
@@ -105,11 +123,12 @@ const LifeDiaryFormModal = ({ entry, onClose, onSaved, initialCapReached = false
   };
 
   return (
-    <div className="life-diary-form__backdrop" onClick={onClose}>
+    <>
+    <div className="life-diary-form__backdrop" onClick={requestClose}>
       <div className="life-diary-form__panel" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
         <div className="life-diary-form__header">
           <h2>{isEditing ? d("editEntry") : d("addEntry")}</h2>
-          <button type="button" className="life-diary-form__close" onClick={onClose} aria-label={t("common.close")}>✕</button>
+          <button type="button" className="life-diary-form__close" onClick={requestClose} aria-label={t("common.close")}>✕</button>
         </div>
 
         {capReached ? (
@@ -179,14 +198,14 @@ const LifeDiaryFormModal = ({ entry, onClose, onSaved, initialCapReached = false
               <button
                 type="button"
                 className={`life-diary-form__would-return-btn ${wouldReturn === true ? "life-diary-form__would-return-btn--active" : ""}`}
-                onClick={() => setValue("wouldReturn", true)}
+                onClick={() => setValue("wouldReturn", wouldReturn === true ? null : true, { shouldDirty: true })}
               >
                 {d("wouldReturnYes")}
               </button>
               <button
                 type="button"
                 className={`life-diary-form__would-return-btn ${wouldReturn === false ? "life-diary-form__would-return-btn--active" : ""}`}
-                onClick={() => setValue("wouldReturn", false)}
+                onClick={() => setValue("wouldReturn", wouldReturn === false ? null : false, { shouldDirty: true })}
               >
                 {d("wouldReturnNo")}
               </button>
@@ -194,7 +213,7 @@ const LifeDiaryFormModal = ({ entry, onClose, onSaved, initialCapReached = false
           </div>
 
           <div className="life-diary-form__actions">
-            <button type="button" className="btn btn--ghost" onClick={onClose}>
+            <button type="button" className="btn btn--ghost" onClick={requestClose}>
               {t("common.cancel")}
             </button>
             <SubmitButton loading={isSubmitting} label={isEditing ? t("common.save") : d("addEntry")} />
@@ -203,6 +222,17 @@ const LifeDiaryFormModal = ({ entry, onClose, onSaved, initialCapReached = false
         )}
       </div>
     </div>
+
+      <Modal
+        isOpen={confirmingDiscard}
+        onClose={() => setConfirmingDiscard(false)}
+        onConfirm={onClose}
+        title={t("editProfile.discardChanges")}
+        description={t("editProfile.discardChangesDesc")}
+        confirmText={t("common.discard")}
+        type="danger"
+      />
+    </>
   );
 };
 
