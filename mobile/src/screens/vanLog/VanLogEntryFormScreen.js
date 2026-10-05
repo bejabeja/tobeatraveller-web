@@ -19,7 +19,6 @@ import { UseCurrentLocationButton } from '../../components/UseCurrentLocationBut
 import { newEntityId, runOrQueue } from '../../offline/outbox';
 import { CHANGE_KINDS, COLLECTIONS } from '../../offline/pendingChanges';
 
-const today = () => new Date().toISOString().split('T')[0];
 
 // The API returns location with flat lat/lon; the form works with nested coordinates internally.
 const normalizeLocation = (location) => location?.name
@@ -54,7 +53,7 @@ const VanLogEntryFormScreen = ({ navigation, route }) => {
     Boolean(entry?.currency) && !vanLogCommonCurrencies.includes(entry.currency)
   );
   const [pricePerLiter, setPricePerLiter] = useState(entry?.pricePerLiter != null ? String(entry.pricePerLiter) : '');
-  const [entryDate, setEntryDate] = useState(entry?.entryDate ? entry.entryDate.slice(0, 10) : today());
+  const [entryDate, setEntryDate] = useState(entry?.entryDate ? entry.entryDate.slice(0, 10) : localCalendarDay());
   const [location, setLocation] = useState(() => normalizeLocation(entry?.location));
   const [locationQuery, setLocationQuery] = useState(entry?.location?.name ?? '');
   const [locationResults, setLocationResults] = useState([]);

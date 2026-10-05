@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { localCalendarDay } from "@tobeatraveller/shared";
 import { InputForm } from "../../../components/form/InputForm";
 
 const DatesForm = ({ control, errors, watch, setValue, isComplete }) => {
@@ -28,7 +29,7 @@ const DatesForm = ({ control, errors, watch, setValue, isComplete }) => {
   }, [startDateWatch, endDateWatch]);
 
   const handleDurationPreset = (days) => {
-    const start = startDateWatch || new Date().toISOString().split("T")[0];
+    const start = startDateWatch || localCalendarDay();
     const end = new Date(start);
     end.setDate(end.getDate() + days - 1);
     if (!startDateWatch) setValue("startDate", start, { shouldValidate: true });

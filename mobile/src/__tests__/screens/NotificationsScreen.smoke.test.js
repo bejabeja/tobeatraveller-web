@@ -23,6 +23,7 @@ jest.mock('@tobeatraveller/shared', () => ({
   selectNotificationsTotalPages: () => 1,
 }));
 
+import { RefreshControl } from 'react-native';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import NotificationsScreen from '../../screens/notifications/NotificationsScreen';
@@ -73,4 +74,14 @@ it('reminds of a trip about to start by its title and opens the trip', async () 
 
   expect(screen.getByText('notifications.tripPacking', { exact: false })).toBeTruthy();
   expect(mockNavigate).toHaveBeenCalledWith('Itinerary', { id: 'trip-1', commentId: undefined });
+});
+
+it('asks for the list again when pulled down', async () => {
+  mockNotifications = [{ id: 'n2', type: 'follow', isRead: true, actor, count: 1 }];
+  await renderScreen();
+  mockDispatch.mockClear();
+
+  await act(async () => { screen.UNSAFE_getByType(RefreshControl).props.onRefresh(); });
+
+  expect(mockDispatch).toHaveBeenCalledWith('open-notifications');
 });

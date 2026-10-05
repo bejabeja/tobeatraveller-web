@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  ActivityIndicator, FlatList, Image, StyleSheet, Text,
+  ActivityIndicator, FlatList, Image, RefreshControl, StyleSheet, Text,
   TouchableOpacity, View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -28,9 +28,17 @@ const NotificationsScreen = ({ navigation }) => {
   const page = useSelector(selectNotificationsPage);
   const totalPages = useSelector(selectNotificationsTotalPages);
 
+  const [refreshing, setRefreshing] = useState(false);
+
   useEffect(() => {
     dispatch(openNotifications());
   }, [dispatch]);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await dispatch(openNotifications());
+    setRefreshing(false);
+  };
 
   // Marked as seen on opening, but still shown apart for this visit: what
   // was new is what you came to see. The headings are rows of the list.
@@ -77,7 +85,7 @@ const NotificationsScreen = ({ navigation }) => {
         <View style={{ width: 40 }} />
       </View>
 
-      {loading ? (
+      {loading && !refreshing ? (
         <View style={{ paddingHorizontal: 16, paddingTop: 8 }}>
           {Array.from({ length: 8 }, (_, i) => <UserRowSkeleton key={i} />)}
         </View>
@@ -103,6 +111,7 @@ const NotificationsScreen = ({ navigation }) => {
           keyExtractor={item => item.id}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#E8743B" />}
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.4}
           ListFooterComponent={loadingMore ? (

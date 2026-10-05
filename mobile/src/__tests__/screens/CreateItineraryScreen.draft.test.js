@@ -27,6 +27,7 @@ jest.mock('@tobeatraveller/shared', () => ({
   ...jest.requireActual('../../../../shared/src/utils/itineraryDraft.js'),
   ...jest.requireActual('../../../../shared/src/utils/formatLocale.js'),
   ...jest.requireActual('../../../../shared/src/utils/analyticsEvents.js'),
+  ...jest.requireActual('../../../../shared/src/utils/nextTrip.js'),
   NEW_ITINERARY_DEFAULT_VISIBILITY: false,
   createItinerary: jest.fn(),
   reverseGeocode: jest.fn(),

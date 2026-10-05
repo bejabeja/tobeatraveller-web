@@ -8,7 +8,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { loginUser, selectAuthError, translateAuthError } from '@tobeatraveller/shared';
+import { clearError as clearAuthError, loginUser, selectAuthError, translateAuthError } from '@tobeatraveller/shared';
 import { shadow, textShadow } from '../../utils/styles';
 
 const AUTH_BG = require('../../../assets/auth.webp');
@@ -21,6 +21,9 @@ const LoginScreen = ({ navigation, route }) => {
   const dispatch = useDispatch();
   const insets = useSafeAreaInsets();
   const authError = useSelector(selectAuthError);
+
+  // A failed attempt on another screen must not greet someone who has not tried anything here.
+  useEffect(() => { dispatch(clearAuthError()); }, [dispatch]);
 
   const [email, setEmail] = useState(route?.params?.email ?? '');
   const [password, setPassword] = useState('');
@@ -65,7 +68,10 @@ const LoginScreen = ({ navigation, route }) => {
     }
   };
 
-  const clearError = (field) => setErrors(p => ({ ...p, [field]: null }));
+  const clearError = (field) => {
+    setErrors(p => ({ ...p, [field]: null }));
+    if (authError) dispatch(clearAuthError());
+  };
 
   return (
     <View style={styles.root}>

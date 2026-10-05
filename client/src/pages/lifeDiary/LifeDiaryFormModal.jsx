@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { IoLockClosedOutline } from "react-icons/io5";
 import { Link } from "react-router-dom";
-import { isLifeDiaryCapReachedError } from "@tobeatraveller/shared";
+import { isLifeDiaryCapReachedError, localCalendarDay } from "@tobeatraveller/shared";
 import { InputForm, TextAreaForm } from "../../components/form/InputForm";
 import AutocompleteObjectInput from "../../components/form/AutocompleteObjectInput";
 import SubmitButton from "../../components/form/SubmitButton";
@@ -15,7 +15,7 @@ import { lifeDiaryEntrySchema } from "../../utils/schemasValidation";
 import "./LifeDiaryFormModal.scss";
 
 const buildDefaultValues = (entry) => {
-  const today = new Date().toISOString().split("T")[0];
+  const today = localCalendarDay();
   if (!entry) {
     return {
       entryDate: today,

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  Image, Platform, ScrollView,
+  Image, Platform, RefreshControl, ScrollView,
   StyleSheet, Text, TouchableOpacity, View,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -15,7 +15,7 @@ import {
   selectFeaturedItineraries, selectFeaturedItinerariesLoading,
   selectFeaturedUsers, selectFeaturedUsersLoading,
   selectFeed, selectFeedLoading,
-  selectAuthUser, selectIsAuthenticated, selectMe, selectUnreadCount, TRAVEL_STYLES,
+  refreshUnreadCount, selectAuthUser, selectIsAuthenticated, selectMe, selectUnreadCount, TRAVEL_STYLES,
 } from '@tobeatraveller/shared';
 import { EmailVerificationBanner } from '../../components/EmailVerificationBanner';
 import ItineraryCard from '../../components/ItineraryCard';
@@ -68,6 +68,7 @@ const HomeScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const [destinations, setDestinations] = useState([]);
   const [tab, setTab] = useState('discover');
+  const [refreshing, setRefreshing] = useState(false);
   const itineraries = useSelector(selectFeaturedItineraries);
   const itinerariesLoading = useSelector(selectFeaturedItinerariesLoading);
   const users = useSelector(selectFeaturedUsers);
@@ -94,11 +95,23 @@ const HomeScreen = ({ navigation }) => {
     if (isAuthenticated && tab === 'following') dispatch(initFeed(1));
   }, [isAuthenticated, tab, dispatch]);
 
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await Promise.allSettled([
+      dispatch(initFeaturedItineraries()),
+      dispatch(initFeaturedUsers()),
+      isAuthenticated && tab === 'following' ? dispatch(initFeed(1)) : null,
+      isAuthenticated ? dispatch(refreshUnreadCount()) : null,
+    ]);
+    setRefreshing(false);
+  };
+
   return (
     <ScrollView
       style={styles.container}
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ paddingBottom: 24 }}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#E8743B" />}
     >
       {/* Hero */}
       <LinearGradient

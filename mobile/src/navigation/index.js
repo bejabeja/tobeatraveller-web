@@ -67,8 +67,8 @@ const TAB_ICONS = {
   Profile:   { active: 'person',  inactive: 'person-outline'  },
 };
 
-const CreateButton = ({ onPress }) => (
-  <TouchableOpacity style={tb.createWrap} onPress={onPress} activeOpacity={0.85}>
+const CreateButton = ({ onPress, label }) => (
+  <TouchableOpacity style={tb.createWrap} onPress={onPress} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={label}>
     <View style={tb.createCircle}>
       <Ionicons name="add" size={28} color="#fff" />
     </View>
@@ -84,6 +84,13 @@ const TabNavigator = ({ navigation }) => {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const [showSheet, setShowSheet] = useState(false);
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+
+  // Creating needs an account: better to say so now than after filling in a whole trip.
+  const openCreateSheet = () => {
+    if (isAuthenticated) setShowSheet(true);
+    else navigation.navigate('Login');
+  };
 
   return (
     <>
@@ -119,7 +126,7 @@ const TabNavigator = ({ navigation }) => {
           component={CreateItineraryScreen}
           options={{
             tabBarLabel: () => null,
-            tabBarButton: () => <CreateButton onPress={() => setShowSheet(true)} />,
+            tabBarButton: () => <CreateButton onPress={openCreateSheet} label={t('nav.createSheetTitle')} />,
           }}
         />
         {/* "Community" everywhere else in the app (page title, web nav); this
@@ -130,7 +137,14 @@ const TabNavigator = ({ navigation }) => {
 
       {/* Create type bottom sheet */}
       <Modal visible={showSheet} animationType="slide" transparent onRequestClose={() => setShowSheet(false)}>
-        <TouchableOpacity style={tb.backdrop} onPress={() => setShowSheet(false)} activeOpacity={1}>
+        <View style={tb.backdrop}>
+          <TouchableOpacity
+            style={StyleSheet.absoluteFill}
+            onPress={() => setShowSheet(false)}
+            activeOpacity={1}
+            accessibilityRole="button"
+            accessibilityLabel={t('nav.createSheetCancel')}
+          />
           <View style={tb.sheet}>
             <View style={tb.handle} />
             <Text style={tb.sheetTitle}>{t('nav.createSheetTitle')}</Text>
@@ -171,7 +185,7 @@ const TabNavigator = ({ navigation }) => {
               <Text style={tb.cancelText}>{t('nav.createSheetCancel')}</Text>
             </TouchableOpacity>
           </View>
-        </TouchableOpacity>
+        </View>
       </Modal>
     </>
   );

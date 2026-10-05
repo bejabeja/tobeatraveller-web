@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 import {
   createLifeDiaryEntry, isNetworkError, lifeDiaryEntrySchema, reverseGeocode, searchDestinations,
   updateLifeDiaryEntry,
+  localCalendarDay,
 } from '@tobeatraveller/shared';
 import { shadow } from '../../utils/styles';
 import { GEOAPIFY_KEY } from '../../utils/config';
@@ -20,7 +21,6 @@ import { newEntityId, runOrQueue } from '../../offline/outbox';
 import { CHANGE_KINDS, COLLECTIONS } from '../../offline/pendingChanges';
 
 const MAX_GALLERY_IMAGES = 6;
-const today = () => new Date().toISOString().split('T')[0];
 
 // The API returns location with flat lat/lon; the form works with nested coordinates internally.
 const normalizeLocation = (location) => location?.name
@@ -35,7 +35,7 @@ const LifeDiaryEntryFormScreen = ({ navigation, route }) => {
   const entry = route.params?.entry ?? null;
   const isEditing = !!entry;
 
-  const [entryDate, setEntryDate] = useState(entry?.entryDate ? entry.entryDate.slice(0, 10) : today());
+  const [entryDate, setEntryDate] = useState(entry?.entryDate ? entry.entryDate.slice(0, 10) : localCalendarDay());
   const [location, setLocation] = useState(() => normalizeLocation(entry?.location));
   const [locationQuery, setLocationQuery] = useState(entry?.location?.name ?? '');
   const [locationResults, setLocationResults] = useState([]);

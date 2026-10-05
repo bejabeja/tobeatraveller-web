@@ -9,7 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
-  createItinerary, hasItineraryDraftProgress, NEW_ITINERARY_DEFAULT_VISIBILITY, reverseGeocode, searchDestinations, selectAuthUser, selectMe,
+  createItinerary, hasItineraryDraftProgress, localCalendarDay, NEW_ITINERARY_DEFAULT_VISIBILITY, reverseGeocode, searchDestinations, selectAuthUser, selectMe,
   setUserInfo, setUserInfoItineraries, ANALYTICS_EVENTS, TRIP_KINDS, tripCreatedProperties,
 } from '@tobeatraveller/shared';
 import { trackEvent } from '../../utils/analytics';
@@ -35,7 +35,7 @@ const CreateItineraryScreen = ({ navigation }) => {
   const authUser = useSelector(selectAuthUser);
   const me = meDetail ?? authUser;
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = localCalendarDay();
   const [saving, setSaving] = useState(false);
 
   // Form state

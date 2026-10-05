@@ -8,7 +8,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { ANALYTICS_EVENTS, checkUsernameAvailable, PASSWORD_MIN_LENGTH, registerUser, selectAuthError, translateAuthError } from '@tobeatraveller/shared';
+import { ANALYTICS_EVENTS, checkUsernameAvailable, clearError as clearAuthError, PASSWORD_MIN_LENGTH, registerUser, selectAuthError, translateAuthError } from '@tobeatraveller/shared';
 import { trackEvent } from '../../utils/analytics';
 import { shadow, textShadow } from '../../utils/styles';
 import { RichText } from '../../components/RichText';
@@ -22,6 +22,9 @@ const RegisterScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const authError = useSelector(selectAuthError);
   const isDuplicateEmail = authError === 'Email already in use';
+
+  // A failed attempt on another screen must not greet someone who has not tried anything here.
+  useEffect(() => { dispatch(clearAuthError()); }, [dispatch]);
 
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
@@ -97,7 +100,10 @@ const RegisterScreen = ({ navigation }) => {
     }
   };
 
-  const clearError = (field) => setErrors(p => ({ ...p, [field]: null }));
+  const clearError = (field) => {
+    setErrors(p => ({ ...p, [field]: null }));
+    if (authError) dispatch(clearAuthError());
+  };
 
   const [termsPrefix, termsMiddle, termsSuffix] = t('auth.termsAccept', { terms: '@@TERMS@@', privacy: '@@PRIVACY@@' }).split(/@@TERMS@@|@@PRIVACY@@/);
 
