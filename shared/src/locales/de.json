@@ -8,6 +8,7 @@
     "delete": "Löschen",
     "deleting": "Wird gelöscht…",
     "loading": "Wird geladen…",
+    "noResults": "Keine Ergebnisse",
     "retry": "Erneut versuchen",
     "reset": "Zurücksetzen",
     "confirm": "Bestätigen",
@@ -692,6 +693,7 @@
     "noSavedTrips": "Noch keine gespeicherten Reisen",
     "noSavedTripsDesc": "Tippe bei einem Reiseplan auf das Lesezeichen, um ihn hier zu speichern."
   },
+    "statsLoadError": "Die Statistiken konnten nicht geladen werden. Bitte versuche es erneut.",
   "vanLog": {
     "title": "Ausgaben",
     "addEntry": "Eintrag hinzufügen",
@@ -1363,6 +1365,7 @@
     "following": "Gefolgt ✓",
     "continue": "Weiter →",
     "skip": "Jetzt überspringen",
+    "travelStyleSaveError": "Wir konnten nicht speichern, wie du reist. Du kannst es in den Einstellungen angeben.",
     "followPrompt": "Folge ein paar Reisenden, um deinen Feed zu füllen",
     "followedCount": "{{count}} gefolgt ✓",
     "readyToGo": "Alles bereit! 🎉",

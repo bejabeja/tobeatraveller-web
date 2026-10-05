@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
@@ -30,7 +30,6 @@ const Explore = () => {
   const { t, i18n } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const loadMoreRef = useRef(null);
 
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const itineraries = useSelector(selectExploreItineraries);
@@ -69,13 +68,7 @@ const Explore = () => {
   const loadMore = () => {
     const nextPage = page + 1;
     dispatch(setExplorePagination(nextPage));
-    dispatch(loadMoreExploreItineraries({ page: nextPage, ...filters, sortBy })).then(
-      () => {
-        if (loadMoreRef.current) {
-          loadMoreRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-        }
-      }
-    );
+    dispatch(loadMoreExploreItineraries({ page: nextPage, ...filters, sortBy }));
   };
 
   const handleRetry = () => {
@@ -119,6 +112,7 @@ const Explore = () => {
                 <button
                   key={opt.value}
                   type="button"
+                  aria-pressed={sortBy === opt.value}
                   className={`explore__sort-chip ${sortBy === opt.value ? "explore__sort-chip--active" : ""}`}
                   onClick={() => setSortBy(opt.value)}
                 >
@@ -209,7 +203,7 @@ const Explore = () => {
                 </div>
               </div>
             )}
-            <div className="explore__results-ctas" ref={loadMoreRef}>
+            <div className="explore__results-ctas">
               {hasMore && (
                 <LoadingButton onClick={loadMore} isLoading={loadingMore}>
                   {t("common.loadMore")}

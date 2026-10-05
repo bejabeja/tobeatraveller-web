@@ -1,3 +1,4 @@
+import toast from "react-hot-toast";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -92,7 +93,7 @@ const Onboarding = () => {
     setStep(STEPS.START);
     trackEvent(ANALYTICS_EVENTS.ONBOARDING_TRAVEL_STYLE_CHOSEN, { style });
     // The person has already moved on: if it is not saved, Settings lets them say it again.
-    updateMyTravelStyle(style).then(refreshUser).catch(() => {});
+    updateMyTravelStyle(style).then(refreshUser).catch(() => toast.error(t("onboarding.travelStyleSaveError")));
   };
 
   const handleFinish = () => {

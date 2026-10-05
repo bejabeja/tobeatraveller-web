@@ -8,6 +8,7 @@
     "delete": "Supprimer",
     "deleting": "Suppression…",
     "loading": "Chargement…",
+    "noResults": "Aucun résultat",
     "retry": "Réessayer",
     "reset": "Réinitialiser",
     "confirm": "Confirmer",
@@ -702,6 +703,7 @@
     "noSavedTrips": "Aucun voyage enregistré pour l'instant",
     "noSavedTripsDesc": "Touche l'icône de signet sur n'importe quel itinéraire pour l'enregistrer ici."
   },
+    "statsLoadError": "Impossible de charger les statistiques. Réessaie.",
   "vanLog": {
     "title": "Dépenses",
     "addEntry": "Ajouter une entrée",
@@ -1381,6 +1383,7 @@
     "following": "Abonné ✓",
     "continue": "Continuer →",
     "skip": "Passer pour l'instant",
+    "travelStyleSaveError": "Nous n'avons pas pu enregistrer ta façon de voyager. Tu peux l'indiquer dans les Réglages.",
     "followPrompt": "Suis quelques voyageurs pour remplir ton fil",
     "followedCount": "{{count}} suivis ✓",
     "readyToGo": "Tout est prêt ! 🎉",

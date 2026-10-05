@@ -107,7 +107,9 @@ const VanLog = () => {
   const loadStats = (requestId) => {
     getVanLogStats(filters)
       .then((res) => { if (requestId === requestIdRef.current) setStats(res); })
-      .catch(() => {});
+      .catch(() => {
+        if (requestId === requestIdRef.current) toast.error(t("vanLog.statsLoadError"));
+      });
   };
 
   const loadEntries = (requestId) => {
@@ -202,7 +204,7 @@ const VanLog = () => {
   if (error) {
     return (
       <section className="section__container">
-        <FeatureLoadState status={error} feature="vanLog" onRetry={loadEntries} />
+        <FeatureLoadState status={error} feature="vanLog" onRetry={refresh} />
       </section>
     );
   }
@@ -373,6 +375,7 @@ const VanLog = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={t("vanLog.searchPlaceholder")}
+              aria-label={t("vanLog.searchPlaceholder")}
             />
             {search && (
               <button type="button" className="van-log__search-clear" onClick={() => setSearch("")} aria-label={t("common.close")}>

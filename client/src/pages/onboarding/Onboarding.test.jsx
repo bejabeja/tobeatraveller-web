@@ -15,6 +15,7 @@ jest.mock("@tobeatraveller/shared", () => ({
   selectAuthUser: () => ({ id: "u1" }),
   generateAvatar: (username) => `avatar:${username}`,
 }));
+jest.mock("react-hot-toast", () => ({ __esModule: true, default: { error: jest.fn() } }));
 jest.mock("../../utils/analytics", () => ({ trackEvent: jest.fn() }));
 jest.mock("../../utils/analyticsEvents", () => ({
   ANALYTICS_EVENTS: {
@@ -24,6 +25,7 @@ jest.mock("../../utils/analyticsEvents", () => ({
   },
 }));
 
+import toast from "react-hot-toast";
 import { getSuggestedUsers, updateMyTravelStyle } from "@tobeatraveller/shared";
 import { trackEvent } from "../../utils/analytics";
 import Onboarding from "./Onboarding";
@@ -99,6 +101,15 @@ describe("Onboarding: how do you travel", () => {
     await choose("van");
 
     expect(await screen.findByRole("link", { name: /onboarding.startExpense/ })).toBeInTheDocument();
+  });
+
+  it("tells them it was not saved and where to set it, instead of failing silently", async () => {
+    updateMyTravelStyle.mockRejectedValue(new Error("Network error"));
+    renderOnboarding();
+
+    await choose("van");
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith("onboarding.travelStyleSaveError"));
   });
 
   it("gives the general first steps, and saves nothing, to whoever skips the question", async () => {

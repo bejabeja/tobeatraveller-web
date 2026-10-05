@@ -8,6 +8,7 @@
     "delete": "Eliminar",
     "deleting": "Eliminando…",
     "loading": "Cargando…",
+    "noResults": "Sin resultados",
     "retry": "Intentar de nuevo",
     "reset": "Restablecer",
     "confirm": "Confirmar",
@@ -686,6 +687,7 @@
     "noSavedTrips": "Todavía no hay viajes guardados",
     "noSavedTripsDesc": "Toca el icono de marcador en cualquier itinerario para guardarlo aquí."
   },
+    "statsLoadError": "No se pudieron cargar las estadísticas. Inténtalo de nuevo.",
   "vanLog": {
     "title": "Gastos",
     "addEntry": "Añadir apunte",
@@ -1381,6 +1383,7 @@
     "following": "Siguiendo ✓",
     "continue": "Continuar →",
     "skip": "Omitir por ahora",
+    "travelStyleSaveError": "No pudimos guardar cómo viajas. Puedes indicarlo en Ajustes.",
     "followPrompt": "Sigue a algunos viajeros para llenar tu feed",
     "followedCount": "{{count}} seguidos ✓",
     "readyToGo": "¡Todo listo! 🎉",

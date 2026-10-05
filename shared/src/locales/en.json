@@ -8,6 +8,7 @@
     "delete": "Delete",
     "deleting": "Deleting…",
     "loading": "Loading…",
+    "noResults": "No results found",
     "retry": "Try again",
     "reset": "Reset",
     "confirm": "Confirm",
@@ -692,6 +693,7 @@
     "noSavedTrips": "No saved trips yet",
     "noSavedTripsDesc": "Tap the bookmark icon on any itinerary to save it here."
   },
+    "statsLoadError": "Could not load the statistics. Please try again.",
   "vanLog": {
     "title": "Expenses",
     "addEntry": "Add entry",
@@ -1363,6 +1365,7 @@
     "following": "Following ✓",
     "continue": "Continue →",
     "skip": "Skip for now",
+    "travelStyleSaveError": "We could not save how you travel. You can set it in Settings.",
     "followPrompt": "Follow a few travellers to fill your feed",
     "followedCount": "{{count}} followed ✓",
     "readyToGo": "You're all set! 🎉",

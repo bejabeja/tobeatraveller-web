@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useId, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import "./Modal.scss";
 
@@ -16,13 +16,25 @@ const Modal = ({
   loading = false,
 }) => {
   const { t } = useTranslation();
+  const titleId = useId();
+  const dialogRef = useRef(null);
+
+  // An action in flight must not be cut off by a stray click or Escape.
+  const requestClose = () => { if (!loading) onClose(); };
+
+  useEffect(() => {
+    if (!isOpen) return undefined;
+    const previouslyFocused = document.activeElement;
+    dialogRef.current?.focus();
+    return () => previouslyFocused?.focus?.();
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
-    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    const onKey = (e) => { if (e.key === "Escape" && !loading) onClose(); };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, loading]);
 
   if (!isOpen) return null;
 
@@ -30,14 +42,16 @@ const Modal = ({
   const resolvedCancel  = cancelText  || t("common.cancel");
 
   return (
-    <div className="modal__backdrop" onClick={onClose} role="dialog" aria-modal="true">
+    <div className="modal__backdrop" onClick={requestClose} role="dialog" aria-modal="true" aria-labelledby={titleId}>
       <div
+        ref={dialogRef}
+        tabIndex={-1}
         className={`modal modal--${type}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="modal__header">
-          <h2 className="modal__title">{title}</h2>
-          <button className="modal__close" onClick={onClose} aria-label={resolvedCancel}>
+          <h2 id={titleId} className="modal__title">{title}</h2>
+          <button className="modal__close" onClick={requestClose} aria-label={resolvedCancel}>
             ✕
           </button>
         </div>

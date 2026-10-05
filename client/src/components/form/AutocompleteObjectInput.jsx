@@ -149,7 +149,7 @@ const AutocompleteObjectInput = ({
                       </li>
                     ))
                   ) : (
-                    <li className="no-results">No results found</li>
+                    <li className="no-results">{t("common.noResults")}</li>
                   )}
                 </ul>
               )}

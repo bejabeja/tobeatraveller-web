@@ -8,6 +8,7 @@
     "delete": "Elimina",
     "deleting": "Eliminazione…",
     "loading": "Caricamento…",
+    "noResults": "Nessun risultato",
     "retry": "Riprova",
     "reset": "Reimposta",
     "confirm": "Conferma",
@@ -702,6 +703,7 @@
     "noSavedTrips": "Ancora nessun viaggio salvato",
     "noSavedTripsDesc": "Tocca l'icona del segnalibro su un itinerario per salvarlo qui."
   },
+    "statsLoadError": "Impossibile caricare le statistiche. Riprova.",
   "vanLog": {
     "title": "Spese",
     "addEntry": "Aggiungi voce",
@@ -1381,6 +1383,7 @@
     "following": "Segui già ✓",
     "continue": "Continua →",
     "skip": "Salta per ora",
+    "travelStyleSaveError": "Non siamo riusciti a salvare come viaggi. Puoi indicarlo nelle Impostazioni.",
     "followPrompt": "Segui qualche viaggiatore per riempire il tuo feed",
     "followedCount": "{{count}} seguiti ✓",
     "readyToGo": "È tutto a posto! 🎉",
