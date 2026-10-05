@@ -124,6 +124,18 @@ it('says so for a year with nothing logged', async () => {
   expect(screen.getByText('recap.empty')).toBeTruthy();
 });
 
+it('lets them try again when the recap cannot be loaded', async () => {
+  getMyRecap.mockRejectedValueOnce(new Error('offline'));
+  getMyRecap.mockResolvedValueOnce({ available: false });
+
+  await renderScreen();
+  expect(screen.getByText('recap.loadError')).toBeTruthy();
+  await act(async () => { fireEvent.press(screen.getByText('common.retry')); });
+
+  expect(screen.queryByText('recap.loadError')).toBeNull();
+  expect(getMyRecap).toHaveBeenCalledTimes(2);
+});
+
 it('says when the recap will be available out of season, and closes', async () => {
   getMyRecap.mockResolvedValue({ available: false });
   const navigation = { goBack: jest.fn(), canGoBack: () => true, navigate: jest.fn() };

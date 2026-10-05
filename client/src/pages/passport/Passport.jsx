@@ -439,7 +439,12 @@ const Passport = () => {
   }
 
   if (error || !passport) {
-    return <div className="passport section__container"><p className="error-message">{t("passport.loadError")}</p></div>;
+    return (
+      <div className="passport section__container">
+        <p className="error-message">{t("passport.loadError")}</p>
+        <button type="button" className="btn btn--secondary" onClick={reload}>{t("common.retry")}</button>
+      </div>
+    );
   }
 
   const earnedCount = passport.achievements.filter(achievement => achievement.earnedAt).length;

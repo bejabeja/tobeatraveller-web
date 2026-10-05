@@ -319,7 +319,12 @@ const PassportScreen = ({ navigation, route }) => {
       {loading ? (
         <ActivityIndicator style={styles.loading} size="large" color="#E8743B" />
       ) : error || !passport ? (
-        <Text style={styles.errorText}>{t('passport.loadError')}</Text>
+        <>
+          <Text style={styles.errorText}>{t('passport.loadError')}</Text>
+          <TouchableOpacity style={styles.retryBtn} onPress={reload} accessibilityRole="button">
+            <Text style={styles.retryBtnText}>{t('common.retry')}</Text>
+          </TouchableOpacity>
+        </>
       ) : (
         <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}>
           {isOwner && <RecapBanner onPress={() => navigation.navigate('Recap', { from: RECAP_SOURCES.PASSPORT })} />}
@@ -456,7 +461,9 @@ const styles = StyleSheet.create({
   headerTitle: { flex: 1, fontSize: 18, fontWeight: '800', color: '#111827' },
   shareBtn: { marginLeft: 10, padding: 4 },
   loading: { marginTop: 48 },
-  errorText: { margin: 24, textAlign: 'center', color: '#b91c1c' },
+  errorText: { margin: 24, marginBottom: 12, textAlign: 'center', color: '#b91c1c' },
+  retryBtn: { alignSelf: 'center', paddingVertical: 10, paddingHorizontal: 24 },
+  retryBtnText: { color: '#E8743B', fontWeight: '700', fontSize: 14 },
   content: { padding: 16, gap: 16 },
 
   cover: {

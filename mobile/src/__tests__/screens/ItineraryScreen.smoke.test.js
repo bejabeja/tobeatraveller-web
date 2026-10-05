@@ -75,3 +75,31 @@ it('reloads the list of my trips after deleting one', async () => {
   expect(mockDispatch).toHaveBeenCalledWith({ type: 'load-my-trips' });
   expect(navigation.goBack).toHaveBeenCalled();
 });
+
+const renderWithoutTrip = async (error) => {
+  getItineraryById.mockRejectedValueOnce(error);
+  render(
+    <SafeAreaProvider initialMetrics={INITIAL_METRICS}>
+      <ItineraryScreen route={{ params: { id: 't1' } }} navigation={{ navigate: jest.fn(), goBack: jest.fn() }} />
+    </SafeAreaProvider>
+  );
+  await act(async () => {});
+};
+
+// Regression: any failure, even having no connection, said the trip was not found, as if it had been deleted.
+it('says the trip could not be loaded, and lets them try again, when the request fails', async () => {
+  await renderWithoutTrip(new Error('Network request failed'));
+
+  expect(screen.getByText('errors.itineraryLoad')).toBeTruthy();
+  getItineraryById.mockResolvedValueOnce(TRIP);
+  await act(async () => { fireEvent.press(screen.getByText('common.retry')); });
+
+  expect(await screen.findByText('Algarve')).toBeTruthy();
+});
+
+it('says the trip was not found, with nothing to retry, when it does not exist or is private', async () => {
+  await renderWithoutTrip(new Error('Itinerary not found'));
+
+  expect(screen.getByText('itinerary.itineraryNotFound')).toBeTruthy();
+  expect(screen.queryByText('common.retry')).toBeNull();
+});

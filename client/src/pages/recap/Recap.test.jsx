@@ -256,4 +256,15 @@ describe("Recap page", () => {
 
     expect(await screen.findByText("recap.loadError")).toBeInTheDocument();
   });
+
+  it("lets them try again when the recap cannot be loaded", async () => {
+    getMyRecap.mockRejectedValueOnce(new Error("offline"));
+    getMyRecap.mockResolvedValueOnce({ available: false, year: 2026 });
+
+    renderRecap();
+    fireEvent.click(await screen.findByRole("button", { name: "common.retry" }));
+
+    await waitFor(() => expect(screen.queryByText("recap.loadError")).not.toBeInTheDocument());
+    expect(getMyRecap).toHaveBeenCalledTimes(2);
+  });
 });

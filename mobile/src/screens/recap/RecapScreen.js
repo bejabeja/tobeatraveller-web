@@ -172,7 +172,7 @@ const RecapScreen = ({ navigation, route }) => {
   const { t, i18n } = useTranslation();
   const insets = useSafeAreaInsets();
   const owner = useSelector(selectAuthUser);
-  const { recap, loading, error } = useRecap();
+  const { recap, loading, error, reload } = useRecap();
   const [index, setIndex] = useState(0);
   const [sharing, setSharing] = useState(false);
   const [isHeld, setIsHeld] = useState(false);
@@ -285,7 +285,14 @@ const RecapScreen = ({ navigation, route }) => {
         {closeButton}
         {loading
           ? <ActivityIndicator size="large" color={STORY_COLORS.GOLD} />
-          : <Text style={styles.subtitle}>{t('recap.loadError')}</Text>}
+          : (
+            <>
+              <Text style={styles.subtitle}>{t('recap.loadError')}</Text>
+              <TouchableOpacity style={styles.offSeasonButton} onPress={reload} accessibilityRole="button">
+                <Text style={styles.offSeasonButtonText}>{t('common.retry')}</Text>
+              </TouchableOpacity>
+            </>
+          )}
       </View>
     );
   }

@@ -41,7 +41,7 @@ jest.mock("../../components/passport/PassportShareDialog", () => ({
   ),
 }));
 
-import { fireEvent } from "@testing-library/react";
+import { fireEvent, waitFor } from "@testing-library/react";
 import { getMyPassportLeaderboard, getUserPassport, updateMyDeclaredCountries } from "../../services/passport";
 import { getPendingDeclaredCountries } from "../../utils/pendingDeclaredCountries";
 import { trackEvent } from "../../utils/analytics";
@@ -503,5 +503,16 @@ describe("Passport page", () => {
     renderPassport();
 
     expect(await screen.findByText("passport.loadError")).toBeInTheDocument();
+  });
+
+  it("lets them try again, and shows the passport once it loads", async () => {
+    getUserPassport.mockRejectedValueOnce(new Error("boom"));
+    getUserPassport.mockResolvedValueOnce(PASSPORT);
+
+    renderPassport();
+    fireEvent.click(await screen.findByRole("button", { name: "common.retry" }));
+
+    await waitFor(() => expect(screen.queryByText("passport.loadError")).not.toBeInTheDocument());
+    expect(getUserPassport).toHaveBeenCalledTimes(2);
   });
 });

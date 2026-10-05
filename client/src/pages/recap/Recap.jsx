@@ -104,7 +104,7 @@ const Recap = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const owner = useSelector(selectAuthUser);
-  const { recap, loading, error } = useRecap();
+  const { recap, loading, error, reload } = useRecap();
   const [searchParams] = useSearchParams();
   const [index, setIndex] = useState(0);
   const [isHeld, setIsHeld] = useState(false);
@@ -195,7 +195,15 @@ const Recap = () => {
   );
 
   if (loading) return <div className="recap recap--message">{closeButton}<div className="recap__spinner" /></div>;
-  if (error) return <div className="recap recap--message">{closeButton}<p>{t("recap.loadError")}</p></div>;
+  if (error) {
+    return (
+      <div className="recap recap--message">
+        {closeButton}
+        <p>{t("recap.loadError")}</p>
+        <button type="button" className="btn btn--primary" onClick={reload}>{t("common.retry")}</button>
+      </div>
+    );
+  }
   // Out of season (reached by a link): what it will hold, and somewhere to go
   // meanwhile, instead of one line on an empty screen.
   if (!recap.available) {

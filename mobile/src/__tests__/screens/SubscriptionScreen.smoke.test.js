@@ -54,7 +54,24 @@ it('offers to subscribe once the trial has been used', () => {
   mockUser = { ...mockUser, isTrialEligible: false };
   renderScreen();
 
-  expect(screen.getAllByText('subscription.ctaSubscribe')).toHaveLength(2);
+  // The two plans and the top button.
+  expect(screen.getAllByText('subscription.ctaSubscribe')).toHaveLength(3);
+});
+
+// Regression: the top button said "free trial" to everyone, including whoever had already used it.
+it('does not promise a free trial in the top button once it has been used', () => {
+  mockUser = { ...mockUser, isTrialEligible: false };
+  renderScreen();
+
+  expect(screen.queryByText('subscription.ctaFreeTrial')).toBeNull();
+  expect(screen.queryByText('subscription.trialNoCard')).toBeNull();
+});
+
+it('offers the free trial in the top button, and says no card is needed, to someone who can still have it', () => {
+  renderScreen();
+
+  expect(screen.getByText('subscription.ctaFreeTrial')).toBeTruthy();
+  expect(screen.getByText('subscription.trialNoCard')).toBeTruthy();
 });
 
 // The tools free accounts can use a little show their limit, not "Premium".
@@ -506,7 +523,7 @@ describe('consent to start right away', () => {
     mockUser = { ...mockUser, isTrialEligible: false };
     render(<SubscriptionScreen navigation={{ navigate: jest.fn(), goBack: jest.fn() }} />);
 
-    await act(async () => { fireEvent.press(screen.getAllByText('subscription.ctaSubscribe')[0]); });
+    await act(async () => { fireEvent.press(screen.getAllByText('subscription.ctaSubscribe')[1]); });
 
     expect(createCheckoutSession).toHaveBeenCalledWith('monthly', { startTrial: true });
   });

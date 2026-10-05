@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
-  FlatList, Image, StyleSheet,
+  Alert, FlatList, Image, StyleSheet,
   Text, TouchableOpacity, View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -28,6 +28,15 @@ const FollowsScreen = ({ route, navigation }) => {
 
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  // A list that could not be read is not an empty one: "nobody follows you" would be false.
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [loadAttempt, setLoadAttempt] = useState(0);
+
+  const retryLoad = () => {
+    setLoadFailed(false);
+    setLoading(true);
+    setLoadAttempt((attempt) => attempt + 1);
+  };
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -40,10 +49,12 @@ const FollowsScreen = ({ route, navigation }) => {
           ? await getAllFollowers(userId)
           : await getAllFollowing(userId);
         setUsers(data ?? []);
-      } catch {}
+      } catch {
+        setLoadFailed(true);
+      }
       finally { setLoading(false); }
     })();
-  }, [userId, type, isAuthenticated]);
+  }, [userId, type, isAuthenticated, loadAttempt]);
 
   if (!isAuthenticated) return null;
 
@@ -67,6 +78,13 @@ const FollowsScreen = ({ route, navigation }) => {
       {loading ? (
         <View style={{ paddingHorizontal: 16, paddingTop: 8 }}>
           {Array.from({ length: 8 }, (_, i) => <UserRowSkeleton key={i} />)}
+        </View>
+      ) : loadFailed ? (
+        <View style={styles.empty}>
+          <Text style={styles.emptyText}>{t('errors.somethingWrong')}</Text>
+          <TouchableOpacity style={styles.retryBtn} onPress={retryLoad} accessibilityRole="button">
+            <Text style={styles.retryBtnText}>{t('common.retry')}</Text>
+          </TouchableOpacity>
         </View>
       ) : (
         <FlatList
@@ -114,7 +132,9 @@ const UserRow = ({ user, me, dispatch, onPress }) => {
       }
       setFollowing(f => !f);
       if (me?.id) dispatch(setUserInfo(me.id));
-    } catch {}
+    } catch {
+      Alert.alert(t('errors.somethingWrong'));
+    }
     finally { setLoading(false); }
   };
 
@@ -214,6 +234,8 @@ const styles = StyleSheet.create({
   empty: { alignItems: 'center', paddingTop: 60 },
   emptyEmoji: { fontSize: 40, marginBottom: 12 },
   emptyText: { fontSize: 15, color: '#6b7280' },
+  retryBtn: { marginTop: 12, paddingVertical: 10, paddingHorizontal: 24 },
+  retryBtnText: { color: '#E8743B', fontWeight: '700', fontSize: 14 },
 });
 
 export default FollowsScreen;

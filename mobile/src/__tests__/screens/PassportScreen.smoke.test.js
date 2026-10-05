@@ -1,7 +1,7 @@
 jest.mock('@react-navigation/native', () => {
   const { useEffect } = jest.requireActual('react');
   return {
-    useFocusEffect: (callback) => { useEffect(() => callback(), []); },
+    useFocusEffect: (callback) => { useEffect(() => callback(), [callback]); },
     useNavigation: () => ({ navigate: jest.fn() }),
   };
 });
@@ -173,6 +173,17 @@ it('shows an error instead of crashing when the passport fails to load', async (
   await renderScreen();
 
   expect(screen.getByText('passport.loadError')).toBeTruthy();
+});
+
+it('lets them try again when the passport fails to load', async () => {
+  getUserPassport.mockRejectedValueOnce(new Error('offline'));
+  getUserPassport.mockResolvedValueOnce({ owner: { id: 'user-1', username: 'jane' }, achievements: [], countries: [] });
+  await renderScreen();
+
+  await act(async () => { fireEvent.press(screen.getByText('common.retry')); });
+
+  expect(screen.queryByText('passport.loadError')).toBeNull();
+  expect(getUserPassport).toHaveBeenCalledTimes(2);
 });
 
 it('opens the share sheet right away, with the achievements, when coming from a badge notification', async () => {

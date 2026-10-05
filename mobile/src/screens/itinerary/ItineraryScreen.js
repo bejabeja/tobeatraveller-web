@@ -30,6 +30,8 @@ import { trackEvent } from '../../utils/analytics';
 
 // "Other" says nothing about the trip, so it gets no badge.
 const OTHER_CATEGORY_KEY = 'tripCategories.other';
+// What the API says when the trip does not exist or is private, as opposed to a failed request.
+const ITINERARY_NOT_FOUND_MESSAGE = 'Itinerary not found';
 
 const ItineraryScreen = ({ route, navigation }) => {
   const { id, commentId: targetCommentId } = route.params;
@@ -43,6 +45,9 @@ const ItineraryScreen = ({ route, navigation }) => {
   const [itinerary, setItinerary] = useState(null);
   const [author, setAuthor] = useState(null);
   const [loading, setLoading] = useState(true);
+  // A trip that could not be read is not a trip that does not exist: the first can be tried again.
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [loadAttempt, setLoadAttempt] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
@@ -55,6 +60,12 @@ const ItineraryScreen = ({ route, navigation }) => {
   const commentNodesRef = useRef({});
   const handledCommentIdRef = useRef(null);
 
+  const retryLoad = () => {
+    setLoadFailed(false);
+    setLoading(true);
+    setLoadAttempt((attempt) => attempt + 1);
+  };
+
   useEffect(() => {
     (async () => {
       try {
@@ -65,10 +76,12 @@ const ItineraryScreen = ({ route, navigation }) => {
           const user = await getUserById(data.userId);
           setAuthor(user);
         }
-      } catch {}
+      } catch (error) {
+        setLoadFailed(error.message !== ITINERARY_NOT_FOUND_MESSAGE);
+      }
       finally { setLoading(false); }
     })();
-  }, [id]);
+  }, [id, loadAttempt]);
 
   useEffect(() => {
     if (!itinerary?.id) return;
@@ -105,7 +118,12 @@ const ItineraryScreen = ({ route, navigation }) => {
       >
         <Text style={styles.errorBackBtnText}>←</Text>
       </TouchableOpacity>
-      <Text style={styles.errorText}>{t('itinerary.itineraryNotFound')}</Text>
+      <Text style={styles.errorText}>{t(loadFailed ? 'errors.itineraryLoad' : 'itinerary.itineraryNotFound')}</Text>
+      {loadFailed && (
+        <TouchableOpacity style={styles.errorRetryBtn} onPress={retryLoad}>
+          <Text style={styles.errorRetryBtnText}>{t('common.retry')}</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 
@@ -629,6 +647,8 @@ const styles = StyleSheet.create({
   errorScreen: { flex: 1, backgroundColor: '#fff' },
   errorBackBtn: { position: 'absolute', left: 16, width: 40, padding: 4 },
   errorBackBtnText: { fontSize: 20, color: '#374151' },
+  errorRetryBtn: { marginTop: 16, paddingVertical: 10, paddingHorizontal: 24, borderRadius: 999, backgroundColor: '#E8743B' },
+  errorRetryBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
   errorText: { textAlign: 'center', marginTop: 60, color: '#6b7280', fontSize: 15 },
 
   // Hero

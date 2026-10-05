@@ -288,7 +288,9 @@ const SubscriptionScreen = ({ navigation }) => {
             <Text style={styles.subtitle}>{t('subscription.subtitle')}</Text>
 
             <TouchableOpacity style={styles.trialBtn} onPress={handleTrialClick}>
-              <Text style={styles.trialBtnText}>{t('subscription.ctaFreeTrial')}</Text>
+              <Text style={styles.trialBtnText}>
+                {t(isAuthenticated && !user?.isTrialEligible ? 'subscription.ctaSubscribe' : 'subscription.ctaFreeTrial')}
+              </Text>
             </TouchableOpacity>
           </View>
         )}
@@ -461,6 +463,9 @@ const SubscriptionScreen = ({ navigation }) => {
               ))}
             </View>
 
+            {(!isAuthenticated || user?.isTrialEligible) && (
+              <Text style={styles.trialNote}>{t('subscription.trialNoCard')}</Text>
+            )}
             <Text style={styles.disclaimer}>{t('subscription.disclaimer')}</Text>
 
             <Text style={styles.featuresTitle}>{t('subscription.compareTitle')}</Text>
@@ -692,6 +697,9 @@ const styles = StyleSheet.create({
   },
   planCtaText: { color: '#fff', fontWeight: '700', fontSize: 14 },
 
+  trialNote: {
+    fontSize: 13, fontWeight: '600', color: '#6b7280', textAlign: 'center', marginTop: 10,
+  },
   disclaimer: {
     fontSize: 12, color: '#9ca3af', textAlign: 'center',
     marginTop: 6, lineHeight: 17,
