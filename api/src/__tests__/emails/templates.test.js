@@ -71,6 +71,13 @@ describe('user emails', () => {
         expect(noCard).toContain(copyOf(language).trialEnding.ctaNoCard);
     });
 
+    it.each(['en', 'es', 'fr', 'it', 'de'])('tells, in %s, that the other sessions were ended and how to recover the account', (language) => {
+        const { html } = passwordChangedTemplate({ username: 'ana', language });
+
+        expect(html).toContain(copyOf(language).passwordChanged.sessionsEnded);
+        expect(html).toContain('/forgot-password');
+    });
+
     it.each(['en', 'es', 'fr', 'it', 'de'])('puts the confirmation link, for that token, in the email in %s', (language) => {
         const { html } = verifyEmailTemplate({ username: 'ana', token: 'tok-1', language });
 

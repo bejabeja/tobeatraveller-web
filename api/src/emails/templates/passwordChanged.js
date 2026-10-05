@@ -6,6 +6,7 @@ const BRAND = '#0077b6';
 const MUTED = '#6b7280';
 
 const warningEmailLink = `<a href="mailto:${config.contactRecipientEmail}" style="color:#991b1b;font-weight:700;text-decoration:none;">${config.contactRecipientEmail}</a>`;
+const recoverLink = (label) => `<a href="${config.appUrl}/forgot-password" style="color:#991b1b;font-weight:700;">${label}</a>`;
 const contactUsLink = (label) => `<a href="mailto:${config.contactRecipientEmail}" style="color:${BRAND};text-decoration:none;">${label}</a>`;
 
 export const passwordChangedTemplate = ({ username, language }) => {
@@ -25,7 +26,7 @@ export const passwordChangedTemplate = ({ username, language }) => {
                       ${text.headline}
                     </h1>
                     <p style="margin:0;font-size:15px;color:${MUTED};line-height:1.6;">
-                      ${text.intro(username)}
+                      ${text.intro(username)} ${text.sessionsEnded}
                     </p>
                   </td>
                 </tr>
@@ -36,6 +37,9 @@ export const passwordChangedTemplate = ({ username, language }) => {
                   <td style="background-color:#fef2f2;border-radius:10px;padding:20px 24px;">
                     <p style="margin:0;font-size:14px;color:#991b1b;line-height:1.6;">
                       ${text.warning(warningEmailLink)}
+                    </p>
+                    <p style="margin:10px 0 0;font-size:14px;color:#991b1b;line-height:1.6;">
+                      ${text.recover(recoverLink)}
                     </p>
                   </td>
                 </tr>

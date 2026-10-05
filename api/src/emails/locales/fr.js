@@ -56,6 +56,8 @@ export const fr = {
         preheader: 'Le mot de passe de ton compte ToBeATraveller vient d\'être modifié',
         headline: 'Ton mot de passe a été modifié',
         intro: (username) => `Salut ${username}, nous te confirmons que le mot de passe de ton compte ToBeATraveller vient d'être modifié.`,
+        sessionsEnded: 'Pour ta sécurité, nous avons fermé ta session sur tous tes autres appareils.',
+        recover: (link) => `Pour récupérer ton compte, ${link('réinitialise ton mot de passe')}.`,
         warning: (emailLink) => `Si ce n'était pas toi, ton compte est peut-être compromis. Écris-nous au plus vite à ${emailLink}.`,
         footer: (contactUsLink) => `Tu reçois cet e-mail parce que le mot de passe de ton compte ToBeATraveller a été modifié.<br/>
                  Si c'était toi, tu n'as rien à faire. Sinon, ${contactUsLink('écris-nous')} au plus vite.`,

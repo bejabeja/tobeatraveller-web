@@ -56,6 +56,8 @@ export const it = {
         preheader: 'La password del tuo account ToBeATraveller è appena stata cambiata',
         headline: 'La tua password è stata cambiata',
         intro: (username) => `Ciao ${username}, ti confermiamo che la password del tuo account ToBeATraveller è appena stata cambiata.`,
+        sessionsEnded: 'Per la tua sicurezza, abbiamo chiuso la sessione su tutti gli altri tuoi dispositivi.',
+        recover: (link) => `Per recuperare il tuo account, ${link('reimposta la tua password')}.`,
         warning: (emailLink) => `Se non l'hai cambiata tu, il tuo account potrebbe essere compromesso. Scrivici subito a ${emailLink}.`,
         footer: (contactUsLink) => `Ricevi questa email perché la password del tuo account ToBeATraveller è stata cambiata.<br/>
                  Se l'hai cambiata tu, non devi fare nulla. Altrimenti, ${contactUsLink('scrivici')} subito.`,

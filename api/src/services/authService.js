@@ -165,9 +165,24 @@ export class AuthService {
         await this.userRepository.updatePassword(record.user_id, hashedPassword);
         await this.passwordResetRepository.markAsUsed(record.id);
 
+        await this.notifyPasswordChanged(record.user_id);
+
         this.auditLogService?.log({
             actorId: record.user_id, action: AUDIT_EVENTS.PASSWORD_RESET_COMPLETED,
             ipAddress: ip, userAgent,
         });
+    }
+
+    // The password is already changed by now: not being able to say so must not undo it.
+    async notifyPasswordChanged(userId) {
+        if (!this.emailService) return;
+        try {
+            const user = await this.userRepository.getUserById(userId);
+            if (!user) return;
+            this.emailService.sendPasswordChanged({ username: user.username, email: user.email, language: user.language })
+                .catch(err => logger.error('[email] password changed failed:', err));
+        } catch (err) {
+            logger.error('[email] password changed failed:', err);
+        }
     }
 }

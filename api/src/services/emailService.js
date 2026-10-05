@@ -50,7 +50,8 @@ export class EmailService {
 
     async sendWelcome({ username, email, verifyToken, language }) {
         const { subject, html } = welcomeTemplate({ username, verifyToken, language });
-        await this._send({ to: email, subject, html });
+        // The email invites people to answer it.
+        await this._send({ to: email, subject, html, replyTo: this.contactRecipientEmail });
     }
 
     async sendContactNotification({ name, email, reason, subject, message, account }) {

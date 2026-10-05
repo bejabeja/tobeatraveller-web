@@ -56,6 +56,8 @@ export const de = {
         preheader: 'Das Passwort deines ToBeATraveller-Kontos wurde gerade geändert',
         headline: 'Dein Passwort wurde geändert',
         intro: (username) => `Hallo ${username}, wir bestätigen dir, dass das Passwort deines ToBeATraveller-Kontos gerade geändert wurde.`,
+        sessionsEnded: 'Zu deiner Sicherheit haben wir dich auf allen anderen Geräten abgemeldet.',
+        recover: (link) => `Um dein Konto zurückzubekommen, ${link('setze dein Passwort zurück')}.`,
         warning: (emailLink) => `Falls du das nicht warst, ist dein Konto möglicherweise nicht mehr sicher. Schreib uns sofort an ${emailLink}.`,
         footer: (contactUsLink) => `Du bekommst diese E-Mail, weil das Passwort deines ToBeATraveller-Kontos geändert wurde.<br/>
                  Wenn du das warst, musst du nichts tun. Andernfalls ${contactUsLink('schreib uns')} bitte sofort.`,

@@ -58,6 +58,8 @@ export const en = {
         preheader: 'Your ToBeATraveller password was just changed',
         headline: 'Your password has been changed',
         intro: (username) => `Hi ${username}, this confirms that the password for your ToBeATraveller account was just changed.`,
+        sessionsEnded: 'For your security, we signed you out on all your other devices.',
+        recover: (link) => `To get your account back, ${link('reset your password')}.`,
         warning: (emailLink) => `If you didn't make this change, your account may be compromised. Contact us immediately at ${emailLink}.`,
         footer: (contactUsLink) => `This email was sent because the password on your ToBeATraveller account was changed.<br/>
                  If this was you, no further action is needed. Otherwise, please ${contactUsLink('contact us')} right away.`,

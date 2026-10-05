@@ -392,6 +392,38 @@ describe('AuthService', () => {
             });
         });
 
+        // Regression: only changing the password from the account sent the "your password was changed"
+        // notice, so a reset (the way in for someone who got hold of the mailbox) went unannounced.
+        it('tells the account owner by email that the password was changed', async () => {
+            const mockEmailService = { sendPasswordChanged: vi.fn().mockResolvedValue(undefined) };
+            const mockPasswordResetRepository = {
+                findByTokenHash: vi.fn().mockResolvedValue({ id: 'reset-1', user_id: 'user-1' }),
+                markAsUsed: vi.fn(),
+            };
+            mockUserRepository.updatePassword = vi.fn();
+            mockUserRepository.getUserById = vi.fn().mockResolvedValue({ id: 'user-1', username: 'johndoe', email: 'john@example.com', language: 'es' });
+            authService = new AuthService(mockUserRepository, mockEmailService, mockPasswordResetRepository, null);
+
+            await authService.resetPassword('raw-token', 'newpassword123');
+
+            expect(mockEmailService.sendPasswordChanged).toHaveBeenCalledWith({ username: 'johndoe', email: 'john@example.com', language: 'es' });
+        });
+
+        it('still resets the password when the notice cannot be sent', async () => {
+            const mockEmailService = { sendPasswordChanged: vi.fn().mockRejectedValue(new Error('Brevo down')) };
+            const mockPasswordResetRepository = {
+                findByTokenHash: vi.fn().mockResolvedValue({ id: 'reset-1', user_id: 'user-1' }),
+                markAsUsed: vi.fn(),
+            };
+            mockUserRepository.updatePassword = vi.fn();
+            mockUserRepository.getUserById = vi.fn().mockRejectedValue(new Error('db hiccup'));
+            authService = new AuthService(mockUserRepository, mockEmailService, mockPasswordResetRepository, null);
+
+            await expect(authService.resetPassword('raw-token', 'newpassword123')).resolves.toBeUndefined();
+
+            expect(mockPasswordResetRepository.markAsUsed).toHaveBeenCalledWith('reset-1');
+        });
+
         it('forwards the caller\'s ip and user agent to the log', async () => {
             const mockAuditLogService = { log: vi.fn() };
             const mockPasswordResetRepository = {
