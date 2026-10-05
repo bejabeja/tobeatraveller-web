@@ -575,11 +575,11 @@
     "newPasswordLabel": "Nuova password",
     "confirmNewPasswordLabel": "Conferma nuova password",
     "changingPassword": "Aggiornamento…",
-    "passwordChanged": "La tua password è stata aggiornata.",
+    "passwordChanged": "La tua password è stata aggiornata. Abbiamo chiuso la sessione sugli altri tuoi dispositivi.",
     "yourData": "I tuoi dati",
     "yourDataDesc": "Scarica una copia di tutti i tuoi dati in formato JSON: profilo, viaggi, commenti, mi piace, viaggi salvati, follower, spese, liste, diario di vita e passaporto.",
     "downloadData": "Scarica i miei dati",
-    "dangerZoneDesc": "Eliminando l'account cancelli per sempre tutti i tuoi dati: profilo, viaggi, commenti (anche quelli lasciati sui viaggi di altre persone), mi piace, viaggi salvati, follower, spese, liste, diario di vita e passaporto. Non si può annullare.",
+    "dangerZoneDesc": "Eliminando l'account cancelli per sempre tutti i tuoi dati: profilo, viaggi, commenti (anche quelli lasciati sui viaggi di altre persone), mi piace, viaggi salvati, follower, spese, liste, diario di vita e passaporto. Non si può annullare. Se hai un abbonamento Premium, verrà annullato subito.",
     "deleteAccount": "Elimina il mio account",
     "discardChanges": "Scartare le modifiche?",
     "discardChangesDesc": "Hai modifiche non salvate. Vuoi davvero scartarle?",
@@ -611,6 +611,7 @@
     "step0Incomplete": "Aggiungi un titolo di almeno 2 lettere e scegli una destinazione per continuare.",
     "step1Incomplete": "Scegli le date di inizio e fine per continuare.",
     "metaDescriptionFallback_one": "Un viaggio di {{count}} giorno a {{destination}}",
+    "metaDescriptionFallback_many": "Un viaggio di {{count}} giorni a {{destination}}",
     "metaDescriptionFallback_other": "Un viaggio di {{count}} giorni a {{destination}}",
     "metaDestinationFallback": "una destinazione fantastica",
     "destination": "Destinazione",
@@ -709,8 +710,8 @@
     "noSavedTrips": "Ancora nessun viaggio salvato",
     "noSavedTripsDesc": "Tocca l'icona del segnalibro su un itinerario per salvarlo qui."
   },
-    "statsLoadError": "Impossibile caricare le statistiche. Riprova.",
   "vanLog": {
+    "statsLoadError": "Impossibile caricare le statistiche. Riprova.",
     "title": "Spese",
     "addEntry": "Aggiungi voce",
     "editEntry": "Modifica voce",
@@ -1289,7 +1290,8 @@
     "dangerZone": "Zona pericolosa",
     "notifyOnTripReminders": "Promemoria bagagli prima di un viaggio",
     "travelStyle": "Come viaggi",
-    "travelStyleNotSet": "Non indicato"
+    "travelStyleNotSet": "Non indicato",
+    "travelStyleSaved": "Salvato"
   },
   "validation": {
     "required": "Questo campo è obbligatorio",

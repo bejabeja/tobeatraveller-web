@@ -565,11 +565,11 @@
     "newPasswordLabel": "New password",
     "confirmNewPasswordLabel": "Confirm new password",
     "changingPassword": "Updating…",
-    "passwordChanged": "Your password has been updated.",
+    "passwordChanged": "Your password has been updated. We signed you out on your other devices.",
     "yourData": "Your data",
     "yourDataDesc": "Download a copy of all your data as JSON: profile, trips, comments, likes, saved trips, followers, expenses, lists, life diary and passport.",
     "downloadData": "Download my data",
-    "dangerZoneDesc": "Deleting your account permanently erases all your data: profile, trips, comments (including those on other people's trips), likes, saved trips, followers, expenses, lists, life diary and passport. This can't be undone.",
+    "dangerZoneDesc": "Deleting your account permanently erases all your data: profile, trips, comments (including those on other people's trips), likes, saved trips, followers, expenses, lists, life diary and passport. This can't be undone. If you have a Premium subscription, it will be cancelled immediately.",
     "deleteAccount": "Delete my account",
     "discardChanges": "Discard changes?",
     "discardChangesDesc": "You have unsaved changes. Are you sure you want to discard them?",
@@ -699,8 +699,8 @@
     "noSavedTrips": "No saved trips yet",
     "noSavedTripsDesc": "Tap the bookmark icon on any itinerary to save it here."
   },
-    "statsLoadError": "Could not load the statistics. Please try again.",
   "vanLog": {
+    "statsLoadError": "Could not load the statistics. Please try again.",
     "title": "Expenses",
     "addEntry": "Add entry",
     "editEntry": "Edit entry",
@@ -1271,7 +1271,8 @@
     "dangerZone": "Danger zone",
     "notifyOnTripReminders": "Packing reminder before a trip",
     "travelStyle": "How you travel",
-    "travelStyleNotSet": "Not set"
+    "travelStyleNotSet": "Not set",
+    "travelStyleSaved": "Saved"
   },
   "validation": {
     "required": "This field is required",

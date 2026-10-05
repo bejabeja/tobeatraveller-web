@@ -83,6 +83,22 @@ describe("Settings: changing the password", () => {
     expect(changePassword).not.toHaveBeenCalled();
   });
 
+  // Regression-in-waiting: it was a loose group of inputs, so Enter did nothing and the browser could not offer its saved password.
+  it("sends the change with Enter, and marks the fields for the password manager", async () => {
+    await submitNewPassword("abcdefgh");
+    await waitFor(() => expect(changePassword).toHaveBeenCalledTimes(1));
+    changePassword.mockClear();
+    await userEvent.click(screen.getAllByRole("button", { name: /editProfile.changePassword$/ })[0]);
+
+    expect(screen.getByLabelText("editProfile.currentPasswordLabel")).toHaveAttribute("autocomplete", "current-password");
+    expect(screen.getByLabelText("editProfile.newPasswordLabel")).toHaveAttribute("autocomplete", "new-password");
+    await userEvent.type(screen.getByLabelText("editProfile.currentPasswordLabel"), "old-password");
+    await userEvent.type(screen.getByLabelText("editProfile.newPasswordLabel"), "abcdefgh");
+    await userEvent.type(screen.getByLabelText("editProfile.confirmNewPasswordLabel"), "abcdefgh{Enter}");
+
+    await waitFor(() => expect(changePassword).toHaveBeenCalledWith({ currentPassword: "old-password", newPassword: "abcdefgh" }));
+  });
+
   it("changes it with 8 characters", async () => {
     await submitNewPassword("abcdefgh");
 
@@ -143,6 +159,14 @@ describe("Settings: how you travel", () => {
     await waitFor(() => expect(mockDispatch).toHaveBeenCalledWith({ type: "setUserInfo", id: "user-1" }));
   });
 
+  it("confirms it was saved, since the row itself does not change until the profile comes back", async () => {
+    renderSettings();
+
+    fireEvent.change(await screen.findByLabelText("settings.travelStyle"), { target: { value: "occasional" } });
+
+    await waitFor(() => expect(toast.success).toHaveBeenCalledWith("settings.travelStyleSaved"));
+  });
+
   it("says it could not be saved, and does not refresh the profile as if it had been", async () => {
     updateMyTravelStyle.mockRejectedValue(new Error("Network error"));
     renderSettings();
@@ -151,5 +175,27 @@ describe("Settings: how you travel", () => {
 
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith("errors.somethingWrong"));
     expect(mockDispatch).not.toHaveBeenCalledWith({ type: "setUserInfo", id: "user-1" });
+  });
+});
+
+describe("Settings: notification preferences", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockMe = { id: "user-1", username: "jane", email: "jane@example.com" };
+  });
+
+  // Regression-in-waiting: a failed load left a heading with nothing under it and a toast that was gone in seconds.
+  it("says they could not be loaded and lets them try again", async () => {
+    fetchNotificationPreferences.mockRejectedValueOnce(new Error("Network error"));
+    fetchNotificationPreferences.mockResolvedValueOnce({
+      pushEnabled: false, notifyOnComment: true, notifyOnLike: true, notifyOnFollow: true, notifyOnFriendStamps: false, notifyOnTripReminders: true,
+    });
+    render(<MemoryRouter><Settings /></MemoryRouter>);
+
+    expect(await screen.findByText("errors.notificationPreferencesLoadFailed")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "common.retry" }));
+
+    expect(await screen.findByText("settings.notifyOnComment")).toBeInTheDocument();
+    expect(screen.queryByText("errors.notificationPreferencesLoadFailed")).not.toBeInTheDocument();
   });
 });

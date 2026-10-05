@@ -575,11 +575,11 @@
     "newPasswordLabel": "Nouveau mot de passe",
     "confirmNewPasswordLabel": "Confirmer le nouveau mot de passe",
     "changingPassword": "Mise à jour…",
-    "passwordChanged": "Ton mot de passe a été mis à jour.",
+    "passwordChanged": "Ton mot de passe a été mis à jour. Nous avons fermé ta session sur tes autres appareils.",
     "yourData": "Tes données",
     "yourDataDesc": "Télécharge une copie de toutes tes données au format JSON : profil, voyages, commentaires, j'aime, voyages enregistrés, abonnés, dépenses, listes, journal de vie et passeport.",
     "downloadData": "Télécharger mes données",
-    "dangerZoneDesc": "Supprimer ton compte efface définitivement toutes tes données : profil, voyages, commentaires (y compris ceux laissés sur les voyages d'autres personnes), j'aime, voyages enregistrés, abonnés, dépenses, listes, journal de vie et passeport. C'est irréversible.",
+    "dangerZoneDesc": "Supprimer ton compte efface définitivement toutes tes données : profil, voyages, commentaires (y compris ceux laissés sur les voyages d'autres personnes), j'aime, voyages enregistrés, abonnés, dépenses, listes, journal de vie et passeport. C'est irréversible. Si tu as un abonnement Premium, il sera annulé immédiatement.",
     "deleteAccount": "Supprimer mon compte",
     "discardChanges": "Abandonner les modifications ?",
     "discardChangesDesc": "Tu as des modifications non enregistrées. Tu veux vraiment les abandonner ?",
@@ -611,6 +611,7 @@
     "step0Incomplete": "Ajoute un titre d'au moins 2 lettres et choisis une destination pour continuer.",
     "step1Incomplete": "Choisis les dates de début et de fin pour continuer.",
     "metaDescriptionFallback_one": "Un voyage de {{count}} jour à {{destination}}",
+    "metaDescriptionFallback_many": "Un voyage de {{count}} jours à {{destination}}",
     "metaDescriptionFallback_other": "Un voyage de {{count}} jours à {{destination}}",
     "metaDestinationFallback": "une destination incroyable",
     "destination": "Destination",
@@ -709,8 +710,8 @@
     "noSavedTrips": "Aucun voyage enregistré pour l'instant",
     "noSavedTripsDesc": "Touche l'icône de signet sur n'importe quel itinéraire pour l'enregistrer ici."
   },
-    "statsLoadError": "Impossible de charger les statistiques. Réessaie.",
   "vanLog": {
+    "statsLoadError": "Impossible de charger les statistiques. Réessaie.",
     "title": "Dépenses",
     "addEntry": "Ajouter une entrée",
     "editEntry": "Modifier l'entrée",
@@ -1289,7 +1290,8 @@
     "dangerZone": "Zone de danger",
     "notifyOnTripReminders": "Rappel des bagages avant un voyage",
     "travelStyle": "Comment tu voyages",
-    "travelStyleNotSet": "Non indiqué"
+    "travelStyleNotSet": "Non indiqué",
+    "travelStyleSaved": "Enregistré"
   },
   "validation": {
     "required": "Ce champ est obligatoire",

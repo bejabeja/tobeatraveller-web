@@ -61,6 +61,7 @@ const Settings = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [notificationPreferences, setNotificationPreferences] = useState(null);
+  const [preferencesFailed, setPreferencesFailed] = useState(false);
   const [updatingPreferenceKey, setUpdatingPreferenceKey] = useState(null);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
@@ -75,11 +76,16 @@ const Settings = () => {
     if (authUser?.id && !meDetail && !meLoading) dispatch(setUserInfo(authUser.id));
   }, [authUser?.id, meDetail, meLoading, dispatch]);
 
-  useEffect(() => {
+  const loadNotificationPreferences = () => {
+    setPreferencesFailed(false);
     fetchNotificationPreferences()
       .then(setNotificationPreferences)
-      .catch(() => toast.error(t("errors.notificationPreferencesLoadFailed")));
-  }, [t]);
+      .catch(() => setPreferencesFailed(true));
+  };
+
+  useEffect(() => {
+    loadNotificationPreferences();
+  }, []);
 
   if (!userMe) return <Spinner />;
 
@@ -127,6 +133,7 @@ const Settings = () => {
     try {
       await updateMyTravelStyle(travelStyle);
       dispatch(setUserInfo(userMe.id));
+      toast.success(t("settings.travelStyleSaved"));
     } catch {
       toast.error(t("errors.somethingWrong"));
     }
@@ -226,6 +233,16 @@ const Settings = () => {
             <IoNotificationsOutline aria-hidden="true" />
             <h2 className="ep__section-label">{t("settings.notifications")}</h2>
           </div>
+          {preferencesFailed && (
+            <div className="settings__rows">
+              <div className="settings__row">
+                <span className="settings__row-label">{t("errors.notificationPreferencesLoadFailed")}</span>
+                <button type="button" className="btn btn--secondary" onClick={loadNotificationPreferences}>
+                  {t("common.retry")}
+                </button>
+              </div>
+            </div>
+          )}
           {notificationPreferences && (
             <div className="settings__rows">
               {NOTIFICATION_PREFERENCE_TOGGLES.map(({ key, labelKey }) => (
@@ -311,10 +328,18 @@ const Settings = () => {
       {/* Delete account modal */}
       {showDeleteModal && (
         <div className="modal__backdrop" onClick={() => !isDeleting && setShowDeleteModal(false)}>
-          <div className="modal modal--danger" onClick={(e) => e.stopPropagation()}>
+          <form
+            className="modal modal--danger"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-account-title"
+            onClick={(e) => e.stopPropagation()}
+            onSubmit={(e) => { e.preventDefault(); handleDeleteAccount(); }}
+          >
             <div className="modal__header">
-              <h2 className="modal__title">{t("editProfile.deleteAccountModal")}</h2>
+              <h2 id="delete-account-title" className="modal__title">{t("editProfile.deleteAccountModal")}</h2>
               <button
+                type="button"
                 className="modal__close"
                 onClick={() => setShowDeleteModal(false)}
                 disabled={isDeleting}
@@ -342,6 +367,7 @@ const Settings = () => {
             </div>
             <div className="modal__actions">
               <button
+                type="button"
                 className="btn btn--ghost modal__btn-cancel"
                 onClick={() => setShowDeleteModal(false)}
                 disabled={isDeleting}
@@ -349,24 +375,32 @@ const Settings = () => {
                 {t("common.cancel")}
               </button>
               <button
+                type="submit"
                 className="btn btn--danger modal__btn-confirm"
-                onClick={handleDeleteAccount}
                 disabled={deleteConfirmInput !== userMe?.username || isDeleting}
               >
                 {isDeleting ? t("editProfile.deleting") : t("editProfile.deleteAccount")}
               </button>
             </div>
-          </div>
+          </form>
         </div>
       )}
 
       {/* Change password modal */}
       {showPasswordModal && (
         <div className="modal__backdrop" onClick={() => !isChangingPassword && closePasswordModal()}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
+          <form
+            className="modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="change-password-title"
+            onClick={(e) => e.stopPropagation()}
+            onSubmit={(e) => { e.preventDefault(); handleChangePassword(); }}
+          >
             <div className="modal__header">
-              <h2 className="modal__title">{t("editProfile.changePasswordModal")}</h2>
+              <h2 id="change-password-title" className="modal__title">{t("editProfile.changePasswordModal")}</h2>
               <button
+                type="button"
                 className="modal__close"
                 onClick={closePasswordModal}
                 disabled={isChangingPassword}
@@ -382,6 +416,7 @@ const Settings = () => {
                 type="password"
                 aria-label={t("editProfile.currentPasswordLabel")}
                 placeholder={t("editProfile.currentPasswordLabel")}
+                autoComplete="current-password"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 autoFocus
@@ -394,6 +429,7 @@ const Settings = () => {
                 type="password"
                 aria-label={t("editProfile.newPasswordLabel")}
                 placeholder={t("editProfile.newPasswordLabel")}
+                autoComplete="new-password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
               />
@@ -405,6 +441,7 @@ const Settings = () => {
                 type="password"
                 aria-label={t("editProfile.confirmNewPasswordLabel")}
                 placeholder={t("editProfile.confirmNewPasswordLabel")}
+                autoComplete="new-password"
                 value={confirmNewPassword}
                 onChange={(e) => setConfirmNewPassword(e.target.value)}
               />
@@ -412,6 +449,7 @@ const Settings = () => {
             {passwordError && <p className="ep__error">{passwordError}</p>}
             <div className="modal__actions">
               <button
+                type="button"
                 className="btn btn--ghost modal__btn-cancel"
                 onClick={closePasswordModal}
                 disabled={isChangingPassword}
@@ -419,14 +457,14 @@ const Settings = () => {
                 {t("common.cancel")}
               </button>
               <button
+                type="submit"
                 className="btn btn--primary modal__btn-confirm"
-                onClick={handleChangePassword}
                 disabled={!currentPassword || !newPassword || !confirmNewPassword || isChangingPassword}
               >
                 {isChangingPassword ? t("editProfile.changingPassword") : t("editProfile.changePassword")}
               </button>
             </div>
-          </div>
+          </form>
         </div>
       )}
     </div>

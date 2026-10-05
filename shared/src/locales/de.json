@@ -565,11 +565,11 @@
     "newPasswordLabel": "Neues Passwort",
     "confirmNewPasswordLabel": "Neues Passwort bestätigen",
     "changingPassword": "Wird aktualisiert…",
-    "passwordChanged": "Dein Passwort wurde aktualisiert.",
+    "passwordChanged": "Dein Passwort wurde aktualisiert. Wir haben dich auf deinen anderen Geräten abgemeldet.",
     "yourData": "Deine Daten",
     "yourDataDesc": "Lade eine Kopie all deiner Daten als JSON herunter: Profil, Reisen, Kommentare, Likes, gespeicherte Reisen, Follower, Ausgaben, Listen, Tagebuch und Pass.",
     "downloadData": "Meine Daten herunterladen",
-    "dangerZoneDesc": "Wenn du dein Konto löschst, werden alle deine Daten endgültig gelöscht: Profil, Reisen, Kommentare (auch die zu Reisen anderer), Likes, gespeicherte Reisen, Follower, Ausgaben, Listen, Tagebuch und Pass. Das lässt sich nicht rückgängig machen.",
+    "dangerZoneDesc": "Wenn du dein Konto löschst, werden alle deine Daten endgültig gelöscht: Profil, Reisen, Kommentare (auch die zu Reisen anderer), Likes, gespeicherte Reisen, Follower, Ausgaben, Listen, Tagebuch und Pass. Das lässt sich nicht rückgängig machen. Wenn du ein Premium-Abo hast, wird es sofort gekündigt.",
     "deleteAccount": "Mein Konto löschen",
     "discardChanges": "Änderungen verwerfen?",
     "discardChangesDesc": "Du hast ungespeicherte Änderungen. Möchtest du sie wirklich verwerfen?",
@@ -699,8 +699,8 @@
     "noSavedTrips": "Noch keine gespeicherten Reisen",
     "noSavedTripsDesc": "Tippe bei einem Reiseplan auf das Lesezeichen, um ihn hier zu speichern."
   },
-    "statsLoadError": "Die Statistiken konnten nicht geladen werden. Bitte versuche es erneut.",
   "vanLog": {
+    "statsLoadError": "Die Statistiken konnten nicht geladen werden. Bitte versuche es erneut.",
     "title": "Ausgaben",
     "addEntry": "Eintrag hinzufügen",
     "editEntry": "Eintrag bearbeiten",
@@ -1271,7 +1271,8 @@
     "dangerZone": "Gefahrenzone",
     "notifyOnTripReminders": "Packerinnerung vor einer Reise",
     "travelStyle": "Wie du reist",
-    "travelStyleNotSet": "Nicht angegeben"
+    "travelStyleNotSet": "Nicht angegeben",
+    "travelStyleSaved": "Gespeichert"
   },
   "validation": {
     "required": "Dieses Feld ist erforderlich",
