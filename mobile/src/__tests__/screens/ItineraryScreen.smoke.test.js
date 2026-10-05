@@ -18,11 +18,13 @@ jest.mock('@tobeatraveller/shared', () => ({
   setUserInfo: (id) => ({ type: 'load-me', id }), setUserInfoItineraries: () => ({ type: 'load-my-trips' }),
   COMMENT_HIGHLIGHT_DURATION_MS: 1000, formatBudgetAmount: () => '500 €', formatTimeAgo: () => '',
   formatTripDates: jest.requireActual('../../../../shared/src/utils/formatLocale.js').formatTripDates,
-  tripCategoryLabelKey: () => 'tripCategories.other', ANALYTICS_EVENTS: {},
+  tripCategoryLabelKey: () => 'tripCategories.other',
+  ...jest.requireActual('../../../../shared/src/utils/analyticsEvents.js'),
   COLORS: jest.requireActual('../../../../shared/src/utils/constants/colors.js').COLORS,
 }));
 
-import { Alert } from 'react-native';
+import { Alert, Share } from 'react-native';
+import { trackEvent } from '../../utils/analytics';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { deleteItinerary, getItineraryById } from '@tobeatraveller/shared';
@@ -102,4 +104,55 @@ it('says the trip was not found, with nothing to retry, when it does not exist o
 
   expect(screen.getByText('itinerary.itineraryNotFound')).toBeTruthy();
   expect(screen.queryByText('common.retry')).toBeNull();
+});
+
+describe('right after publishing a trip', () => {
+  const renderJustPublished = async (trip = TRIP, navigation = { navigate: jest.fn(), goBack: jest.fn(), setParams: jest.fn() }) => {
+    getItineraryById.mockResolvedValue(trip);
+    render(
+      <SafeAreaProvider initialMetrics={INITIAL_METRICS}>
+        <ItineraryScreen route={{ params: { id: 't1', justPublished: true } }} navigation={navigation} />
+      </SafeAreaProvider>
+    );
+    await act(async () => {});
+    return navigation;
+  };
+
+  // Regression-in-waiting: after creating a trip they ended on their profile, with nothing that invited them to send it to anyone.
+  it('offers to share the trip, and records it came from that prompt when it is shared', async () => {
+    jest.spyOn(Share, 'share').mockResolvedValue({ action: Share.sharedAction });
+    await renderJustPublished();
+
+    await act(async () => { fireEvent.press(await screen.findByText('itinerary.publishedShare')); });
+
+    expect(Share.share).toHaveBeenCalledWith(expect.objectContaining({ title: 'Algarve' }));
+    expect(trackEvent).toHaveBeenCalledWith('trip_shared', { source: 'published_prompt', method: 'native' });
+  });
+
+  it('does not count it as shared when they close the share sheet', async () => {
+    jest.spyOn(Share, 'share').mockResolvedValue({ action: Share.dismissedAction });
+    trackEvent.mockClear();
+    await renderJustPublished();
+
+    await act(async () => { fireEvent.press(await screen.findByText('itinerary.publishedShare')); });
+
+    expect(trackEvent).not.toHaveBeenCalledWith('trip_shared', expect.anything());
+  });
+
+  it('says a private trip is only theirs and offers to edit it instead of sharing', async () => {
+    const navigation = await renderJustPublished({ ...TRIP, isPublic: false });
+
+    expect(screen.getByText('itinerary.createdPrivateTitle')).toBeTruthy();
+    expect(screen.queryByText('itinerary.publishedShare')).toBeNull();
+    fireEvent.press(screen.getByText('itinerary.createdPrivateEdit'));
+    expect(navigation.navigate).toHaveBeenCalledWith('EditItinerary', { id: 't1' });
+  });
+
+  it('asks the screen to drop it when dismissed', async () => {
+    const navigation = await renderJustPublished();
+
+    fireEvent.press(screen.getByText('itinerary.publishedDismiss'));
+
+    expect(navigation.setParams).toHaveBeenCalledWith({ justPublished: undefined });
+  });
 });

@@ -220,7 +220,7 @@ const CreateItineraryScreen = ({ navigation }) => {
       }
       newPhotos.forEach(photo => formData.append('images', photo));
       formData.append('itinerary', JSON.stringify(body));
-      await createItinerary(formData);
+      const created = await createItinerary(formData);
       trackEvent(ANALYTICS_EVENTS.TRIP_CREATED, tripCreatedProperties({
         kind: TRIP_KINDS.ITINERARY, isPublic, places: body.places.length, days: days.length,
       }));
@@ -229,7 +229,9 @@ const CreateItineraryScreen = ({ navigation }) => {
         dispatch(setUserInfo(me.id));
         dispatch(setUserInfoItineraries());
       }
-      navigation.navigate('Tabs', { screen: 'Profile' });
+      // To the trip itself, with the way to share it at hand; the profile if the answer has no id.
+      if (created?.id) navigation.replace('Itinerary', { id: created.id, justPublished: true });
+      else navigation.navigate('Tabs', { screen: 'Profile' });
     } catch (err) {
       Alert.alert(t('errors.somethingWrong'), err?.message || t('createItinerary.errorCreate'));
     } finally {

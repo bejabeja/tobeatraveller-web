@@ -7,6 +7,8 @@ export {
   PASSPORT_VIEWERS,
   RECAP_SOURCES,
   TRIP_KINDS,
+  TRIP_SHARE_METHODS,
+  TRIP_SHARE_SOURCES,
   tripCreatedProperties,
   redactReferralCodes,
   withoutReferralCode,

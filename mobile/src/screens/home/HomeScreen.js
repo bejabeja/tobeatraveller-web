@@ -21,6 +21,7 @@ import { EmailVerificationBanner } from '../../components/EmailVerificationBanne
 import ItineraryCard from '../../components/ItineraryCard';
 import NextTripCard from '../../components/NextTripCard';
 import VanToday from '../../components/VanToday';
+import YourTravel from '../../components/YourTravel';
 import { ItineraryCardSkeleton, UserAvatarSkeleton } from '../../components/Skeleton';
 import { COLORS, shadow } from '../../utils/styles';
 
@@ -169,6 +170,9 @@ const HomeScreen = ({ navigation }) => {
 
       {/* Whoever said they live in a van starts the day from what a van needs. */}
       {isInAVan && <VanToday navigation={navigation} userId={me.id} />}
+
+      {/* Whoever does not live in a van, once the profile says so: not before, or it would flash for those who do. */}
+      {isAuthenticated && me && !isInAVan && <YourTravel navigation={navigation} userId={me.id} />}
 
       {/* Following feed */}
       {isAuthenticated && tab === 'following' && (

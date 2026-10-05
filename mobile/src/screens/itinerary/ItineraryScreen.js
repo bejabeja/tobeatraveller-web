@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 const MapView = Platform.OS !== 'web' ? require('react-native-maps').default : null;
 const Marker  = Platform.OS !== 'web' ? require('react-native-maps').Marker  : null;
 import { ItineraryDetailSkeleton } from '../../components/Skeleton';
+import PublishedNotice from '../../components/PublishedNotice';
 import TripPhoto from '../../components/TripPhoto';
 import TripListsSection from '../../components/TripListsSection';
 import { COLORS, shadow, textShadow } from '../../utils/styles';
@@ -23,7 +24,7 @@ import {
   deleteItinerary, getCommentsByItineraryId,
   getItineraryById, getUserById, removeFavorite, toggleLike,
   selectIsAuthenticated, selectMe, MAX_COMMENT_LENGTH, updateCommentsCount, setUserInfo, setUserInfoItineraries,
-  COMMENT_HIGHLIGHT_DURATION_MS, formatBudgetAmount, formatTimeAgo, formatTripDates, tripCategoryLabelKey, ANALYTICS_EVENTS,
+  COMMENT_HIGHLIGHT_DURATION_MS, formatBudgetAmount, formatTimeAgo, formatTripDates, tripCategoryLabelKey, ANALYTICS_EVENTS, TRIP_SHARE_METHODS, TRIP_SHARE_SOURCES,
 } from '@tobeatraveller/shared';
 import { trackEvent } from '../../utils/analytics';
 
@@ -136,10 +137,18 @@ const ItineraryScreen = ({ route, navigation }) => {
     ? money(budget / itinerary.numberOfPeople)
     : null;
 
-  const handleShare = async () => {
+  const justPublished = isMyItinerary && Boolean(route.params.justPublished);
+  const editRoute = itinerary.source === 'experience' ? 'EditExperience' : 'EditItinerary';
+  // Asked for once: dropped from the params so coming back to the screen does not show it again.
+  const dismissPublishedNotice = () => navigation.setParams({ justPublished: undefined });
+
+  const handleShare = async (source) => {
     const url = `${WEB_URL}/itinerary/${itinerary.id}`;
     try {
-      await Share.share({ message: `${itinerary.title} - ${url}`, url, title: itinerary.title });
+      const result = await Share.share({ message: `${itinerary.title} - ${url}`, url, title: itinerary.title });
+      if (result.action === Share.sharedAction) {
+        trackEvent(ANALYTICS_EVENTS.TRIP_SHARED, { source, method: TRIP_SHARE_METHODS.NATIVE });
+      }
     } catch {}
   };
 
@@ -285,7 +294,7 @@ const ItineraryScreen = ({ route, navigation }) => {
             <Ionicons name={isLiked ? 'heart' : 'heart-outline'} size={17} color="#fff" />
             <Text style={styles.likeCountText}>{likesCount}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.actionBtn} onPress={handleShare} accessibilityRole="button" accessibilityLabel={t('itinerary.shareTrip')}>
+          <TouchableOpacity style={styles.actionBtn} onPress={() => handleShare(TRIP_SHARE_SOURCES.TRIP_PAGE)} accessibilityRole="button" accessibilityLabel={t('itinerary.shareTrip')}>
             <Text style={styles.actionIcon}>⤴</Text>
           </TouchableOpacity>
           {isMyItinerary ? (
@@ -340,6 +349,15 @@ const ItineraryScreen = ({ route, navigation }) => {
       </View>
 
       <View style={styles.body}>
+        {justPublished && (
+          <PublishedNotice
+            isPublic={itinerary.isPublic !== false}
+            onShare={() => handleShare(TRIP_SHARE_SOURCES.PUBLISHED_PROMPT)}
+            onEdit={() => navigation.navigate(editRoute, { id: itinerary.id })}
+            onDismiss={dismissPublishedNotice}
+          />
+        )}
+
         {/* About */}
         {!!itinerary.description && (
           <View style={styles.section}>

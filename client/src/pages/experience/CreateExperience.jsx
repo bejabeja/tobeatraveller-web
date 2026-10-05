@@ -382,7 +382,7 @@ const CreateExperience = () => {
       const formData = new FormData();
       if (imageFile) formData.append("file", imageFile);
       formData.append("itinerary", JSON.stringify(body));
-      await createItinerary(formData);
+      const created = await createItinerary(formData);
       trackEvent(ANALYTICS_EVENTS.TRIP_CREATED, tripCreatedProperties({
         kind: TRIP_KINDS.EXPERIENCE, isPublic, places: body.places.length, days, hasDate: Boolean(body.startDate),
       }));
@@ -390,7 +390,8 @@ const CreateExperience = () => {
       clearDraft();
       dispatch(setUserInfo(userMe.id));
       dispatch(setUserInfoItineraries());
-      navigate(`/profile/${authUser?.id}`);
+      // To the trip itself, with the way to share it at hand; the profile if the answer has no id.
+      navigate(created?.id ? `/itinerary/${created.id}` : `/profile/${authUser?.id}`, { state: { justPublished: true } });
     } catch {
       toast.error(ce("saveError"));
     } finally {

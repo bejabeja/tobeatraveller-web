@@ -20,6 +20,7 @@ export const ANALYTICS_EVENTS = Object.freeze({
     TRIP_CLONED: 'trip_cloned',
     TRIP_LIKED: 'trip_liked',
     TRIP_SAVED: 'trip_saved',
+    TRIP_SHARED: 'trip_shared',
     COMMENT_POSTED: 'comment_posted',
     USER_FOLLOWED: 'user_followed',
     SUBSCRIPTION_PAGE_VIEWED: 'subscription_page_viewed',
@@ -43,6 +44,18 @@ export const TRIP_KINDS = Object.freeze({
 // Only an experience can go without a date.
 export const tripCreatedProperties = ({ kind, isPublic, places, days, hasDate = true }) => ({
     kind, is_public: Boolean(isPublic), places, days, has_date: hasDate,
+});
+
+// Where a trip was shared from, and how: the page of the trip itself, or the
+// prompt shown right after publishing it.
+export const TRIP_SHARE_SOURCES = Object.freeze({
+    TRIP_PAGE: 'trip_page',
+    PUBLISHED_PROMPT: 'published_prompt',
+});
+
+export const TRIP_SHARE_METHODS = Object.freeze({
+    NATIVE: 'native',
+    COPY: 'copy',
 });
 
 export const PASSPORT_SHARE_SOURCES = Object.freeze({

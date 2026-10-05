@@ -327,13 +327,15 @@ const PlanExperienceScreen = ({ navigation }) => {
         formData.append('file', { uri: photoUri, name: filename, type: ext === 'png' ? 'image/png' : 'image/jpeg' });
       }
       formData.append('itinerary', JSON.stringify(body));
-      await createItinerary(formData);
+      const created = await createItinerary(formData);
       trackEvent(ANALYTICS_EVENTS.TRIP_CREATED, tripCreatedProperties({
         kind: TRIP_KINDS.EXPERIENCE, isPublic, places: body.places.length, days, hasDate: Boolean(body.startDate),
       }));
       clearDraft();
       if (me?.id) { dispatch(setUserInfo(me.id)); dispatch(setUserInfoItineraries()); }
-      navigation.navigate('Tabs', { screen: 'Profile' });
+      // To the trip itself, with the way to share it at hand; the profile if the answer has no id.
+      if (created?.id) navigation.replace('Itinerary', { id: created.id, justPublished: true });
+      else navigation.navigate('Tabs', { screen: 'Profile' });
     } catch (err) {
       Alert.alert(t('errors.somethingWrong'), err?.message || ce('saveError'));
     } finally {

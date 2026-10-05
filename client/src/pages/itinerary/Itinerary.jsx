@@ -16,6 +16,7 @@ import { useTranslation } from "react-i18next";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { getCategoryIcon } from "../../assets/icons.js";
 import Modal from "../../components/modal/Modal.jsx";
+import PublishedNotice from "../../components/itineraries/PublishedNotice.jsx";
 import TripActionsMenu from "../../components/itineraries/TripActionsMenu.jsx";
 import TripLists from "../../components/itineraries/TripLists.jsx";
 import Spinner from "../../components/spinner/Spinner.jsx";
@@ -45,8 +46,9 @@ import { getCurrencySymbol } from "../../utils/constants/currencies.js";
 import { buildItineraryJsonLd } from "../../utils/jsonLd.js";
 import { formatBudgetAmount, formatTripDates, tripCategoryLabelKey } from "@tobeatraveller/shared";
 import { returnToState } from "../../utils/returnTo";
+import { shareTrip } from "../../utils/shareTrip";
 import { trackEvent } from "../../utils/analytics";
-import { ANALYTICS_EVENTS } from "../../utils/analyticsEvents";
+import { ANALYTICS_EVENTS, TRIP_SHARE_METHODS, TRIP_SHARE_SOURCES } from "../../utils/analyticsEvents";
 import "./Itinerary.scss";
 import Error from "../error/Error.jsx";
 
@@ -57,6 +59,7 @@ const Itinerary = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const { id } = useParams();
   const userMe = useSelector(selectMe);
   const isAuthenticated = useSelector(selectIsAuthenticated);
@@ -142,6 +145,20 @@ const Itinerary = () => {
   }
 
   const isMyItinerary = userMe?.id === itinerary?.userId;
+  const justPublished = isMyItinerary && Boolean(location.state?.justPublished);
+
+  const handleShare = async (source) => {
+    try {
+      const method = await shareTrip({ title: itinerary.title, url: window.location.href });
+      if (method === TRIP_SHARE_METHODS.COPY) toast.success(t("itinerary.linkCopied"));
+      if (method) trackEvent(ANALYTICS_EVENTS.TRIP_SHARED, { source, method });
+    } catch {
+      toast.error(t("itinerary.couldntCopyLink"));
+    }
+  };
+
+  // Asked for once: dropped from the history so a reload does not bring it back.
+  const dismissPublishedNotice = () => navigate(location.pathname, { replace: true, state: null });
 
   return (
     <section className="itinerary break-text">
@@ -155,10 +172,19 @@ const Itinerary = () => {
         navigate={navigate}
         isMyItinerary={isMyItinerary}
         setIsModalOpen={setIsModalOpen}
+        onShare={() => handleShare(TRIP_SHARE_SOURCES.TRIP_PAGE)}
         t={t}
       />
 
       <div className="section__container">
+        {justPublished && (
+          <PublishedNotice
+            isPublic={itinerary.isPublic !== false}
+            editPath={itinerary.source === "experience" ? `/experience/edit/${itinerary.id}` : `/itinerary/edit/${itinerary.id}`}
+            onShare={() => handleShare(TRIP_SHARE_SOURCES.PUBLISHED_PROMPT)}
+            onDismiss={dismissPublishedNotice}
+          />
+        )}
         <div className="itinerary__body">
           <div className="itinerary__main">
             {itinerary.description && (
@@ -223,27 +249,13 @@ const Hero = ({
   navigate,
   isMyItinerary,
   setIsModalOpen,
+  onShare,
   t,
 }) => {
   const { i18n } = useTranslation();
   const location = useLocation();
   const loginState = returnToState(location);
   const { isLiked, likesCount, handleToggleLike } = useLike(itinerary.id, itinerary.likesCount);
-
-  const handleShare = async () => {
-    const url = window.location.href;
-    if (navigator.share) {
-      try { await navigator.share({ title: itinerary.title, url }); } catch (err) {
-        if (err?.name !== "AbortError") {
-          await navigator.clipboard.writeText(url);
-          toast.success(t("itinerary.linkCopied"));
-        }
-      }
-    } else {
-      await navigator.clipboard.writeText(url);
-      toast.success(t("itinerary.linkCopied"));
-    }
-  };
 
   const handleClone = async () => {
     if (!isAuthenticated) { navigate("/login", { state: loginState }); return; }
@@ -334,7 +346,7 @@ const Hero = ({
           {isLiked ? <FaHeart /> : <FaRegHeart />}
           <span className="itinerary__like-count">{likesCount}</span>
         </button>
-        <button type="button" className="action-icon-btn" onClick={handleShare} title={t("itinerary.shareTrip")} aria-label={t("itinerary.shareTrip")}>
+        <button type="button" className="action-icon-btn" onClick={onShare} title={t("itinerary.shareTrip")} aria-label={t("itinerary.shareTrip")}>
           <MdOutlineShare />
         </button>
         {isMyItinerary ? (

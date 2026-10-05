@@ -186,7 +186,7 @@ const CreateItinerary = () => {
     formData.append("itinerary", JSON.stringify(body));
 
     try {
-      await toast.promise(createItinerary(formData), {
+      const created = await toast.promise(createItinerary(formData), {
         loading: t("itinerary.createItinerary") + "...",
         success: <b>{t("itinerary.createdSuccess")} 🎉</b>,
         error: <b>{t("errors.somethingWrong")}</b>,
@@ -197,7 +197,8 @@ const CreateItinerary = () => {
       clearDraft();
       dispatch(setUserInfo(userMe.id));
       dispatch(setUserInfoItineraries());
-      navigate(`/profile/${userMe.id}`);
+      // To the trip itself, with the way to share it at hand; the profile if the answer has no id.
+      navigate(created?.id ? `/itinerary/${created.id}` : `/profile/${userMe.id}`, { state: { justPublished: true } });
     } catch {}
   };
 

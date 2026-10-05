@@ -20,6 +20,7 @@ import {
   selectFeaturedUsersLoading,
 } from "@tobeatraveller/shared";
 import VanToday from "../../components/home/VanToday.jsx";
+import YourTravel from "../../components/home/YourTravel.jsx";
 import WorldMap from "../../components/home/WorldMap.jsx";
 import LoadingButton from "../../components/LoadingButton.jsx";
 import { FEATURES } from "../../utils/constants/constants.js";
@@ -82,6 +83,13 @@ const Home = () => {
       {isInAVan && (
         <div className="section__container">
           <VanToday />
+        </div>
+      )}
+
+      {/* Whoever does not live in a van, once the profile says so: not before, or it would flash for those who do. */}
+      {isAuthenticated && userMe && !isInAVan && (
+        <div className="section__container">
+          <YourTravel userId={userMe.id} />
         </div>
       )}
 
