@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
 import UserCard from "./UserCard";
 
 jest.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key) => key }) }));
@@ -49,5 +49,34 @@ describe("UserCard", () => {
     renderCard({ lastItinerary: { title: "Algarve", photoUrl: "https://res.cloudinary.com/x/image/upload/a.jpg" } });
 
     expect(screen.queryByAltText(/Cover photo|trip/)).not.toBeInTheDocument();
+  });
+
+  describe("for a visitor", () => {
+    const SignIn = () => <p>sign in, back to {useLocation().state?.redirectTo}</p>;
+    const renderVisitorCard = () => render(
+      <MemoryRouter initialEntries={["/community"]}>
+        <Routes>
+          <Route path="/community" element={<UserCard {...PERSON} isAuthenticated={false} isFollowing={false} onFollowToggle={jest.fn()} />} />
+          <Route path="/login" element={<SignIn />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    // Regression-in-waiting: both sent them to sign in and then to the home page, losing what they had picked.
+    it("brings them back to the list after signing in to follow", () => {
+      renderVisitorCard();
+
+      fireEvent.click(screen.getByRole("link", { name: "community.follow" }));
+
+      expect(screen.getByText("sign in, back to /community")).toBeInTheDocument();
+    });
+
+    it("brings them to the person's profile after signing in from their card", () => {
+      renderVisitorCard();
+
+      fireEvent.click(screen.getByRole("link", { name: /@ana/ }));
+
+      expect(screen.getByText("sign in, back to /friend-profile/user-2")).toBeInTheDocument();
+    });
   });
 });

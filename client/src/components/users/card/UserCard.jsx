@@ -1,7 +1,8 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { optimizedCloudinaryUrl } from "../../../utils/cloudinaryUrl";
 import { generateAvatar } from "../../../utils/constants/constants";
+import { returnToState } from "../../../utils/returnTo";
 import OfficialBadge from "../OfficialBadge";
 
 const AVATAR_WIDTH = 160;
@@ -26,8 +27,11 @@ const UserCard = ({
   role,
 }) => {
   const { t } = useTranslation();
+  const currentPage = useLocation();
   // Signed out, a profile and following both need an account first.
   const profilePath = isAuthenticated ? `/friend-profile/${id}` : "/login";
+  // Back to this person's profile once signed in, not to wherever the list was.
+  const profileLinkState = isAuthenticated ? undefined : returnToState({ pathname: `/friend-profile/${id}` });
   const tagline = bio || (lastItinerary?.title ? `${t("community.lastTripPrefix")} ${lastItinerary.title}` : t("community.noTripsYet"));
 
   return (
@@ -38,7 +42,7 @@ const UserCard = ({
         )}
       </div>
 
-      <Link to={profilePath} className="user-card__link">
+      <Link to={profilePath} state={profileLinkState} className="user-card__link">
         <img
           src={optimizedCloudinaryUrl(avatarUrl, { width: AVATAR_WIDTH }) || generateAvatar(username)}
           alt=""
@@ -65,7 +69,7 @@ const UserCard = ({
             {isFollowing ? t("community.following") : t("community.follow")}
           </button>
         ) : (
-          <Link to="/login" className="btn btn--primary user-card__follow">{t("community.follow")}</Link>
+          <Link to="/login" state={returnToState(currentPage)} className="btn btn--primary user-card__follow">{t("community.follow")}</Link>
         )
       )}
     </article>

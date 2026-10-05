@@ -44,6 +44,7 @@ import { optimizedCloudinaryUrl } from "../../utils/cloudinaryUrl.js";
 import { getCurrencySymbol } from "../../utils/constants/currencies.js";
 import { buildItineraryJsonLd } from "../../utils/jsonLd.js";
 import { formatBudgetAmount, formatTripDates, tripCategoryLabelKey } from "@tobeatraveller/shared";
+import { returnToState } from "../../utils/returnTo";
 import { trackEvent } from "../../utils/analytics";
 import { ANALYTICS_EVENTS } from "../../utils/analyticsEvents";
 import "./Itinerary.scss";
@@ -225,8 +226,8 @@ const Hero = ({
   t,
 }) => {
   const { i18n } = useTranslation();
-  const { pathname, search } = useLocation();
-  const loginState = { redirectTo: `${pathname}${search}` };
+  const location = useLocation();
+  const loginState = returnToState(location);
   const { isLiked, likesCount, handleToggleLike } = useLike(itinerary.id, itinerary.likesCount);
 
   const handleShare = async () => {

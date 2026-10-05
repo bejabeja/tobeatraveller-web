@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import { checkIsLiked, toggleLike } from "../services/likes";
 import { selectIsAuthenticated } from "../store/auth/authSelectors";
+import { returnToState } from "../utils/returnTo";
 import { trackEvent } from "../utils/analytics";
 import { ANALYTICS_EVENTS } from "../utils/analyticsEvents";
 
@@ -12,7 +13,7 @@ export const useLike = (itineraryId, initialLikesCount = 0) => {
     const { t } = useTranslation();
     const isAuthenticated = useSelector(selectIsAuthenticated);
     const navigate = useNavigate();
-    const { pathname, search } = useLocation();
+    const location = useLocation();
     const [isLiked, setIsLiked] = useState(false);
     const [likesCount, setLikesCount] = useState(initialLikesCount);
     const [isToggling, setIsToggling] = useState(false);
@@ -41,7 +42,7 @@ export const useLike = (itineraryId, initialLikesCount = 0) => {
         e.stopPropagation();
 
         if (!isAuthenticated) {
-            navigate("/login", { state: { redirectTo: `${pathname}${search}` } });
+            navigate("/login", { state: returnToState(location) });
             return;
         }
         if (isToggling) return;

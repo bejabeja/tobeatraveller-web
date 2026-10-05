@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { IoSearchOutline } from "react-icons/io5";
@@ -8,6 +8,7 @@ import LoadingButton from "../../components/LoadingButton.jsx";
 import ItinerariesSection from "../../components/itineraries/ItinerariesSection.jsx";
 import Filters from "../../components/filters/Filters.jsx";
 import { usePageMeta } from "../../hooks/usePageMeta.js";
+import { returnToState } from "../../utils/returnTo.js";
 import { selectIsAuthenticated } from "../../store/auth/authSelectors.js";
 
 import {
@@ -30,6 +31,7 @@ const Explore = () => {
   const { t, i18n } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const itineraries = useSelector(selectExploreItineraries);
@@ -194,10 +196,10 @@ const Explore = () => {
                   <span>{t("explore.createFreeAccount")}</span>
                 </p>
                 <div className="explore__guest-banner-actions">
-                  <button className="btn btn--primary" onClick={() => navigate("/register")}>
+                  <button className="btn btn--primary" onClick={() => navigate("/register", { state: returnToState(location) })}>
                     {t("explore.createAccount")}
                   </button>
-                  <button className="btn btn--secondary" onClick={() => navigate("/login")}>
+                  <button className="btn btn--secondary" onClick={() => navigate("/login", { state: returnToState(location) })}>
                     {t("explore.logIn")}
                   </button>
                 </div>

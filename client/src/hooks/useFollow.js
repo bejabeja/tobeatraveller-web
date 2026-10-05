@@ -2,11 +2,12 @@ import toast from "react-hot-toast";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { followUser, unfollowUser } from "../services/followers";
 import { selectIsAuthenticated } from "../store/auth/authSelectors";
 import { setUserInfo, setUserInfoFollowing } from "../store/user/userInfoActions";
 import { selectMe } from "../store/user/userInfoSelectors";
+import { returnToState } from "../utils/returnTo";
 import { trackEvent } from "../utils/analytics";
 import { ANALYTICS_EVENTS } from "../utils/analyticsEvents";
 
@@ -14,6 +15,7 @@ export const useFollow = (targetUserId) => {
     const { t } = useTranslation();
     const dispatch = useDispatch();
     const navigate = useNavigate()
+    const location = useLocation();
     const isAuthenticated = useSelector(selectIsAuthenticated)
     const userMe = useSelector(selectMe);
 
@@ -41,7 +43,7 @@ export const useFollow = (targetUserId) => {
 
     const toggleFollow = async () => {
         if (!isAuthenticated) {
-            navigate('/login')
+            navigate('/login', { state: returnToState(location) })
             return;
         }
         if (isLoadingFollow) return;

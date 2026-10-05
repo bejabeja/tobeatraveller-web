@@ -24,6 +24,7 @@ import { APP_LANGUAGES, selectUnreadCount, toAppLanguage } from "@tobeatraveller
 import { selectIsAuthenticated } from "../../store/auth/authSelectors";
 import { selectMe } from "../../store/user/userInfoSelectors";
 import { generateAvatar } from "../../utils/constants/constants";
+import { returnToState } from "../../utils/returnTo";
 import { optimizedCloudinaryUrl } from "../../utils/cloudinaryUrl";
 import "./Navbar.scss";
 
@@ -302,8 +303,8 @@ const Navbar = ({ onOpenSearch }) => {
 
             <div className="marketing-navbar__auth">
               <LanguageSwitcher />
-              <Link to="/login" className="marketing-navbar__login">{t("nav.login")}</Link>
-              <Link to="/register" className="btn btn--primary marketing-navbar__register">{t("nav.createAccountBtn")}</Link>
+              <Link to="/login" state={returnToState(location)} className="marketing-navbar__login">{t("nav.login")}</Link>
+              <Link to="/register" state={returnToState(location)} className="btn btn--primary marketing-navbar__register">{t("nav.createAccountBtn")}</Link>
             </div>
           </div>
         </nav>
@@ -341,7 +342,7 @@ const Navbar = ({ onOpenSearch }) => {
             <span>{t("nav.me")}</span>
           </NavLink>
         ) : (
-          <NavLink to="/login" className="bottom-nav__item">
+          <NavLink to="/login" state={returnToState(location)} className="bottom-nav__item">
             <GoSignIn className="bottom-nav__icon" />
             <span>{t("nav.login")}</span>
           </NavLink>

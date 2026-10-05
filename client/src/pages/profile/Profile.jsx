@@ -4,7 +4,7 @@ import { IoChevronForward, IoLinkOutline, IoLocationOutline, IoLockClosedOutline
 import { MdOutlineCalendarMonth, MdOutlineEdit } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { Link, useParams, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useParams, useSearchParams } from "react-router-dom";
 import Filters from "../../components/filters/Filters";
 import ItinerariesSection from "../../components/itineraries/ItinerariesSection";
 import Modal from "../../components/modal/Modal";
@@ -17,6 +17,7 @@ import JsonLd from "../../components/seo/JsonLd";
 import { selectAuthUser } from "../../store/auth/authSelectors";
 import { optimizedCloudinaryUrl } from "../../utils/cloudinaryUrl";
 import { generateAvatar } from "../../utils/constants/constants";
+import { returnToState } from "../../utils/returnTo";
 import { buildProfileJsonLd } from "../../utils/jsonLd";
 import { BADGE_EMOJI, countryFlag, filterItineraries, formatDate, profileShareUrl, summarizePassport } from "@tobeatraveller/shared";
 import { getMyReferralInfo } from "../../services/referral";
@@ -322,6 +323,7 @@ const HeaderSection = ({
   onCopyLink, isAuthenticated, isLoadingFollow, onOpenFollows, tripsCount, onShowTrips, t,
 }) => {
   const { i18n } = useTranslation();
+  const location = useLocation();
   const followBtnRef = useRef(null);
   const wasLoadingRef = useRef(false);
 
@@ -416,7 +418,7 @@ const HeaderSection = ({
                 <span>{t("profile.followersStat", { count: user?.followers ?? 0 })}</span>
               </button>
             ) : (
-              <Link to="/login" className="profile__stat">
+              <Link to="/login" state={returnToState(location)} className="profile__stat">
                 <StatNumber value={user?.followers} />
                 <span>{t("profile.followersStat", { count: user?.followers ?? 0 })}</span>
               </Link>
@@ -427,7 +429,7 @@ const HeaderSection = ({
                 <span>{t("profile.following")}</span>
               </button>
             ) : (
-              <Link to="/login" className="profile__stat">
+              <Link to="/login" state={returnToState(location)} className="profile__stat">
                 <StatNumber value={user?.following} />
                 <span>{t("profile.following")}</span>
               </Link>

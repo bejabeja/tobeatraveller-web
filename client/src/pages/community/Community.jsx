@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import LoadingButton from "../../components/LoadingButton.jsx";
 import SearchInput from "../../components/searchInput/SearchInput.jsx";
 import UsersSection from "../../components/users/UsersSection.jsx";
 import useDebouncedEffect from "../../hooks/useDebounced.js";
 import { usePageMeta } from "../../hooks/usePageMeta.js";
+import { returnToState } from "../../utils/returnTo.js";
 import { selectIsAuthenticated } from "../../store/auth/authSelectors.js";
 import {
   initAllUsers, loadMoreUsers,
@@ -24,6 +25,7 @@ const Community = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const users = useSelector(selectAllUsers);
@@ -80,10 +82,10 @@ const Community = () => {
           <h2>{t("community.joinCommunity")}</h2>
           <p>{t("community.joinCommunityDesc")}</p>
           <div className="community__guest-cta-buttons">
-            <button className="btn btn--primary" onClick={() => navigate("/register")}>
+            <button className="btn btn--primary" onClick={() => navigate("/register", { state: returnToState(location) })}>
               {t("community.createAccount")}
             </button>
-            <button className="btn btn--secondary" onClick={() => navigate("/login")}>
+            <button className="btn btn--secondary" onClick={() => navigate("/login", { state: returnToState(location) })}>
               {t("community.logIn")}
             </button>
           </div>
