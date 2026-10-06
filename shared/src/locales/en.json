@@ -1359,7 +1359,7 @@
     "detailsLabelIllegal": "Why is it illegal?",
     "detailsPlaceholder": "Tell us what we should look at",
     "submit": "Send report",
-    "sent": "Thanks, we received your report. Our team will review it.",
+    "sent": "Thanks, we received your report. We will review it and write to you with the result.",
     "sendError": "We could not send your report. Please try again.",
     "targetType": {
       "comment": "comment",

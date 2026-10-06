@@ -2,10 +2,13 @@ import config from '../config/config.js';
 import { accountDeletedTemplate } from '../emails/templates/accountDeleted.js';
 import { auditLogFailureTemplate } from '../emails/templates/auditLogFailure.js';
 import { contactConfirmationTemplate } from '../emails/templates/contactConfirmation.js';
+import { contentRemovedTemplate } from '../emails/templates/contentRemoved.js';
 import { contactTemplate } from '../emails/templates/contact.js';
 import { passwordChangedTemplate } from '../emails/templates/passwordChanged.js';
 import { passwordResetTemplate } from '../emails/templates/passwordReset.js';
 import { referralRewardTemplate } from '../emails/templates/referralReward.js';
+import { reportDecisionTemplate } from '../emails/templates/reportDecision.js';
+import { reportReceivedTemplate } from '../emails/templates/reportReceived.js';
 import { verifyEmailTemplate } from '../emails/templates/verifyEmail.js';
 import { trialEndedTemplate } from '../emails/templates/trialEnded.js';
 import { trialEndingTemplate } from '../emails/templates/trialEnding.js';
@@ -98,6 +101,22 @@ export class EmailService {
     async sendReferralReward({ username, email, friendUsername, language }) {
         const { subject, html } = referralRewardTemplate({ username, friendUsername, language });
         await this._send({ to: email, subject, html });
+    }
+
+    // A reply goes to the team: the person can disagree with a decision by answering it.
+    async sendReportReceived({ username, email, targetType, language }) {
+        const { subject, html } = reportReceivedTemplate({ username, targetType, language });
+        await this._send({ to: email, subject, html, replyTo: this.contactRecipientEmail });
+    }
+
+    async sendReportDecision({ username, email, targetType, outcome, language }) {
+        const { subject, html } = reportDecisionTemplate({ username, targetType, outcome, language });
+        await this._send({ to: email, subject, html, replyTo: this.contactRecipientEmail });
+    }
+
+    async sendContentRemoved({ username, email, targetType, reason, excerpt, language }) {
+        const { subject, html } = contentRemovedTemplate({ username, targetType, reason, excerpt, language });
+        await this._send({ to: email, subject, html, replyTo: this.contactRecipientEmail });
     }
 
     async sendAuditLogFailureAlert({ to, action, errorMessage, occurredAt }) {

@@ -19,6 +19,7 @@ describe('ContentReportsService', () => {
     let itineraryRepository;
     let userRepository;
     let auditLogService;
+    let emailService;
 
     beforeEach(() => {
         contentReportsRepository = {
@@ -36,9 +37,16 @@ describe('ContentReportsService', () => {
             findById: vi.fn().mockResolvedValue({ id: 'itin-1', userId: 'author-1', title: 'A trip', isPublic: true }),
             hideForModeration: vi.fn().mockResolvedValue(),
         };
-        userRepository = { getUserById: vi.fn().mockResolvedValue({ id: 'author-1', username: 'bob' }) };
+        userRepository = {
+            getUserById: vi.fn(async (id) => ({ id, username: id, email: `${id}@example.test`, language: 'es' })),
+        };
         auditLogService = { log: vi.fn() };
-        service = new ContentReportsService(contentReportsRepository, commentsRepository, itineraryRepository, userRepository, auditLogService);
+        emailService = {
+            sendReportReceived: vi.fn().mockResolvedValue(),
+            sendReportDecision: vi.fn().mockResolvedValue(),
+            sendContentRemoved: vi.fn().mockResolvedValue(),
+        };
+        service = new ContentReportsService(contentReportsRepository, commentsRepository, itineraryRepository, userRepository, auditLogService, emailService);
     });
 
     describe('submitReport()', () => {
@@ -102,8 +110,78 @@ describe('ContentReportsService', () => {
             await service.submitReport(REPORTER, { targetType: 'user', targetId: 'author-1', reason: 'harassment' });
 
             expect(contentReportsRepository.create).toHaveBeenCalledWith(expect.objectContaining({
-                targetOwnerId: 'author-1', targetExcerpt: 'bob',
+                targetOwnerId: 'author-1', targetExcerpt: 'author-1',
             }));
+        });
+    });
+
+    describe('emails', () => {
+        const flush = () => new Promise((resolve) => setImmediate(resolve));
+
+        it('confirms receipt to the reporter, in their language', async () => {
+            await service.submitReport(REPORTER, { targetType: 'comment', targetId: 'comment-1', reason: 'spam' });
+            await flush();
+
+            expect(emailService.sendReportReceived).toHaveBeenCalledWith({
+                username: 'reporter-1', email: 'reporter-1@example.test', targetType: 'comment', language: 'es',
+            });
+        });
+
+        it('does not fail the report when the email cannot be sent', async () => {
+            emailService.sendReportReceived.mockRejectedValue(new Error('Brevo down'));
+
+            await expect(service.submitReport(REPORTER, { targetType: 'comment', targetId: 'comment-1', reason: 'spam' })).resolves.toEqual({ id: 'report-1' });
+            await flush();
+        });
+
+        it('does not warn the reported person that someone reported them', async () => {
+            await service.submitReport(REPORTER, { targetType: 'comment', targetId: 'comment-1', reason: 'spam' });
+            await flush();
+
+            expect(emailService.sendContentRemoved).not.toHaveBeenCalled();
+            expect(userRepository.getUserById).not.toHaveBeenCalledWith('author-1');
+        });
+
+        it('tells the reporter the result, and the author why when their content is removed', async () => {
+            contentReportsRepository.findById.mockResolvedValue(openReport({ reporterId: 'reporter-1', reason: 'spam', targetExcerpt: 'spam spam' }));
+
+            await service.decideReport('report-1', STAFF, { decision: 'remove' });
+            await flush();
+
+            expect(emailService.sendReportDecision).toHaveBeenCalledWith(expect.objectContaining({ email: 'reporter-1@example.test', outcome: 'removed', targetType: 'comment' }));
+            expect(emailService.sendContentRemoved).toHaveBeenCalledWith({
+                username: 'author-1', email: 'author-1@example.test', targetType: 'comment', reason: 'spam', excerpt: 'spam spam', language: 'es',
+            });
+        });
+
+        it('tells the reporter when it is dismissed, and says nothing to the author', async () => {
+            contentReportsRepository.findById.mockResolvedValue(openReport({ reporterId: 'reporter-1' }));
+
+            await service.decideReport('report-1', STAFF, { decision: 'dismiss' });
+            await flush();
+
+            expect(emailService.sendReportDecision).toHaveBeenCalledWith(expect.objectContaining({ outcome: 'dismissed' }));
+            expect(emailService.sendContentRemoved).not.toHaveBeenCalled();
+        });
+
+        it('has nobody to tell when the reporter deleted their account', async () => {
+            contentReportsRepository.findById.mockResolvedValue(openReport({ reporterId: null }));
+
+            await service.decideReport('report-1', STAFF, { decision: 'dismiss' });
+            await flush();
+
+            expect(emailService.sendReportDecision).not.toHaveBeenCalled();
+        });
+
+        it('sends nothing when the decision did not go through', async () => {
+            contentReportsRepository.findById.mockResolvedValue(openReport({ reporterId: 'reporter-1' }));
+            contentReportsRepository.resolve.mockResolvedValue(false);
+
+            await expect(service.decideReport('report-1', STAFF, { decision: 'remove' })).rejects.toBeInstanceOf(ConflictError);
+            await flush();
+
+            expect(emailService.sendReportDecision).not.toHaveBeenCalled();
+            expect(emailService.sendContentRemoved).not.toHaveBeenCalled();
         });
     });
 

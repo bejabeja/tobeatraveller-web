@@ -6,6 +6,7 @@ import { requireRole } from "../middlewares/requireRole.js";
 import { CommentsRepository } from "../repositories/commentsRepository.js";
 import { ContentReportsRepository } from "../repositories/contentReportsRepository.js";
 import { ItineraryRepository } from "../repositories/itineraryRepository.js";
+import { EmailService } from "../services/emailService.js";
 import { UserRepository } from "../repositories/userRepository.js";
 import { auditLogService } from "../services/sharedAuditLogService.js";
 import { ContentReportsService } from "../services/contentReportsService.js";
@@ -20,6 +21,7 @@ export const createContentReportsRouter = () => {
         new ItineraryRepository(),
         new UserRepository(),
         auditLogService,
+        new EmailService(),
     );
     const contentReportsController = new ContentReportsController(contentReportsService);
 

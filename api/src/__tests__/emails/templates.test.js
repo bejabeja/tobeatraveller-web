@@ -8,6 +8,9 @@ import { accountDeletedTemplate } from '../../emails/templates/accountDeleted.js
 import { contactConfirmationTemplate } from '../../emails/templates/contactConfirmation.js';
 import { contactTemplate } from '../../emails/templates/contact.js';
 import { contactSchema } from '../../utils/schemasValidation.js';
+import { contentRemovedTemplate } from '../../emails/templates/contentRemoved.js';
+import { reportDecisionTemplate } from '../../emails/templates/reportDecision.js';
+import { reportReceivedTemplate } from '../../emails/templates/reportReceived.js';
 import { passwordChangedTemplate } from '../../emails/templates/passwordChanged.js';
 import { passwordResetTemplate } from '../../emails/templates/passwordReset.js';
 import { referralRewardTemplate } from '../../emails/templates/referralReward.js';
@@ -26,6 +29,9 @@ const USER_EMAILS = {
     trialEnding: (language) => trialEndingTemplate({ username: 'ana', endsAt: '2026-10-05T10:00:00Z', hasPaymentMethod: false, language }),
     trialEnded: (language) => trialEndedTemplate({ username: 'ana', language }),
     verifyEmail: (language) => verifyEmailTemplate({ username: 'ana', token: 'tok-1', language }),
+    reportReceived: (language) => reportReceivedTemplate({ username: 'ana', targetType: 'comment', language }),
+    reportDecision: (language) => reportDecisionTemplate({ username: 'ana', targetType: 'comment', outcome: 'removed', language }),
+    contentRemoved: (language) => contentRemovedTemplate({ username: 'ana', targetType: 'comment', reason: 'spam', excerpt: 'hola', language }),
 };
 
 // Every key, nested ones included, as "a.b.c"; arrays by index.
@@ -180,5 +186,39 @@ describe('contact emails', () => {
 
             expect(html).not.toContain('<b>x</b>');
         });
+    });
+});
+
+describe('report emails', () => {
+    it.each(['removed', 'dismissed', 'resolved'])('tells the reporter what was decided when it is %s, and how to disagree', (outcome) => {
+        const { html } = reportDecisionTemplate({ username: 'ana', targetType: 'itinerary', outcome, language: 'en' });
+
+        expect(html).toContain(en.reportDecision[outcome]('trip'));
+        expect(html).toContain(en.reportDecision.redress);
+    });
+
+    // The statement of reasons the law asks for when content is taken down.
+    it('tells the author what was removed, why, how it was decided and what they can do', () => {
+        const { html } = contentRemovedTemplate({ username: 'bob', targetType: 'itinerary', reason: 'harassment', excerpt: 'My trip', language: 'en' });
+
+        expect(html).toContain('My trip');
+        expect(html).toContain(en.contentRemoved.restriction.itinerary);
+        expect(html).toContain(en.reportReasons.harassment);
+        expect(html).toContain(en.contentRemoved.how);
+        expect(html).toContain(en.contentRemoved.redress);
+        expect(html).toContain('/terms');
+    });
+
+    it('does not let the removed text run as markup in the email', () => {
+        const { html } = contentRemovedTemplate({ username: 'bob', targetType: 'comment', reason: 'spam', excerpt: '<script>alert(1)</script>', language: 'en' });
+
+        expect(html).not.toContain('<script>alert(1)</script>');
+        expect(html).toContain('&lt;script&gt;');
+    });
+
+    it('never says who reported', () => {
+        const { html } = contentRemovedTemplate({ username: 'bob', targetType: 'comment', reason: 'spam', excerpt: 'x', language: 'en' });
+
+        expect(html).not.toMatch(/reported by|denunciad[oa] por/i);
     });
 });

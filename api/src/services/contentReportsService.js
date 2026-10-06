@@ -6,6 +6,7 @@ import {
     REPORT_DECISIONS, REPORT_EXCERPT_MAX_LENGTH, REPORT_RETENTION_MONTHS, REPORT_STATUSES, REPORT_TARGET_TYPES,
 } from '../utils/contentReports.js';
 import { assertItineraryVisible } from '../utils/itineraryAccess.js';
+import { logger } from '../utils/logger.js';
 
 const STATUS_BY_DECISION = Object.freeze({
     [REPORT_DECISIONS.REMOVE]: REPORT_STATUSES.REMOVED,
@@ -14,12 +15,13 @@ const STATUS_BY_DECISION = Object.freeze({
 });
 
 export class ContentReportsService {
-    constructor(contentReportsRepository, commentsRepository, itineraryRepository, userRepository, auditLogService = null) {
+    constructor(contentReportsRepository, commentsRepository, itineraryRepository, userRepository, auditLogService = null, emailService = null) {
         this.contentReportsRepository = contentReportsRepository;
         this.commentsRepository = commentsRepository;
         this.itineraryRepository = itineraryRepository;
         this.userRepository = userRepository;
         this.auditLogService = auditLogService;
+        this.emailService = emailService;
     }
 
     async submitReport(reporter, { targetType, targetId, reason, details }) {
@@ -49,6 +51,10 @@ export class ContentReportsService {
             metadata: { reportId: report.id, targetType, targetId, reason },
         });
 
+        this._notify(reporter.id, (user) => this.emailService.sendReportReceived({
+            username: user.username, email: user.email, targetType, language: user.language,
+        }));
+
         return { id: report.id };
     }
 
@@ -76,6 +82,21 @@ export class ContentReportsService {
             throw new ConflictError('validation.reportAlreadyDecided');
         }
 
+        // The reporter hears the result; the reported person hears only when something of theirs
+        // was removed, never that someone reported it, and never who.
+        if (report.reporterId) {
+            this._notify(report.reporterId, (user) => this.emailService.sendReportDecision({
+                username: user.username, email: user.email, targetType: report.targetType,
+                outcome: STATUS_BY_DECISION[decision], language: user.language,
+            }));
+        }
+        if (decision === REPORT_DECISIONS.REMOVE && report.targetOwnerId) {
+            this._notify(report.targetOwnerId, (user) => this.emailService.sendContentRemoved({
+                username: user.username, email: user.email, targetType: report.targetType,
+                reason: report.reason, excerpt: report.targetExcerpt, language: user.language,
+            }));
+        }
+
         this.auditLogService?.log({
             actorId: staff.id,
             actorUsername: staff.username,
@@ -92,6 +113,14 @@ export class ContentReportsService {
             metadata: { months: REPORT_RETENTION_MONTHS, deletedCount, trigger },
         });
         return deletedCount;
+    }
+
+    // An email never fails the request that caused it: the report or the decision is already saved.
+    _notify(userId, send) {
+        if (!this.emailService) return Promise.resolve();
+        return this.userRepository.getUserById(userId)
+            .then((user) => (user ? send(user) : undefined))
+            .catch((error) => logger.error('[email] report notification failed:', error));
     }
 
     // Who owns it and how to recognise it later: the content can be gone by the

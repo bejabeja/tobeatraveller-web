@@ -1379,7 +1379,7 @@
     "detailsLabelIllegal": "Pourquoi est-ce illégal ?",
     "detailsPlaceholder": "Dis-nous ce que nous devons examiner",
     "submit": "Envoyer le signalement",
-    "sent": "Merci, nous avons reçu ton signalement. Notre équipe va l'examiner.",
+    "sent": "Merci, nous avons reçu ton signalement. Nous allons l'examiner et t'écrire avec le résultat.",
     "sendError": "Nous n'avons pas pu envoyer ton signalement. Réessaie.",
     "targetType": {
       "comment": "commentaire",

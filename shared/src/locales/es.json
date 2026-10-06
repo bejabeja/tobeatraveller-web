@@ -1379,7 +1379,7 @@
     "detailsLabelIllegal": "¿Por qué es ilegal?",
     "detailsPlaceholder": "Cuéntanos qué debemos mirar",
     "submit": "Enviar denuncia",
-    "sent": "Gracias, hemos recibido tu denuncia. Nuestro equipo la revisará.",
+    "sent": "Gracias, hemos recibido tu denuncia. La revisaremos y te escribiremos con el resultado.",
     "sendError": "No hemos podido enviar tu denuncia. Inténtalo de nuevo.",
     "targetType": {
       "comment": "comentario",
