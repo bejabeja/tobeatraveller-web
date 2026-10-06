@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Alert, AppState, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { resendVerificationEmail, selectMe, setUserInfo } from '@tobeatraveller/shared';
@@ -12,6 +13,7 @@ const TOO_MANY_REQUESTS_STATUS = 429;
 export const EmailVerificationBanner = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
+  const navigation = useNavigation();
   const me = useSelector(selectMe);
   const [status, setStatus] = useState('idle');
   const unconfirmed = me?.emailVerified === false;
@@ -58,6 +60,9 @@ export const EmailVerificationBanner = () => {
           </Text>
         </TouchableOpacity>
       )}
+      <TouchableOpacity onPress={() => navigation.navigate('Settings')} accessibilityRole="link">
+        <Text style={styles.changeLink}>{t('emailVerification.changeLink')}</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -70,6 +75,7 @@ const styles = StyleSheet.create({
   text: { color: '#9a3412', fontSize: 13, textAlign: 'center' },
   sent: { color: '#9a3412', fontSize: 13, fontWeight: '700' },
   button: { borderWidth: 1.5, borderColor: '#9a3412', borderRadius: 999, paddingVertical: 5, paddingHorizontal: 16 },
+  changeLink: { color: '#9a3412', fontSize: 12, textDecorationLine: 'underline' },
   buttonDisabled: { opacity: 0.6 },
   buttonText: { color: '#9a3412', fontSize: 12, fontWeight: '700' },
 });

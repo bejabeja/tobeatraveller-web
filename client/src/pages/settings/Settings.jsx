@@ -2,17 +2,18 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import {
   IoArrowBackOutline, IoChevronForward, IoCloudDownloadOutline, IoDocumentTextOutline, IoMailOutline,
-  IoNotificationsOutline, IoPersonOutline, IoWarningOutline,
+  IoNotificationsOutline, IoPersonOutline, IoSparklesOutline, IoWarningOutline,
 } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { Trans, useTranslation } from "react-i18next";
 import {
-  APP_LANGUAGES, fetchNotificationPreferences, PASSWORD_MIN_LENGTH, toAppLanguage, TRAVEL_STYLES, updateMyTravelStyle, updateNotificationPreferences,
+  APP_LANGUAGES, changeUnverifiedEmail, fetchNotificationPreferences, PASSWORD_MIN_LENGTH, toAppLanguage, TRAVEL_STYLES, updateMyTravelStyle, updateNotificationPreferences,
 } from "@tobeatraveller/shared";
 import i18n from "../../i18n";
 import { useGoBack } from "../../hooks/useGoBack";
 import SelectMenu from "../../components/form/SelectMenu";
+import Modal from "../../components/modal/Modal";
 import Spinner from "../../components/spinner/Spinner";
 import { REOPEN_COOKIE_PREFERENCES_EVENT } from "../../utils/analytics";
 import { changePassword, deleteMyAccount, exportMyData } from "../../services/users";
@@ -73,6 +74,11 @@ const Settings = () => {
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [newEmail, setNewEmail] = useState("");
+  const [emailPassword, setEmailPassword] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [isChangingEmail, setIsChangingEmail] = useState(false);
 
   const currentLang = toAppLanguage(i18n.language);
 
@@ -131,6 +137,29 @@ const Settings = () => {
     setNewPassword("");
     setConfirmNewPassword("");
     setPasswordError("");
+  };
+
+  const closeEmailModal = () => {
+    setShowEmailModal(false);
+    setNewEmail("");
+    setEmailPassword("");
+    setEmailError("");
+  };
+
+  const handleChangeEmail = async () => {
+    setEmailError("");
+    setIsChangingEmail(true);
+    try {
+      const email = newEmail.trim();
+      await changeUnverifiedEmail({ email, currentPassword: emailPassword });
+      dispatch(setUserInfo(userMe.id));
+      toast.success(t("emailVerification.changed", { email }));
+      closeEmailModal();
+    } catch (err) {
+      setEmailError(err.message || t("errors.somethingWrong"));
+    } finally {
+      setIsChangingEmail(false);
+    }
   };
 
   const handleTravelStyleChange = async (travelStyle) => {
@@ -201,6 +230,9 @@ const Settings = () => {
               <span className="settings__row-label">{t("auth.emailLabel")}</span>
               <span className="settings__row-value">{userMe?.email}</span>
             </div>
+            {meDetail?.emailVerified === false && (
+              <SettingsActionRow label={t("emailVerification.changeLink")} onClick={() => setShowEmailModal(true)} />
+            )}
             <div className="settings__row">
               <span className="settings__row-label">{t("settings.language")}</span>
               <SelectMenu
@@ -229,6 +261,17 @@ const Settings = () => {
               </div>
             )}
             <SettingsActionRow label={t("editProfile.changePassword")} onClick={() => setShowPasswordModal(true)} />
+          </div>
+        </section>
+
+        <section className="ep__section settings__group">
+          <div className="ep__section-heading">
+            <IoSparklesOutline aria-hidden="true" />
+            <h2 className="ep__section-label">{t("settings.plan")}</h2>
+          </div>
+          <div className="settings__rows">
+            <SettingsActionRow as={Link} to="/subscription" label={t("settings.plan")} />
+            <SettingsActionRow as={Link} to="/invite" label={t("settings.inviteFriends")} />
           </div>
         </section>
 
@@ -329,148 +372,124 @@ const Settings = () => {
         </section>
       </div>
 
-      {/* Delete account modal */}
-      {showDeleteModal && (
-        <div className="modal__backdrop" onClick={() => !isDeleting && setShowDeleteModal(false)}>
-          <form
-            className="modal modal--danger"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="delete-account-title"
-            onClick={(e) => e.stopPropagation()}
-            onSubmit={(e) => { e.preventDefault(); handleDeleteAccount(); }}
-          >
-            <div className="modal__header">
-              <h2 id="delete-account-title" className="modal__title">{t("editProfile.deleteAccountModal")}</h2>
-              <button
-                type="button"
-                className="modal__close"
-                onClick={() => setShowDeleteModal(false)}
-                disabled={isDeleting}
-                aria-label={t("common.cancel")}
-              >
-                ✕
-              </button>
-            </div>
-            <p className="modal__description">
-              <Trans i18nKey="editProfile.deleteAccountDesc" values={{ username: userMe?.username }}>
-                This will permanently delete your account and all your data. Type <strong>{{ username: userMe?.username }}</strong> to confirm.
-              </Trans>
-            </p>
-            <div className="modal__input-wrap">
-              <input
-                id="delete-confirm-input"
-                className="ep__modal-input"
-                type="text"
-                aria-label={t("editProfile.deleteAccountConfirmLabel")}
-                placeholder={userMe?.username}
-                value={deleteConfirmInput}
-                onChange={(e) => setDeleteConfirmInput(e.target.value)}
-                autoFocus
-              />
-            </div>
-            <div className="modal__actions">
-              <button
-                type="button"
-                className="btn btn--ghost modal__btn-cancel"
-                onClick={() => setShowDeleteModal(false)}
-                disabled={isDeleting}
-              >
-                {t("common.cancel")}
-              </button>
-              <button
-                type="submit"
-                className="btn btn--danger modal__btn-confirm"
-                disabled={deleteConfirmInput !== userMe?.username || isDeleting}
-              >
-                {isDeleting ? t("editProfile.deleting") : t("editProfile.deleteAccount")}
-              </button>
-            </div>
-          </form>
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDeleteAccount}
+        loading={isDeleting}
+        loadingText={t("editProfile.deleting")}
+        confirmDisabled={deleteConfirmInput !== userMe?.username}
+        title={t("editProfile.deleteAccountModal")}
+        confirmText={t("editProfile.deleteAccount")}
+        type="danger"
+      >
+        <p className="modal__description">
+          <Trans i18nKey="editProfile.deleteAccountDesc" values={{ username: userMe?.username }}>
+            This will permanently delete your account and all your data. Type <strong>{{ username: userMe?.username }}</strong> to confirm.
+          </Trans>
+        </p>
+        <div className="modal__input-wrap">
+          <input
+            id="delete-confirm-input"
+            className="ep__modal-input"
+            type="text"
+            aria-label={t("editProfile.deleteAccountConfirmLabel")}
+            placeholder={userMe?.username}
+            value={deleteConfirmInput}
+            onChange={(e) => setDeleteConfirmInput(e.target.value)}
+            autoFocus
+          />
         </div>
-      )}
+      </Modal>
 
-      {/* Change password modal */}
-      {showPasswordModal && (
-        <div className="modal__backdrop" onClick={() => !isChangingPassword && closePasswordModal()}>
-          <form
-            className="modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="change-password-title"
-            onClick={(e) => e.stopPropagation()}
-            onSubmit={(e) => { e.preventDefault(); handleChangePassword(); }}
-          >
-            <div className="modal__header">
-              <h2 id="change-password-title" className="modal__title">{t("editProfile.changePasswordModal")}</h2>
-              <button
-                type="button"
-                className="modal__close"
-                onClick={closePasswordModal}
-                disabled={isChangingPassword}
-                aria-label={t("common.cancel")}
-              >
-                ✕
-              </button>
-            </div>
-            <div className="modal__input-wrap">
-              <input
-                id="current-password-input"
-                className="ep__modal-input"
-                type="password"
-                aria-label={t("editProfile.currentPasswordLabel")}
-                placeholder={t("editProfile.currentPasswordLabel")}
-                autoComplete="current-password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                autoFocus
-              />
-            </div>
-            <div className="modal__input-wrap">
-              <input
-                id="new-password-input"
-                className="ep__modal-input"
-                type="password"
-                aria-label={t("editProfile.newPasswordLabel")}
-                placeholder={t("editProfile.newPasswordLabel")}
-                autoComplete="new-password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-              />
-            </div>
-            <div className="modal__input-wrap">
-              <input
-                id="confirm-new-password-input"
-                className="ep__modal-input"
-                type="password"
-                aria-label={t("editProfile.confirmNewPasswordLabel")}
-                placeholder={t("editProfile.confirmNewPasswordLabel")}
-                autoComplete="new-password"
-                value={confirmNewPassword}
-                onChange={(e) => setConfirmNewPassword(e.target.value)}
-              />
-            </div>
-            {passwordError && <p className="ep__error">{passwordError}</p>}
-            <div className="modal__actions">
-              <button
-                type="button"
-                className="btn btn--ghost modal__btn-cancel"
-                onClick={closePasswordModal}
-                disabled={isChangingPassword}
-              >
-                {t("common.cancel")}
-              </button>
-              <button
-                type="submit"
-                className="btn btn--primary modal__btn-confirm"
-                disabled={!currentPassword || !newPassword || !confirmNewPassword || isChangingPassword}
-              >
-                {isChangingPassword ? t("editProfile.changingPassword") : t("editProfile.changePassword")}
-              </button>
-            </div>
-          </form>
+      <Modal
+        isOpen={showEmailModal}
+        onClose={closeEmailModal}
+        onConfirm={handleChangeEmail}
+        loading={isChangingEmail}
+        loadingText={t("emailVerification.saving")}
+        confirmDisabled={!newEmail.trim() || !emailPassword}
+        title={t("emailVerification.changeTitle")}
+        description={t("emailVerification.changeDesc")}
+        confirmText={t("emailVerification.save")}
+      >
+        <div className="modal__input-wrap">
+          <input
+            id="new-email-input"
+            className="ep__modal-input"
+            type="email"
+            aria-label={t("emailVerification.newEmailLabel")}
+            placeholder={t("emailVerification.newEmailLabel")}
+            autoComplete="email"
+            value={newEmail}
+            onChange={(e) => setNewEmail(e.target.value)}
+            autoFocus
+          />
         </div>
-      )}
+        <div className="modal__input-wrap">
+          <input
+            id="email-password-input"
+            className="ep__modal-input"
+            type="password"
+            aria-label={t("emailVerification.passwordLabel")}
+            placeholder={t("emailVerification.passwordLabel")}
+            autoComplete="current-password"
+            value={emailPassword}
+            onChange={(e) => setEmailPassword(e.target.value)}
+          />
+        </div>
+        {emailError && <p className="ep__error">{emailError}</p>}
+      </Modal>
+
+      <Modal
+        isOpen={showPasswordModal}
+        onClose={closePasswordModal}
+        onConfirm={handleChangePassword}
+        loading={isChangingPassword}
+        loadingText={t("editProfile.changingPassword")}
+        confirmDisabled={!currentPassword || !newPassword || !confirmNewPassword}
+        title={t("editProfile.changePasswordModal")}
+        confirmText={t("editProfile.changePassword")}
+      >
+        <div className="modal__input-wrap">
+          <input
+            id="current-password-input"
+            className="ep__modal-input"
+            type="password"
+            aria-label={t("editProfile.currentPasswordLabel")}
+            placeholder={t("editProfile.currentPasswordLabel")}
+            autoComplete="current-password"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            autoFocus
+          />
+        </div>
+        <div className="modal__input-wrap">
+          <input
+            id="new-password-input"
+            className="ep__modal-input"
+            type="password"
+            aria-label={t("editProfile.newPasswordLabel")}
+            placeholder={t("editProfile.newPasswordLabel")}
+            autoComplete="new-password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+          />
+        </div>
+        <div className="modal__input-wrap">
+          <input
+            id="confirm-new-password-input"
+            className="ep__modal-input"
+            type="password"
+            aria-label={t("editProfile.confirmNewPasswordLabel")}
+            placeholder={t("editProfile.confirmNewPasswordLabel")}
+            autoComplete="new-password"
+            value={confirmNewPassword}
+            onChange={(e) => setConfirmNewPassword(e.target.value)}
+          />
+        </div>
+        {passwordError && <p className="ep__error">{passwordError}</p>}
+      </Modal>
     </div>
   );
 };

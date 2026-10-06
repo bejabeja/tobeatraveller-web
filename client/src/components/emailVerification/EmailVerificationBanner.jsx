@@ -2,7 +2,7 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { resendVerificationEmail } from "@tobeatraveller/shared";
 import { selectIsAuthenticated } from "../../store/auth/authSelectors";
 import { selectMe } from "../../store/user/userInfoSelectors";
@@ -46,6 +46,7 @@ const EmailVerificationBanner = () => {
           {status === "sending" ? t("emailVerification.bannerSending") : t("emailVerification.bannerSend")}
         </button>
       )}
+      <Link to="/settings" className="email-banner__change">{t("emailVerification.changeLink")}</Link>
     </div>
   );
 };

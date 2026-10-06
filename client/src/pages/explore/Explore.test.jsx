@@ -94,6 +94,18 @@ describe("Explore: the map", () => {
   });
 });
 
+describe("Explore: dropping one filter", () => {
+  it("drops only the chip that was pressed and keeps the rest of the search", () => {
+    renderExplore();
+    fireEvent.click(screen.getByRole("button", { name: "search Lisbon" }));
+
+    fireEvent.click(screen.getAllByRole("button", { name: "explore.removeFilter" })[1]);
+
+    expect(screen.getByTestId("address")).toHaveTextContent("location=Lisbon");
+    expect(screen.getByTestId("address")).not.toHaveTextContent("category=roadtrip");
+  });
+});
+
 describe("Explore: filters and sort in the address", () => {
   it("opens as it was left: the filters and the sort come from the address", () => {
     renderExplore("/explore?category=roadtrip&budgetMax=500&sort=cheapest");

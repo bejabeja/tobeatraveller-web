@@ -67,6 +67,12 @@ describe("EmailVerificationBanner", () => {
     expect(screen.queryByText(/emailVerification.bannerText/)).not.toBeInTheDocument();
   });
 
+  it("leads to Settings, where a mistyped address can be corrected", () => {
+    renderAt();
+
+    expect(screen.getByRole("link", { name: "emailVerification.changeLink" })).toHaveAttribute("href", "/settings");
+  });
+
   it("sends the link again and says so", async () => {
     renderAt();
 

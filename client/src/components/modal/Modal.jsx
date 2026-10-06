@@ -14,6 +14,8 @@ const Modal = ({
   hideCancel = false,
   type = "confirm",
   loading = false,
+  loadingText = "…",
+  confirmDisabled = false,
 }) => {
   const { t } = useTranslation();
   const titleId = useId();
@@ -43,15 +45,16 @@ const Modal = ({
 
   return (
     <div className="modal__backdrop" onClick={requestClose} role="dialog" aria-modal="true" aria-labelledby={titleId}>
-      <div
+      <form
         ref={dialogRef}
         tabIndex={-1}
         className={`modal modal--${type}`}
         onClick={(e) => e.stopPropagation()}
+        onSubmit={(e) => { e.preventDefault(); if (!loading && !confirmDisabled) onConfirm(); }}
       >
         <div className="modal__header">
           <h2 id={titleId} className="modal__title">{title}</h2>
-          <button className="modal__close" onClick={requestClose} aria-label={resolvedCancel}>
+          <button type="button" className="modal__close" onClick={requestClose} aria-label={resolvedCancel}>
             ✕
           </button>
         </div>
@@ -65,6 +68,7 @@ const Modal = ({
         <div className="modal__actions">
           {!hideCancel && (
             <button
+              type="button"
               className="btn btn--ghost modal__btn-cancel"
               onClick={onClose}
               disabled={loading}
@@ -73,14 +77,14 @@ const Modal = ({
             </button>
           )}
           <button
+            type="submit"
             className={`btn ${type === "danger" ? "btn--danger" : "btn--primary"} modal__btn-confirm`}
-            onClick={onConfirm}
-            disabled={loading}
+            disabled={loading || confirmDisabled}
           >
-            {loading ? "…" : resolvedConfirm}
+            {loading ? loadingText : resolvedConfirm}
           </button>
         </div>
-      </div>
+      </form>
     </div>
   );
 };

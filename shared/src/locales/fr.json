@@ -211,6 +211,7 @@
     "unavailable": "Indisponible pour l'instant"
   },
   "explore": {
+    "removeFilter": "Retirer le filtre",
     "clearSearch": "Effacer la recherche",
     "title": "Explore le monde",
     "subtitle": "Découvre des itinéraires de voyage partagés par des explorateurs du monde entier",
@@ -605,6 +606,7 @@
   "itinerary": {
     "shareTrip": "Partager le voyage",
     "cloneTrip": "Cloner le voyage",
+    "cloneToMyTrips": "Copier dans mes voyages",
     "directions": "Itinéraire",
     "saveTrip": "Enregistrer le voyage",
     "unsaveTrip": "Retirer des enregistrés",
@@ -1144,7 +1146,15 @@
     "errorDesc": "Il a peut-être expiré ou déjà été utilisé.",
     "resend": "Envoyez-moi un nouveau lien",
     "errorSignedOut": "Connectez-vous et demandez-en un nouveau depuis le bandeau en haut de la page.",
-    "alreadyConfirmed": "Votre e-mail est déjà confirmé."
+    "alreadyConfirmed": "Votre e-mail est déjà confirmé.",
+    "changeLink": "Mauvaise adresse ? Modifiez-la",
+    "changeTitle": "Corriger votre e-mail",
+    "changeDesc": "Nous enverrons le lien de confirmation à la bonne adresse.",
+    "newEmailLabel": "Bonne adresse e-mail",
+    "passwordLabel": "Votre mot de passe",
+    "save": "Modifier et envoyer le lien",
+    "saving": "Envoi…",
+    "changed": "C'est fait. Nous avons envoyé un lien à {{email}}."
   },
   "itinerariesSection": {
     "noTripsYet": "Aucun voyage pour l'instant",
@@ -1288,6 +1298,8 @@
     "dayMorePlaces": "+{{count}} de plus"
   },
   "settings": {
+    "plan": "Abonnement et formule",
+    "inviteFriends": "Inviter des amis",
     "title": "Paramètres",
     "account": "Compte",
     "language": "Langue",

@@ -27,7 +27,7 @@ import { Alert, Share } from 'react-native';
 import { trackEvent } from '../../utils/analytics';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { deleteItinerary, getItineraryById } from '@tobeatraveller/shared';
+import { deleteItinerary, getCommentsByItineraryId, getItineraryById } from '@tobeatraveller/shared';
 import ItineraryScreen from '../../screens/itinerary/ItineraryScreen';
 
 const INITIAL_METRICS = { frame: { x: 0, y: 0, width: 390, height: 844 }, insets: { top: 0, left: 0, right: 0, bottom: 0 } };
@@ -52,6 +52,22 @@ it('writes the trip dates in the app language', async () => {
   await renderTrip();
 
   expect(await screen.findByText(/2.4 oct 2026/)).toBeTruthy();
+});
+
+// Regression: a failed load of the comments looked the same as a trip with none, and the web already lets it be retried.
+it('says the comments could not be loaded, and loads them again on request, instead of saying there are none', async () => {
+  getCommentsByItineraryId.mockRejectedValueOnce(new Error('offline'));
+  await renderTrip();
+
+  expect(screen.getByText('comments.loadFailed')).toBeTruthy();
+  expect(screen.queryByText('comments.beFirst')).toBeNull();
+
+  const callsBeforeRetry = getCommentsByItineraryId.mock.calls.length;
+  getCommentsByItineraryId.mockResolvedValueOnce([]);
+  await act(async () => { fireEvent.press(screen.getByText('common.retry')); });
+
+  expect(screen.queryByText('comments.loadFailed')).toBeNull();
+  expect(getCommentsByItineraryId).toHaveBeenCalledTimes(callsBeforeRetry + 1);
 });
 
 // Regression: after deleting a trip the list of one's own trips (the home

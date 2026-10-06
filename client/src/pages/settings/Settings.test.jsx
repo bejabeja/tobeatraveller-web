@@ -39,6 +39,7 @@ jest.mock("@tobeatraveller/shared", () => ({
   ...jest.requireActual("@tobeatraveller/shared/src/utils/schemasValidation.js"),
   ...jest.requireActual("@tobeatraveller/shared/src/utils/travelStyle.js"),
   updateMyTravelStyle: jest.fn(),
+  changeUnverifiedEmail: jest.fn(),
   APP_LANGUAGES: [],
   fetchNotificationPreferences: jest.fn(),
   toAppLanguage: (language) => language,
@@ -46,7 +47,7 @@ jest.mock("@tobeatraveller/shared", () => ({
 }));
 
 import toast from "react-hot-toast";
-import { fetchNotificationPreferences, updateMyTravelStyle } from "@tobeatraveller/shared";
+import { changeUnverifiedEmail, fetchNotificationPreferences, updateMyTravelStyle } from "@tobeatraveller/shared";
 import { changePassword } from "../../services/users";
 import Settings from "./Settings";
 
@@ -197,5 +198,64 @@ describe("Settings: notification preferences", () => {
 
     expect(await screen.findByText("settings.notifyOnComment")).toBeInTheDocument();
     expect(screen.queryByText("errors.notificationPreferencesLoadFailed")).not.toBeInTheDocument();
+  });
+});
+
+describe("Settings: correcting an email that was never confirmed", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    fetchNotificationPreferences.mockResolvedValue({ pushEnabled: false, notifyOnComment: true });
+    changeUnverifiedEmail.mockResolvedValue({});
+    mockMe = { id: "user-1", username: "jane", email: "jane@exmaple.com", emailVerified: false };
+  });
+
+  afterEach(() => {
+    mockMe = { id: "user-1", username: "jane", email: "jane@example.com" };
+  });
+
+  it("offers it only to whoever has not confirmed", async () => {
+    mockMe = { ...mockMe, emailVerified: true };
+    render(<MemoryRouter><Settings /></MemoryRouter>);
+
+    await screen.findByText("settings.account");
+    expect(screen.queryByRole("button", { name: /emailVerification.changeLink/ })).not.toBeInTheDocument();
+  });
+
+  it("sends the corrected address with the password and refreshes the profile", async () => {
+    render(<MemoryRouter><Settings /></MemoryRouter>);
+
+    await userEvent.click(await screen.findByRole("button", { name: /emailVerification.changeLink/ }));
+    await userEvent.type(screen.getByLabelText("emailVerification.newEmailLabel"), " jane@example.com ");
+    await userEvent.type(screen.getByLabelText("emailVerification.passwordLabel"), "secret-pass{Enter}");
+
+    await waitFor(() => expect(changeUnverifiedEmail).toHaveBeenCalledWith({ email: "jane@example.com", currentPassword: "secret-pass" }));
+    expect(mockDispatch).toHaveBeenCalledWith({ type: "setUserInfo", id: "user-1" });
+    expect(toast.success).toHaveBeenCalled();
+  });
+
+  it("says why it failed and keeps the form open", async () => {
+    changeUnverifiedEmail.mockRejectedValue(new Error("auth.emailInUse"));
+    render(<MemoryRouter><Settings /></MemoryRouter>);
+
+    await userEvent.click(await screen.findByRole("button", { name: /emailVerification.changeLink/ }));
+    await userEvent.type(screen.getByLabelText("emailVerification.newEmailLabel"), "taken@example.com");
+    await userEvent.type(screen.getByLabelText("emailVerification.passwordLabel"), "secret-pass{Enter}");
+
+    expect(await screen.findByText("auth.emailInUse")).toBeInTheDocument();
+    expect(screen.getByLabelText("emailVerification.newEmailLabel")).toBeInTheDocument();
+  });
+});
+
+describe("Settings: where the plan and the invitations are", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    fetchNotificationPreferences.mockResolvedValue({ pushEnabled: false, notifyOnComment: true });
+  });
+
+  it("leads to the subscription and to inviting friends", async () => {
+    render(<MemoryRouter><Settings /></MemoryRouter>);
+
+    expect(await screen.findByRole("link", { name: /settings.plan$/ })).toHaveAttribute("href", "/subscription");
+    expect(screen.getByRole("link", { name: /settings.inviteFriends$/ })).toHaveAttribute("href", "/invite");
   });
 });

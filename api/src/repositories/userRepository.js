@@ -265,6 +265,15 @@ export class UserRepository {
         return result.rows.length > 0;
     }
 
+    // The guard is in the statement: a confirmed address is never rewritten from here.
+    async updateUnverifiedEmail(id, email) {
+        const result = await db.query(
+            "UPDATE users SET email = $1, updated_at = NOW() WHERE id = $2 AND email_verified_at IS NULL RETURNING id",
+            [email, id]
+        );
+        return result.rows.length > 0;
+    }
+
     // A new password ends every session opened with the old one, in the same
     // statement so one cannot happen without the other. The moment is the server's
     // (whole seconds, like the `iat` of a token), not the database's: the two clocks

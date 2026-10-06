@@ -151,6 +151,8 @@
   }
 
   &__filter-tag {
+    display: inline-flex;
+    align-items: center;
     font-size: 0.78rem;
     padding: 0.2rem 0.65rem;
     background: rgba(0, 119, 182, 0.1);
@@ -163,6 +165,19 @@
       background: rgba(2, 62, 138, 0.08);
       color: #C45A22;
     }
+  }
+
+  &__filter-tag-remove {
+    display: inline-flex;
+    align-items: center;
+    width: auto;
+    margin-left: 0.3rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    font-size: 0.95rem;
   }
 
   &__results-ctas {

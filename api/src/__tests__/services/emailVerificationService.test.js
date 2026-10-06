@@ -1,8 +1,11 @@
+import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { EmailVerificationService } from '../../services/emailVerificationService.js';
 import { ReferralService } from '../../services/referralService.js';
 import { AUDIT_EVENTS } from '../../utils/auditEvents.js';
+import { AuthError } from '../../errors/AuthError.js';
+import { ConflictError } from '../../errors/ConflictError.js';
 
 const hash = (token) => crypto.createHash('sha256').update(token).digest('hex');
 const HOUR_MS = 60 * 60 * 1000;
@@ -29,6 +32,8 @@ describe('EmailVerificationService', () => {
         userRepository = {
             getUserById: vi.fn(async () => makeUser()),
             markEmailVerified: vi.fn(async () => true),
+            findByEmail: vi.fn(async () => null),
+            updateUnverifiedEmail: vi.fn(async () => true),
         };
         emailVerificationRepository = {
             save: vi.fn(async () => ({})),
@@ -195,6 +200,63 @@ describe('EmailVerificationService', () => {
             expect(referralRepository.markRewarded).toHaveBeenCalledWith('referral-1');
             expect(notificationsService.createNotification).toHaveBeenCalledTimes(2);
             expect(rewardEmails.sendReferralReward).toHaveBeenCalledWith(expect.objectContaining({ email: 'bea@example.com', friendUsername: 'ana' }));
+        });
+    });
+    describe('changeUnverifiedEmail()', () => {
+        const PASSWORD = 'correct-horse';
+        let passwordHash;
+
+        beforeEach(async () => {
+            passwordHash = await bcrypt.hash(PASSWORD, 4);
+            userRepository.getUserById.mockResolvedValue(makeUser({ password: passwordHash }));
+        });
+
+        it('moves the account to the corrected address and sends the link there', async () => {
+            await service.changeUnverifiedEmail('user-1', PASSWORD, 'Ana@Nuevo.com');
+
+            expect(userRepository.updateUnverifiedEmail).toHaveBeenCalledWith('user-1', 'ana@nuevo.com');
+            expect(emailService.sendVerifyEmail).toHaveBeenCalledWith(expect.objectContaining({ email: 'ana@nuevo.com' }));
+        });
+
+        it('does not touch the address when the password is wrong', async () => {
+            await expect(service.changeUnverifiedEmail('user-1', 'nope', 'ana@nuevo.com')).rejects.toBeInstanceOf(AuthError);
+
+            expect(userRepository.updateUnverifiedEmail).not.toHaveBeenCalled();
+            expect(emailService.sendVerifyEmail).not.toHaveBeenCalled();
+        });
+
+        it('refuses an address another account already uses', async () => {
+            userRepository.findByEmail.mockResolvedValue({ id: 'user-2' });
+
+            await expect(service.changeUnverifiedEmail('user-1', PASSWORD, 'otra@example.com')).rejects.toBeInstanceOf(ConflictError);
+
+            expect(userRepository.updateUnverifiedEmail).not.toHaveBeenCalled();
+        });
+
+        it('refuses to change an email that is already confirmed', async () => {
+            userRepository.getUserById.mockResolvedValue(makeUser({ password: passwordHash, isEmailVerified: () => true }));
+
+            await expect(service.changeUnverifiedEmail('user-1', PASSWORD, 'ana@nuevo.com')).rejects.toBeInstanceOf(ConflictError);
+
+            expect(userRepository.updateUnverifiedEmail).not.toHaveBeenCalled();
+        });
+
+        it('leaves the address alone, and only sends the link again, when it is the same one', async () => {
+            userRepository.findByEmail.mockResolvedValue({ id: 'user-1' });
+
+            await service.changeUnverifiedEmail('user-1', PASSWORD, 'ANA@example.com');
+
+            expect(userRepository.updateUnverifiedEmail).not.toHaveBeenCalled();
+            expect(emailService.sendVerifyEmail).toHaveBeenCalledWith(expect.objectContaining({ email: 'ana@example.com' }));
+        });
+
+        it('leaves a trace of the change without keeping either address', async () => {
+            await service.changeUnverifiedEmail('user-1', PASSWORD, 'ana@nuevo.com', { ip: '1.2.3.4', userAgent: 'UA' });
+
+            expect(auditLogService.log).toHaveBeenCalledWith(expect.objectContaining({
+                actorId: 'user-1', action: AUDIT_EVENTS.EMAIL_CHANGED, ipAddress: '1.2.3.4', userAgent: 'UA',
+            }));
+            expect(JSON.stringify(auditLogService.log.mock.calls)).not.toContain('nuevo.com');
         });
     });
 });

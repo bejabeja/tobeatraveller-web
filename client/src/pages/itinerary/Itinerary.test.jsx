@@ -22,6 +22,7 @@ jest.mock("../../components/itineraries/HeroCarousel.jsx", () => () => null);
 jest.mock("../../components/seo/JsonLd.jsx", () => () => null);
 
 import { getItineraryById } from "../../services/itinerary.js";
+import { getUserById } from "../../services/users.js";
 import { shareTrip } from "../../utils/shareTrip";
 import { trackEvent } from "../../utils/analytics";
 import Itinerary from "./Itinerary";
@@ -45,6 +46,33 @@ it("shows the trip with its dates in the app language", async () => {
 
   expect(await screen.findByRole("heading", { name: "Algarve" })).toBeInTheDocument();
   expect(screen.getByText(/2.4 oct 2026/)).toBeInTheDocument();
+});
+
+// Regression-in-waiting: if the author could not be loaded the whole trip was replaced by an error.
+it("still shows the trip, without an author, when the author cannot be loaded", async () => {
+  getItineraryById.mockResolvedValue(TRIP);
+  getUserById.mockRejectedValueOnce(new Error("offline"));
+
+  render(
+    <MemoryRouter initialEntries={["/itinerary/t1"]}>
+      <Routes><Route path="/itinerary/:id" element={<Itinerary />} /></Routes>
+    </MemoryRouter>
+  );
+
+  expect(await screen.findByRole("heading", { name: "Algarve" })).toBeInTheDocument();
+  expect(screen.queryByText(/@/)).not.toBeInTheDocument();
+});
+
+it("says what cloning does for someone else's trip, not just 'clone'", async () => {
+  getItineraryById.mockResolvedValue(TRIP);
+
+  render(
+    <MemoryRouter initialEntries={["/itinerary/t1"]}>
+      <Routes><Route path="/itinerary/:id" element={<Itinerary />} /></Routes>
+    </MemoryRouter>
+  );
+
+  expect(await screen.findByRole("button", { name: "itinerary.cloneToMyTrips" })).toBeInTheDocument();
 });
 
 describe("right after publishing a trip", () => {

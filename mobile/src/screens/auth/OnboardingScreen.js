@@ -1,7 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useState } from 'react';
 import {
-  ActivityIndicator, Image, ImageBackground,
+  ActivityIndicator, Alert, Image, ImageBackground,
   ScrollView, StyleSheet, Text, TouchableOpacity, View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -67,7 +67,7 @@ const OnboardingScreen = ({ navigation }) => {
     setStep(STEPS.START);
     trackEvent(ANALYTICS_EVENTS.ONBOARDING_TRAVEL_STYLE_CHOSEN, { style });
     // The person has already moved on: if it is not saved, Settings lets them say it again.
-    updateMyTravelStyle(style).then(refreshUser).catch(() => {});
+    updateMyTravelStyle(style).then(refreshUser).catch(() => Alert.alert(t('onboarding.travelStyleSaveError')));
   };
 
   // After the first steps: someone to follow if there is anyone, the app if not.

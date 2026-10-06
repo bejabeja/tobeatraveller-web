@@ -37,4 +37,11 @@
     width: auto;
     font-weight: 700;
   }
+
+  &__change {
+    width: auto;
+    color: inherit;
+    font-size: 0.8rem;
+    text-decoration: underline;
+  }
 }

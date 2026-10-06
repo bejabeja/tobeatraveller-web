@@ -12,7 +12,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../i18n';
 import {
-  APP_LANGUAGES, changePassword, deleteMyAccount, exportMyData, fetchNotificationPreferences,
+  APP_LANGUAGES, changePassword, changeUnverifiedEmail, deleteMyAccount, exportMyData, fetchNotificationPreferences,
   logoutUser, PASSWORD_MIN_LENGTH, selectAuthUser, selectMe, setUserInfo, toAppLanguage, TRAVEL_STYLES, updateMyTravelStyle,
   updateNotificationPreferences,
 } from '@tobeatraveller/shared';
@@ -99,6 +99,11 @@ const SettingsScreen = ({ navigation }) => {
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [changingPassword, setChangingPassword] = useState(false);
+  const [showEmailForm, setShowEmailForm] = useState(false);
+  const [newEmail, setNewEmail] = useState('');
+  const [emailFormPassword, setEmailFormPassword] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [changingEmail, setChangingEmail] = useState(false);
 
   useEffect(() => {
     fetchNotificationPreferences()
@@ -159,6 +164,29 @@ const SettingsScreen = ({ navigation }) => {
       dispatch(setUserInfo(user.id));
     } catch {
       Alert.alert(t('errors.somethingWrong'));
+    }
+  };
+
+  const closeEmailForm = () => {
+    setShowEmailForm(false);
+    setNewEmail('');
+    setEmailFormPassword('');
+    setEmailError('');
+  };
+
+  const handleChangeEmail = async () => {
+    setEmailError('');
+    setChangingEmail(true);
+    try {
+      const email = newEmail.trim();
+      await changeUnverifiedEmail({ email, currentPassword: emailFormPassword });
+      dispatch(setUserInfo(meDetail.id));
+      closeEmailForm();
+      Alert.alert(t('emailVerification.changed', { email }));
+    } catch (err) {
+      setEmailError(err.message || t('errors.somethingWrong'));
+    } finally {
+      setChangingEmail(false);
     }
   };
 
@@ -231,6 +259,54 @@ const SettingsScreen = ({ navigation }) => {
           <View style={styles.card}>
             <Text style={styles.cardTitle}>{t('settings.account')}</Text>
             {!!user?.email && <SettingsRow first label={t('auth.emailLabel')} value={user.email} />}
+            {meDetail?.emailVerified === false && (
+              <>
+                <SettingsRow
+                  label={t('emailVerification.changeLink')}
+                  expanded={showEmailForm}
+                  onPress={() => (showEmailForm ? closeEmailForm() : setShowEmailForm(true))}
+                />
+                {showEmailForm && (
+                  <View style={styles.passwordForm}>
+                    <Text style={styles.rowHint}>{t('emailVerification.changeDesc')}</Text>
+                    <TextInput
+                      style={[styles.input, { marginTop: 8 }]}
+                      value={newEmail}
+                      onChangeText={setNewEmail}
+                      placeholder={t('emailVerification.newEmailLabel')}
+                      placeholderTextColor="#9ca3af"
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      autoComplete="email"
+                    />
+                    <TextInput
+                      style={[styles.input, { marginTop: 8 }]}
+                      value={emailFormPassword}
+                      onChangeText={setEmailFormPassword}
+                      placeholder={t('emailVerification.passwordLabel')}
+                      placeholderTextColor="#9ca3af"
+                      secureTextEntry
+                    />
+                    {!!emailError && <Text style={styles.errorText}>{emailError}</Text>}
+                    <View style={styles.deleteConfirmActions}>
+                      <TouchableOpacity style={styles.cancelBtn} onPress={closeEmailForm} disabled={changingEmail}>
+                        <Text style={styles.cancelBtnText}>{t('common.cancel')}</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={[styles.primaryBtn, { flex: 1 }, (!newEmail.trim() || !emailFormPassword || changingEmail) && styles.btnDisabled]}
+                        onPress={handleChangeEmail}
+                        disabled={!newEmail.trim() || !emailFormPassword || changingEmail}
+                      >
+                        <Text style={styles.primaryBtnText}>
+                          {changingEmail ? t('emailVerification.saving') : t('emailVerification.save')}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                )}
+              </>
+            )}
             <SettingsRow
               first={!user?.email}
               label={t('settings.language')}
@@ -324,6 +400,12 @@ const SettingsScreen = ({ navigation }) => {
                   </View>
                 </View>
             )}
+          </View>
+
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>{t('settings.plan')}</Text>
+            <SettingsRow first label={t('settings.plan')} onPress={() => navigation.navigate('Subscription')} />
+            <SettingsRow label={t('settings.inviteFriends')} onPress={() => navigation.navigate('Referral')} />
           </View>
 
           <View style={styles.card}>

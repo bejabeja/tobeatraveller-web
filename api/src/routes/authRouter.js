@@ -58,6 +58,10 @@ export const createAuthRouter = () => {
         "/resend-verification", authenticate, perIpResendVerificationRateLimit, perUserResendVerificationRateLimit,
         authController.resendVerification.bind(authController)
     );
+    router.patch(
+        "/unverified-email", authenticate, perIpResendVerificationRateLimit, perUserResendVerificationRateLimit,
+        authController.changeUnverifiedEmail.bind(authController)
+    );
 
     return router;
 };

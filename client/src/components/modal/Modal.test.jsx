@@ -26,4 +26,26 @@ describe("Modal", () => {
     renderModal();
     expect(screen.getByRole("dialog", { name: "Delete entry" })).toBeTruthy();
   });
+
+  it("confirms when the confirm button is pressed", () => {
+    const onConfirm = jest.fn();
+    renderModal({ onConfirm });
+    fireEvent.click(screen.getByRole("button", { name: "common.confirm" }));
+    expect(onConfirm).toHaveBeenCalledTimes(1);
+  });
+
+  it("confirms with Enter from a field inside it", () => {
+    const onConfirm = jest.fn();
+    renderModal({ onConfirm, children: <input aria-label="name" /> });
+    fireEvent.submit(screen.getByLabelText("name").closest("form"));
+    expect(onConfirm).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not confirm while the form is not valid yet", () => {
+    const onConfirm = jest.fn();
+    renderModal({ onConfirm, confirmDisabled: true, children: <input aria-label="name" /> });
+    fireEvent.submit(screen.getByLabelText("name").closest("form"));
+    expect(screen.getByRole("button", { name: "common.confirm" })).toBeDisabled();
+    expect(onConfirm).not.toHaveBeenCalled();
+  });
 });

@@ -207,6 +207,7 @@
     "unavailable": "Not available right now"
   },
   "explore": {
+    "removeFilter": "Remove filter",
     "clearSearch": "Clear search",
     "title": "Explore the world",
     "subtitle": "Discover travel itineraries shared by explorers around the globe",
@@ -595,6 +596,7 @@
   "itinerary": {
     "shareTrip": "Share trip",
     "cloneTrip": "Clone trip",
+    "cloneToMyTrips": "Copy to my trips",
     "directions": "Get directions",
     "saveTrip": "Save trip",
     "unsaveTrip": "Remove from saved",
@@ -1127,7 +1129,15 @@
     "errorDesc": "It may have expired or already been used.",
     "resend": "Send me a new link",
     "errorSignedOut": "Sign in and ask for a new link from the notice at the top.",
-    "alreadyConfirmed": "Your email is already confirmed."
+    "alreadyConfirmed": "Your email is already confirmed.",
+    "changeLink": "Wrong email? Change it",
+    "changeTitle": "Correct your email",
+    "changeDesc": "We will send the confirmation link to the right address.",
+    "newEmailLabel": "Correct email",
+    "passwordLabel": "Your password",
+    "save": "Change and send link",
+    "saving": "Sending…",
+    "changed": "Done. We sent a link to {{email}}."
   },
   "itinerariesSection": {
     "noTripsYet": "No trips yet",
@@ -1269,6 +1279,8 @@
     "dayMorePlaces": "+{{count}} more"
   },
   "settings": {
+    "plan": "Subscription and plan",
+    "inviteFriends": "Invite friends",
     "title": "Settings",
     "account": "Account",
     "language": "Language",

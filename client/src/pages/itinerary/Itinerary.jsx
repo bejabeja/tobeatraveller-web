@@ -90,7 +90,8 @@ const Itinerary = () => {
       setLoading(true);
       try {
         const itineraryData = await getItineraryById(id);
-        const userData = await getUserById(itineraryData.userId);
+        // The trip is worth showing even if its author cannot be loaded.
+        const userData = await getUserById(itineraryData.userId).catch(() => null);
         setItinerary(itineraryData);
         setUserItinerary(userData);
       } catch (err) {
@@ -318,16 +319,18 @@ const Hero = ({
         )}
         <h1 className="itinerary__hero-title">{itinerary.title}</h1>
         <div className="itinerary__hero-meta">
-          <Link to={`/profile/${userItinerary?.id}`} className="itinerary__hero-author">
-            {userItinerary?.avatarUrl ? (
+          {userItinerary && (
+          <Link to={`/profile/${userItinerary.id}`} className="itinerary__hero-author">
+            {userItinerary.avatarUrl ? (
               <img src={optimizedCloudinaryUrl(userItinerary.avatarUrl, { width: 48 })} alt={userItinerary.username} className="itinerary__hero-avatar" />
             ) : (
               <span className="itinerary__hero-avatar itinerary__hero-avatar--fallback">
                 {userItinerary?.username?.charAt(0).toUpperCase()}
               </span>
             )}
-            <span>@{userItinerary?.username}</span>
+            <span>@{userItinerary.username}</span>
           </Link>
+          )}
           {itinerary.startDate && itinerary.endDate && (
             <span className="itinerary__hero-date">
               <MdOutlineCalendarMonth />
@@ -367,7 +370,7 @@ const Hero = ({
           />
         ) : (
           <>
-            <button type="button" className="action-icon-btn" onClick={handleClone} title={t("itinerary.cloneTrip")} aria-label={t("itinerary.cloneTrip")}>
+            <button type="button" className="action-icon-btn" onClick={handleClone} title={t("itinerary.cloneToMyTrips")} aria-label={t("itinerary.cloneToMyTrips")}>
               <FaClone />
             </button>
             <button

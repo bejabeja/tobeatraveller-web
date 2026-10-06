@@ -3,6 +3,8 @@ jest.mock('react-redux', () => ({
   useSelector: (selector) => selector(),
   useDispatch: () => mockDispatch,
 }));
+const mockNavigate = jest.fn();
+jest.mock('@react-navigation/native', () => ({ useNavigation: () => ({ navigate: mockNavigate }) }));
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key, vars) => (vars ? `${key}:${vars.email}` : key) }),
 }));
@@ -107,4 +109,12 @@ it('stops listening when it goes away', () => {
   unmount();
 
   expect(removeListener).toHaveBeenCalled();
+});
+
+it('leads to Settings, where a mistyped address can be corrected', () => {
+  render(<EmailVerificationBanner />);
+
+  fireEvent.press(screen.getByText('emailVerification.changeLink'));
+
+  expect(mockNavigate).toHaveBeenCalledWith('Settings');
 });

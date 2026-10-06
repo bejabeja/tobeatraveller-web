@@ -19,6 +19,7 @@ jest.mock('../../utils/analytics', () => ({ trackEvent: jest.fn() }));
 
 import { getSuggestedUsers, updateMyTravelStyle } from '@tobeatraveller/shared';
 import { trackEvent } from '../../utils/analytics';
+import { Alert } from 'react-native';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import OnboardingScreen from '../../screens/auth/OnboardingScreen';
@@ -183,5 +184,17 @@ describe('after the first steps', () => {
     fireEvent.press(screen.getByText('onboarding.skip'));
 
     expect(navigation.replace).toHaveBeenCalledWith('Tabs');
+  });
+});
+
+describe('when the answer cannot be saved', () => {
+  it('says so instead of moving on as if it had been, since Settings is the only other way to say it', async () => {
+    updateMyTravelStyle.mockRejectedValue(new Error('offline'));
+    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    await renderScreen();
+
+    await choose('van');
+
+    expect(alert).toHaveBeenCalledWith('onboarding.travelStyleSaveError');
   });
 });

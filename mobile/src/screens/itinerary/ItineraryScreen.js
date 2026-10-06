@@ -54,6 +54,7 @@ const ItineraryScreen = ({ route, navigation }) => {
   const [likesCount, setLikesCount] = useState(0);
   const [isLikeToggling, setIsLikeToggling] = useState(false);
   const [comments, setComments] = useState([]);
+  const [commentsFailed, setCommentsFailed] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [highlightedCommentId, setHighlightedCommentId] = useState(null);
@@ -84,9 +85,14 @@ const ItineraryScreen = ({ route, navigation }) => {
     })();
   }, [id, loadAttempt]);
 
+  const loadComments = () => {
+    setCommentsFailed(false);
+    getCommentsByItineraryId(itinerary.id).then(setComments).catch(() => setCommentsFailed(true));
+  };
+
   useEffect(() => {
     if (!itinerary?.id) return;
-    getCommentsByItineraryId(itinerary.id).then(setComments).catch(() => {});
+    loadComments();
     if (isAuthenticated) {
       checkIsFavorite(itinerary.id).then(setIsFavorite).catch(() => {});
       checkIsLiked(itinerary.id).then(d => { setIsLiked(d.isLiked); setLikesCount(d.likesCount); }).catch(() => {});
@@ -484,7 +490,16 @@ const ItineraryScreen = ({ route, navigation }) => {
             </TouchableOpacity>
           )}
 
-          {comments.length === 0 && isAuthenticated && (
+          {commentsFailed && comments.length === 0 && (
+            <View accessibilityRole="alert">
+              <Text style={styles.noComments}>{t('comments.loadFailed')}</Text>
+              <TouchableOpacity onPress={loadComments} accessibilityRole="button">
+                <Text style={styles.commentsRetry}>{t('common.retry')}</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {!commentsFailed && comments.length === 0 && isAuthenticated && (
             <Text style={styles.noComments}>{t('comments.beFirst')}</Text>
           )}
 
@@ -800,6 +815,7 @@ const styles = StyleSheet.create({
     color: COLORS.primary, fontSize: 14, marginBottom: 12,
     textDecorationLine: 'underline',
   },
+  commentsRetry: { color: '#E8743B', fontSize: 14, fontWeight: '700', marginBottom: 8 },
   noComments: { color: '#9ca3af', fontSize: 14, marginBottom: 8 },
   commentForm: { flexDirection: 'row', gap: 10, marginBottom: 16 },
   commentFormAvatar: {

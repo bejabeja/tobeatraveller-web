@@ -1,6 +1,6 @@
 import { AuthError } from '../errors/AuthError.js';
 import { ValidationError } from '../errors/ValidationError.js';
-import { loginSchema, signupSchema, forgotPasswordSchema, resetPasswordSchema, verifyEmailSchema } from '../utils/schemasValidation.js';
+import { loginSchema, signupSchema, forgotPasswordSchema, resetPasswordSchema, verifyEmailSchema, changeUnverifiedEmailSchema } from '../utils/schemasValidation.js';
 import { logger } from '../utils/logger.js';
 import { getRequestContext } from '../utils/requestContext.js';
 
@@ -104,6 +104,21 @@ export class AuthController {
         try {
             await this.emailVerificationService.verify(result.data.token, getRequestContext(req));
             return res.status(200).json({ message: "Email confirmed" });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async changeUnverifiedEmail(req, res, next) {
+        const result = changeUnverifiedEmailSchema.safeParse(req.body);
+        if (!result.success) {
+            return next(new ValidationError(result.error.errors[0]?.message || "Validation failed"));
+        }
+        try {
+            await this.emailVerificationService.changeUnverifiedEmail(
+                req.user.id, result.data.currentPassword, result.data.email, getRequestContext(req)
+            );
+            return res.status(200).json({ message: "Email updated" });
         } catch (error) {
             next(error);
         }

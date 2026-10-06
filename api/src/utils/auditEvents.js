@@ -10,6 +10,7 @@ export const AUDIT_EVENTS = Object.freeze({
     PASSWORD_RESET_COMPLETED: 'password_reset_completed',
     PASSWORD_CHANGED: 'password_changed',
     EMAIL_VERIFIED: 'email_verified',
+    EMAIL_CHANGED: 'email_changed',
     USERNAME_CHANGED: 'username_changed',
     DATA_EXPORTED: 'data_exported',
     ACCOUNT_DELETED_BY_SELF: 'account_deleted_by_self',

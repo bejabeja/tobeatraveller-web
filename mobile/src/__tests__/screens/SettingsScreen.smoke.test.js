@@ -40,6 +40,7 @@ jest.mock('@tobeatraveller/shared', () => ({
   fetchNotificationPreferences: jest.fn(),
   updateNotificationPreferences: jest.fn(),
   changePassword: jest.fn(),
+  changeUnverifiedEmail: jest.fn(),
   deleteMyAccount: jest.fn(),
   exportMyData: jest.fn(),
   logoutUser: jest.fn(),
@@ -47,7 +48,7 @@ jest.mock('@tobeatraveller/shared', () => ({
 
 import { Alert } from 'react-native';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
-import { changePassword, fetchNotificationPreferences, updateMyTravelStyle } from '@tobeatraveller/shared';
+import { changePassword, changeUnverifiedEmail, fetchNotificationPreferences, updateMyTravelStyle } from '@tobeatraveller/shared';
 import i18n from '../../i18n';
 import SettingsScreen from '../../screens/settings/SettingsScreen';
 
@@ -192,4 +193,60 @@ describe('how you travel', () => {
     expect(Alert.alert).toHaveBeenCalledWith('errors.somethingWrong');
     expect(mockDispatch).not.toHaveBeenCalledWith({ type: 'setUserInfo', id: 'user-1' });
   });
+});
+
+describe('correcting an email that was never confirmed', () => {
+  const UNCONFIRMED = { id: 'user-1', username: 'jane', email: 'jane@exmaple.com', emailVerified: false };
+
+  afterEach(() => {
+    mockMe = { id: 'user-1', username: 'jane', email: 'jane@example.com' };
+  });
+
+  it('offers it only to whoever has not confirmed', async () => {
+    mockMe = { ...UNCONFIRMED, emailVerified: true };
+    renderScreen();
+
+    await screen.findByText('jane@exmaple.com');
+    expect(screen.queryByText('emailVerification.changeLink')).toBeNull();
+  });
+
+  it('sends the corrected address with the password and refreshes the profile', async () => {
+    mockMe = UNCONFIRMED;
+    changeUnverifiedEmail.mockResolvedValue({});
+    jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    renderScreen();
+
+    fireEvent.press(await screen.findByText('emailVerification.changeLink'));
+    fireEvent.changeText(screen.getByPlaceholderText('emailVerification.newEmailLabel'), ' jane@example.com ');
+    fireEvent.changeText(screen.getByPlaceholderText('emailVerification.passwordLabel'), 'secret-pass');
+    await act(async () => { fireEvent.press(screen.getByText('emailVerification.save')); });
+
+    expect(changeUnverifiedEmail).toHaveBeenCalledWith({ email: 'jane@example.com', currentPassword: 'secret-pass' });
+    expect(mockDispatch).toHaveBeenCalledWith({ type: 'setUserInfo', id: 'user-1' });
+  });
+
+  it('says why it failed and keeps the form open', async () => {
+    mockMe = UNCONFIRMED;
+    changeUnverifiedEmail.mockRejectedValue(new Error('auth.emailInUse'));
+    renderScreen();
+
+    fireEvent.press(await screen.findByText('emailVerification.changeLink'));
+    fireEvent.changeText(screen.getByPlaceholderText('emailVerification.newEmailLabel'), 'taken@example.com');
+    fireEvent.changeText(screen.getByPlaceholderText('emailVerification.passwordLabel'), 'secret-pass');
+    await act(async () => { fireEvent.press(screen.getByText('emailVerification.save')); });
+
+    expect(screen.getByText('auth.emailInUse')).toBeTruthy();
+    expect(screen.getByPlaceholderText('emailVerification.newEmailLabel')).toBeTruthy();
+  });
+});
+
+it('leads to the subscription and to inviting friends', async () => {
+  const navigation = { goBack: jest.fn(), navigate: jest.fn() };
+  render(<SettingsScreen navigation={navigation} />);
+
+  fireEvent.press(await screen.findByText('settings.inviteFriends'));
+
+  expect(navigation.navigate).toHaveBeenCalledWith('Referral');
+  fireEvent.press(screen.getAllByText('settings.plan')[1]);
+  expect(navigation.navigate).toHaveBeenCalledWith('Subscription');
 });

@@ -211,6 +211,7 @@
     "unavailable": "No disponible ahora"
   },
   "explore": {
+    "removeFilter": "Quitar filtro",
     "clearSearch": "Borrar búsqueda",
     "title": "Explorar el mundo",
     "subtitle": "Descubre itinerarios compartidos por exploradores de todo el planeta",
@@ -605,6 +606,7 @@
   "itinerary": {
     "shareTrip": "Compartir viaje",
     "cloneTrip": "Clonar viaje",
+    "cloneToMyTrips": "Copiar a mis viajes",
     "directions": "Cómo llegar",
     "saveTrip": "Guardar viaje",
     "unsaveTrip": "Quitar de guardados",
@@ -1128,7 +1130,15 @@
     "errorDesc": "Puede que haya caducado o que ya se haya usado.",
     "resend": "Enviarme un enlace nuevo",
     "errorSignedOut": "Inicia sesión y pide uno nuevo desde el aviso de la parte superior.",
-    "alreadyConfirmed": "Tu correo ya está confirmado."
+    "alreadyConfirmed": "Tu correo ya está confirmado.",
+    "changeLink": "¿Correo equivocado? Cámbialo",
+    "changeTitle": "Corregir tu correo",
+    "changeDesc": "Te enviaremos el enlace de confirmación a la dirección correcta.",
+    "newEmailLabel": "Correo correcto",
+    "passwordLabel": "Tu contraseña",
+    "save": "Cambiar y enviar enlace",
+    "saving": "Enviando…",
+    "changed": "Listo. Te hemos enviado un enlace a {{email}}."
   },
   "itinerariesSection": {
     "noTripsYet": "Todavía no hay viajes",
@@ -1288,6 +1298,8 @@
     "private": "Privados"
   },
   "settings": {
+    "plan": "Suscripción y plan",
+    "inviteFriends": "Invitar amigos",
     "title": "Ajustes",
     "account": "Cuenta",
     "language": "Idioma",

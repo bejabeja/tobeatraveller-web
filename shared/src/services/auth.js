@@ -71,6 +71,17 @@ export const resendVerificationEmail = async () => {
     return response.json();
 };
 
+// Only for an address never confirmed (a typo at signup); the password proves it is still them.
+export const changeUnverifiedEmail = async ({ email, currentPassword }) => {
+    const response = await authFetch(`${baseUrl()}/auth/unverified-email`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, currentPassword }),
+    });
+    if (!response.ok) await parseError(response, 'Could not change the email');
+    return response.json();
+};
+
 // `language` is the app's, for the confirmation sent back to the sender.
 // Open to anyone, but a signed-in sender goes with their token, so whoever answers
 // can see the account and plan behind the message.

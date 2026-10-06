@@ -117,6 +117,11 @@ export const forgotPasswordSchema = z.object({
     email: z.string().email(),
 });
 
+export const changeUnverifiedEmailSchema = z.object({
+    email: z.string().email("validation.emailInvalid"),
+    currentPassword: z.string().min(1, "validation.currentPasswordRequired"),
+});
+
 export const verifyEmailSchema = z.object({
     token: z.string().min(64),
 });

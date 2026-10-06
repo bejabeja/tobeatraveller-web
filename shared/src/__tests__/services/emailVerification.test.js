@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { setApiUrl } from '../../utils/apiConfig.js';
 import { setTokenStorage } from '../../utils/tokenStorage.js';
-import { resendVerificationEmail, verifyEmail } from '../../services/auth.js';
+import { changeUnverifiedEmail, resendVerificationEmail, verifyEmail } from '../../services/auth.js';
 
 describe('email verification services', () => {
     beforeEach(() => {
@@ -40,6 +40,23 @@ describe('email verification services', () => {
             global.fetch.mockResolvedValue({ ok: false, status: 429, json: async () => ({ error: 'Too many confirmation emails' }) });
 
             await expect(resendVerificationEmail()).rejects.toMatchObject({ status: 429 });
+        });
+    });
+
+    describe('changeUnverifiedEmail', () => {
+        it('sends the corrected address and the password to the right place', async () => {
+            await changeUnverifiedEmail({ email: 'ana@nuevo.com', currentPassword: 'secret-pass' });
+
+            const [url, options] = global.fetch.mock.calls[0];
+            expect(url).toBe('http://api.test/auth/unverified-email');
+            expect(options.method).toBe('PATCH');
+            expect(JSON.parse(options.body)).toEqual({ email: 'ana@nuevo.com', currentPassword: 'secret-pass' });
+        });
+
+        it('throws an error carrying the status and field when the address is taken, so the form can point at it', async () => {
+            global.fetch.mockResolvedValue({ ok: false, status: 409, json: async () => ({ error: 'Email already in use', field: 'email' }) });
+
+            await expect(changeUnverifiedEmail({ email: 'x@y.com', currentPassword: 'p' })).rejects.toMatchObject({ status: 409, field: 'email' });
         });
     });
 });

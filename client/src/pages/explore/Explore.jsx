@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { IoSearchOutline } from "react-icons/io5";
+import { IoCloseOutline, IoSearchOutline } from "react-icons/io5";
 
 import LoadingButton from "../../components/LoadingButton.jsx";
 import ItinerariesSection from "../../components/itineraries/ItinerariesSection.jsx";
@@ -32,6 +32,16 @@ import "./Explore.scss";
 // Marks the address changes this page makes itself. The router can show one a moment after the
 // filters have moved on (typing fast), and it must not be taken for a destination chosen elsewhere.
 const EXPLORE_ADDRESS_SYNC = "exploreAddressSync";
+
+// Each filter chip can be dropped on its own, without clearing the rest of the search.
+const FilterTag = ({ children, modifier, onRemove, removeLabel }) => (
+  <span className={`explore__filter-tag${modifier ? ` explore__filter-tag--${modifier}` : ""}`}>
+    {children}
+    <button type="button" className="explore__filter-tag-remove" onClick={onRemove} aria-label={removeLabel}>
+      <IoCloseOutline aria-hidden="true" />
+    </button>
+  </span>
+);
 
 const Explore = () => {
   const { t, i18n } = useTranslation();
@@ -105,6 +115,14 @@ const Explore = () => {
     dispatch(initExploreItineraries({ page: 1, ...filters, sortBy }));
   };
 
+  const removeFilters = (...keys) => {
+    const remaining = { ...filters };
+    keys.forEach((key) => delete remaining[key]);
+    setFilters(remaining);
+    setDefaultFilters(remaining);
+    setFilterResetKey((k) => k + 1);
+  };
+
   const clearAllFilters = () => {
     setFilters({});
     setDefaultFilters({});
@@ -170,33 +188,33 @@ const Explore = () => {
           {(hasActiveFilters) && (
             <div className="explore__active-filters">
               {filters.query && (
-                <span className="explore__filter-tag">🔎 {filters.query}</span>
+                <FilterTag onRemove={() => removeFilters("query")} removeLabel={t("explore.removeFilter")}>🔎 {filters.query}</FilterTag>
               )}
               {filters.category && (
-                <span className="explore__filter-tag explore__filter-tag--category">
+                <FilterTag modifier="category" onRemove={() => removeFilters("category")} removeLabel={t("explore.removeFilter")}>
                   {t(`tripCategories.${filters.category}`)}
-                </span>
+                </FilterTag>
               )}
               {(filters.budgetMin || filters.budgetMax) && (
-                <span className="explore__filter-tag">
+                <FilterTag onRemove={() => removeFilters("budgetMin", "budgetMax")} removeLabel={t("explore.removeFilter")}>
                   💰 {filters.budgetMin && filters.budgetMax
                     ? `${filters.budgetMin}–${filters.budgetMax}`
                     : filters.budgetMin
                       ? `${filters.budgetMin}+`
                       : `≤${filters.budgetMax}`}
-                </span>
+                </FilterTag>
               )}
               {(filters.durationMin || filters.durationMax) && (
-                <span className="explore__filter-tag">
+                <FilterTag onRemove={() => removeFilters("durationMin", "durationMax")} removeLabel={t("explore.removeFilter")}>
                   🗓 {filters.durationMin && filters.durationMax
                     ? `${filters.durationMin}–${filters.durationMax}`
                     : filters.durationMin
                       ? `${filters.durationMin}+`
                       : `≤${filters.durationMax}`} {t("itinerary.days")}
-                </span>
+                </FilterTag>
               )}
               {filters.travelersCount && (
-                <span className="explore__filter-tag">{t(`explore.${filters.travelersCount}`)}</span>
+                <FilterTag onRemove={() => removeFilters("travelersCount")} removeLabel={t("explore.removeFilter")}>{t(`explore.${filters.travelersCount}`)}</FilterTag>
               )}
               <button className="explore__clear-all" onClick={clearAllFilters}>
                 {t("explore.clearAll")}
