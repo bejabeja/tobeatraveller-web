@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { ContentReportsController } from "../controllers/contentReportsController.js";
 import { authenticate } from "../middlewares/authenticate.js";
+import { requireCronSecret } from "../middlewares/requireCronSecret.js";
 import { perUserReportRateLimit } from "../middlewares/reportRateLimit.js";
 import { requireRole } from "../middlewares/requireRole.js";
 import { CommentsRepository } from "../repositories/commentsRepository.js";
@@ -27,6 +28,7 @@ export const createContentReportsRouter = () => {
 
     const staffOnly = requireRole(...STAFF_ROLES);
 
+    router.get("/scheduled-purge", requireCronSecret, contentReportsController.purgeScheduled.bind(contentReportsController));
     router.post("/", authenticate, perUserReportRateLimit, contentReportsController.submitReport.bind(contentReportsController));
     router.get("/", authenticate, staffOnly, contentReportsController.listReports.bind(contentReportsController));
     router.patch("/:reportId", authenticate, staffOnly, contentReportsController.decideReport.bind(contentReportsController));

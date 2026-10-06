@@ -247,12 +247,12 @@ describe('ContentReportsService', () => {
 
     describe('purgeResolved()', () => {
         it('deletes what is past the retention window and leaves a record of how many', async () => {
-            const deleted = await service.purgeResolved({ trigger: 'cron' });
+            const deleted = await service.purgeResolved({ trigger: 'cron', actorUsername: 'system-cron' });
 
             expect(deleted).toBe(3);
             expect(contentReportsRepository.deleteResolvedOlderThan).toHaveBeenCalledWith(12);
             expect(auditLogService.log).toHaveBeenCalledWith(expect.objectContaining({
-                action: AUDIT_EVENTS.REPORTS_PURGED, metadata: { months: 12, deletedCount: 3, trigger: 'cron' },
+                actorUsername: 'system-cron', action: AUDIT_EVENTS.REPORTS_PURGED, metadata: { months: 12, deletedCount: 3, trigger: 'cron' },
             }));
         });
     });

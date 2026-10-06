@@ -35,6 +35,17 @@ export class ContentReportsController {
         }
     }
 
+    // Hit by Vercel Cron (see vercel.json), authenticated via requireCronSecret instead of a
+    // user session, so the retention window of resolved reports enforces itself.
+    async purgeScheduled(req, res, next) {
+        try {
+            const deletedCount = await this.contentReportsService.purgeResolved({ trigger: 'scheduled', actorUsername: 'system-cron' });
+            return res.status(200).json({ deletedCount });
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async decideReport(req, res, next) {
         const result = reportDecisionSchema.safeParse(req.body);
         if (!result.success) {

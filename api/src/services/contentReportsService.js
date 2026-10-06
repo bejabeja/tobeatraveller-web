@@ -106,9 +106,10 @@ export class ContentReportsService {
         });
     }
 
-    async purgeResolved({ trigger = 'manual' } = {}) {
+    async purgeResolved({ trigger = 'manual', actorUsername = null } = {}) {
         const deletedCount = await this.contentReportsRepository.deleteResolvedOlderThan(REPORT_RETENTION_MONTHS);
         this.auditLogService?.log({
+            actorUsername,
             action: AUDIT_EVENTS.REPORTS_PURGED,
             metadata: { months: REPORT_RETENTION_MONTHS, deletedCount, trigger },
         });
