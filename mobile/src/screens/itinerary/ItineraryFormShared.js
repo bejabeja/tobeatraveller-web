@@ -415,12 +415,12 @@ export const VisibilitySection = ({ value, onChange }) => {
 };
 
 // ─── ByVanSection ────────────────────────────────────────────────────────────
-export const ByVanSection = ({ value, onChange }) => {
+export const ByVanSection = ({ value, onChange, isPublic = true }) => {
   const { t } = useTranslation();
   return (
     <Card title={`🚐 ${t('tripByVan.question')}`}>
       <View style={s.byVanRow}>
-        <Text style={s.byVanHint}>{t('tripByVan.hint')}</Text>
+        <Text style={s.byVanHint}>{t(isPublic ? 'tripByVan.hint' : 'tripByVan.hintPrivate')}</Text>
         <Switch
           value={Boolean(value)}
           onValueChange={onChange}

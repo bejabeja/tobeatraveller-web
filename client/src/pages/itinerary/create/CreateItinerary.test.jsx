@@ -45,9 +45,14 @@ jest.mock("../sectionsForm/VisibilityForm", () => {
   const { useController } = require("react-hook-form");
   return {
     __esModule: true,
-    default: ({ control }) => {
+    default: ({ control, publishNotice }) => {
       const { field } = useController({ control, name: "byVan" });
-      return React.createElement("input", { type: "checkbox", "aria-label": "by van", checked: Boolean(field.value), onChange: (event) => field.onChange(event.target.checked) });
+      return React.createElement(
+        React.Fragment,
+        null,
+        publishNotice,
+        React.createElement("input", { type: "checkbox", "aria-label": "by van", checked: Boolean(field.value), onChange: (event) => field.onChange(event.target.checked) }),
+      );
     },
   };
 });

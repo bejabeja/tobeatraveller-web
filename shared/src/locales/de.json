@@ -209,7 +209,8 @@
   "tripByVan": {
     "label": "Im Van",
     "question": "Warst du mit Van oder Camper unterwegs?",
-    "hint": "So finden alle, die Van-Reisen suchen, ihn in Entdecken."
+    "hint": "So finden alle, die Van-Reisen suchen, ihn in Entdecken.",
+    "hintPrivate": "Entdecken zeigt nur öffentliche Reisen. Mach sie öffentlich, und alle, die Van-Reisen suchen, finden sie."
   },
   "explore": {
     "loadMoreError": "Weitere Reisen konnten nicht geladen werden. Versuche es erneut.",
@@ -664,7 +665,7 @@
     "coverPhoto": "Titelbild",
     "placesLabel": "Orte",
     "budgetLabel": "Budget",
-    "createItineraryBtn": "Reiseplan erstellen",
+    "createItineraryBtn": "Reise erstellen",
     "stepOf": "Schritt {{current}} von {{total}}",
     "nextStep": "Weiter",
     "backStep": "Zurück",

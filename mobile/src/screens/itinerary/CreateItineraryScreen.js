@@ -441,7 +441,7 @@ const CreateItineraryScreen = ({ navigation }) => {
 
           <VisibilitySection value={isPublic} onChange={setIsPublic} />
 
-          <ByVanSection value={byVan} onChange={(value) => { setByVan(value); setByVanAnswered(true); }} />
+          <ByVanSection value={byVan} onChange={(value) => { setByVan(value); setByVanAnswered(true); }} isPublic={isPublic} />
 
           {/* Submit hint */}
           {missingItems.length > 0 && (

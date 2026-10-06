@@ -84,6 +84,16 @@
   text-align: right;
 }
 
+.ci-wizard__publish-notice {
+  margin: 0.75rem 0 0;
+  padding: 0.6rem 0.8rem;
+  border-left: 3px solid var(--primary-color);
+  border-radius: 0.4rem;
+  background: var(--primary-light, rgba(232, 116, 59, 0.1));
+  font-size: 0.85rem;
+  color: var(--text-color);
+}
+
 .ci-wizard__next {
   margin-left: auto;
 }
@@ -445,6 +455,12 @@
 
     .form__icon-group--compact {
       margin: 0.25rem 0;
+    }
+
+    .form__icon-group-caption {
+      flex-basis: 100%;
+      font-size: 0.8rem;
+      color: var(--text-secondary-color);
     }
   }
 }

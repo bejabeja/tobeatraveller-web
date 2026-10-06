@@ -11,8 +11,11 @@ export class ItinerariesService {
             this.itinerariesRepository.findByFilters(filters)
         ]);
 
+        const page = filters.page || 1;
+        const totalPages = Math.ceil(totalItems / filters.limit);
+
         if (!itineraries.length) {
-            return { itineraries: [], totalPages: 0, totalItems: 0, page: filters.page || 1 };
+            return { itineraries: [], totalPages, totalItems, page };
         }
 
         await Promise.all(
@@ -25,7 +28,7 @@ export class ItinerariesService {
         return {
             itineraries: itineraries.map(it => it.toSimpleDTO()),
             totalItems,
-            totalPages: Math.ceil(totalItems / filters.limit),
+            totalPages,
             page: filters.page
         };
     }

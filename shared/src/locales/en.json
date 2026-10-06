@@ -209,7 +209,8 @@
   "tripByVan": {
     "label": "By van",
     "question": "Did you travel by van or camper?",
-    "hint": "This way anyone looking for van trips will find it in Explore."
+    "hint": "This way anyone looking for van trips will find it in Explore.",
+    "hintPrivate": "Explore only lists public trips. Make it public and anyone looking for van trips will find it."
   },
   "explore": {
     "loadMoreError": "Could not load more trips. Please try again.",
@@ -664,7 +665,7 @@
     "coverPhoto": "cover photo",
     "placesLabel": "places",
     "budgetLabel": "budget",
-    "createItineraryBtn": "Create itinerary",
+    "createItineraryBtn": "Create trip",
     "stepOf": "Step {{current}} of {{total}}",
     "nextStep": "Next",
     "backStep": "Back",

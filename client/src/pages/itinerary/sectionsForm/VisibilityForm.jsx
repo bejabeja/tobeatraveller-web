@@ -1,9 +1,10 @@
-import { Controller } from "react-hook-form";
+import { Controller, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import ByVanToggle from "../../../components/form/ByVanToggle";
 
-const VisibilityForm = ({ control }) => {
+const VisibilityForm = ({ control, publishNotice }) => {
   const { t } = useTranslation();
+  const isPublic = useWatch({ control, name: "isPublic" });
   const f = (key) => t(`itineraryForm.${key}`);
 
   return (
@@ -35,10 +36,11 @@ const VisibilityForm = ({ control }) => {
           </div>
         )}
       />
+      {publishNotice}
       <Controller
         name="byVan"
         control={control}
-        render={({ field }) => <ByVanToggle checked={field.value} onChange={field.onChange} />}
+        render={({ field }) => <ByVanToggle checked={field.value} onChange={field.onChange} isPublic={isPublic} />}
       />
     </div>
   );

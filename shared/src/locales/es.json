@@ -213,7 +213,8 @@
   "tripByVan": {
     "label": "En furgo",
     "question": "¿Viajaste en furgo o camper?",
-    "hint": "Así quien busque viajes en furgo lo encontrará en Explore."
+    "hint": "Así quien busque viajes en furgo lo encontrará en Explore.",
+    "hintPrivate": "Explore solo muestra viajes públicos. Hazlo público y quien busque viajes en furgo lo encontrará."
   },
   "explore": {
     "loadMoreError": "No se pudieron cargar más viajes. Inténtalo de nuevo.",
@@ -675,7 +676,7 @@
     "coverPhoto": "foto de portada",
     "placesLabel": "lugares",
     "budgetLabel": "presupuesto",
-    "createItineraryBtn": "Crear itinerario",
+    "createItineraryBtn": "Crear viaje",
     "stepOf": "Paso {{current}} de {{total}}",
     "nextStep": "Siguiente",
     "backStep": "Atrás",

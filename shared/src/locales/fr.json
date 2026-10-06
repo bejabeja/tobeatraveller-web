@@ -213,7 +213,8 @@
   "tripByVan": {
     "label": "En van",
     "question": "As-tu voyagé en van ou en camping-car ?",
-    "hint": "Ainsi, ceux qui cherchent des voyages en van le trouveront dans Explorer."
+    "hint": "Ainsi, ceux qui cherchent des voyages en van le trouveront dans Explorer.",
+    "hintPrivate": "Explorer n'affiche que les voyages publics. Rends-le public et ceux qui cherchent des voyages en van le trouveront."
   },
   "explore": {
     "loadMoreError": "Impossible de charger plus de voyages. Réessaie.",
@@ -675,7 +676,7 @@
     "coverPhoto": "photo de couverture",
     "placesLabel": "lieux",
     "budgetLabel": "budget",
-    "createItineraryBtn": "Créer l'itinéraire",
+    "createItineraryBtn": "Créer le voyage",
     "stepOf": "Étape {{current}} sur {{total}}",
     "nextStep": "Suivant",
     "backStep": "Retour",

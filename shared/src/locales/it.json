@@ -213,7 +213,8 @@
   "tripByVan": {
     "label": "In van",
     "question": "Hai viaggiato in van o camper?",
-    "hint": "Così chi cerca viaggi in van lo troverà in Esplora."
+    "hint": "Così chi cerca viaggi in van lo troverà in Esplora.",
+    "hintPrivate": "Esplora mostra solo viaggi pubblici. Rendilo pubblico e chi cerca viaggi in van lo troverà."
   },
   "explore": {
     "loadMoreError": "Impossibile caricare altri viaggi. Riprova.",
@@ -675,7 +676,7 @@
     "coverPhoto": "foto di copertina",
     "placesLabel": "luoghi",
     "budgetLabel": "budget",
-    "createItineraryBtn": "Crea itinerario",
+    "createItineraryBtn": "Crea viaggio",
     "stepOf": "Passo {{current}} di {{total}}",
     "nextStep": "Avanti",
     "backStep": "Indietro",

@@ -428,6 +428,8 @@ const PlaceCategoryForm = ({ control, index }) => {
                   type="button"
                   key={type.value}
                   title={t(`placeCategories.${type.value}`)}
+                  aria-label={t(`placeCategories.${type.value}`)}
+                  aria-pressed={field.value === type.value}
                   className={`form__icon-group-button only-icon ${field.value === type.value ? "selected" : ""}`}
                   onClick={() => field.onChange(type.value)}
                 >
@@ -435,6 +437,7 @@ const PlaceCategoryForm = ({ control, index }) => {
                 </button>
               );
             })}
+            <span className="form__icon-group-caption">{t(`placeCategories.${field.value}`)}</span>
           </>
         )}
       />

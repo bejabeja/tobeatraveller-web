@@ -52,6 +52,16 @@ describe('ItinerariesService', () => {
       expect(result).toEqual({ itineraries: [], totalPages: 0, totalItems: 0, page: 1 });
     });
 
+    // Regression: asking for a page past the end said there were no trips at all.
+    it('keeps the real totals when the requested page is past the last one', async () => {
+      itinerariesRepository.countByFilters.mockResolvedValue(25);
+      itinerariesRepository.findByFilters.mockResolvedValue([]);
+
+      const result = await service.getFilteredItineraries({ page: 99, limit: 10 });
+
+      expect(result).toEqual({ itineraries: [], totalPages: 3, totalItems: 25, page: 99 });
+    });
+
     it('returns pagination metadata with itineraries', async () => {
       const itin = makeItinerary('itin-1');
       userRepository.getUserById.mockResolvedValue(makeUser());

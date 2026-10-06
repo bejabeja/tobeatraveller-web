@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   IoCloseOutline, IoDownloadOutline, IoEllipsisVertical, IoFlashOutline, IoFunnelOutline,
@@ -10,7 +10,7 @@ import {
 import {
   formatAmount, formatBudgetAmount, formatCalendarDay, formatNumber, getTripBudgetProgress, getVanLogDateRangePresets,
   groupVanLogEntriesByMonth, groupVanLogEntriesByTrip, isPremiumRequiredError, localCalendarDay, normalizeSearchText, vanLogCategories, vanLogCategoryEmoji,
-  locationLine,
+  locationLine, refreshUnreadCountSoon,
 } from "@tobeatraveller/shared";
 import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState";
 import SelectMenu from "../../components/form/SelectMenu";
@@ -59,6 +59,7 @@ const buildVanLogCsv = (entriesToExport, t, categoryLabel) => {
 
 const VanLog = () => {
   const { t, i18n } = useTranslation();
+  const dispatch = useDispatch();
   usePageMeta({ title: t("nav.vanLog") });
   const language = i18n.language;
   const myItineraries = useSelector(selectMyItineraries);
@@ -156,6 +157,7 @@ const VanLog = () => {
     navigate(location.pathname, { replace: true, state: null });
   }, [location, navigate]);
   const handleEntrySaved = () => {
+    dispatch(refreshUnreadCountSoon());
     closeEntryModal();
     refresh();
   };

@@ -19,6 +19,7 @@ import {
   PASSPORT_MOMENT_COUNTRY_PARAM,
   PASSPORT_SHARE_PARAM,
   refreshUnreadCount,
+  CELEBRATION_CHECK_DELAY_MS,
   selectUnreadCount,
 } from "@tobeatraveller/shared";
 import { useCanonicalUrl } from "./hooks/useCanonicalUrl";
@@ -77,11 +78,6 @@ const InternalDashboard = lazy(() => import("./pages/internal/InternalDashboard"
 const InternalUsers = lazy(() => import("./pages/internal/InternalUsers"));
 const InternalAuditLog = lazy(() => import("./pages/internal/InternalAuditLog"));
 const InternalReferrals = lazy(() => import("./pages/internal/InternalReferrals"));
-
-// Badges and countries are granted in the background right after saving:
-// checking shortly after moving to another page (usually right after saving)
-// celebrates them without waiting for the next poll.
-const CELEBRATION_CHECK_DELAY_MS = 2000;
 
 const App = () => {
   const dispatch = useDispatch();
@@ -145,6 +141,9 @@ const App = () => {
     if (moment) skipCelebration(moment);
   }, [location.search, skipCelebration]);
 
+  // Badges and countries are granted in the background right after saving:
+  // checking shortly after moving to another page (usually right after saving)
+  // celebrates them without waiting for the next poll.
   useEffect(() => {
     if (!isAuthenticated) return undefined;
     const timeout = setTimeout(() => dispatch(refreshUnreadCount()), CELEBRATION_CHECK_DELAY_MS);

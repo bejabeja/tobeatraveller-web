@@ -23,7 +23,7 @@ const TRAVEL_STYLE_CHOICES = [
 
 // Where each first step leads, on the web.
 const START_ACTIONS = {
-  startExpense: { emoji: "⛽", path: () => "/van-log" },
+  startExpense: { emoji: "⛽", path: () => "/van-log", state: { quickAdd: true } },
   startSupplies: { emoji: "🛒", path: () => "/supplies" },
   startChecklist: { emoji: "✅", path: () => "/packing-checklist" },
   startTrip: { emoji: "🗺️", path: () => "/create-itinerary" },
@@ -162,6 +162,7 @@ const Onboarding = () => {
                   <li key={key}>
                     <Link
                       to={START_ACTIONS[key].path(authUser?.id)}
+                      state={START_ACTIONS[key].state}
                       className="onboarding__start-action"
                       onClick={() => {
                         trackEvent(ANALYTICS_EVENTS.ONBOARDING_START_STEP_CLICKED, { step: key });

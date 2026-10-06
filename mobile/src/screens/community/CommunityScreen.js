@@ -28,7 +28,8 @@ const CommunityScreen = ({ navigation }) => {
   const authUser = useSelector(selectAuthUser);
   const me = meDetail ?? authUser;
 
-  const users        = useSelector(selectAllUsers);
+  const allUsers     = useSelector(selectAllUsers);
+  const users        = allUsers?.filter(user => String(user.id) !== String(authUser?.id));
   const loading      = useSelector(selectAllUsersLoading);
   const loadingMore  = useSelector(selectAllUsersLoadingMore);
   const currentPage  = useSelector(selectAllUsersCurrentPage);
@@ -216,7 +217,6 @@ const UserCard = ({ user, me, isAuthenticated, onPress }) => {
     !!me?.followingListIds?.some(f => String(f.id) === String(user.id))
   );
   const [loadingFollow, setLoadingFollow] = useState(false);
-  const isMe = me && String(me.id) === String(user.id);
 
   const handleFollow = async () => {
     if (!isAuthenticated) return;
@@ -246,7 +246,7 @@ const UserCard = ({ user, me, isAuthenticated, onPress }) => {
       activeOpacity={0.85}
       accessibilityRole="button"
       accessibilityLabel={`@${user.username}`}
-      {...cardInnerActions([!isMe && {
+      {...cardInnerActions([{
         name: 'follow', label: following ? t('followers.unfollow') : t('community.follow'), onPress: isAuthenticated ? handleFollow : onPress,
       }])}
     >
@@ -280,19 +280,17 @@ const UserCard = ({ user, me, isAuthenticated, onPress }) => {
         <Text style={styles.userCardTrips}>{t('community.trips', { count: user.totalItineraries ?? 0 })}</Text>
 
         {/* Signed out, following needs an account: the card's own press goes to it. */}
-        {!isMe && (
-          <TouchableOpacity
-            style={[styles.followBtn, following && styles.followBtnFollowing, loadingFollow && styles.followBtnDisabled]}
-            onPress={isAuthenticated ? handleFollow : onPress}
-            disabled={loadingFollow}
-            accessibilityRole="button"
-            accessibilityState={{ selected: following, disabled: loadingFollow }}
-          >
-            <Text style={[styles.followBtnText, following && styles.followBtnTextFollowing]}>
-              {loadingFollow ? '…' : following ? t('community.following') : t('community.follow')}
-            </Text>
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity
+          style={[styles.followBtn, following && styles.followBtnFollowing, loadingFollow && styles.followBtnDisabled]}
+          onPress={isAuthenticated ? handleFollow : onPress}
+          disabled={loadingFollow}
+          accessibilityRole="button"
+          accessibilityState={{ selected: following, disabled: loadingFollow }}
+        >
+          <Text style={[styles.followBtnText, following && styles.followBtnTextFollowing]}>
+            {loadingFollow ? '…' : following ? t('community.following') : t('community.follow')}
+          </Text>
+        </TouchableOpacity>
       </View>
     </TouchableOpacity>
   );

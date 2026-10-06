@@ -279,7 +279,7 @@ const EditItineraryScreen = ({ route, navigation }) => {
           <TravellersSection value={travellers} onChange={setTravellers} />
           <VisibilitySection value={isPublic} onChange={setIsPublic} />
 
-          <ByVanSection value={byVan} onChange={setByVan} />
+          <ByVanSection value={byVan} onChange={setByVan} isPublic={isPublic} />
 
         </ScrollView>
       </KeyboardAvoidingView>

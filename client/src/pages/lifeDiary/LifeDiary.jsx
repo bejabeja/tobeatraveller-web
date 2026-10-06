@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import {
   IoAddOutline, IoJournalOutline, IoLocationOutline, IoPencilOutline, IoTrashOutline,
 } from "react-icons/io5";
-import { formatCalendarDay, isPremiumRequiredError, LIFE_DIARY_PAGE_SIZE, locationLine } from "@tobeatraveller/shared";
+import { formatCalendarDay, isPremiumRequiredError, LIFE_DIARY_PAGE_SIZE, locationLine, refreshUnreadCountSoon } from "@tobeatraveller/shared";
 import LoadingButton from "../../components/LoadingButton";
 import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState";
 import Modal from "../../components/modal/Modal";
@@ -20,6 +21,7 @@ const ENTRY_DATE_FORMAT = { day: "numeric", month: "short", year: "numeric" };
 const LifeDiary = () => {
   const { t, i18n } = useTranslation();
   usePageMeta({ title: t("nav.lifeDiary") });
+  const dispatch = useDispatch();
   const d = (key, vars) => t(`lifeDiary.${key}`, vars);
 
   const [entries, setEntries] = useState([]);
@@ -76,6 +78,7 @@ const LifeDiary = () => {
   const closeForm = () => setFormOpen(false);
 
   const handleSaved = () => {
+    dispatch(refreshUnreadCountSoon());
     closeForm();
     loadEntries();
     loadUsage();

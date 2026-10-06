@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
 
 const mockDispatch = jest.fn();
 
@@ -32,11 +32,14 @@ import Onboarding from "./Onboarding";
 
 const ANA = { id: "u2", username: "ana", totalItineraries: 1 };
 
+const VanLogProbe = () => <p>{useLocation().state?.quickAdd ? "van log opens the form" : "van log"}</p>;
+
 const renderOnboarding = () => render(
   <MemoryRouter initialEntries={["/welcome"]}>
     <Routes>
       <Route path="/welcome" element={<Onboarding />} />
       <Route path="/" element={<p>the app</p>} />
+      <Route path="/van-log" element={<VanLogProbe />} />
     </Routes>
   </MemoryRouter>,
 );
@@ -70,6 +73,16 @@ describe("Onboarding: how do you travel", () => {
     expect(screen.getByRole("link", { name: /onboarding.startSupplies/ })).toHaveAttribute("href", "/supplies");
     expect(screen.getByRole("link", { name: /onboarding.startChecklist/ })).toHaveAttribute("href", "/packing-checklist");
     expect(screen.queryByRole("link", { name: /onboarding.startTrip/ })).not.toBeInTheDocument();
+  });
+
+  // Regression: "record your first expense" landed on an empty list and the person had to press add again.
+  it("sends the first expense step to Expenses with the form already open", async () => {
+    renderOnboarding();
+    await choose("van");
+
+    fireEvent.click(await screen.findByRole("link", { name: /onboarding.startExpense/ }));
+
+    expect(await screen.findByText("van log opens the form")).toBeInTheDocument();
   });
 
   it("starts someone who travels now and then with a trip, their countries and their profile", async () => {

@@ -50,6 +50,14 @@ export const refreshUnreadCount = () => async (dispatch) => {
     } catch {}
 };
 
+// New stamps are granted in the background after saving something, so the
+// notification that celebrates them is not there yet when the save returns.
+export const CELEBRATION_CHECK_DELAY_MS = 2000;
+
+export const refreshUnreadCountSoon = () => (dispatch) => {
+    setTimeout(() => dispatch(refreshUnreadCount()), CELEBRATION_CHECK_DELAY_MS);
+};
+
 export const markAllNotificationsRead = () => async (dispatch) => {
     try {
         await markNotificationsRead();

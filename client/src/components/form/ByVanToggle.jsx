@@ -2,7 +2,8 @@ import { useId } from "react";
 import { useTranslation } from "react-i18next";
 import "./ByVanToggle.scss";
 
-const ByVanToggle = ({ checked, onChange }) => {
+// Explore only lists public trips, so a private one says so instead of promising to be found.
+const ByVanToggle = ({ checked, onChange, isPublic = true }) => {
   const { t } = useTranslation();
   const hintId = useId();
 
@@ -16,7 +17,7 @@ const ByVanToggle = ({ checked, onChange }) => {
       />
       <span className="by-van-toggle__text">
         <strong>🚐 {t("tripByVan.question")}</strong>
-        <span id={hintId}>{t("tripByVan.hint")}</span>
+        <span id={hintId}>{t(isPublic ? "tripByVan.hint" : "tripByVan.hintPrivate")}</span>
       </span>
     </label>
   );

@@ -486,7 +486,7 @@ const EditExperienceScreen = ({ navigation, route }) => {
             </View>
           </View>
 
-          <ByVanSection value={byVan} onChange={setByVan} />
+          <ByVanSection value={byVan} onChange={setByVan} isPublic={isPublic} />
 
           <TouchableOpacity style={[ls.saveFullBtn, saving && ls.disabled]} onPress={handleSave} disabled={saving}>
             <Text style={ls.saveFullBtnText}>{saving ? ce('saving') : ce('saveExperience')}</Text>

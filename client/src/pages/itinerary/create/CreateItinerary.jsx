@@ -289,13 +289,15 @@ const CreateItinerary = () => {
           <>
             <ImageUpload onUpload={(file) => setImageFile(file)} isComplete={!!imageFile} imageUrl="" />
             <GalleryUpload images={galleryImages} onChange={setGalleryImages} />
-            <VisibilityForm control={control} />
-            {/* Said here, before publishing, not only as a refusal after pressing the button. */}
-            {isPublic && emptyDays.length > 0 && (
-              <p className="ci-wizard__nav-hint" role="status">
-                {t("createItinerary.emptyDaysDesc", { days: emptyDays.join(", "), count: emptyDays.length })}
-              </p>
-            )}
+            {/* Said right under the choice that causes it, before publishing, not only as a refusal after pressing the button. */}
+            <VisibilityForm
+              control={control}
+              publishNotice={isPublic && emptyDays.length > 0 && (
+                <p className="ci-wizard__publish-notice" role="status">
+                  {t("createItinerary.emptyDaysDesc", { days: emptyDays.join(", "), count: emptyDays.length })}
+                </p>
+              )}
+            />
           </>
         )}
 

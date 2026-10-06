@@ -109,10 +109,12 @@ it("shows a person's bio, and a follow button that sends a signed-out visitor to
   expect(navigation.navigate).toHaveBeenCalledWith('Tabs', { screen: 'Profile' });
 });
 
-it('offers no follow button on your own card', async () => {
-  selectAllUsers.mockReturnValue([{ id: 'u1', username: 'tbat', totalItineraries: 1 }]);
+// Regression: the list of travellers to follow included the person looking at it.
+it('does not list the signed-in person among the travellers to follow', async () => {
+  selectAllUsers.mockReturnValue([{ id: 'u1', username: 'tbat', totalItineraries: 1 }, { id: 'u2', username: 'ana', totalItineraries: 1 }]);
 
   await renderScreen();
 
-  expect(screen.queryByText('community.follow')).toBeNull();
+  expect(screen.queryByText('@tbat')).toBeNull();
+  expect(screen.getByText('@ana')).toBeTruthy();
 });
