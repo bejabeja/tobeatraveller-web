@@ -1180,7 +1180,9 @@
     "creating": "Création de l'itinéraire…",
     "createBtn": "Créer l'itinéraire 🎉",
     "emptyDaysTitle": "Jours vides",
-    "emptyDaysDesc": "Le jour {{days}} n'a aucun lieu. Ajoute des lieux ou passe en privé.",
+    "emptyDaysDesc_one": "Le jour {{days}} n'a aucun lieu. Ajoute des lieux ou passe en privé.",
+    "emptyDaysDesc_other": "Les jours {{days}} n'ont aucun lieu. Ajoute des lieux ou passe en privé.",
+    "emptyDaysDesc_many": "Les jours {{days}} n'ont aucun lieu. Ajoute des lieux ou passe en privé.",
     "permissionNeeded": "Autorisation requise",
     "permissionDesc": "Autorise l'accès à ta photothèque.",
     "titleMin": "Le titre doit contenir au moins 2 caractères",
@@ -1759,6 +1761,7 @@
     "invitesTitle": "Tes invitations",
     "inviteStatusPending": "En attente de son premier voyage et de son e-mail confirmé",
     "inviteStatusRewarded": "Premium débloqué 🎁",
+    "inviteStatusCapped": "Ton ami est inscrit ; tu as atteint la limite de récompenses de ce mois",
     "signupCodeLabel": "Code d'invitation (facultatif)",
     "signupCodePlaceholder": "ex. le nom d'utilisateur d'un ami",
     "signupCodeHint": "Quelqu'un t'a envoyé une invitation ? Saisis son nom d'utilisateur ici."

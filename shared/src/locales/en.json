@@ -1163,7 +1163,8 @@
     "creating": "Creating itinerary…",
     "createBtn": "Create itinerary 🎉",
     "emptyDaysTitle": "Empty days",
-    "emptyDaysDesc": "Day {{days}} has no places. Add places or switch to private.",
+    "emptyDaysDesc_one": "Day {{days}} has no places. Add places or switch to private.",
+    "emptyDaysDesc_other": "Days {{days}} have no places. Add places or switch to private.",
     "permissionNeeded": "Permission needed",
     "permissionDesc": "Allow access to your photo library.",
     "titleMin": "Title must be at least 2 characters",
@@ -1739,6 +1740,7 @@
     "invitesTitle": "Your invites",
     "inviteStatusPending": "Waiting for their first trip and confirmed email",
     "inviteStatusRewarded": "Premium unlocked 🎁",
+    "inviteStatusCapped": "Your friend is in; you reached this month's reward limit",
     "signupCodeLabel": "Invite code (optional)",
     "signupCodePlaceholder": "e.g. a friend's username",
     "signupCodeHint": "Were you invited by a friend? Enter their username here."

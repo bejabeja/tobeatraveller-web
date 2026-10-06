@@ -1180,7 +1180,9 @@
     "creating": "Creazione dell'itinerario…",
     "createBtn": "Crea itinerario 🎉",
     "emptyDaysTitle": "Giorni vuoti",
-    "emptyDaysDesc": "Il giorno {{days}} non ha luoghi. Aggiungi dei luoghi o rendilo privato.",
+    "emptyDaysDesc_one": "Il giorno {{days}} non ha luoghi. Aggiungi dei luoghi o rendilo privato.",
+    "emptyDaysDesc_other": "I giorni {{days}} non hanno luoghi. Aggiungi dei luoghi o rendilo privato.",
+    "emptyDaysDesc_many": "I giorni {{days}} non hanno luoghi. Aggiungi dei luoghi o rendilo privato.",
     "permissionNeeded": "Permesso necessario",
     "permissionDesc": "Consenti l'accesso alla galleria foto.",
     "titleMin": "Il titolo deve avere almeno 2 caratteri",
@@ -1759,6 +1761,7 @@
     "invitesTitle": "I tuoi inviti",
     "inviteStatusPending": "In attesa del primo viaggio e dell'email confermata",
     "inviteStatusRewarded": "Premium sbloccato 🎁",
+    "inviteStatusCapped": "Il tuo amico è dentro; questo mese hai raggiunto il limite di premi",
     "signupCodeLabel": "Codice invito (facoltativo)",
     "signupCodePlaceholder": "es. il nome utente di chi ti ha invitato",
     "signupCodeHint": "Qualcuno ti ha invitato? Inserisci qui il suo nome utente."

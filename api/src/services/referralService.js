@@ -120,7 +120,7 @@ export class ReferralService {
             referrerCapped ? null : this._grantPremiumDays(referral.referrerId),
             this._grantPremiumDays(referredUserId),
         ]);
-        await this.referralRepository.markRewarded(referral.id);
+        await this.referralRepository.markRewarded(referral.id, { referrerCapped });
 
         this.auditLogService?.log(referrerCapped ? {
             actorId: referredUserId,

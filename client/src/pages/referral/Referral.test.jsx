@@ -55,6 +55,19 @@ describe("Referral page", () => {
     expect(screen.queryByText("referral.firstInviteHint")).not.toBeInTheDocument();
   });
 
+  // Regression-in-waiting: an invite that gave the referrer nothing, for being over the monthly limit, said "Premium unlocked".
+  it("does not say a month was unlocked for an invite that gave nothing because of the monthly limit", async () => {
+    getMyReferralInfo.mockResolvedValue({
+      referralCode: "tbat", invited: 1, rewarded: 0,
+      invites: [{ id: "i3", status: "capped", referredUser: { username: "eva", avatarUrl: null } }],
+    });
+
+    render(<Referral />);
+
+    expect(await screen.findByText("referral.inviteStatusCapped")).toBeInTheDocument();
+    expect(screen.queryByText("referral.inviteStatusRewarded")).not.toBeInTheDocument();
+  });
+
   // Regression-in-waiting: the invite rule has a monthly cap, and the page promised a month per friend with no mention of it.
   it("tells how many rewards can be earned in a month", async () => {
     getMyReferralInfo.mockResolvedValue({ referralCode: "tbat", invited: 0, rewarded: 0, invites: [], monthlyRewardLimit: 10 });

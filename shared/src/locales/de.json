@@ -1163,7 +1163,8 @@
     "creating": "Reiseplan wird erstellt…",
     "createBtn": "Reiseplan erstellen 🎉",
     "emptyDaysTitle": "Leere Tage",
-    "emptyDaysDesc": "Tag {{days}} hat keine Orte. Füge Orte hinzu oder stell die Reise auf privat.",
+    "emptyDaysDesc_one": "Tag {{days}} hat keine Orte. Füge Orte hinzu oder stell die Reise auf privat.",
+    "emptyDaysDesc_other": "Die Tage {{days}} haben keine Orte. Füge Orte hinzu oder stell die Reise auf privat.",
     "permissionNeeded": "Berechtigung erforderlich",
     "permissionDesc": "Erlaube den Zugriff auf deine Fotos.",
     "titleMin": "Der Titel muss mindestens 2 Zeichen lang sein",
@@ -1739,6 +1740,7 @@
     "invitesTitle": "Deine Einladungen",
     "inviteStatusPending": "Wartet auf die erste Reise und die bestätigte E-Mail",
     "inviteStatusRewarded": "Premium freigeschaltet 🎁",
+    "inviteStatusCapped": "Dein Freund ist dabei; du hast das Prämienlimit dieses Monats erreicht",
     "signupCodeLabel": "Einladungscode (optional)",
     "signupCodePlaceholder": "z. B. der Benutzername einer befreundeten Person",
     "signupCodeHint": "Hat dich jemand eingeladen? Gib hier den Benutzernamen ein."

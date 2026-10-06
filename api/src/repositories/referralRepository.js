@@ -1,6 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
 import db from '../db/clientPostgres.js';
 
+const REFERRAL_STATUS = { REWARDED: 'rewarded', CAPPED: 'capped' };
+
 const mapRow = (row) => ({
     id: row.id,
     referrerId: row.referrer_id,
@@ -30,10 +32,12 @@ export class ReferralRepository {
         return result.rows.length ? mapRow(result.rows[0]) : null;
     }
 
-    async markRewarded(id) {
+    // 'capped': the friend was rewarded but the referrer had reached the monthly limit, so
+    // their list must not claim a reward they never got.
+    async markRewarded(id, { referrerCapped = false } = {}) {
         await db.query(
-            `UPDATE referrals SET status = 'rewarded', rewarded_at = NOW() WHERE id = $1`,
-            [id]
+            `UPDATE referrals SET status = $2, rewarded_at = NOW() WHERE id = $1`,
+            [id, referrerCapped ? REFERRAL_STATUS.CAPPED : REFERRAL_STATUS.REWARDED]
         );
     }
 

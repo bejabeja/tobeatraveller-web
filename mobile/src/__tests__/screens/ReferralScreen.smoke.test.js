@@ -51,6 +51,18 @@ it('shows who was invited once there is someone', async () => {
   expect(screen.queryByText('referral.firstInviteHint')).toBeNull();
 });
 
+it('does not say a month was unlocked for an invite that gave nothing because of the monthly limit', async () => {
+  getMyReferralInfo.mockResolvedValue({
+    referralCode: 'tbat', invited: 1, rewarded: 0,
+    invites: [{ id: 'i3', status: 'capped', referredUser: { username: 'eva', avatarUrl: null } }],
+  });
+
+  await renderScreen();
+
+  expect(screen.getByText('referral.inviteStatusCapped')).toBeTruthy();
+  expect(screen.queryByText('referral.inviteStatusRewarded')).toBeNull();
+});
+
 it('tells how many rewards can be earned in a month', async () => {
   getMyReferralInfo.mockResolvedValue({ referralCode: 'tbat', invited: 0, rewarded: 0, invites: [], monthlyRewardLimit: 10 });
 

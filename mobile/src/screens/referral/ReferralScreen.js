@@ -10,6 +10,12 @@ import { getMyReferralInfo } from '@tobeatraveller/shared';
 import { WEB_URL } from '../../utils/config';
 import { COLORS, shadow } from '../../utils/styles';
 
+const INVITE_STATUS_LABEL_KEYS = {
+  rewarded: 'referral.inviteStatusRewarded',
+  capped: 'referral.inviteStatusCapped',
+  pending: 'referral.inviteStatusPending',
+};
+
 const COPIED_FEEDBACK_DURATION_MS = 2000;
 
 const STEPS = [
@@ -184,7 +190,7 @@ const ReferralScreen = ({ navigation }) => {
                   <Text style={styles.inviteUsername} numberOfLines={1}>@{invite.referredUser.username}</Text>
                   <View style={[styles.inviteStatus, invite.status === 'rewarded' && styles.inviteStatusRewarded]}>
                     <Text style={[styles.inviteStatusText, invite.status === 'rewarded' && styles.inviteStatusTextRewarded]}>
-                      {invite.status === 'rewarded' ? t('referral.inviteStatusRewarded') : t('referral.inviteStatusPending')}
+                      {t(INVITE_STATUS_LABEL_KEYS[invite.status] ?? INVITE_STATUS_LABEL_KEYS.pending)}
                     </Text>
                   </View>
                 </View>

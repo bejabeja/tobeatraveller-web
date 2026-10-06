@@ -90,6 +90,9 @@ const CreateItinerary = () => {
   const budgetVal   = watch("budget");
   const currencyVal = watch("currency");
 
+  const isPublic = watch("isPublic");
+  const emptyDays = days.filter((day) => !fields.some((field) => (field.dayNumber ?? 1) === day));
+
   const isBasicInfoComplete = (titleVal?.length ?? 0) >= 2 && !!destVal?.name;
   const isDatesComplete     = !!(startDate && endDate);
   const isPlacesComplete    = fields.length > 0 && fields.every((f) => !!f.infoPlace?.name);
@@ -144,7 +147,7 @@ const CreateItinerary = () => {
     if (data.isPublic) {
       const emptyDays = days.filter((d) => !data.places.some((p) => (p.dayNumber ?? 1) === d));
       if (emptyDays.length > 0) {
-        toast.error(t("createItinerary.emptyDaysDesc", { days: emptyDays.join(", ") }));
+        toast.error(t("createItinerary.emptyDaysDesc", { days: emptyDays.join(", "), count: emptyDays.length }));
         return;
       }
     }
@@ -272,6 +275,12 @@ const CreateItinerary = () => {
             <ImageUpload onUpload={(file) => setImageFile(file)} isComplete={!!imageFile} imageUrl="" />
             <GalleryUpload images={galleryImages} onChange={setGalleryImages} />
             <VisibilityForm control={control} />
+            {/* Said here, before publishing, not only as a refusal after pressing the button. */}
+            {isPublic && emptyDays.length > 0 && (
+              <p className="ci-wizard__nav-hint" role="status">
+                {t("createItinerary.emptyDaysDesc", { days: emptyDays.join(", "), count: emptyDays.length })}
+              </p>
+            )}
           </>
         )}
 

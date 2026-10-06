@@ -221,7 +221,7 @@ describe('ReferralService', () => {
 
         await service.rewardFirstItinerary('new-user');
 
-        expect(referralRepository.markRewarded).toHaveBeenCalledWith('referral-1');
+        expect(referralRepository.markRewarded).toHaveBeenCalledWith('referral-1', { referrerCapped: false });
         expect(userRepository.updatePremiumUntil).toHaveBeenCalledTimes(2);
       });
     });
@@ -239,7 +239,7 @@ describe('ReferralService', () => {
       expect(referrerCall[0]).toBe('referrer-1');
       expect(referredCall[0]).toBe('new-user');
       expect(referrerCall[1].getTime()).toBeCloseTo(Date.now() + THIRTY_DAYS_MS, -3);
-      expect(referralRepository.markRewarded).toHaveBeenCalledWith('referral-1');
+      expect(referralRepository.markRewarded).toHaveBeenCalledWith('referral-1', { referrerCapped: false });
     });
 
     it('extends an already-active premium instead of overwriting it with a shorter date', async () => {
@@ -300,7 +300,7 @@ describe('ReferralService', () => {
         await serviceWithCap.rewardFirstItinerary('new-user');
 
         expect(userRepository.updatePremiumUntil).toHaveBeenCalledWith('referrer-1', expect.any(Date));
-        expect(referralRepository.markRewarded).toHaveBeenCalledWith('referral-1');
+        expect(referralRepository.markRewarded).toHaveBeenCalledWith('referral-1', { referrerCapped: false });
         expect(auditLogService.log).toHaveBeenCalledWith(expect.objectContaining({ action: 'referral_reward_granted' }));
       });
 
@@ -312,13 +312,13 @@ describe('ReferralService', () => {
         expect(userRepository.updatePremiumUntil).not.toHaveBeenCalledWith('referrer-1', expect.any(Date));
       });
 
-      it("still grants and marks the referred user's own reward when the referrer is capped", async () => {
+      it("still grants the referred user's own reward when the referrer is capped, and records that the referrer got none", async () => {
         auditLogService.getFiltered.mockResolvedValue({ total: 10, entries: [] });
 
         await serviceWithCap.rewardFirstItinerary('new-user');
 
         expect(userRepository.updatePremiumUntil).toHaveBeenCalledWith('new-user', expect.any(Date));
-        expect(referralRepository.markRewarded).toHaveBeenCalledWith('referral-1');
+        expect(referralRepository.markRewarded).toHaveBeenCalledWith('referral-1', { referrerCapped: true });
       });
 
       it('logs referral_reward_capped instead of referral_reward_granted once capped', async () => {

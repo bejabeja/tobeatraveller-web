@@ -157,7 +157,7 @@ const EditItinerary = () => {
       );
       if (emptyDays.length > 0) {
         toast.error(
-          t("createItinerary.emptyDaysDesc", { days: emptyDays.join(", ") })
+          t("createItinerary.emptyDaysDesc", { days: emptyDays.join(", "), count: emptyDays.length })
         );
         return;
       }

@@ -46,9 +46,9 @@ import CreateItinerary from "./CreateItinerary";
 const SAVED_AT = new Date("2026-09-20T10:00:00Z");
 const SAVE_PAUSE_MS = 700;
 
-const storeDraft = (userId, { title = "Ruta por Portugal", step = 0 } = {}) => localStorage.setItem(
+const storeDraft = (userId, { title = "Ruta por Portugal", step = 0, isPublic } = {}) => localStorage.setItem(
   itineraryDraftKey(userId),
-  serializeItineraryDraft({ values: { title, destination: { name: "Lisboa" }, places: [] }, days: [1, 2], step, pace: "relaxed" }, SAVED_AT),
+  serializeItineraryDraft({ values: { title, destination: { name: "Lisboa" }, places: [], isPublic }, days: [1, 2], step, pace: "relaxed" }, SAVED_AT),
 );
 const storedDraftOf = (userId) => JSON.parse(localStorage.getItem(itineraryDraftKey(userId)));
 
@@ -146,5 +146,32 @@ describe("CreateItinerary draft", () => {
     fireEvent.click(screen.getByRole("button", { name: "common.discard" }));
 
     expect(localStorage.getItem(itineraryDraftKey("user-1"))).toBeNull();
+  });
+});
+
+describe("CreateItinerary: days without places", () => {
+  const continueDraft = (draft) => {
+    storeDraft("user-1", { step: 4, ...draft });
+    renderPage();
+    fireEvent.click(screen.getByRole("button", { name: "createItinerary.draftContinue" }));
+  };
+
+  beforeEach(() => {
+    jest.useFakeTimers().setSystemTime(new Date("2026-10-01T10:00:00Z"));
+    localStorage.clear();
+  });
+  afterEach(() => jest.useRealTimers());
+
+  // Regression-in-waiting: it was only found out as a refusal after pressing the button to publish.
+  it("says before publishing which days have no places", () => {
+    continueDraft({ isPublic: true });
+
+    expect(screen.getByRole("status")).toHaveTextContent('createItinerary.emptyDaysDesc:{"days":"1, 2","count":2}');
+  });
+
+  it("says nothing for a private trip, which does not need them", () => {
+    continueDraft({ isPublic: false });
+
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
   });
 });

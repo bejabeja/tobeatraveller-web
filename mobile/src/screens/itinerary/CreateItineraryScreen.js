@@ -181,7 +181,7 @@ const CreateItineraryScreen = ({ navigation }) => {
     if (isPublic) {
       const emptyDays = days.filter(d => !places.some(p => p.dayNumber === d));
       if (emptyDays.length > 0) {
-        Alert.alert(t('createItinerary.emptyDaysTitle'), t('createItinerary.emptyDaysDesc', { days: emptyDays.join(', ') }));
+        Alert.alert(t('createItinerary.emptyDaysTitle'), t('createItinerary.emptyDaysDesc', { days: emptyDays.join(', '), count: emptyDays.length }));
         return;
       }
     }

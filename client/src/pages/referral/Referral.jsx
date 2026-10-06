@@ -15,6 +15,12 @@ const STEPS = [
   { key: "howItWorksStep3", Icon: IoMapOutline },
 ];
 
+const INVITE_STATUS_LABEL_KEYS = {
+  rewarded: "referral.inviteStatusRewarded",
+  capped: "referral.inviteStatusCapped",
+  pending: "referral.inviteStatusPending",
+};
+
 const Referral = () => {
   const { t } = useTranslation();
   const [info, setInfo] = useState(null);
@@ -172,7 +178,7 @@ const Referral = () => {
                     />
                     <span className="referral__invite-username">@{invite.referredUser.username}</span>
                     <span className={`referral__invite-status referral__invite-status--${invite.status}`}>
-                      {invite.status === "rewarded" ? t("referral.inviteStatusRewarded") : t("referral.inviteStatusPending")}
+                      {t(INVITE_STATUS_LABEL_KEYS[invite.status] ?? INVITE_STATUS_LABEL_KEYS.pending)}
                     </span>
                   </li>
                 ))}

@@ -197,7 +197,7 @@ describe('EmailVerificationService', () => {
             await service.verify('a'.repeat(64));
             await flush();
 
-            expect(referralRepository.markRewarded).toHaveBeenCalledWith('referral-1');
+            expect(referralRepository.markRewarded).toHaveBeenCalledWith('referral-1', { referrerCapped: false });
             expect(notificationsService.createNotification).toHaveBeenCalledTimes(2);
             expect(rewardEmails.sendReferralReward).toHaveBeenCalledWith(expect.objectContaining({ email: 'bea@example.com', friendUsername: 'ana' }));
         });
