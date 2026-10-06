@@ -33,10 +33,12 @@ export class LifeDiaryRepository {
         return LifeDiaryEntry.fromDb(result.rows[0]);
     }
 
-    async findByUserId(userId) {
+    // Without a slice it is the whole diary, which the data export needs.
+    async findByUserId(userId, { limit, offset } = {}) {
         const result = await client.query(
-            `SELECT * FROM life_diary_entries WHERE user_id = $1 ORDER BY entry_date DESC, created_at DESC`,
-            [userId]
+            `SELECT * FROM life_diary_entries WHERE user_id = $1 ORDER BY entry_date DESC, created_at DESC, id DESC
+             ${limit ? 'LIMIT $2 OFFSET $3' : ''}`,
+            limit ? [userId, limit, offset ?? 0] : [userId]
         );
         return result.rows.map(LifeDiaryEntry.fromDb);
     }

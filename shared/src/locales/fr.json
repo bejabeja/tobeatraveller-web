@@ -1004,6 +1004,7 @@
     "newListForTrip": "Nouvelle liste pour ce voyage"
   },
   "lifeDiary": {
+    "loadMoreError": "Impossible de charger d'autres entrées. Réessayez.",
     "title": "Journal de vie",
     "addEntry": "Ajouter une entrée",
     "editEntry": "Modifier l'entrée",

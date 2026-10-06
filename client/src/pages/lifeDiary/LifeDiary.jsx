@@ -4,7 +4,8 @@ import { useTranslation } from "react-i18next";
 import {
   IoAddOutline, IoJournalOutline, IoLocationOutline, IoPencilOutline, IoTrashOutline,
 } from "react-icons/io5";
-import { formatCalendarDay, isPremiumRequiredError } from "@tobeatraveller/shared";
+import { formatCalendarDay, isPremiumRequiredError, LIFE_DIARY_PAGE_SIZE } from "@tobeatraveller/shared";
+import LoadingButton from "../../components/LoadingButton";
 import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState";
 import Modal from "../../components/modal/Modal";
 import { deleteLifeDiaryEntry, getLifeDiaryEntries, getLifeDiaryUsage } from "../../services/lifeDiary";
@@ -20,6 +21,8 @@ const LifeDiary = () => {
   const d = (key, vars) => t(`lifeDiary.${key}`, vars);
 
   const [entries, setEntries] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [formOpen, setFormOpen] = useState(false);
@@ -31,10 +34,26 @@ const LifeDiary = () => {
 
   const loadEntries = () => {
     setLoading(true);
-    getLifeDiaryEntries()
-      .then((res) => { setEntries(res); setError(null); })
+    getLifeDiaryEntries({ limit: LIFE_DIARY_PAGE_SIZE })
+      .then((page) => { setEntries(page.entries); setTotalCount(page.totalCount); setError(null); })
       .catch((err) => setError(isPremiumRequiredError(err) ? "premium" : "error"))
       .finally(() => setLoading(false));
+  };
+
+  // From where the list ends, not from a page number: an entry added or deleted meanwhile
+  // would otherwise make one skipped or shown twice.
+  const loadMore = () => {
+    setLoadingMore(true);
+    getLifeDiaryEntries({ limit: LIFE_DIARY_PAGE_SIZE, offset: entries.length })
+      .then((page) => {
+        setEntries((prev) => {
+          const known = new Set(prev.map((entry) => entry.id));
+          return [...prev, ...page.entries.filter((entry) => !known.has(entry.id))];
+        });
+        setTotalCount(page.totalCount);
+      })
+      .catch(() => toast.error(d("loadMoreError")))
+      .finally(() => setLoadingMore(false));
   };
 
   const loadUsage = () => {
@@ -61,7 +80,9 @@ const LifeDiary = () => {
       await deleteLifeDiaryEntry(deletingId);
       toast.success(d("deleted"));
       setDeletingId(null);
-      loadEntries();
+      setEntries((prev) => prev.filter((entry) => entry.id !== deletingId));
+      setTotalCount((count) => Math.max(count - 1, 0));
+      loadUsage();
     } catch (err) {
       toast.error(err.message || d("deleteError"));
     } finally {
@@ -164,6 +185,11 @@ const LifeDiary = () => {
               </article>
             );
           })}
+          {entries.length < totalCount && (
+            <div className="life-diary__more">
+              <LoadingButton onClick={loadMore} isLoading={loadingMore}>{t("common.loadMore")}</LoadingButton>
+            </div>
+          )}
         </div>
       )}
 

@@ -10,7 +10,7 @@ jest.mock('../../utils/config', () => ({ WEB_URL: 'https://example.com' }));
 jest.mock('@tobeatraveller/shared', () => ({
   addComment: jest.fn(), addFavorite: jest.fn(), checkIsFavorite: jest.fn(() => Promise.resolve(false)),
   checkIsLiked: jest.fn(() => Promise.resolve({ isLiked: false, likesCount: 0 })), deleteComment: jest.fn(),
-  deleteItinerary: jest.fn(() => Promise.resolve()), getCommentsByItineraryId: jest.fn(() => Promise.resolve([])),
+  deleteItinerary: jest.fn(() => Promise.resolve()), getCommentsPage: jest.fn(() => Promise.resolve({ comments: [], totalCount: 0 })), COMMENTS_PAGE_SIZE: 50,
   getItineraryById: jest.fn(), getUserById: jest.fn(() => Promise.resolve({ id: 'u1', username: 'tbat' })),
   removeFavorite: jest.fn(), toggleLike: jest.fn(),
   selectIsAuthenticated: () => true, selectMe: () => ({ id: 'u1', username: 'tbat' }),
@@ -27,7 +27,7 @@ import { Alert, Share } from 'react-native';
 import { trackEvent } from '../../utils/analytics';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { deleteItinerary, getCommentsByItineraryId, getItineraryById } from '@tobeatraveller/shared';
+import { deleteItinerary, getCommentsPage, getItineraryById } from '@tobeatraveller/shared';
 import ItineraryScreen from '../../screens/itinerary/ItineraryScreen';
 
 const INITIAL_METRICS = { frame: { x: 0, y: 0, width: 390, height: 844 }, insets: { top: 0, left: 0, right: 0, bottom: 0 } };
@@ -56,18 +56,50 @@ it('writes the trip dates in the app language', async () => {
 
 // Regression: a failed load of the comments looked the same as a trip with none, and the web already lets it be retried.
 it('says the comments could not be loaded, and loads them again on request, instead of saying there are none', async () => {
-  getCommentsByItineraryId.mockRejectedValueOnce(new Error('offline'));
+  getCommentsPage.mockRejectedValueOnce(new Error('offline'));
   await renderTrip();
 
   expect(screen.getByText('comments.loadFailed')).toBeTruthy();
   expect(screen.queryByText('comments.beFirst')).toBeNull();
 
-  const callsBeforeRetry = getCommentsByItineraryId.mock.calls.length;
-  getCommentsByItineraryId.mockResolvedValueOnce([]);
+  const callsBeforeRetry = getCommentsPage.mock.calls.length;
+  getCommentsPage.mockResolvedValueOnce({ comments: [], totalCount: 0 });
   await act(async () => { fireEvent.press(screen.getByText('common.retry')); });
 
   expect(screen.queryByText('comments.loadFailed')).toBeNull();
-  expect(getCommentsByItineraryId).toHaveBeenCalledTimes(callsBeforeRetry + 1);
+  expect(getCommentsPage).toHaveBeenCalledTimes(callsBeforeRetry + 1);
+});
+
+describe('comments by pages', () => {
+  const comment = (id) => ({ id, content: `comment ${id}`, postedAgo: '1h', user: { id: 'u9', username: 'ana' } });
+
+  it('counts all of them, offers the rest, and loads them from where the list ends without repeating any', async () => {
+    getCommentsPage.mockResolvedValueOnce({ comments: [comment('c1'), comment('c2')], totalCount: 3 });
+    await renderTrip();
+    expect(screen.getByText('comments.title (3)')).toBeTruthy();
+
+    getCommentsPage.mockResolvedValueOnce({ comments: [comment('c2'), comment('c3')], totalCount: 3 });
+    await act(async () => { fireEvent.press(screen.getByText('common.loadMore')); });
+
+    expect(getCommentsPage).toHaveBeenLastCalledWith('t1', expect.objectContaining({ offset: 2 }));
+    expect(screen.getByText('comment c3')).toBeTruthy();
+    expect(screen.getAllByText('comment c2')).toHaveLength(1);
+    expect(screen.queryByText('common.loadMore')).toBeNull();
+  });
+
+  it('says it could not load more, and tries again on request', async () => {
+    getCommentsPage.mockResolvedValueOnce({ comments: [comment('c1')], totalCount: 2 });
+    await renderTrip();
+
+    getCommentsPage.mockRejectedValueOnce(new Error('offline'));
+    await act(async () => { fireEvent.press(screen.getByText('common.loadMore')); });
+    expect(screen.getByText('comments.loadFailed')).toBeTruthy();
+
+    getCommentsPage.mockResolvedValueOnce({ comments: [comment('c2')], totalCount: 2 });
+    await act(async () => { fireEvent.press(screen.getByText('common.retry')); });
+
+    expect(screen.getByText('comment c2')).toBeTruthy();
+  });
 });
 
 // Regression: after deleting a trip the list of one's own trips (the home

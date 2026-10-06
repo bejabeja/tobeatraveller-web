@@ -4,8 +4,9 @@ import { parseError } from "../utils/parseError";
 
 const baseUrl = () => `${getApiUrl()}/comments`;
 
-export const getCommentsByItineraryId = async (itineraryId) => {
-    const response = await authFetch(`${baseUrl()}/itinerary/${itineraryId}`, {
+// One slice of the comments, oldest first, with how many there are in all.
+export const getCommentsPage = async (itineraryId, { limit, offset = 0 }) => {
+    const response = await authFetch(`${baseUrl()}/itinerary/${itineraryId}?limit=${limit}&offset=${offset}`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
     });

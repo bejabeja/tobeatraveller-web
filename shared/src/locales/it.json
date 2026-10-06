@@ -1004,6 +1004,7 @@
     "newListForTrip": "Nuova lista per questo viaggio"
   },
   "lifeDiary": {
+    "loadMoreError": "Impossibile caricare altre voci. Riprova.",
     "title": "Diario di vita",
     "addEntry": "Aggiungi pagina",
     "editEntry": "Modifica pagina",

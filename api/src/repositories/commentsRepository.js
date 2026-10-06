@@ -23,7 +23,7 @@ export class CommentsRepository {
     return Comment.fromDB(result.rows[0]);
   }
 
-  async getCommentsByItinerary(itineraryId) {
+  async getCommentsByItinerary(itineraryId, { limit, offset }) {
     const query = `
           SELECT
             ic.id,
@@ -36,10 +36,19 @@ export class CommentsRepository {
           FROM itinerary_comments ic
           JOIN users u ON ic.user_id = u.id
           WHERE ic.itinerary_id = $1
-          ORDER BY ic.created_at ASC;
+          ORDER BY ic.created_at ASC, ic.id ASC
+          LIMIT $2 OFFSET $3;
         `;
-    const result = await client.query(query, [itineraryId]);
+    const result = await client.query(query, [itineraryId, limit, offset]);
     return result.rows.map(row => Comment.fromDB(row));
+  }
+
+  async countByItinerary(itineraryId) {
+    const result = await client.query(
+      `SELECT COUNT(*)::int AS count FROM itinerary_comments WHERE itinerary_id = $1`,
+      [itineraryId]
+    );
+    return result.rows[0].count;
   }
 
   async deleteComment(commentId) {

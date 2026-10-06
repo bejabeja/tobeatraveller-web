@@ -3,14 +3,15 @@ import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "react-router-dom";
-import { COMMENT_HIGHLIGHT_DURATION_MS, formatTimeAgo, MAX_COMMENT_LENGTH, updateCommentsCount } from "@tobeatraveller/shared";
+import { COMMENT_HIGHLIGHT_DURATION_MS, COMMENTS_PAGE_SIZE, formatTimeAgo, MAX_COMMENT_LENGTH, updateCommentsCount } from "@tobeatraveller/shared";
 import {
   addComment,
   deleteComment,
-  getCommentsByItineraryId,
+  getCommentsPage,
 } from "../../../services/comments";
 import { selectMe } from "../../../store/user/userInfoSelectors";
 import { returnToState } from "../../../utils/returnTo";
+import LoadingButton from "../../LoadingButton";
 import Modal from "../../modal/Modal";
 import { trackEvent } from "../../../utils/analytics";
 import { ANALYTICS_EVENTS } from "../../../utils/analyticsEvents";
@@ -21,6 +22,9 @@ const Comments = ({ itineraryId, isAuthenticated }) => {
   const { t } = useTranslation();
   const location = useLocation();
   const [comments, setComments] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [loadMoreFailed, setLoadMoreFailed] = useState(false);
   const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
@@ -32,15 +36,43 @@ const Comments = ({ itineraryId, isAuthenticated }) => {
   const dispatch = useDispatch();
   const userMe = useSelector(selectMe);
 
+  const hasMore = comments.length < totalCount;
+
+  const syncCount = (count) => {
+    setTotalCount(count);
+    dispatch(updateCommentsCount(itineraryId, count));
+  };
+
   const fetchComments = async () => {
     try {
-      const response = await getCommentsByItineraryId(itineraryId);
-      setComments(response);
+      const page = await getCommentsPage(itineraryId, { limit: COMMENTS_PAGE_SIZE });
+      setComments(page.comments);
       setLoadFailed(false);
-      dispatch(updateCommentsCount(itineraryId, response.length));
+      setLoadMoreFailed(false);
+      syncCount(page.totalCount);
     } catch (error) {
       console.error("Failed to fetch comments", error);
       setLoadFailed(true);
+    }
+  };
+
+  // From where the list ends, not from a page number: a comment added or deleted meanwhile
+  // would otherwise make one skipped or shown twice.
+  const loadMore = async () => {
+    setLoadingMore(true);
+    setLoadMoreFailed(false);
+    try {
+      const page = await getCommentsPage(itineraryId, { limit: COMMENTS_PAGE_SIZE, offset: comments.length });
+      setComments((prev) => {
+        const known = new Set(prev.map((comment) => comment.id));
+        return [...prev, ...page.comments.filter((comment) => !known.has(comment.id))];
+      });
+      syncCount(page.totalCount);
+    } catch (error) {
+      console.error("Failed to load more comments", error);
+      setLoadMoreFailed(true);
+    } finally {
+      setLoadingMore(false);
     }
   };
 
@@ -52,13 +84,18 @@ const Comments = ({ itineraryId, isAuthenticated }) => {
     const match = location.hash.match(/^#comment-(.+)$/);
     const targetId = match?.[1];
     if (!targetId || handledCommentHashRef.current === targetId) return;
-    if (!comments.some((c) => c.id === targetId)) return;
+    if (!comments.some((c) => c.id === targetId)) {
+      // The comment linked to may be on a page not loaded yet.
+      if (hasMore && !loadingMore && !loadMoreFailed) loadMore();
+      return;
+    }
     handledCommentHashRef.current = targetId;
     document.getElementById(`comment-${targetId}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
     setHighlightedCommentId(targetId);
     const timeout = setTimeout(() => setHighlightedCommentId(null), COMMENT_HIGHLIGHT_DURATION_MS);
     return () => clearTimeout(timeout);
-  }, [comments, location.hash]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [comments, location.hash, loadingMore, loadMoreFailed]);
 
   const handleAddComment = async () => {
     if (!newComment.trim() || loading) return;
@@ -66,11 +103,8 @@ const Comments = ({ itineraryId, isAuthenticated }) => {
     try {
       const comment = await addComment(itineraryId, newComment);
       trackEvent(ANALYTICS_EVENTS.COMMENT_POSTED);
-      setComments((prev) => {
-        const next = [...prev, comment];
-        dispatch(updateCommentsCount(itineraryId, next.length));
-        return next;
-      });
+      setComments((prev) => [...prev, comment]);
+      syncCount(totalCount + 1);
       setNewComment("");
     } catch (error) {
       console.error("Failed to add comment", error);
@@ -83,7 +117,8 @@ const Comments = ({ itineraryId, isAuthenticated }) => {
   const handleDeleteComment = async (commentId) => {
     try {
       await deleteComment(commentId);
-      await fetchComments();
+      setComments((prev) => prev.filter((comment) => comment.id !== commentId));
+      syncCount(Math.max(totalCount - 1, 0));
     } catch (error) {
       console.error("Failed to delete comment", error);
       toast.error(t("comments.couldNotDelete"));
@@ -92,7 +127,7 @@ const Comments = ({ itineraryId, isAuthenticated }) => {
 
   return (
     <div className="comments">
-      <h2 className="comments__title">{t("comments.title")} ({comments.length})</h2>
+      <h2 className="comments__title">{t("comments.title")} ({totalCount})</h2>
 
       <div className="comments__list">
         {comments.length > 0 ? (
@@ -139,6 +174,14 @@ const Comments = ({ itineraryId, isAuthenticated }) => {
           </p>
         ) : (
           <p className="comments__empty">{t("comments.beFirst")}</p>
+        )}
+        {hasMore && (
+          <div className="comments__more">
+            {loadMoreFailed && <p className="comments__empty" role="alert">{t("comments.loadFailed")}</p>}
+            <LoadingButton onClick={loadMore} isLoading={loadingMore}>
+              {loadMoreFailed ? t("common.retry") : t("common.loadMore")}
+            </LoadingButton>
+          </div>
         )}
       </div>
 

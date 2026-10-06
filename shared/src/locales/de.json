@@ -989,6 +989,7 @@
     "newListForTrip": "Neue Liste für diese Reise"
   },
   "lifeDiary": {
+    "loadMoreError": "Weitere Einträge konnten nicht geladen werden. Bitte versuche es erneut.",
     "title": "Tagebuch",
     "addEntry": "Eintrag hinzufügen",
     "editEntry": "Eintrag bearbeiten",

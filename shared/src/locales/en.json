@@ -989,6 +989,7 @@
     "newListForTrip": "New list for this trip"
   },
   "lifeDiary": {
+    "loadMoreError": "Could not load more entries. Please try again.",
     "title": "Life diary",
     "addEntry": "Add entry",
     "editEntry": "Edit entry",

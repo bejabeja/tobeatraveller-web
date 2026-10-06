@@ -14,12 +14,12 @@ jest.mock("react-i18next", () => ({
 
 jest.mock("../../../utils/analytics", () => ({ trackEvent: jest.fn() }));
 jest.mock("../../../services/comments", () => ({
-  getCommentsByItineraryId: jest.fn(),
+  getCommentsPage: jest.fn(),
   addComment: jest.fn(),
   deleteComment: jest.fn(),
 }));
 
-import { addComment, getCommentsByItineraryId } from "../../../services/comments";
+import { addComment, deleteComment, getCommentsPage } from "../../../services/comments";
 import { trackEvent } from "../../../utils/analytics";
 import { ANALYTICS_EVENTS } from "../../../utils/analyticsEvents";
 
@@ -38,7 +38,7 @@ const renderAtHash = (hash) =>
 describe("Comments deep-link scroll/highlight", () => {
   beforeEach(() => {
     window.HTMLElement.prototype.scrollIntoView = jest.fn();
-    getCommentsByItineraryId.mockResolvedValue(COMMENTS);
+    getCommentsPage.mockResolvedValue({ comments: COMMENTS, totalCount: COMMENTS.length });
   });
 
   it("scrolls to and highlights the comment matching the URL hash", async () => {
@@ -98,7 +98,7 @@ describe("Comments when they cannot be loaded", () => {
   afterEach(() => jest.restoreAllMocks());
 
   it("says so and lets them retry, instead of inviting to be the first to comment", async () => {
-    getCommentsByItineraryId.mockRejectedValueOnce(new Error("network")).mockResolvedValueOnce(COMMENTS);
+    getCommentsPage.mockRejectedValueOnce(new Error("network")).mockResolvedValueOnce({ comments: COMMENTS, totalCount: COMMENTS.length });
     renderAtHash("");
 
     expect(await screen.findByText(/comments.loadFailed/)).toBeInTheDocument();
@@ -108,5 +108,69 @@ describe("Comments when they cannot be loaded", () => {
 
     expect(await screen.findByText("first comment")).toBeInTheDocument();
     expect(screen.queryByText(/comments.loadFailed/)).not.toBeInTheDocument();
+  });
+});
+
+describe("Comments by pages", () => {
+  const LATER = [{ id: "c3", content: "third comment", postedAgo: "5m", user: { id: "u3", username: "carol", avatarUrl: null } }];
+
+  beforeEach(() => {
+    window.HTMLElement.prototype.scrollIntoView = jest.fn();
+    getCommentsPage.mockReset();
+    getCommentsPage.mockResolvedValueOnce({ comments: COMMENTS, totalCount: 3 });
+  });
+
+  it("counts all of them, not only the ones loaded, and offers the rest", async () => {
+    renderAtHash("");
+
+    expect(await screen.findByText(/comments.title \(3\)/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "common.loadMore" })).toBeInTheDocument();
+  });
+
+  it("loads the next ones from where the list ends, without repeating any, and stops offering more", async () => {
+    getCommentsPage.mockResolvedValueOnce({ comments: [COMMENTS[1], ...LATER], totalCount: 3 });
+    renderAtHash("");
+
+    await userEvent.click(await screen.findByRole("button", { name: "common.loadMore" }));
+
+    expect(await screen.findByText("third comment")).toBeInTheDocument();
+    expect(getCommentsPage).toHaveBeenLastCalledWith("itin-1", expect.objectContaining({ offset: 2 }));
+    expect(screen.getAllByText("second comment")).toHaveLength(1);
+    expect(screen.queryByRole("button", { name: "common.loadMore" })).not.toBeInTheDocument();
+  });
+
+  // Regression-in-waiting: a link from a notification to a comment on a later page found nothing and stayed at the top.
+  it("keeps loading until it finds the comment a link points to", async () => {
+    getCommentsPage.mockResolvedValueOnce({ comments: LATER, totalCount: 3 });
+    renderAtHash("#comment-c3");
+
+    await waitFor(() => expect(document.getElementById("comment-c3")).toHaveClass("comment--highlighted"));
+  });
+
+  it("says it could not load more, and lets them try again", async () => {
+    jest.spyOn(console, "error").mockImplementation(() => {});
+    getCommentsPage.mockRejectedValueOnce(new Error("offline")).mockResolvedValueOnce({ comments: LATER, totalCount: 3 });
+    renderAtHash("");
+
+    await userEvent.click(await screen.findByRole("button", { name: "common.loadMore" }));
+    expect(await screen.findByText("comments.loadFailed")).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "common.retry" }));
+
+    expect(await screen.findByText("third comment")).toBeInTheDocument();
+  });
+
+  it("takes a deleted comment off the list and out of the count without asking for the list again", async () => {
+    deleteComment.mockResolvedValue();
+    getCommentsPage.mockReset();
+    getCommentsPage.mockResolvedValueOnce({ comments: [{ ...COMMENTS[0], user: { id: "me-1", username: "me" } }, COMMENTS[1]], totalCount: 2 });
+    renderAtHash("");
+
+    await userEvent.click(await screen.findByRole("button", { name: "comments.delete" }));
+    await userEvent.click(screen.getAllByRole("button", { name: "comments.delete" }).at(-1));
+
+    await waitFor(() => expect(screen.queryByText("first comment")).not.toBeInTheDocument());
+    expect(screen.getByText(/comments.title \(1\)/)).toBeInTheDocument();
+    expect(getCommentsPage).toHaveBeenCalledTimes(1);
   });
 });

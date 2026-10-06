@@ -4,8 +4,9 @@ import { parseError } from "../utils/parseError";
 
 const baseUrl = () => `${getApiUrl()}/life-diary`;
 
-export const getLifeDiaryEntries = async () => {
-    const response = await authFetch(`${baseUrl()}`, {
+// One slice of the diary, newest first, with how many entries there are in all.
+export const getLifeDiaryEntries = async ({ limit, offset = 0 }) => {
+    const response = await authFetch(`${baseUrl()}?limit=${limit}&offset=${offset}`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
     });

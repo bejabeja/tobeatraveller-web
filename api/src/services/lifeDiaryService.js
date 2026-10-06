@@ -33,15 +33,18 @@ export class LifeDiaryService {
         return entry.toDTO();
     }
 
-    async getEntriesByUser(userId) {
-        const entries = await this.lifeDiaryRepository.findByUserId(userId);
+    async getEntriesPageByUser(userId, { limit, offset }) {
+        const [entries, totalCount] = await Promise.all([
+            this.lifeDiaryRepository.findByUserId(userId, { limit, offset }),
+            this.lifeDiaryRepository.countByUserId(userId),
+        ]);
         const images = await this.lifeDiaryRepository.getImagesByEntryIds(entries.map(entry => entry.id));
         const imagesByEntryId = images.reduce((acc, image) => {
             (acc[image.entryId] ??= []).push(image);
             return acc;
         }, {});
         entries.forEach(entry => { entry.images = imagesByEntryId[entry.id] ?? []; });
-        return entries.map(entry => entry.toDTO());
+        return { entries: entries.map(entry => entry.toDTO()), totalCount };
     }
 
     async updateEntry(id, data, files, userId) {

@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import {
-  Alert, FlatList, Image, RefreshControl,
+  ActivityIndicator, Alert, FlatList, Image, RefreshControl,
   ScrollView, StyleSheet, Text, TouchableOpacity, View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,7 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
-  formatCalendarDay, getLifeDiaryEntries, isNetworkError, isPremiumRequiredError, selectAuthUser,
+  formatCalendarDay, getLifeDiaryEntries, isNetworkError, LIFE_DIARY_PAGE_SIZE, isPremiumRequiredError, selectAuthUser,
 } from '@tobeatraveller/shared';
 import FeatureLoadState from '../../components/FeatureLoadState';
 import { PendingChangesNotice } from '../../components/PendingChangesNotice';
@@ -33,6 +33,8 @@ const LifeDiaryScreen = ({ navigation }) => {
   const cacheKey = `lifediary:entries:${authUser?.id}`;
 
   const [serverEntries, setServerEntries] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [expandedId, setExpandedId] = useState(null);
@@ -46,9 +48,10 @@ const LifeDiaryScreen = ({ navigation }) => {
 
   const fetchEntries = async () => {
     try {
-      const data = await getLifeDiaryEntries();
-      const list = Array.isArray(data) ? data : [];
+      const page = await getLifeDiaryEntries({ limit: LIFE_DIARY_PAGE_SIZE });
+      const list = Array.isArray(page?.entries) ? page.entries : [];
       setServerEntries(list);
+      setTotalCount(page?.totalCount ?? list.length);
       setLoadError(null);
       setShowingCached(false);
       cacheSet(cacheKey, list);
@@ -57,12 +60,14 @@ const LifeDiaryScreen = ({ navigation }) => {
         const cached = await cacheGet(cacheKey);
         if (cached) {
           setServerEntries(cached);
+          setTotalCount(cached.length);
           setLoadError(null);
           setShowingCached(true);
           return;
         }
       }
       setServerEntries([]);
+      setTotalCount(0);
       setShowingCached(false);
       setLoadError(isPremiumRequiredError(err) ? 'premium' : 'error');
     }
@@ -74,6 +79,25 @@ const LifeDiaryScreen = ({ navigation }) => {
       fetchEntries().finally(() => setLoading(false));
     }, [])
   );
+
+  // From where the list ends, not from a page number: an entry added or deleted meanwhile
+  // would otherwise make one skipped or shown twice. What is loaded is what stays on the device.
+  const loadMore = async () => {
+    if (loadingMore || showingCached || serverEntries.length >= totalCount) return;
+    setLoadingMore(true);
+    try {
+      const page = await getLifeDiaryEntries({ limit: LIFE_DIARY_PAGE_SIZE, offset: serverEntries.length });
+      const known = new Set(serverEntries.map((entry) => entry.id));
+      const merged = [...serverEntries, ...page.entries.filter((entry) => !known.has(entry.id))];
+      setServerEntries(merged);
+      setTotalCount(page.totalCount);
+      cacheSet(cacheKey, merged);
+    } catch {
+      Alert.alert(t('errors.somethingWrong'), d('loadMoreError'));
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   useRefetchAfterSync(fetchEntries);
 
@@ -148,6 +172,9 @@ const LifeDiaryScreen = ({ navigation }) => {
           : entries
         }
         keyExtractor={item => item.id}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={loadingMore ? <ActivityIndicator color="#E8743B" style={styles.loadingMore} /> : null}
         contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 24 }]}
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -250,6 +277,7 @@ const LifeDiaryScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8fafc' },
 
+  loadingMore: { marginVertical: 16 },
   cachedBanner: {
     paddingVertical: 6, paddingHorizontal: 16,
     backgroundColor: '#fef3c7',

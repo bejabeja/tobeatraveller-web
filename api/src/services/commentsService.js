@@ -25,11 +25,14 @@ export class CommentsService {
         return result.toDTO();
     }
 
-    async getCommentsByItinerary(itineraryId, requestingUserId) {
+    async getCommentsPageByItinerary(itineraryId, requestingUserId, { limit, offset }) {
         const itinerary = await this.itineraryRepository?.findById(itineraryId);
         assertItineraryVisible(itinerary, requestingUserId);
-        const comments = await this.commentsRepository.getCommentsByItinerary(itineraryId);
-        return comments.map(comment => comment.toDTO());
+        const [comments, totalCount] = await Promise.all([
+            this.commentsRepository.getCommentsByItinerary(itineraryId, { limit, offset }),
+            this.commentsRepository.countByItinerary(itineraryId),
+        ]);
+        return { comments: comments.map(comment => comment.toDTO()), totalCount };
     }
 
     async deleteComment(commentId, userId) {

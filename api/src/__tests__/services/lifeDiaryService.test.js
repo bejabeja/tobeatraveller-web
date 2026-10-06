@@ -128,11 +128,16 @@ describe('LifeDiaryService', () => {
         });
     });
 
-    describe('getEntriesByUser()', () => {
-        it('returns the DTOs for every entry belonging to the user', async () => {
-            const result = await service.getEntriesByUser('user-1');
+    describe('getEntriesPageByUser()', () => {
+        it('returns the DTOs of the slice asked for, with how many entries there are in all', async () => {
+            repository.countByUserId = async () => 75;
+            const findByUserId = vi.fn(async () => [makeEntry()]);
+            repository.findByUserId = findByUserId;
 
-            expect(result).toEqual([{ id: 'entry-1', userId: 'user-1', entryDate: '2026-03-01', images: [] }]);
+            const result = await service.getEntriesPageByUser('user-1', { limit: 30, offset: 30 });
+
+            expect(findByUserId).toHaveBeenCalledWith('user-1', { limit: 30, offset: 30 });
+            expect(result).toEqual({ entries: [{ id: 'entry-1', userId: 'user-1', entryDate: '2026-03-01', images: [] }], totalCount: 75 });
         });
 
         it('attaches each entry only the images that belong to it', async () => {
@@ -142,10 +147,20 @@ describe('LifeDiaryService', () => {
                 { id: 'img-2', entryId: 'entry-2', photoUrl: 'https://cdn.example.com/2.jpg' },
             ]);
 
-            const result = await service.getEntriesByUser('user-1');
+            const { entries } = await service.getEntriesPageByUser('user-1', { limit: 30, offset: 0 });
 
-            expect(result.find(e => e.id === 'entry-1').images).toEqual([{ id: 'img-1', entryId: 'entry-1', photoUrl: 'https://cdn.example.com/1.jpg' }]);
-            expect(result.find(e => e.id === 'entry-2').images).toEqual([{ id: 'img-2', entryId: 'entry-2', photoUrl: 'https://cdn.example.com/2.jpg' }]);
+            expect(entries.find(e => e.id === 'entry-1').images).toEqual([{ id: 'img-1', entryId: 'entry-1', photoUrl: 'https://cdn.example.com/1.jpg' }]);
+            expect(entries.find(e => e.id === 'entry-2').images).toEqual([{ id: 'img-2', entryId: 'entry-2', photoUrl: 'https://cdn.example.com/2.jpg' }]);
+        });
+
+        it('asks for the images of the entries in the slice only, not of the whole diary', async () => {
+            repository.findByUserId = async () => [makeEntry({ id: 'entry-31' })];
+            const getImagesByEntryIds = vi.fn(async () => []);
+            repository.getImagesByEntryIds = getImagesByEntryIds;
+
+            await service.getEntriesPageByUser('user-1', { limit: 30, offset: 30 });
+
+            expect(getImagesByEntryIds).toHaveBeenCalledWith(['entry-31']);
         });
     });
 

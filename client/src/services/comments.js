@@ -1,1 +1,1 @@
-export { getCommentsByItineraryId, addComment, deleteComment } from '@tobeatraveller/shared';
+export { getCommentsPage, addComment, deleteComment } from '@tobeatraveller/shared';

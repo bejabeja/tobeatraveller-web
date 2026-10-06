@@ -3,7 +3,7 @@ import { setApiUrl } from '../../utils/apiConfig.js';
 import { setTokenStorage } from '../../utils/tokenStorage.js';
 import { getItineraryById, createItinerary, deleteItinerary, updateItinerary } from '../../services/itinerary.js';
 import { getFeedItineraries, getMyItineraries, generateSmartItinerary } from '../../services/itineraries.js';
-import { getCommentsByItineraryId, addComment, deleteComment } from '../../services/comments.js';
+import { getCommentsPage, addComment, deleteComment } from '../../services/comments.js';
 import { addFavorite, removeFavorite, getUserFavorites, checkIsFavorite } from '../../services/favorites.js';
 import { toggleLike, checkIsLiked } from '../../services/likes.js';
 import { followUser, unfollowUser, getAllFollowers, getAllFollowing } from '../../services/followers.js';
@@ -16,7 +16,7 @@ import { getUserForAuth, getUserById, updateUser, deleteMyAccount, exportMyData,
 
 const FAKE_TOKEN = 'test-access-token';
 
-// Regression coverage for the bug that shipped getItineraryById/getCommentsByItineraryId
+// Regression coverage for the bug that shipped getItineraryById/getCommentsPage
 // with plain fetch: the backend applies the same visibility check it does for the
 // itinerary/comments page, so a missing Authorization header silently turns "this is
 // mine and private" into "not found" instead of throwing loudly.
@@ -28,7 +28,7 @@ const AUTHENTICATED_CALLS = [
     ['getFeedItineraries', () => getFeedItineraries(1)],
     ['getMyItineraries', () => getMyItineraries()],
     ['generateSmartItinerary', () => generateSmartItinerary({ destination: 'Paris', days: 3 })],
-    ['getCommentsByItineraryId', () => getCommentsByItineraryId('itinerary-1')],
+    ['getCommentsPage', () => getCommentsPage('itinerary-1', { limit: 50 })],
     ['addComment', () => addComment('itinerary-1', 'hi')],
     ['deleteComment', () => deleteComment('comment-1')],
     ['addFavorite', () => addFavorite('itinerary-1')],

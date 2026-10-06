@@ -192,6 +192,8 @@ export const aiPaceOptions = [
 ];
 
 export const MAX_COMMENT_LENGTH = 500;
+export const COMMENTS_PAGE_SIZE = 50;
+export const LIFE_DIARY_PAGE_SIZE = 30;
 export const COMMENT_HIGHLIGHT_DURATION_MS = 2500;
 
 

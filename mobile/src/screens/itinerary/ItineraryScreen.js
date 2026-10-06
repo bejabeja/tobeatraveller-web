@@ -21,7 +21,7 @@ import { getStepConfig } from '../../utils/stepConfig';
 import { WEB_URL } from '../../utils/config';
 import {
   addComment, addFavorite, checkIsFavorite, checkIsLiked, deleteComment,
-  deleteItinerary, getCommentsByItineraryId,
+  deleteItinerary, getCommentsPage, COMMENTS_PAGE_SIZE,
   getItineraryById, getUserById, removeFavorite, toggleLike,
   selectIsAuthenticated, selectMe, MAX_COMMENT_LENGTH, updateCommentsCount, setUserInfo, setUserInfoItineraries,
   COMMENT_HIGHLIGHT_DURATION_MS, formatBudgetAmount, formatTimeAgo, formatTripDates, placeDirectionsUrl, tripCategoryLabelKey, ANALYTICS_EVENTS, TRIP_SHARE_METHODS, TRIP_SHARE_SOURCES,
@@ -55,6 +55,10 @@ const ItineraryScreen = ({ route, navigation }) => {
   const [isLikeToggling, setIsLikeToggling] = useState(false);
   const [comments, setComments] = useState([]);
   const [commentsFailed, setCommentsFailed] = useState(false);
+  const [commentsTotal, setCommentsTotal] = useState(0);
+  const [loadingMoreComments, setLoadingMoreComments] = useState(false);
+  const [loadMoreCommentsFailed, setLoadMoreCommentsFailed] = useState(false);
+  const hasMoreComments = comments.length < commentsTotal;
   const [commentText, setCommentText] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [highlightedCommentId, setHighlightedCommentId] = useState(null);
@@ -85,10 +89,41 @@ const ItineraryScreen = ({ route, navigation }) => {
     })();
   }, [id, loadAttempt]);
 
+  const syncCommentsCount = (count) => {
+    setCommentsTotal(count);
+    dispatch(updateCommentsCount(itinerary.id, count));
+  };
+
   const loadComments = () => {
     setCommentsFailed(false);
-    getCommentsByItineraryId(itinerary.id).then(setComments).catch(() => setCommentsFailed(true));
+    setLoadMoreCommentsFailed(false);
+    getCommentsPage(itinerary.id, { limit: COMMENTS_PAGE_SIZE })
+      .then((page) => { setComments(page.comments); syncCommentsCount(page.totalCount); })
+      .catch(() => setCommentsFailed(true));
   };
+
+  // From where the list ends, not from a page number: a comment added or deleted meanwhile
+  // would otherwise make one skipped or shown twice.
+  const loadMoreComments = () => {
+    setLoadingMoreComments(true);
+    setLoadMoreCommentsFailed(false);
+    getCommentsPage(itinerary.id, { limit: COMMENTS_PAGE_SIZE, offset: comments.length })
+      .then((page) => {
+        setComments((prev) => {
+          const known = new Set(prev.map((comment) => comment.id));
+          return [...prev, ...page.comments.filter((comment) => !known.has(comment.id))];
+        });
+        syncCommentsCount(page.totalCount);
+      })
+      .catch(() => setLoadMoreCommentsFailed(true))
+      .finally(() => setLoadingMoreComments(false));
+  };
+
+  // The comment a link points to may be on a page not loaded yet.
+  useEffect(() => {
+    if (!targetCommentId || comments.some((comment) => comment.id === targetCommentId)) return;
+    if (hasMoreComments && !loadingMoreComments && !loadMoreCommentsFailed) loadMoreComments();
+  }, [targetCommentId, comments, hasMoreComments, loadingMoreComments, loadMoreCommentsFailed]);
 
   useEffect(() => {
     if (!itinerary?.id) return;
@@ -235,11 +270,8 @@ const ItineraryScreen = ({ route, navigation }) => {
     try {
       const created = await addComment(itinerary.id, commentText.trim());
       trackEvent(ANALYTICS_EVENTS.COMMENT_POSTED);
-      setComments(prev => {
-        const next = [...prev, created];
-        dispatch(updateCommentsCount(itinerary.id, next.length));
-        return next;
-      });
+      setComments(prev => [...prev, created]);
+      syncCommentsCount(commentsTotal + 1);
       setCommentText('');
     } catch {
       Alert.alert(t('errors.somethingWrong'), t('comments.couldNotPost'));
@@ -254,11 +286,8 @@ const ItineraryScreen = ({ route, navigation }) => {
         onPress: async () => {
           try {
             await deleteComment(commentId);
-            setComments(prev => {
-              const next = prev.filter(c => c.id !== commentId);
-              dispatch(updateCommentsCount(itinerary.id, next.length));
-              return next;
-            });
+            setComments(prev => prev.filter(c => c.id !== commentId));
+            syncCommentsCount(Math.max(commentsTotal - 1, 0));
           } catch {
             Alert.alert(t('errors.somethingWrong'), t('comments.couldNotDelete'));
           }
@@ -446,7 +475,7 @@ const ItineraryScreen = ({ route, navigation }) => {
 
         {/* Comments */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('comments.title')} ({comments.length})</Text>
+          <Text style={styles.sectionTitle}>{t('comments.title')} ({commentsTotal})</Text>
 
           {isAuthenticated && (
             <View style={styles.commentForm}>
@@ -534,6 +563,17 @@ const ItineraryScreen = ({ route, navigation }) => {
               </View>
             </View>
           ))}
+
+          {hasMoreComments && (
+            <View style={styles.commentsMore}>
+              {loadMoreCommentsFailed && <Text style={styles.noComments} accessibilityRole="alert">{t('comments.loadFailed')}</Text>}
+              <TouchableOpacity onPress={loadMoreComments} disabled={loadingMoreComments} accessibilityRole="button">
+                <Text style={styles.commentsRetry}>
+                  {loadMoreCommentsFailed ? t('common.retry') : loadingMoreComments ? t('common.loading') : t('common.loadMore')}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
       </View>
     </ScrollView>
@@ -815,6 +855,7 @@ const styles = StyleSheet.create({
     color: COLORS.primary, fontSize: 14, marginBottom: 12,
     textDecorationLine: 'underline',
   },
+  commentsMore: { alignItems: 'center', marginTop: 8 },
   commentsRetry: { color: '#E8743B', fontSize: 14, fontWeight: '700', marginBottom: 8 },
   noComments: { color: '#9ca3af', fontSize: 14, marginBottom: 8 },
   commentForm: { flexDirection: 'row', gap: 10, marginBottom: 16 },
