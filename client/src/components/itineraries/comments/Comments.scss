@@ -75,6 +75,22 @@
       color: var(--text-secondary-color);
     }
 
+    &__report {
+      background: none;
+      color: var(--text-secondary-color);
+      border: none;
+      font-size: 0.85rem;
+      cursor: pointer;
+      margin-top: 0.25rem;
+      padding: 0;
+      width: fit-content;
+
+      &:hover {
+        color: var(--text-color);
+        text-decoration: underline;
+      }
+    }
+
     &__delete {
       background: none;
       color: var(--error-color);

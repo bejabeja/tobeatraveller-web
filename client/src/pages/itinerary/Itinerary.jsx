@@ -10,6 +10,7 @@ import {
   FaTrashAlt,
 } from "react-icons/fa";
 import { GoPeople } from "react-icons/go";
+import { IoFlagOutline } from "react-icons/io5";
 import { MdArrowBack, MdOutlineAttachMoney, MdOutlineDirections, MdOutlineCalendarMonth, MdOutlineLocationOn, MdOutlineShare } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
@@ -18,6 +19,7 @@ import { getCategoryIcon } from "../../assets/icons.js";
 import Modal from "../../components/modal/Modal.jsx";
 import PublishedNotice from "../../components/itineraries/PublishedNotice.jsx";
 import TripActionsMenu from "../../components/itineraries/TripActionsMenu.jsx";
+import ReportModal from "../../components/report/ReportModal.jsx";
 import TripLists from "../../components/itineraries/TripLists.jsx";
 import Spinner from "../../components/spinner/Spinner.jsx";
 import { useGoBack } from "../../hooks/useGoBack.js";
@@ -72,6 +74,7 @@ const Itinerary = () => {
   const [userItinerary, setUserItinerary] = useState(null);
   const [isFavorite, setIsFavorite] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isReportOpen, setIsReportOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [hoveredPlaceIndex, setHoveredPlaceIndex] = useState(null);
   const [selectedPlaceIndex, setSelectedPlaceIndex] = useState(null);
@@ -175,6 +178,7 @@ const Itinerary = () => {
         navigate={navigate}
         isMyItinerary={isMyItinerary}
         setIsModalOpen={setIsModalOpen}
+        onReport={() => setIsReportOpen(true)}
         onShare={() => handleShare(TRIP_SHARE_SOURCES.TRIP_PAGE)}
         t={t}
       />
@@ -225,6 +229,7 @@ const Itinerary = () => {
         confirmText={t("itinerary.delete")}
         type="danger"
       />
+      <ReportModal isOpen={isReportOpen} onClose={() => setIsReportOpen(false)} targetType="itinerary" targetId={itinerary.id} />
     </section>
   );
 
@@ -252,6 +257,7 @@ const Hero = ({
   navigate,
   isMyItinerary,
   setIsModalOpen,
+  onReport,
   onShare,
   t,
 }) => {
@@ -386,6 +392,9 @@ const Hero = ({
             >
               {isFavorite ? <FaBookmark /> : <FaRegBookmark />}
             </button>
+            {isAuthenticated && (
+              <TripActionsMenu items={[{ key: "report", label: t("report.button"), Icon: IoFlagOutline, onSelect: onReport }]} />
+            )}
           </>
         )}
       </div>

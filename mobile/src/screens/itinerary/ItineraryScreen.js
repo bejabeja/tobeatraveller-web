@@ -16,6 +16,7 @@ import { ItineraryDetailSkeleton } from '../../components/Skeleton';
 import PublishedNotice from '../../components/PublishedNotice';
 import TripPhoto from '../../components/TripPhoto';
 import TripListsSection from '../../components/TripListsSection';
+import ReportModal from '../../components/ReportModal';
 import { COLORS, shadow, textShadow } from '../../utils/styles';
 import { getStepConfig } from '../../utils/stepConfig';
 import { WEB_URL } from '../../utils/config';
@@ -60,6 +61,7 @@ const ItineraryScreen = ({ route, navigation }) => {
   const [loadMoreCommentsFailed, setLoadMoreCommentsFailed] = useState(false);
   const hasMoreComments = comments.length < commentsTotal;
   const [commentText, setCommentText] = useState('');
+  const [reportTarget, setReportTarget] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [highlightedCommentId, setHighlightedCommentId] = useState(null);
   const scrollViewRef = useRef(null);
@@ -353,6 +355,16 @@ const ItineraryScreen = ({ route, navigation }) => {
               <Text style={styles.actionIcon}>{isFavorite ? '🔖' : '📌'}</Text>
             </TouchableOpacity>
           )}
+          {!isMyItinerary && isAuthenticated && (
+            <TouchableOpacity
+              style={styles.actionBtn}
+              onPress={() => setReportTarget({ targetType: 'itinerary', targetId: itinerary.id })}
+              accessibilityRole="button"
+              accessibilityLabel={t('report.button')}
+            >
+              <Ionicons name="flag-outline" size={18} color="#fff" />
+            </TouchableOpacity>
+          )}
         </View>
 
         <View style={styles.heroContent}>
@@ -568,6 +580,16 @@ const ItineraryScreen = ({ route, navigation }) => {
                       <Text style={styles.commentDeleteText}>✕</Text>
                     </TouchableOpacity>
                   )}
+                  {isAuthenticated && me?.id !== comment.user?.id && (
+                    <TouchableOpacity
+                      onPress={() => setReportTarget({ targetType: 'comment', targetId: comment.id })}
+                      style={styles.commentDeleteBtn}
+                      accessibilityRole="button"
+                      accessibilityLabel={t('report.button')}
+                    >
+                      <Ionicons name="flag-outline" size={14} color="#9ca3af" />
+                    </TouchableOpacity>
+                  )}
                 </View>
                 <Text style={styles.commentContent}>{comment.content}</Text>
               </View>
@@ -586,6 +608,7 @@ const ItineraryScreen = ({ route, navigation }) => {
           )}
         </View>
       </View>
+      {reportTarget && <ReportModal {...reportTarget} onClose={() => setReportTarget(null)} />}
     </ScrollView>
   );
 };

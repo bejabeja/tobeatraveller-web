@@ -25,6 +25,7 @@ import { useOutbox } from '../../offline/useOutbox';
 import { WEB_URL } from '../../utils/config';
 import { useUserPassport } from '../../hooks/useUserPassport';
 import PassportShareModal from '../../components/PassportShareModal';
+import ReportModal from '../../components/ReportModal';
 import { EmailVerificationBanner } from '../../components/EmailVerificationBanner';
 import RecapBanner from '../../components/RecapBanner';
 
@@ -93,6 +94,7 @@ const ProfileScreen = ({ route, navigation }) => {
   const passportUserId = isOwnProfile ? me?.id : profileId;
   const { passport } = useUserPassport(passportUserId);
   const [isPassportShareOpen, setIsPassportShareOpen] = useState(false);
+  const [isReportOpen, setIsReportOpen] = useState(false);
   const passportSummary = summarizePassport(passport, MAX_PASSPORT_CARD_FLAGS);
   // Other viewers only see the card once there is something public in it.
   const showPassportCard = passportSummary
@@ -266,15 +268,27 @@ const ProfileScreen = ({ route, navigation }) => {
                 </TouchableOpacity>
               </>
             ) : (
-              <TouchableOpacity
-                style={[styles.primaryBtn, isFollowing && styles.secondaryBtn, followLoading && styles.btnDisabled]}
-                onPress={handleFollowToggle}
-                disabled={followLoading}
-              >
-                <Text style={[styles.primaryBtnText, isFollowing && styles.secondaryBtnText]}>
-                  {followLoading ? '…' : isFollowing ? t('profile.unfollow') : t('profile.follow')}
-                </Text>
-              </TouchableOpacity>
+              <>
+                <TouchableOpacity
+                  style={[styles.primaryBtn, isFollowing && styles.secondaryBtn, followLoading && styles.btnDisabled]}
+                  onPress={handleFollowToggle}
+                  disabled={followLoading}
+                >
+                  <Text style={[styles.primaryBtnText, isFollowing && styles.secondaryBtnText]}>
+                    {followLoading ? '…' : isFollowing ? t('profile.unfollow') : t('profile.follow')}
+                  </Text>
+                </TouchableOpacity>
+                {isAuthenticated && (
+                  <TouchableOpacity
+                    style={styles.iconBtn}
+                    onPress={() => setIsReportOpen(true)}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('report.button')}
+                  >
+                    <Ionicons name="flag-outline" size={16} color="#374151" />
+                  </TouchableOpacity>
+                )}
+              </>
             )}
           </View>
         </View>
@@ -376,6 +390,7 @@ const ProfileScreen = ({ route, navigation }) => {
               <Ionicons name="chevron-forward" size={16} color="#b08a45" />
             </TouchableOpacity>
           )}
+          {isReportOpen && user?.id && <ReportModal targetType="user" targetId={user.id} onClose={() => setIsReportOpen(false)} />}
           {isOwnProfile && <EmailVerificationBanner />}
           {isOwnProfile && <RecapBanner onPress={() => navigation.navigate('Recap', { from: RECAP_SOURCES.PROFILE })} />}
           {isOwnProfile && (

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { IoChevronForward, IoLinkOutline, IoLocationOutline, IoLockClosedOutline, IoOptionsOutline, IoSettingsOutline, IoShareSocialOutline } from "react-icons/io5";
+import { IoChevronForward, IoFlagOutline, IoLinkOutline, IoLocationOutline, IoLockClosedOutline, IoOptionsOutline, IoSettingsOutline, IoShareSocialOutline } from "react-icons/io5";
 import { MdOutlineCalendarMonth, MdOutlineEdit } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
@@ -22,6 +22,7 @@ import { buildProfileJsonLd } from "../../utils/jsonLd";
 import { BADGE_EMOJI, countryFlag, filterItineraries, formatDate, profileShareUrl, summarizePassport } from "@tobeatraveller/shared";
 import { getMyReferralInfo } from "../../services/referral";
 import FollowsModal from "../../components/follows/FollowsModal";
+import ReportModal from "../../components/report/ReportModal";
 import PassportShareDialog from "../../components/passport/PassportShareDialog";
 import RecapBanner, { RECAP_SOURCES } from "../../components/recap/RecapBanner";
 import { PASSPORT_SHARE_SOURCES } from "../../utils/analyticsEvents";
@@ -59,6 +60,7 @@ const Profile = ({ id: idFromName }) => {
   const dispatch = useDispatch();
   const { isFollowing, toggleFollow, isLoadingFollow } = useFollow(id);
   const [showUnfollowModal, setShowUnfollowModal] = useState(false);
+  const [isReportOpen, setIsReportOpen] = useState(false);
   const [followsModal, setFollowsModal] = useState(null); // null | 'followers' | 'following'
   const [visibility, setVisibility] = useState('all');
   const [tripFilters, setTripFilters] = useState({});
@@ -165,6 +167,7 @@ const Profile = ({ id: idFromName }) => {
               followsYou={followsYou}
               onFollowToggle={handleFollowToggle}
               onCopyLink={handleCopyLink}
+              onReport={() => setIsReportOpen(true)}
               isAuthenticated={isAuthenticated}
               isLoadingFollow={isLoadingFollow}
               onOpenFollows={setFollowsModal}
@@ -302,6 +305,8 @@ const Profile = ({ id: idFromName }) => {
         />
       )}
 
+      <ReportModal isOpen={isReportOpen} onClose={() => setIsReportOpen(false)} targetType="user" targetId={user?.id} />
+
       <Modal
         isOpen={showUnfollowModal}
         onClose={() => setShowUnfollowModal(false)}
@@ -320,7 +325,7 @@ export default Profile;
 // ─── Header card ──────────────────────────────────────────────────────────────
 const HeaderSection = ({
   user, isMyProfile, isFollowing, followsYou, onFollowToggle,
-  onCopyLink, isAuthenticated, isLoadingFollow, onOpenFollows, tripsCount, onShowTrips, t,
+  onCopyLink, onReport, isAuthenticated, isLoadingFollow, onOpenFollows, tripsCount, onShowTrips, t,
 }) => {
   const { i18n } = useTranslation();
   const location = useLocation();
@@ -394,6 +399,17 @@ const HeaderSection = ({
                   disabled={isLoadingFollow}
                 >
                   {isLoadingFollow ? "…" : isFollowing ? t("profile.unfollow") : t("profile.follow")}
+                </button>
+              )}
+              {!isMyProfile && isAuthenticated && (
+                <button
+                  type="button"
+                  className="btn profile__copy-btn"
+                  onClick={onReport}
+                  aria-label={t("report.button")}
+                  title={t("report.button")}
+                >
+                  <IoFlagOutline aria-hidden="true" />
                 </button>
               )}
             </div>

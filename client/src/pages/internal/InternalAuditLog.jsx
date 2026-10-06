@@ -82,6 +82,20 @@ const AUDIT_DESCRIPTIONS = {
   admin_notice_sent: (entry, t) => t("admin.auditNoticeSent", {
     actor: entry.actorUsername, target: entry.targetUsername, message: entry.metadata?.message,
   }),
+  content_reported: (entry, t) => t("admin.auditContentReported", {
+    actor: entry.actorUsername, type: t(`report.targetType.${entry.metadata?.targetType}`),
+    target: entry.targetUsername ?? entry.targetUserId, reason: t(`report.reason.${entry.metadata?.reason}`),
+  }),
+  report_resolved: (entry, t) => t("admin.auditReportResolved", {
+    actor: entry.actorUsername, target: entry.targetUsername ?? entry.targetUserId, decision: entry.metadata?.decision,
+  }),
+  content_removed_by_moderation: (entry, t) => t("admin.auditContentRemoved", {
+    actor: entry.actorUsername, type: t(`report.targetType.${entry.metadata?.targetType}`),
+    target: entry.targetUsername ?? entry.targetUserId,
+  }),
+  reports_purged: (entry, t) => t("admin.auditReportsPurged", {
+    months: entry.metadata?.months, deletedCount: entry.metadata?.deletedCount, trigger: entry.metadata?.trigger,
+  }),
 };
 
 // "role_updated" -> "Role updated". Keeps the filter dropdown self-maintaining

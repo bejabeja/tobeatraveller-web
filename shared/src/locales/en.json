@@ -401,6 +401,30 @@
     "metaDescription": "Track expenses, supplies and your diary on the road, work offline in the app and plan trips with AI. 7-day free trial, no card needed."
   },
   "admin": {
+    "reportOpenTarget": "Open",
+    "reportsTitle": "Reports",
+    "reportsEmpty": "No reports in this list.",
+    "reportsFilterOpen": "Open",
+    "reportsFilterAll": "All",
+    "reportStatus": {
+      "open": "Open",
+      "removed": "Removed",
+      "dismissed": "Dismissed",
+      "resolved": "Resolved"
+    },
+    "reportBy": "Reported by {{name}}",
+    "reportAbout": "About a {{type}} by {{owner}}",
+    "reportNoteLabel": "Note for the record (optional)",
+    "reportRemove": "Remove",
+    "reportDismiss": "Dismiss",
+    "reportResolve": "Handled elsewhere",
+    "reportDecided": "Report decided",
+    "reportDecideError": "We could not save the decision. Please try again.",
+    "reportsLoadError": "We could not load the reports.",
+    "auditContentReported": "{{actor}} reported a {{type}} by {{target}} ({{reason}})",
+    "auditReportResolved": "{{actor}} decided a report about {{target}}: {{decision}}",
+    "auditContentRemoved": "{{actor}} removed a {{type}} by {{target}} after a report",
+    "auditReportsPurged": "Resolved reports older than {{months}} months were purged ({{deletedCount}}, {{trigger}})",
     "dashboardTitle": "Internal dashboard",
     "usersTitle": "Users",
     "noUsers": "No users found.",
@@ -1314,7 +1338,46 @@
     "travelStyleNotSet": "Not set",
     "travelStyleSaved": "Saved"
   },
+  "report": {
+    "button": "Report",
+    "title": {
+      "comment": "Report this comment",
+      "itinerary": "Report this trip",
+      "user": "Report this profile"
+    },
+    "intro": "Tell us what is wrong. Our team reviews every report, and the person will not know it was you.",
+    "reasonLabel": "Why are you reporting it?",
+    "reason": {
+      "spam": "Spam or ads",
+      "harassment": "Harassment or bullying",
+      "hate": "Hate or violence",
+      "sexual": "Sexual content",
+      "illegal": "Illegal content",
+      "misleading": "False or misleading",
+      "other": "Something else"
+    },
+    "detailsLabel": "More details (optional)",
+    "detailsLabelIllegal": "Why is it illegal?",
+    "detailsPlaceholder": "Tell us what we should look at",
+    "submit": "Send report",
+    "sent": "Thanks, we received your report. Our team will review it.",
+    "sendError": "We could not send your report. Please try again.",
+    "targetType": {
+      "comment": "comment",
+      "itinerary": "trip",
+      "user": "profile"
+    }
+  },
   "validation": {
+    "reportTarget": "That can't be reported",
+    "reportReason": "Choose a reason",
+    "reportIllegalNeedsDetails": "Explain why it is illegal (at least 10 characters)",
+    "reportDecision": "Choose a decision",
+    "reportOwnContent": "You can't report your own content",
+    "reportAlreadySent": "You already reported this. We will review it.",
+    "reportAlreadyDecided": "This report was already decided",
+    "reportCannotRemoveUser": "A profile can't be removed from here",
+    "tripHiddenByModeration": "Our team hid this trip, so it can't be made public again",
     "required": "This field is required",
     "tooShort": "It's too short",
     "tooLong": "It's too long",

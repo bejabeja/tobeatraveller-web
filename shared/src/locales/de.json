@@ -401,6 +401,30 @@
     "metaDescription": "Behalte Ausgaben, Vorräte und dein Tagebuch unterwegs im Blick, arbeite offline in der App und plane Reisen mit KI. 7 Tage kostenlos testen, ohne Karte."
   },
   "admin": {
+    "reportOpenTarget": "Öffnen",
+    "reportsTitle": "Meldungen",
+    "reportsEmpty": "Keine Meldungen in dieser Liste.",
+    "reportsFilterOpen": "Offen",
+    "reportsFilterAll": "Alle",
+    "reportStatus": {
+      "open": "Offen",
+      "removed": "Entfernt",
+      "dismissed": "Abgelehnt",
+      "resolved": "Erledigt"
+    },
+    "reportBy": "Gemeldet von {{name}}",
+    "reportAbout": "Zu einem {{type}} von {{owner}}",
+    "reportNoteLabel": "Notiz fürs Protokoll (optional)",
+    "reportRemove": "Entfernen",
+    "reportDismiss": "Ablehnen",
+    "reportResolve": "Anderweitig erledigt",
+    "reportDecided": "Meldung entschieden",
+    "reportDecideError": "Wir konnten die Entscheidung nicht speichern. Bitte versuche es erneut.",
+    "reportsLoadError": "Wir konnten die Meldungen nicht laden.",
+    "auditContentReported": "{{actor}} hat {{type}} von {{target}} gemeldet ({{reason}})",
+    "auditReportResolved": "{{actor}} hat über eine Meldung zu {{target}} entschieden: {{decision}}",
+    "auditContentRemoved": "{{actor}} hat {{type}} von {{target}} nach einer Meldung entfernt",
+    "auditReportsPurged": "Erledigte Meldungen, die älter als {{months}} Monate sind, wurden gelöscht ({{deletedCount}}, {{trigger}})",
     "dashboardTitle": "Internes Dashboard",
     "usersTitle": "Konten",
     "noUsers": "Keine Konten gefunden.",
@@ -1314,7 +1338,46 @@
     "travelStyleNotSet": "Nicht angegeben",
     "travelStyleSaved": "Gespeichert"
   },
+  "report": {
+    "button": "Melden",
+    "title": {
+      "comment": "Diesen Kommentar melden",
+      "itinerary": "Diese Reise melden",
+      "user": "Dieses Profil melden"
+    },
+    "intro": "Sag uns, was nicht stimmt. Unser Team prüft jede Meldung, und die andere Person erfährt nicht, dass du es warst.",
+    "reasonLabel": "Warum meldest du das?",
+    "reason": {
+      "spam": "Spam oder Werbung",
+      "harassment": "Belästigung oder Mobbing",
+      "hate": "Hass oder Gewalt",
+      "sexual": "Sexuelle Inhalte",
+      "illegal": "Illegale Inhalte",
+      "misleading": "Falsch oder irreführend",
+      "other": "Etwas anderes"
+    },
+    "detailsLabel": "Weitere Angaben (optional)",
+    "detailsLabelIllegal": "Warum ist es illegal?",
+    "detailsPlaceholder": "Sag uns, was wir uns ansehen sollen",
+    "submit": "Meldung senden",
+    "sent": "Danke, wir haben deine Meldung erhalten. Unser Team prüft sie.",
+    "sendError": "Wir konnten deine Meldung nicht senden. Bitte versuche es erneut.",
+    "targetType": {
+      "comment": "Kommentar",
+      "itinerary": "Reise",
+      "user": "Profil"
+    }
+  },
   "validation": {
+    "reportTarget": "Das kann nicht gemeldet werden",
+    "reportReason": "Wähle einen Grund",
+    "reportIllegalNeedsDetails": "Erkläre, warum es illegal ist (mindestens 10 Zeichen)",
+    "reportDecision": "Wähle eine Entscheidung",
+    "reportOwnContent": "Du kannst deine eigenen Inhalte nicht melden",
+    "reportAlreadySent": "Du hast das bereits gemeldet. Wir prüfen es.",
+    "reportAlreadyDecided": "Über diese Meldung wurde bereits entschieden",
+    "reportCannotRemoveUser": "Ein Profil kann von hier nicht entfernt werden",
+    "tripHiddenByModeration": "Unser Team hat diese Reise ausgeblendet, sie kann nicht wieder öffentlich gemacht werden",
     "required": "Dieses Feld ist erforderlich",
     "tooShort": "Das ist zu kurz",
     "tooLong": "Das ist zu lang",

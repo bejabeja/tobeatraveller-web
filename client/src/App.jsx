@@ -78,6 +78,7 @@ const InternalDashboard = lazy(() => import("./pages/internal/InternalDashboard"
 const InternalUsers = lazy(() => import("./pages/internal/InternalUsers"));
 const InternalAuditLog = lazy(() => import("./pages/internal/InternalAuditLog"));
 const InternalReferrals = lazy(() => import("./pages/internal/InternalReferrals"));
+const InternalReports = lazy(() => import("./pages/internal/InternalReports"));
 
 const App = () => {
   const dispatch = useDispatch();
@@ -237,6 +238,7 @@ const App = () => {
                     <Route path="users" element={<InternalUsers />} />
                     <Route path="audit-log" element={<InternalAuditLog />} />
                     <Route path="referrals" element={<InternalReferrals />} />
+                    <Route path="reports" element={<InternalReports />} />
                   </Route>
                 </Route>
               </Route>

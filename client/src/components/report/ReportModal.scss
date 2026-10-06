@@ -1,0 +1,48 @@
+.report-modal {
+  &__reasons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 0 0 1rem;
+    padding: 0;
+    border: 0;
+
+    legend {
+      margin-bottom: 0.5rem;
+      font-weight: 700;
+      color: var(--text-color);
+    }
+  }
+
+  &__reason {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    width: auto;
+    cursor: pointer;
+
+    input {
+      width: auto;
+    }
+  }
+
+  &__details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    width: auto;
+    font-weight: 700;
+    color: var(--text-color);
+
+    textarea {
+      width: 100%;
+      resize: vertical;
+      font-weight: 400;
+    }
+
+    small {
+      font-weight: 400;
+      color: var(--text-secondary-color);
+    }
+  }
+}

@@ -19,6 +19,9 @@ const InternalDashboard = () => {
           <NavLink to="/internal/referrals" className="internal-dashboard__tab">
             {t("admin.referralsTitle")}
           </NavLink>
+          <NavLink to="/internal/reports" className="internal-dashboard__tab">
+            {t("admin.reportsTitle")}
+          </NavLink>
         </nav>
       </header>
       <div className="internal-dashboard__content">

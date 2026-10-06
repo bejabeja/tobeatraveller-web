@@ -13,6 +13,7 @@ import { selectMe } from "../../../store/user/userInfoSelectors";
 import { returnToState } from "../../../utils/returnTo";
 import LoadingButton from "../../LoadingButton";
 import Modal from "../../modal/Modal";
+import ReportModal from "../../report/ReportModal";
 import { trackEvent } from "../../../utils/analytics";
 import { ANALYTICS_EVENTS } from "../../../utils/analyticsEvents";
 import "./Comments.scss";
@@ -30,6 +31,7 @@ const Comments = ({ itineraryId, isAuthenticated }) => {
   const [loadFailed, setLoadFailed] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState(null);
+  const [commentToReport, setCommentToReport] = useState(null);
   const [highlightedCommentId, setHighlightedCommentId] = useState(null);
   const handledCommentHashRef = useRef(null);
 
@@ -155,6 +157,13 @@ const Comments = ({ itineraryId, isAuthenticated }) => {
                 {(comment.createdAt || comment.postedAgo) && (
                   <span className="comment__timestamp">{comment.createdAt ? formatTimeAgo(t, comment.createdAt) : comment.postedAgo}</span>
                 )}
+                {isAuthenticated && comment.user?.id !== userMe?.id && (
+                  <div>
+                    <button type="button" className="comment__report" onClick={() => setCommentToReport(comment.id)}>
+                      {t("report.button")}
+                    </button>
+                  </div>
+                )}
                 {isAuthenticated && comment.user?.id === userMe?.id && (
                   <div>
                     <button
@@ -253,6 +262,12 @@ const Comments = ({ itineraryId, isAuthenticated }) => {
         description={t("comments.deleteDesc")}
         confirmText={t("comments.delete")}
         type="danger"
+      />
+      <ReportModal
+        isOpen={commentToReport !== null}
+        onClose={() => setCommentToReport(null)}
+        targetType="comment"
+        targetId={commentToReport}
       />
     </div>
   );

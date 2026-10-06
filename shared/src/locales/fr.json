@@ -406,6 +406,30 @@
     "metaDescription": "Suivez vos dépenses, vos provisions et votre journal en route, travaillez hors ligne dans l'app et planifiez vos voyages avec l'IA. 7 jours d'essai gratuit, sans carte."
   },
   "admin": {
+    "reportOpenTarget": "Ouvrir",
+    "reportsTitle": "Signalements",
+    "reportsEmpty": "Aucun signalement dans cette liste.",
+    "reportsFilterOpen": "Ouverts",
+    "reportsFilterAll": "Tous",
+    "reportStatus": {
+      "open": "Ouvert",
+      "removed": "Retiré",
+      "dismissed": "Rejeté",
+      "resolved": "Résolu"
+    },
+    "reportBy": "Signalé par {{name}}",
+    "reportAbout": "À propos d'un {{type}} de {{owner}}",
+    "reportNoteLabel": "Note pour le registre (facultatif)",
+    "reportRemove": "Retirer",
+    "reportDismiss": "Rejeter",
+    "reportResolve": "Traité ailleurs",
+    "reportDecided": "Signalement traité",
+    "reportDecideError": "Nous n'avons pas pu enregistrer la décision. Réessaie.",
+    "reportsLoadError": "Nous n'avons pas pu charger les signalements.",
+    "auditContentReported": "{{actor}} a signalé un {{type}} de {{target}} ({{reason}})",
+    "auditReportResolved": "{{actor}} a traité un signalement sur {{target}} : {{decision}}",
+    "auditContentRemoved": "{{actor}} a retiré un {{type}} de {{target}} après un signalement",
+    "auditReportsPurged": "Les signalements résolus de plus de {{months}} mois ont été purgés ({{deletedCount}}, {{trigger}})",
     "dashboardTitle": "Tableau de bord interne",
     "usersTitle": "Utilisateurs",
     "noUsers": "Aucun utilisateur trouvé.",
@@ -1334,7 +1358,46 @@
     "travelStyleNotSet": "Non indiqué",
     "travelStyleSaved": "Enregistré"
   },
+  "report": {
+    "button": "Signaler",
+    "title": {
+      "comment": "Signaler ce commentaire",
+      "itinerary": "Signaler ce voyage",
+      "user": "Signaler ce profil"
+    },
+    "intro": "Dis-nous ce qui ne va pas. Notre équipe examine chaque signalement, et l'autre personne ne saura pas que c'est toi.",
+    "reasonLabel": "Pourquoi le signales-tu ?",
+    "reason": {
+      "spam": "Spam ou publicité",
+      "harassment": "Harcèlement ou intimidation",
+      "hate": "Haine ou violence",
+      "sexual": "Contenu sexuel",
+      "illegal": "Contenu illégal",
+      "misleading": "Faux ou trompeur",
+      "other": "Autre chose"
+    },
+    "detailsLabel": "Plus de détails (facultatif)",
+    "detailsLabelIllegal": "Pourquoi est-ce illégal ?",
+    "detailsPlaceholder": "Dis-nous ce que nous devons examiner",
+    "submit": "Envoyer le signalement",
+    "sent": "Merci, nous avons reçu ton signalement. Notre équipe va l'examiner.",
+    "sendError": "Nous n'avons pas pu envoyer ton signalement. Réessaie.",
+    "targetType": {
+      "comment": "commentaire",
+      "itinerary": "voyage",
+      "user": "profil"
+    }
+  },
   "validation": {
+    "reportTarget": "Cela ne peut pas être signalé",
+    "reportReason": "Choisis un motif",
+    "reportIllegalNeedsDetails": "Explique pourquoi c'est illégal (au moins 10 caractères)",
+    "reportDecision": "Choisis une décision",
+    "reportOwnContent": "Tu ne peux pas signaler ton propre contenu",
+    "reportAlreadySent": "Tu l'as déjà signalé. Nous allons l'examiner.",
+    "reportAlreadyDecided": "Ce signalement a déjà été traité",
+    "reportCannotRemoveUser": "Un profil ne peut pas être supprimé d'ici",
+    "tripHiddenByModeration": "Notre équipe a masqué ce voyage, il ne peut pas être rendu public de nouveau",
     "required": "Ce champ est obligatoire",
     "tooShort": "C'est trop court",
     "tooLong": "C'est trop long",

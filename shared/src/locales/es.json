@@ -406,6 +406,30 @@
     "metaDescription": "Controla gastos, provisiones y tu diario en ruta, trabaja sin conexión en la app y planifica viajes con IA. 7 días de prueba gratis, sin tarjeta."
   },
   "admin": {
+    "reportOpenTarget": "Abrir",
+    "reportsTitle": "Denuncias",
+    "reportsEmpty": "No hay denuncias en esta lista.",
+    "reportsFilterOpen": "Abiertas",
+    "reportsFilterAll": "Todas",
+    "reportStatus": {
+      "open": "Abierta",
+      "removed": "Retirado",
+      "dismissed": "Descartada",
+      "resolved": "Resuelta"
+    },
+    "reportBy": "Denunciado por {{name}}",
+    "reportAbout": "Sobre un {{type}} de {{owner}}",
+    "reportNoteLabel": "Nota para el registro (opcional)",
+    "reportRemove": "Quitar",
+    "reportDismiss": "Descartar",
+    "reportResolve": "Resuelto en otro sitio",
+    "reportDecided": "Denuncia decidida",
+    "reportDecideError": "No hemos podido guardar la decisión. Inténtalo de nuevo.",
+    "reportsLoadError": "No hemos podido cargar las denuncias.",
+    "auditContentReported": "{{actor}} denunció un {{type}} de {{target}} ({{reason}})",
+    "auditReportResolved": "{{actor}} decidió una denuncia sobre {{target}}: {{decision}}",
+    "auditContentRemoved": "{{actor}} retiró un {{type}} de {{target}} tras una denuncia",
+    "auditReportsPurged": "Se purgaron las denuncias resueltas de más de {{months}} meses ({{deletedCount}}, {{trigger}})",
     "dashboardTitle": "Panel interno",
     "usersTitle": "Usuarios",
     "noUsers": "No se encontraron usuarios.",
@@ -1334,7 +1358,46 @@
     "travelStyleNotSet": "Sin indicar",
     "travelStyleSaved": "Guardado"
   },
+  "report": {
+    "button": "Denunciar",
+    "title": {
+      "comment": "Denunciar este comentario",
+      "itinerary": "Denunciar este viaje",
+      "user": "Denunciar este perfil"
+    },
+    "intro": "Cuéntanos qué pasa. Nuestro equipo revisa cada denuncia y la otra persona no sabrá que fuiste tú.",
+    "reasonLabel": "¿Por qué lo denuncias?",
+    "reason": {
+      "spam": "Spam o publicidad",
+      "harassment": "Acoso o intimidación",
+      "hate": "Odio o violencia",
+      "sexual": "Contenido sexual",
+      "illegal": "Contenido ilegal",
+      "misleading": "Falso o engañoso",
+      "other": "Otra cosa"
+    },
+    "detailsLabel": "Más detalles (opcional)",
+    "detailsLabelIllegal": "¿Por qué es ilegal?",
+    "detailsPlaceholder": "Cuéntanos qué debemos mirar",
+    "submit": "Enviar denuncia",
+    "sent": "Gracias, hemos recibido tu denuncia. Nuestro equipo la revisará.",
+    "sendError": "No hemos podido enviar tu denuncia. Inténtalo de nuevo.",
+    "targetType": {
+      "comment": "comentario",
+      "itinerary": "viaje",
+      "user": "perfil"
+    }
+  },
   "validation": {
+    "reportTarget": "Eso no se puede denunciar",
+    "reportReason": "Elige un motivo",
+    "reportIllegalNeedsDetails": "Explica por qué es ilegal (al menos 10 caracteres)",
+    "reportDecision": "Elige una decisión",
+    "reportOwnContent": "No puedes denunciar tu propio contenido",
+    "reportAlreadySent": "Ya lo denunciaste. Lo revisaremos.",
+    "reportAlreadyDecided": "Esta denuncia ya está decidida",
+    "reportCannotRemoveUser": "Un perfil no se puede quitar desde aquí",
+    "tripHiddenByModeration": "Nuestro equipo ocultó este viaje, así que no se puede volver a hacer público",
     "required": "Este campo es obligatorio",
     "tooShort": "Es demasiado corto",
     "tooLong": "Es demasiado largo",

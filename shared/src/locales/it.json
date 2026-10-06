@@ -406,6 +406,30 @@
     "metaDescription": "Tieni sotto controllo spese, scorte e diario in viaggio, lavora offline nell'app e pianifica i viaggi con l'IA. 7 giorni di prova gratuita, senza carta."
   },
   "admin": {
+    "reportOpenTarget": "Apri",
+    "reportsTitle": "Segnalazioni",
+    "reportsEmpty": "Nessuna segnalazione in questo elenco.",
+    "reportsFilterOpen": "Aperte",
+    "reportsFilterAll": "Tutte",
+    "reportStatus": {
+      "open": "Aperta",
+      "removed": "Rimosso",
+      "dismissed": "Respinta",
+      "resolved": "Risolta"
+    },
+    "reportBy": "Segnalato da {{name}}",
+    "reportAbout": "Su un {{type}} di {{owner}}",
+    "reportNoteLabel": "Nota per il registro (facoltativa)",
+    "reportRemove": "Rimuovi",
+    "reportDismiss": "Respingi",
+    "reportResolve": "Gestita altrove",
+    "reportDecided": "Segnalazione decisa",
+    "reportDecideError": "Non siamo riusciti a salvare la decisione. Riprova.",
+    "reportsLoadError": "Non siamo riusciti a caricare le segnalazioni.",
+    "auditContentReported": "{{actor}} ha segnalato un {{type}} di {{target}} ({{reason}})",
+    "auditReportResolved": "{{actor}} ha deciso una segnalazione su {{target}}: {{decision}}",
+    "auditContentRemoved": "{{actor}} ha rimosso un {{type}} di {{target}} dopo una segnalazione",
+    "auditReportsPurged": "Le segnalazioni risolte più vecchie di {{months}} mesi sono state eliminate ({{deletedCount}}, {{trigger}})",
     "dashboardTitle": "Dashboard interna",
     "usersTitle": "Utenti",
     "noUsers": "Nessun utente trovato.",
@@ -1334,7 +1358,46 @@
     "travelStyleNotSet": "Non indicato",
     "travelStyleSaved": "Salvato"
   },
+  "report": {
+    "button": "Segnala",
+    "title": {
+      "comment": "Segnala questo commento",
+      "itinerary": "Segnala questo viaggio",
+      "user": "Segnala questo profilo"
+    },
+    "intro": "Dicci cosa c'è che non va. Il nostro team esamina ogni segnalazione e l'altra persona non saprà che sei stato tu.",
+    "reasonLabel": "Perché lo segnali?",
+    "reason": {
+      "spam": "Spam o pubblicità",
+      "harassment": "Molestie o bullismo",
+      "hate": "Odio o violenza",
+      "sexual": "Contenuto sessuale",
+      "illegal": "Contenuto illegale",
+      "misleading": "Falso o ingannevole",
+      "other": "Un'altra cosa"
+    },
+    "detailsLabel": "Altri dettagli (facoltativo)",
+    "detailsLabelIllegal": "Perché è illegale?",
+    "detailsPlaceholder": "Dicci cosa dobbiamo guardare",
+    "submit": "Invia segnalazione",
+    "sent": "Grazie, abbiamo ricevuto la tua segnalazione. Il nostro team la esaminerà.",
+    "sendError": "Non siamo riusciti a inviare la tua segnalazione. Riprova.",
+    "targetType": {
+      "comment": "commento",
+      "itinerary": "viaggio",
+      "user": "profilo"
+    }
+  },
   "validation": {
+    "reportTarget": "Questo non si può segnalare",
+    "reportReason": "Scegli un motivo",
+    "reportIllegalNeedsDetails": "Spiega perché è illegale (almeno 10 caratteri)",
+    "reportDecision": "Scegli una decisione",
+    "reportOwnContent": "Non puoi segnalare i tuoi contenuti",
+    "reportAlreadySent": "L'hai già segnalato. Lo esamineremo.",
+    "reportAlreadyDecided": "Questa segnalazione è già stata decisa",
+    "reportCannotRemoveUser": "Un profilo non si può rimuovere da qui",
+    "tripHiddenByModeration": "Il nostro team ha nascosto questo viaggio, quindi non si può rendere di nuovo pubblico",
     "required": "Questo campo è obbligatorio",
     "tooShort": "È troppo corto",
     "tooLong": "È troppo lungo",
