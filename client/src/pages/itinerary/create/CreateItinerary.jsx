@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { DEFAULT_AI_PACE, localCalendarDay } from "@tobeatraveller/shared";
+import { DEFAULT_AI_PACE, localCalendarDay, TRAVEL_STYLES } from "@tobeatraveller/shared";
 import Modal from "../../../components/modal/Modal";
 import ItineraryDraftPrompt from "../../../components/itineraryDraft/ItineraryDraftPrompt";
 import { useItineraryDraft } from "../../../hooks/useItineraryDraft";
@@ -56,7 +56,7 @@ const CreateItinerary = () => {
   const myTripsPath = `/profile/${authUser?.id}`;
 
   const today = localCalendarDay();
-  const { control, handleSubmit, setFocus, formState: { errors }, watch, setValue, reset, getValues } = useForm({
+  const { control, handleSubmit, setFocus, formState: { errors, dirtyFields }, watch, setValue, reset, getValues } = useForm({
     resolver: zodResolver(createItinerarySchema),
     defaultValues: {
       imageUrl: "",
@@ -71,6 +71,7 @@ const CreateItinerary = () => {
       numberOfTravellers: "1",
       category: "adventure",
       isPublic: NEW_ITINERARY_DEFAULT_VISIBILITY,
+      byVan: userMe?.travelStyle === TRAVEL_STYLES.VAN,
     },
   });
 
@@ -113,6 +114,16 @@ const CreateItinerary = () => {
     catch { document.querySelector(`[name="${firstKey}"]`)?.scrollIntoView({ behavior: "smooth", block: "center" }); }
   };
 
+  // The profile may arrive after the form: whoever lives in a van starts with the trip marked as by van,
+  // unless they have already answered themselves.
+  const livesInAVan = userMe?.travelStyle === TRAVEL_STYLES.VAN;
+  // A draft brought back carries an answer already.
+  const [byVanFromDraft, setByVanFromDraft] = useState(false);
+  const byVanAnswered = Boolean(dirtyFields.byVan) || byVanFromDraft;
+  useEffect(() => {
+    if (livesInAVan && !byVanAnswered && !pendingDraft) setValue("byVan", true);
+  }, [livesInAVan, byVanAnswered, pendingDraft, setValue]);
+
   const hasProgress = !!(titleVal || destVal?.name || fields.length > 0);
 
   useEffect(() => {
@@ -127,6 +138,7 @@ const CreateItinerary = () => {
 
   const restoreDraft = () => {
     reset({ ...getValues(), ...pendingDraft.values });
+    setByVanFromDraft(pendingDraft.values.byVan !== undefined);
     setDays(pendingDraft.days);
     if (pendingDraft.pace) setPace(pendingDraft.pace);
     setStep(Math.min(pendingDraft.step, TOTAL_STEPS - 1));
@@ -181,6 +193,7 @@ const CreateItinerary = () => {
       })),
       category: data.category,
       isPublic: data.isPublic,
+      byVan: data.byVan,
     };
 
     const formData = new FormData();

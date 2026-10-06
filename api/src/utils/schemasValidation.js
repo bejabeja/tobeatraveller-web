@@ -189,6 +189,7 @@ const itineraryDataFields = {
     currency: z.string().max(3, "validation.currencyInvalid").nullable().optional(),
     category: z.enum(ITINERARY_CATEGORIES, { errorMap: () => ({ message: "validation.chooseCategory" }) }),
     isPublic: z.boolean().optional(),
+    byVan: z.boolean().optional(),
     places: z.array(itineraryPlaceSchema).optional().default([]),
 };
 

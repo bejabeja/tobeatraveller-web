@@ -94,6 +94,9 @@ const ItineraryCard = ({ itinerary, onPress, onRequestLogin, compact = false }) 
             >
               {itinerary.location.name}
             </Text>
+            {itinerary.byVan && (
+              <Text style={[styles.vanBadge, compact && styles.vanBadgeCompact]} accessibilityLabel={t('tripByVan.label')}>🚐</Text>
+            )}
           </View>
         )}
         {!compact && (
@@ -167,6 +170,8 @@ const styles = StyleSheet.create({
   locationRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   locationText: { fontSize: 11, color: 'rgba(255,255,255,0.85)', flex: 1 },
   locationTextCompact: { fontSize: 10 },
+  vanBadge: { fontSize: 11 },
+  vanBadgeCompact: { fontSize: 10 },
   metaRow: { flexDirection: 'row', gap: 8, marginTop: 1, flexWrap: 'wrap' },
   metaItem: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   metaText: { fontSize: 10, color: 'rgba(255,255,255,0.72)' },

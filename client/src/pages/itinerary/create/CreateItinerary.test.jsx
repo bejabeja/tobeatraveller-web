@@ -9,7 +9,8 @@ jest.mock("react-redux", () => ({
   useDispatch: () => jest.fn(),
 }));
 jest.mock("../../../store/auth/authSelectors", () => ({ selectAuthUser: () => mockAuthUser }));
-jest.mock("../../../store/user/userInfoSelectors", () => ({ selectMe: () => ({ id: "user-1" }) }));
+let mockMe = { id: "user-1" };
+jest.mock("../../../store/user/userInfoSelectors", () => ({ selectMe: () => mockMe }));
 jest.mock("../../../store/user/userInfoActions", () => ({ setUserInfo: jest.fn(), setUserInfoItineraries: jest.fn() }));
 jest.mock("react-i18next", () => ({
   useTranslation: () => ({
@@ -39,16 +40,26 @@ jest.mock("../sectionsForm/GalleryUpload", () => ({ __esModule: true, default: (
 jest.mock("../sectionsForm/ImageUpload", () => ({ __esModule: true, default: () => null }));
 jest.mock("../sectionsForm/PlacesForm", () => ({ __esModule: true, default: () => null }));
 jest.mock("../sectionsForm/TravellersForm", () => ({ __esModule: true, default: () => null }));
-jest.mock("../sectionsForm/VisibilityForm", () => ({ __esModule: true, default: () => null }));
+jest.mock("../sectionsForm/VisibilityForm", () => {
+  const React = require("react");
+  const { useController } = require("react-hook-form");
+  return {
+    __esModule: true,
+    default: ({ control }) => {
+      const { field } = useController({ control, name: "byVan" });
+      return React.createElement("input", { type: "checkbox", "aria-label": "by van", checked: Boolean(field.value), onChange: (event) => field.onChange(event.target.checked) });
+    },
+  };
+});
 
 import CreateItinerary from "./CreateItinerary";
 
 const SAVED_AT = new Date("2026-09-20T10:00:00Z");
 const SAVE_PAUSE_MS = 700;
 
-const storeDraft = (userId, { title = "Ruta por Portugal", step = 0, isPublic } = {}) => localStorage.setItem(
+const storeDraft = (userId, { title = "Ruta por Portugal", step = 0, isPublic, byVan } = {}) => localStorage.setItem(
   itineraryDraftKey(userId),
-  serializeItineraryDraft({ values: { title, destination: { name: "Lisboa" }, places: [], isPublic }, days: [1, 2], step, pace: "relaxed" }, SAVED_AT),
+  serializeItineraryDraft({ values: { title, destination: { name: "Lisboa" }, places: [], isPublic, byVan }, days: [1, 2], step, pace: "relaxed" }, SAVED_AT),
 );
 const storedDraftOf = (userId) => JSON.parse(localStorage.getItem(itineraryDraftKey(userId)));
 
@@ -173,5 +184,54 @@ describe("CreateItinerary: days without places", () => {
     continueDraft({ isPublic: false });
 
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
+  });
+});
+
+describe("CreateItinerary: trips by van", () => {
+  const openLastStep = (draft = {}) => {
+    storeDraft("user-1", { step: 4, ...draft });
+    renderPage();
+    fireEvent.click(screen.getByRole("button", { name: "createItinerary.draftContinue" }));
+  };
+
+  beforeEach(() => {
+    jest.useFakeTimers().setSystemTime(new Date("2026-10-01T10:00:00Z"));
+    localStorage.clear();
+  });
+  afterEach(() => {
+    jest.useRealTimers();
+    mockMe = { id: "user-1" };
+  });
+
+  // Regression-in-waiting: almost nobody would tick it, and the van filter in Explore would be empty.
+  it("starts marked as by van for whoever said they live in a van", () => {
+    mockMe = { id: "user-1", travelStyle: "van" };
+    openLastStep();
+
+    expect(screen.getByRole("checkbox", { name: "by van" })).toBeChecked();
+  });
+
+  it("starts unmarked for whoever travels from time to time, or has not said", () => {
+    mockMe = { id: "user-1", travelStyle: "occasional" };
+    openLastStep();
+
+    expect(screen.getByRole("checkbox", { name: "by van" })).not.toBeChecked();
+  });
+
+  it("respects the answer of someone who lives in a van and says this trip was not by van", () => {
+    mockMe = { id: "user-1", travelStyle: "van" };
+    openLastStep();
+
+    fireEvent.click(screen.getByRole("checkbox", { name: "by van" }));
+
+    expect(screen.getByRole("checkbox", { name: "by van" })).not.toBeChecked();
+  });
+
+  // Regression: bringing a draft back applied the van default again over the answer saved in it.
+  it("brings back the answer saved in the draft, even for someone who lives in a van", () => {
+    mockMe = { id: "user-1", travelStyle: "van" };
+    openLastStep({ byVan: false });
+
+    expect(screen.getByRole("checkbox", { name: "by van" })).not.toBeChecked();
   });
 });

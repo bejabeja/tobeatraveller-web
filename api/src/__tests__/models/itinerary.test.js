@@ -140,4 +140,18 @@ describe('Itinerary model', () => {
       expect(dto).not.toHaveProperty('currency');
     });
   });
+
+  describe('by van', () => {
+    it('says it was a trip by van when the row says so, and by default it was not', () => {
+      expect(Itinerary.fromDb({ ...baseRow, by_van: true }).byVan).toBe(true);
+      expect(Itinerary.fromDb(baseRow).byVan).toBe(false);
+    });
+
+    it('shows it on the full trip and on the card of the list', () => {
+      const itinerary = Itinerary.fromDb({ ...baseRow, by_van: true });
+
+      expect(itinerary.toDTO().byVan).toBe(true);
+      expect(itinerary.toSimpleDTO().byVan).toBe(true);
+    });
+  });
 });

@@ -11,6 +11,18 @@ describe("Explore state in the address", () => {
     expect(restored).toEqual(state);
   });
 
+  it("keeps the trips by van in the address, so the search can be shared", () => {
+    const state = { filters: { byVan: "true" }, sortBy: "recent" };
+
+    expect(exploreSearchParamsFromState(state).toString()).toBe("van=true");
+    expect(exploreStateFromSearchParams(exploreSearchParamsFromState(state))).toEqual(state);
+  });
+
+  it("ignores a van filter that is not on", () => {
+    expect(parse("van=false").filters).toEqual({});
+    expect(parse("van=").filters).toEqual({});
+  });
+
   it("keeps the name /explore?location=... already had for the place", () => {
     expect(parse("location=Lisbon").filters).toEqual({ query: "Lisbon" });
   });

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { IoChevronDown, IoChevronUp, IoFilterOutline } from "react-icons/io5";
 import { useTranslation } from "react-i18next";
 import { itineraryCategories } from "../../utils/constants/constants";
+import { BY_VAN_ON } from "../../utils/exploreUrlState";
 import SearchInput from "../searchInput/SearchInput";
 import "./Filters.scss";
 
@@ -14,7 +15,7 @@ const categoryEmojis = {
 const TRAVELERS_OPTIONS = ["solo", "couple", "group", "large"];
 
 const initialState = {
-  query: "", category: "",
+  query: "", category: "", byVan: "",
   budgetMin: "", budgetMax: "", durationMin: "", durationMax: "", travelersCount: "",
 };
 
@@ -35,6 +36,8 @@ const Filters = ({ onChange, defaultValues = {} }) => {
   const setQuery = setField("query");
   const toggleCategory = (v) =>
     setFilters((p) => ({ ...p, category: p.category === v ? "" : v }));
+  const toggleByVan = () =>
+    setFilters((p) => ({ ...p, byVan: p.byVan ? "" : BY_VAN_ON }));
   const toggleTravelers = (v) =>
     setFilters((p) => ({ ...p, travelersCount: p.travelersCount === v ? "" : v }));
 
@@ -74,6 +77,14 @@ const Filters = ({ onChange, defaultValues = {} }) => {
       </div>
 
       <div className="filters__categories">
+        <button
+          type="button"
+          className={`filter-chip filter-chip--van${filters.byVan ? " filter-chip--active" : ""}`}
+          onClick={toggleByVan}
+          aria-pressed={Boolean(filters.byVan)}
+        >
+          🚐 {t("tripByVan.label")}
+        </button>
         <button
           type="button"
           className={`filter-chip${filters.category === "" ? " filter-chip--active" : ""}`}

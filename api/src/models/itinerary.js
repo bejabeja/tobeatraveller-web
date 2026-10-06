@@ -25,7 +25,7 @@ const PLACEHOLDER_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80
 const PLACEHOLDER_IMAGE = `data:image/svg+xml;base64,${Buffer.from(PLACEHOLDER_SVG).toString('base64')}`;
 
 export class Itinerary {
-    constructor({ id, userId, title, description, location, startDate, endDate, totalDays, createdAt, updatedAt, photoUrl, photoPublicId, budget, numberOfPeople, likesCount, commentsCount, category, currency, isPublic, source, clonedFromItineraryId }) {
+    constructor({ id, userId, title, description, location, startDate, endDate, totalDays, createdAt, updatedAt, photoUrl, photoPublicId, budget, numberOfPeople, likesCount, commentsCount, category, currency, isPublic, byVan, source, clonedFromItineraryId }) {
         this.id = id;
         this.userId = userId;
         this.title = title;
@@ -45,6 +45,7 @@ export class Itinerary {
         this.category = category?.toLowerCase();
         this.currency = currency;
         this.isPublic = isPublic ?? true;
+        this.byVan = byVan ?? false;
         this.source = source ?? 'itinerary';
         this.clonedFromItineraryId = clonedFromItineraryId ?? null;
         this.places = [];
@@ -78,6 +79,7 @@ export class Itinerary {
             category: row.category,
             currency: row.currency,
             isPublic: row.is_public,
+            byVan: row.by_van,
             source: row.source ?? 'itinerary',
             clonedFromItineraryId: row.cloned_from_itinerary_id,
         });
@@ -114,6 +116,7 @@ export class Itinerary {
             category: this.category,
             currency: this.currency,
             isPublic: this.isPublic,
+            byVan: this.byVan,
             source: this.source,
             tripDates: this.startDate ? formatDateRange(this.startDate, this.endDate) : null,
             startDate: toCalendarDay(this.startDate),
@@ -130,6 +133,7 @@ export class Itinerary {
             tripTotalDays: this.totalDays,
             photoUrl: this.photoUrl,
             category: this.category,
+            byVan: this.byVan,
             likesCount: this.likesCount,
             commentsCount: this.commentsCount,
             user: this.user

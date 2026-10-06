@@ -50,3 +50,14 @@ it('lets a screen reader like the trip from the card', async () => {
   expect(toggleLike).toHaveBeenCalledWith('t1');
 });
 
+it('marks a trip made by van, so it is told apart in the list', async () => {
+  await renderCard({ ...TRIP, byVan: true });
+
+  expect(screen.getByLabelText('tripByVan.label')).toBeTruthy();
+});
+
+it('marks nothing on a trip that was not', async () => {
+  await renderCard({ ...TRIP, byVan: false });
+
+  expect(screen.queryByLabelText('tripByVan.label')).toBeNull();
+});

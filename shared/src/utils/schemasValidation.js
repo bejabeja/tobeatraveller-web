@@ -165,6 +165,8 @@ export const createItinerarySchema = z
             .string(),
 
         isPublic: z.boolean().default(EXISTING_ITINERARY_VISIBILITY_FALLBACK),
+
+        byVan: z.boolean().default(false),
     })
     .refine((data) => data.endDate >= data.startDate, {
         message: "validation.endBeforeStart",

@@ -63,6 +63,18 @@ it("still shows the trip, without an author, when the author cannot be loaded", 
   expect(screen.queryByText(/@/)).not.toBeInTheDocument();
 });
 
+it("says on the trip when it was made by van", async () => {
+  getItineraryById.mockResolvedValue({ ...TRIP, byVan: true });
+
+  render(
+    <MemoryRouter initialEntries={["/itinerary/t1"]}>
+      <Routes><Route path="/itinerary/:id" element={<Itinerary />} /></Routes>
+    </MemoryRouter>
+  );
+
+  expect(await screen.findByText(/tripByVan.label/)).toBeInTheDocument();
+});
+
 it("says what cloning does for someone else's trip, not just 'clone'", async () => {
   getItineraryById.mockResolvedValue(TRIP);
 

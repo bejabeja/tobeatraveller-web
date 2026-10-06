@@ -17,6 +17,7 @@ export class ItinerariesController {
                 ...restFilters
             };
 
+            filters.byVan = filters.byVan === 'true';
             if (filters.budgetMin) filters.budgetMin = parseFloat(filters.budgetMin);
             if (filters.budgetMax) filters.budgetMax = parseFloat(filters.budgetMax);
             if (filters.durationMin) filters.durationMin = parseInt(filters.durationMin);

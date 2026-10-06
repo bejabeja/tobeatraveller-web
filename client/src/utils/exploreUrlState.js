@@ -11,12 +11,15 @@ const PARAM_BY_FILTER = {
   durationMin: "durationMin",
   durationMax: "durationMax",
   travelersCount: "travelers",
+  byVan: "van",
 };
 const SORT_PARAM = "sort";
 
 export const DEFAULT_EXPLORE_SORT = "recent";
 export const EXPLORE_SORTS = ["recent", "liked", "commented", "cheapest"];
 
+// The filter is on or absent: a value that is anything else is not one.
+export const BY_VAN_ON = "true";
 const TRAVELERS_COUNTS = ["solo", "couple", "group", "large"];
 const NUMBER_FILTERS = ["budgetMin", "budgetMax", "durationMin", "durationMax"];
 const NUMBER_PATTERN = /^\d+(\.\d+)?$/;
@@ -24,6 +27,7 @@ const NUMBER_PATTERN = /^\d+(\.\d+)?$/;
 const isValidFilter = (filter, value) => {
   if (filter === "category") return itineraryCategories.some((category) => category.value === value);
   if (filter === "travelersCount") return TRAVELERS_COUNTS.includes(value);
+  if (filter === "byVan") return value === BY_VAN_ON;
   if (NUMBER_FILTERS.includes(filter)) return NUMBER_PATTERN.test(value);
   return true;
 };

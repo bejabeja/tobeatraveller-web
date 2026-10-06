@@ -63,6 +63,11 @@ const Comments = ({ itineraryId, isAuthenticated }) => {
     setLoadMoreFailed(false);
     try {
       const page = await getCommentsPage(itineraryId, { limit: COMMENTS_PAGE_SIZE, offset: comments.length });
+      // An empty page is the end, whatever the total says: asking again would never end.
+      if (page.comments.length === 0) {
+        setTotalCount(comments.length);
+        return;
+      }
       setComments((prev) => {
         const known = new Set(prev.map((comment) => comment.id));
         return [...prev, ...page.comments.filter((comment) => !known.has(comment.id))];

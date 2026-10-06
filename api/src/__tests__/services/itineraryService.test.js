@@ -156,6 +156,17 @@ describe('ItineraryService', () => {
       expect(result).toEqual({ id: 'itin-1', title: 'My trip', places: [] });
     });
 
+    it('keeps the clone as a trip by van when the source was one', async () => {
+      const source = makeItinerary({ id: 'itin-1', userId: 'owner-1', isPublic: true, byVan: true });
+      itinerariesRepository.findById.mockResolvedValue(source);
+      placesRepository.getPlacesByItineraryId.mockResolvedValue([]);
+      itinerariesRepository.create.mockResolvedValue(makeItinerary({ id: 'itin-2', userId: 'cloner-1' }));
+
+      await service.cloneItinerary('itin-1', 'cloner-1');
+
+      expect(itinerariesRepository.create).toHaveBeenCalledWith(expect.objectContaining({ byVan: true }));
+    });
+
     // Its dates and country are someone else's trip, not a place the cloner
     // has been: the passport must be able to tell it apart.
     it('remembers which itinerary the clone was made from', async () => {

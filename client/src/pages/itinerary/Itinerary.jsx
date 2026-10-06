@@ -314,6 +314,9 @@ const Hero = ({
         {categoryKey && categoryKey !== OTHER_CATEGORY_KEY && (
           <span className="itinerary__badge">{t(categoryKey)}</span>
         )}
+        {itinerary.byVan && (
+          <span className="itinerary__badge">🚐 {t("tripByVan.label")}</span>
+        )}
         {isMyItinerary && itinerary.isPublic === false && (
           <span className="itinerary__badge itinerary__badge--private">🔒 {t("itinerary.privateOwnerBadge")}</span>
         )}

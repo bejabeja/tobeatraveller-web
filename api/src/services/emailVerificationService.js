@@ -7,6 +7,7 @@ import { AUDIT_EVENTS } from '../utils/auditEvents.js';
 import { logger } from '../utils/logger.js';
 
 const TOKEN_BYTES = 32;
+const UNIQUE_VIOLATION_CODE = '23505';
 const TOKEN_LIFETIME_MS = 48 * 60 * 60 * 1000;
 
 const hashToken = (token) => crypto.createHash('sha256').update(token).digest('hex');
@@ -58,7 +59,7 @@ export class EmailVerificationService {
         if (owner && owner.id !== user.id) throw new ConflictError('Email already in use', 'email');
 
         if (!owner) {
-            await this.userRepository.updateUnverifiedEmail(user.id, email);
+            await this._saveUnverifiedEmail(user.id, email);
             this.auditLogService?.log({
                 actorId: user.id, actorUsername: user.username, action: AUDIT_EVENTS.EMAIL_CHANGED,
                 ipAddress: ip, userAgent,
@@ -67,6 +68,19 @@ export class EmailVerificationService {
 
         const token = await this.issueToken(user.id);
         await this.emailService.sendVerifyEmail({ username: user.username, email, token, language: user.language });
+    }
+
+    async _saveUnverifiedEmail(userId, email) {
+        let saved;
+        try {
+            saved = await this.userRepository.updateUnverifiedEmail(userId, email);
+        } catch (error) {
+            // Another account took the address between the check and the update.
+            if (error.code === UNIQUE_VIOLATION_CODE) throw new ConflictError('Email already in use', 'email');
+            throw error;
+        }
+        // The guard is in the statement: it saves nothing once the address has been confirmed.
+        if (!saved) throw new ConflictError('Email already confirmed', 'email');
     }
 
     async verify(token, { ip, userAgent } = {}) {

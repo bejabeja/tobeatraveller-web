@@ -17,6 +17,7 @@ import {
   setUserInfo, setUserInfoItineraries,
   stepNameHintKey, ANALYTICS_EVENTS, TRIP_KINDS, experienceDates, isCalendarDay,
 } from '@tobeatraveller/shared';
+import { ByVanSection } from './ItineraryFormShared';
 import { trackEvent } from '../../utils/analytics';
 import { COLORS, shadow } from '../../utils/styles';
 import { getStepConfig } from '../../utils/stepConfig';
@@ -72,6 +73,7 @@ const EditExperienceScreen = ({ navigation, route }) => {
   const [intention, setIntention]       = useState('');
   const [generating, setGenerating]     = useState(false);
   const [isPublic, setIsPublic]         = useState(EXISTING_ITINERARY_VISIBILITY_FALLBACK);
+  const [byVan, setByVan]               = useState(false);
   const [title, setTitle]               = useState('');
   const [photoUri, setPhotoUri]         = useState(null);
   const [steps, setSteps]               = useState([]);
@@ -93,6 +95,7 @@ const EditExperienceScreen = ({ navigation, route }) => {
         setCategory((data.category || 'adventure').split(',')[0]);
         setTravelers(data.numberOfPeople ?? 1);
         setIsPublic(data.isPublic ?? EXISTING_ITINERARY_VISIBILITY_FALLBACK);
+        setByVan(data.byVan ?? false);
 
         const dest = {
           name: data.location?.name ?? '',
@@ -235,7 +238,7 @@ const EditExperienceScreen = ({ navigation, route }) => {
         description: ce('autoDescription', { count: days, destination: destination.name }),
         location: { name: destination.name, label: destination.label ?? destination.name, lat: destination.coordinates?.lat ?? 0, lon: destination.coordinates?.lon ?? 0 },
         ...experienceDates(startDateText || null, days),
-        budget: 0, currency: 'EUR', numberOfPeople: travelers, category, isPublic,
+        budget: 0, currency: 'EUR', numberOfPeople: travelers, category, isPublic, byVan,
         places: steps.filter(s => s.name.trim()).map((s, i) => ({
           id: s._id,
           description: s.personalNote?.trim() ? `${s.description}\n\n✍️ ${s.personalNote.trim()}` : s.description,
@@ -482,6 +485,8 @@ const EditExperienceScreen = ({ navigation, route }) => {
               </TouchableOpacity>
             </View>
           </View>
+
+          <ByVanSection value={byVan} onChange={setByVan} />
 
           <TouchableOpacity style={[ls.saveFullBtn, saving && ls.disabled]} onPress={handleSave} disabled={saving}>
             <Text style={ls.saveFullBtnText}>{saving ? ce('saving') : ce('saveExperience')}</Text>

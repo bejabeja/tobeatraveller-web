@@ -165,3 +165,48 @@ describe("CreateExperience draft", () => {
     expect(storedDraftOf("user-1", AI_PLAN)).not.toBeNull();
   });
 });
+
+describe("CreateExperience: trips by van", () => {
+  beforeEach(() => {
+    jest.useFakeTimers().setSystemTime(new Date("2026-10-01T10:00:00Z"));
+    localStorage.clear();
+    mockMe = { id: "user-1", isPremium: true };
+  });
+  afterEach(() => jest.useRealTimers());
+
+  const byVanBox = () => screen.getByRole("checkbox", { name: /tripByVan.question/ });
+
+  // Regression-in-waiting: almost nobody would tick it, and the van filter in Explore would be empty.
+  it("starts marked as by van for whoever said they live in a van", () => {
+    mockMe = { id: "user-1", isPremium: true, travelStyle: "van" };
+    renderPage();
+
+    expect(byVanBox()).toBeChecked();
+  });
+
+  it("starts unmarked for everyone else", () => {
+    renderPage();
+
+    expect(byVanBox()).not.toBeChecked();
+  });
+
+  it("respects the answer of someone who lives in a van and says this trip was not by van", () => {
+    mockMe = { id: "user-1", isPremium: true, travelStyle: "van" };
+    renderPage();
+
+    fireEvent.click(byVanBox());
+
+    expect(byVanBox()).not.toBeChecked();
+  });
+
+  it("keeps the answer in the draft, so it is there when the plan is brought back", () => {
+    storeDraft("user-1", AI_PLAN);
+    renderPage();
+    fireEvent.click(screen.getByRole("button", { name: "createItinerary.draftContinue" }));
+
+    fireEvent.click(byVanBox());
+    act(() => { jest.advanceTimersByTime(SAVE_PAUSE_MS); });
+
+    expect(storedDraftOf("user-1", AI_PLAN).values.byVan).toBe(true);
+  });
+});

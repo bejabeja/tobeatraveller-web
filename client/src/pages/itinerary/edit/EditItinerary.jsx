@@ -78,6 +78,7 @@ const EditItinerary = () => {
       numberOfTravellers: "",
       category: "",
       isPublic: EXISTING_ITINERARY_VISIBILITY_FALLBACK,
+      byVan: false,
     },
   });
 
@@ -123,6 +124,7 @@ const EditItinerary = () => {
         numberOfTravellers: response.numberOfPeople.toString(),
         category: response.category,
         isPublic: response.isPublic ?? EXISTING_ITINERARY_VISIBILITY_FALLBACK,
+        byVan: response.byVan ?? false,
         places: response.places.map((place) => ({
           id: place.id,
           description: place.description,
@@ -193,6 +195,7 @@ const EditItinerary = () => {
       })),
       category: data.category,
       isPublic: data.isPublic,
+      byVan: data.byVan,
       keepImageIds: galleryImages.filter((image) => !(image instanceof File)).map((image) => image.id),
     };
 

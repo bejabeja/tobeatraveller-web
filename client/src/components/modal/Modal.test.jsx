@@ -48,4 +48,47 @@ describe("Modal", () => {
     expect(screen.getByRole("button", { name: "common.confirm" })).toBeDisabled();
     expect(onConfirm).not.toHaveBeenCalled();
   });
+
+  // Regression: a Modal inside another form (the places form of a trip has one) sent that form too when confirmed.
+  it("does not send the form it is inside of when it is confirmed", () => {
+    const onOuterSubmit = jest.fn((event) => event.preventDefault());
+    const onConfirm = jest.fn();
+    render(
+      <form onSubmit={onOuterSubmit}>
+        <Modal isOpen title="Remove place" onClose={jest.fn()} onConfirm={onConfirm} />
+      </form>
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "common.confirm" }));
+
+    expect(onConfirm).toHaveBeenCalledTimes(1);
+    expect(onOuterSubmit).not.toHaveBeenCalled();
+  });
+
+  it("is not a form inside another form in the page", () => {
+    render(
+      <form>
+        <Modal isOpen title="Remove place" onClose={jest.fn()} onConfirm={jest.fn()} />
+      </form>
+    );
+
+    expect(document.body.querySelector("form form")).toBeNull();
+  });
+
+  // Regression: the dialog took the focus from a field that asked for it, so whoever opened "delete account" had to tab to the field.
+  it("leaves the focus on a field inside that asked for it", () => {
+    render(
+      <Modal isOpen title="Delete account" onClose={jest.fn()} onConfirm={jest.fn()}>
+        <input aria-label="username" autoFocus />
+      </Modal>
+    );
+
+    expect(screen.getByLabelText("username")).toHaveFocus();
+  });
+
+  it("takes the focus itself when nothing inside asks for it", () => {
+    render(<Modal isOpen title="Delete entry" onClose={jest.fn()} onConfirm={jest.fn()} />);
+
+    expect(screen.getByRole("dialog", { name: "Delete entry" }).querySelector("form")).toHaveFocus();
+  });
 });

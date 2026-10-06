@@ -18,6 +18,10 @@ jest.mock('../../components/UseCurrentLocationButton', () => ({ UseCurrentLocati
 jest.mock('../../screens/itinerary/ItineraryFormShared', () => {
   const none = () => null;
   return {
+    ByVanSection: ({ value, onChange }) => {
+      const { Switch } = require('react-native');
+      return <Switch testID="by-van" value={value} onValueChange={onChange} />;
+    },
     BudgetSection: none, Card: ({ children }) => children, CategorySection: none, DatesSection: none,
     Field: ({ children }) => children, GallerySection: none, PlacesSection: none, TravellersSection: none,
     VisibilitySection: none, useGalleryPicker: () => jest.fn(), s: {},
@@ -28,6 +32,7 @@ jest.mock('@tobeatraveller/shared', () => ({
   ...jest.requireActual('../../../../shared/src/utils/formatLocale.js'),
   ...jest.requireActual('../../../../shared/src/utils/analyticsEvents.js'),
   ...jest.requireActual('../../../../shared/src/utils/nextTrip.js'),
+  ...jest.requireActual('../../../../shared/src/utils/travelStyle.js'),
   NEW_ITINERARY_DEFAULT_VISIBILITY: false,
   createItinerary: jest.fn(),
   reverseGeocode: jest.fn(),
@@ -164,4 +169,40 @@ it('forgets the draft when the person goes back and confirms discarding what the
 
   expect(await storedDraftOf('user-1')).toBeNull();
   expect(navigation.goBack).toHaveBeenCalled();
+});
+
+describe('trips by van', () => {
+  // Regression-in-waiting: almost nobody would tick it, and the van filter in Explore would be empty.
+  it('starts marked as by van for whoever said they live in a van', async () => {
+    selectMe.mockReturnValue({ id: 'user-1', travelStyle: 'van' });
+    await renderScreen();
+
+    expect(screen.getByTestId('by-van').props.value).toBe(true);
+  });
+
+  it('starts unmarked for everyone else', async () => {
+    selectMe.mockReturnValue({ id: 'user-1', travelStyle: 'occasional' });
+    await renderScreen();
+
+    expect(screen.getByTestId('by-van').props.value).toBe(false);
+  });
+
+  it('respects the answer of someone who lives in a van and says this trip was not by van', async () => {
+    selectMe.mockReturnValue({ id: 'user-1', travelStyle: 'van' });
+    await renderScreen();
+
+    fireEvent(screen.getByTestId('by-van'), 'valueChange', false);
+
+    expect(screen.getByTestId('by-van').props.value).toBe(false);
+  });
+
+  it('keeps the answer in the draft', async () => {
+    selectMe.mockReturnValue({ id: 'user-1', travelStyle: 'van' });
+    await renderScreen();
+
+    fireEvent.changeText(screen.getByPlaceholderText(TITLE_PLACEHOLDER), 'Ruta por Galicia');
+    await act(async () => { jest.advanceTimersByTime(SAVE_PAUSE_MS); });
+
+    expect((await storedDraftOf('user-1')).values.byVan).toBe(true);
+  });
 });

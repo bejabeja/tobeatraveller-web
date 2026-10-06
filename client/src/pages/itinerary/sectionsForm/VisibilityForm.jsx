@@ -1,5 +1,6 @@
 import { Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import ByVanToggle from "../../../components/form/ByVanToggle";
 
 const VisibilityForm = ({ control }) => {
   const { t } = useTranslation();
@@ -33,6 +34,11 @@ const VisibilityForm = ({ control }) => {
             </button>
           </div>
         )}
+      />
+      <Controller
+        name="byVan"
+        control={control}
+        render={({ field }) => <ByVanToggle checked={field.value} onChange={field.onChange} />}
       />
     </div>
   );

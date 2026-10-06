@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import "./Modal.scss";
 
@@ -27,7 +28,8 @@ const Modal = ({
   useEffect(() => {
     if (!isOpen) return undefined;
     const previouslyFocused = document.activeElement;
-    dialogRef.current?.focus();
+    // A field that asked for the focus (autoFocus) keeps it.
+    if (!dialogRef.current?.contains(document.activeElement)) dialogRef.current?.focus();
     return () => previouslyFocused?.focus?.();
   }, [isOpen]);
 
@@ -43,14 +45,22 @@ const Modal = ({
   const resolvedConfirm = confirmText || t("common.confirm");
   const resolvedCancel  = cancelText  || t("common.cancel");
 
-  return (
+  // In the body, not where it is used: some pages open it from inside another form, and a form
+  // cannot be inside a form.
+  return createPortal(
     <div className="modal__backdrop" onClick={requestClose} role="dialog" aria-modal="true" aria-labelledby={titleId}>
       <form
         ref={dialogRef}
         tabIndex={-1}
         className={`modal modal--${type}`}
         onClick={(e) => e.stopPropagation()}
-        onSubmit={(e) => { e.preventDefault(); if (!loading && !confirmDisabled) onConfirm(); }}
+        onSubmit={(e) => {
+          e.preventDefault();
+          // React sends events up through a portal to the components around it: the form this
+          // is used inside of must not take the confirmation for its own submit.
+          e.stopPropagation();
+          if (!loading && !confirmDisabled) onConfirm();
+        }}
       >
         <div className="modal__header">
           <h2 id={titleId} className="modal__title">{title}</h2>
@@ -85,7 +95,8 @@ const Modal = ({
           </button>
         </div>
       </form>
-    </div>
+    </div>,
+    document.body
   );
 };
 

@@ -206,6 +206,11 @@
     "shoppingNothing": "Nothing to buy",
     "unavailable": "Not available right now"
   },
+  "tripByVan": {
+    "label": "By van",
+    "question": "Did you travel by van or camper?",
+    "hint": "This way anyone looking for van trips will find it in Explore."
+  },
   "explore": {
     "removeFilter": "Remove filter",
     "clearSearch": "Clear search",

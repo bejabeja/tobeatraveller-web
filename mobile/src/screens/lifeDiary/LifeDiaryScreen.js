@@ -87,6 +87,11 @@ const LifeDiaryScreen = ({ navigation }) => {
     setLoadingMore(true);
     try {
       const page = await getLifeDiaryEntries({ limit: LIFE_DIARY_PAGE_SIZE, offset: serverEntries.length });
+      // An empty page is the end, whatever the total says: asking again would never end.
+      if (page.entries.length === 0) {
+        setTotalCount(serverEntries.length);
+        return;
+      }
       const known = new Set(serverEntries.map((entry) => entry.id));
       const merged = [...serverEntries, ...page.entries.filter((entry) => !known.has(entry.id))];
       setServerEntries(merged);

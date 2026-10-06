@@ -10,11 +10,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
   createItinerary, hasItineraryDraftProgress, localCalendarDay, NEW_ITINERARY_DEFAULT_VISIBILITY, reverseGeocode, searchDestinations, selectAuthUser, selectMe,
-  setUserInfo, setUserInfoItineraries, ANALYTICS_EVENTS, TRIP_KINDS, tripCreatedProperties,
+  setUserInfo, setUserInfoItineraries, ANALYTICS_EVENTS, TRIP_KINDS, TRAVEL_STYLES, tripCreatedProperties,
 } from '@tobeatraveller/shared';
 import { trackEvent } from '../../utils/analytics';
 import {
-  BudgetSection, Card, CategorySection, DatesSection,
+  BudgetSection, ByVanSection, Card, CategorySection, DatesSection,
   Field, GallerySection, PlacesSection, TravellersSection, useGalleryPicker, VisibilitySection, s,
 } from './ItineraryFormShared';
 import { shadow } from '../../utils/styles';
@@ -54,6 +54,8 @@ const CreateItineraryScreen = ({ navigation }) => {
   const [currency, setCurrency] = useState('EUR');
   const [travellers, setTravellers] = useState(1);
   const [isPublic, setIsPublic] = useState(NEW_ITINERARY_DEFAULT_VISIBILITY);
+  const [byVan, setByVan] = useState(me?.travelStyle === TRAVEL_STYLES.VAN);
+  const [byVanAnswered, setByVanAnswered] = useState(false);
   const [places, setPlaces] = useState([]);
   const [days, setDays] = useState([1]);
   const [errors, setErrors] = useState({});
@@ -142,16 +144,23 @@ const CreateItineraryScreen = ({ navigation }) => {
     return Object.keys(e).length === 0;
   };
 
+  // The profile may arrive after the screen: whoever lives in a van starts with the trip marked as by van,
+  // unless they have already answered themselves.
+  const livesInAVan = me?.travelStyle === TRAVEL_STYLES.VAN;
+  useEffect(() => {
+    if (livesInAVan && !byVanAnswered && !pendingDraft) setByVan(true);
+  }, [livesInAVan, byVanAnswered, pendingDraft]);
+
   useEffect(() => {
     if (!draftLoaded || pendingDraft) return undefined;
-    const values = { title, destination, description, category, startDate, endDate, budget, currency, travellers, isPublic, places };
+    const values = { title, destination, description, category, startDate, endDate, budget, currency, travellers, isPublic, byVan, places };
     if (!hasItineraryDraftProgress(values)) {
       clearDraft();
       return undefined;
     }
     const timer = setTimeout(() => saveDraft({ values, days, step: 0 }), DRAFT_SAVE_DELAY_MS);
     return () => clearTimeout(timer);
-  }, [draftLoaded, pendingDraft, title, destination, description, category, startDate, endDate, budget, currency, travellers, isPublic, places, days, saveDraft, clearDraft]);
+  }, [draftLoaded, pendingDraft, title, destination, description, category, startDate, endDate, budget, currency, travellers, isPublic, byVan, places, days, saveDraft, clearDraft]);
 
   const restoreDraft = () => {
     const saved = pendingDraft.values;
@@ -166,6 +175,8 @@ const CreateItineraryScreen = ({ navigation }) => {
     setCurrency(saved.currency ?? 'EUR');
     setTravellers(saved.travellers ?? 1);
     setIsPublic(saved.isPublic ?? NEW_ITINERARY_DEFAULT_VISIBILITY);
+    setByVan(saved.byVan ?? false);
+    setByVanAnswered(true);
     setPlaces(saved.places ?? []);
     setDays(pendingDraft.days);
     resolvePending();
@@ -204,6 +215,7 @@ const CreateItineraryScreen = ({ navigation }) => {
         numberOfPeople: travellers,
         category,
         isPublic,
+        byVan,
         places: places.map((p, i) => ({
           description: p.description,
           category: p.category || 'other',
@@ -428,6 +440,8 @@ const CreateItineraryScreen = ({ navigation }) => {
           <TravellersSection value={travellers} onChange={setTravellers} />
 
           <VisibilitySection value={isPublic} onChange={setIsPublic} />
+
+          <ByVanSection value={byVan} onChange={(value) => { setByVan(value); setByVanAnswered(true); }} />
 
           {/* Submit hint */}
           {missingItems.length > 0 && (

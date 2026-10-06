@@ -94,6 +94,27 @@ describe("Explore: the map", () => {
   });
 });
 
+describe("Explore: trips by van", () => {
+  it("asks for them when the address says so, and shows the filter as on", () => {
+    renderExplore("/explore?van=true");
+
+    expect(mockDispatch).toHaveBeenCalledWith({
+      type: "init-explore",
+      params: expect.objectContaining({ byVan: "true" }),
+    });
+    expect(screen.getByText(/tripByVan.label/)).toBeInTheDocument();
+  });
+
+  it("drops only the van filter from its chip and from the address", () => {
+    renderExplore("/explore?van=true&category=roadtrip");
+
+    fireEvent.click(screen.getAllByRole("button", { name: "explore.removeFilter" })[0]);
+
+    expect(screen.getByTestId("address")).not.toHaveTextContent("van=true");
+    expect(screen.getByTestId("address")).toHaveTextContent("category=roadtrip");
+  });
+});
+
 describe("Explore: dropping one filter", () => {
   it("drops only the chip that was pressed and keeps the rest of the search", () => {
     renderExplore();

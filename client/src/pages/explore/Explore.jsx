@@ -132,7 +132,7 @@ const Explore = () => {
   const hasMore = page < totalPages;
   const hasActiveFilters =
     filters.query || filters.category || filters.budgetMin || filters.budgetMax ||
-    filters.durationMin || filters.durationMax || filters.travelersCount || filters.currency;
+    filters.durationMin || filters.durationMax || filters.travelersCount || filters.currency || filters.byVan;
 
   return (
     <div className="explore">
@@ -189,6 +189,9 @@ const Explore = () => {
             <div className="explore__active-filters">
               {filters.query && (
                 <FilterTag onRemove={() => removeFilters("query")} removeLabel={t("explore.removeFilter")}>🔎 {filters.query}</FilterTag>
+              )}
+              {filters.byVan && (
+                <FilterTag onRemove={() => removeFilters("byVan")} removeLabel={t("explore.removeFilter")}>🚐 {t("tripByVan.label")}</FilterTag>
               )}
               {filters.category && (
                 <FilterTag modifier="category" onRemove={() => removeFilters("category")} removeLabel={t("explore.removeFilter")}>

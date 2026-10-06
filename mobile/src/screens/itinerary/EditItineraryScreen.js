@@ -13,7 +13,7 @@ import {
   setUserInfo, setUserInfoItineraries, updateItinerary,
 } from '@tobeatraveller/shared';
 import {
-  BudgetSection, Card, CategorySection, DatesSection,
+  BudgetSection, ByVanSection, Card, CategorySection, DatesSection,
   Field, GallerySection, PlacesSection, TravellersSection, useGalleryPicker, VisibilitySection, s,
 } from './ItineraryFormShared';
 import { shadow } from '../../utils/styles';
@@ -42,6 +42,7 @@ const EditItineraryScreen = ({ route, navigation }) => {
   const [currency, setCurrency] = useState('EUR');
   const [travellers, setTravellers] = useState(1);
   const [isPublic, setIsPublic] = useState(EXISTING_ITINERARY_VISIBILITY_FALLBACK);
+  const [byVan, setByVan] = useState(false);
   const [places, setPlaces] = useState([]);
   const [days, setDays] = useState([1]);
   const [errors, setErrors] = useState({});
@@ -60,6 +61,7 @@ const EditItineraryScreen = ({ route, navigation }) => {
         setCurrency(data.currency ?? 'EUR');
         setTravellers(data.numberOfPeople ?? 1);
         setIsPublic(data.isPublic ?? EXISTING_ITINERARY_VISIBILITY_FALLBACK);
+        setByVan(data.byVan ?? false);
         setExistingImages(data.images ?? []);
         const loaded = (data.places ?? []).map((p, i) => ({
           _key: String(i), id: p.id,
@@ -123,7 +125,7 @@ const EditItineraryScreen = ({ route, navigation }) => {
         },
         startDate, endDate,
         budget: budget ? Number(budget) : null, currency,
-        numberOfPeople: travellers, category, isPublic,
+        numberOfPeople: travellers, category, isPublic, byVan,
         places: places.map((p, i) => ({
           id: p.id, description: p.description,
           category: p.category || 'other', orderIndex: i, dayNumber: p.dayNumber,
@@ -276,6 +278,8 @@ const EditItineraryScreen = ({ route, navigation }) => {
 
           <TravellersSection value={travellers} onChange={setTravellers} />
           <VisibilitySection value={isPublic} onChange={setIsPublic} />
+
+          <ByVanSection value={byVan} onChange={setByVan} />
 
         </ScrollView>
       </KeyboardAvoidingView>

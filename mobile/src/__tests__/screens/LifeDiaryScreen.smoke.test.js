@@ -107,3 +107,15 @@ it('shows what is on the device, and does not ask for more, when there is no con
   expect(screen.getByText('common.showingCachedData')).toBeTruthy();
   expect(getLifeDiaryEntries).toHaveBeenCalledTimes(1);
 });
+
+it('asks no more when a page comes back empty although the total promised more', async () => {
+  getLifeDiaryEntries
+    .mockResolvedValueOnce({ entries: [entry('l1', '2026-09-21')], totalCount: 5 })
+    .mockResolvedValueOnce({ entries: [], totalCount: 5 });
+  await renderScreen();
+
+  await scrollToEnd();
+  await scrollToEnd();
+
+  expect(getLifeDiaryEntries).toHaveBeenCalledTimes(2);
+});

@@ -20,6 +20,7 @@ const ItineraryCard = ({ itinerary, user: userProp }) => {
     commentsCount,
     likesCount: initialLikesCount,
     isPublic,
+    byVan,
     user: userFromItinerary,
   } = itinerary;
 
@@ -37,8 +38,11 @@ const ItineraryCard = ({ itinerary, user: userProp }) => {
           {isPublic === false && (
             <span className="itinerary-card__visibility">🔒 {t("myItineraries.private")}</span>
           )}
-          {categoryKey && (
-            <span className="itinerary-card__category">{t(categoryKey)}</span>
+          {(categoryKey || byVan) && (
+            <span className="itinerary-card__category">
+              {byVan && <span title={t("tripByVan.label")}>🚐 </span>}
+              {categoryKey && t(categoryKey)}
+            </span>
           )}
           {/* The title below says what the card is: the photo needs no text of its own. */}
           {photoUrl ? (

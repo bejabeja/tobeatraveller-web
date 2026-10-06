@@ -101,3 +101,41 @@ describe('Explore: the map', () => {
     jest.useRealTimers();
   });
 });
+
+describe('Explore: trips by van', () => {
+  const lastSearch = () => mockDispatch.mock.calls.at(-1)[0].params;
+  // The search goes out on a timer, even without text.
+  const press = (label) => {
+    fireEvent.press(screen.getByText(label));
+    act(() => { jest.advanceTimersByTime(500); });
+  };
+
+  beforeEach(() => jest.useFakeTimers());
+  afterEach(() => jest.useRealTimers());
+
+  it('does not narrow the search to them until asked', async () => {
+    await renderExplore();
+    act(() => { jest.advanceTimersByTime(500); });
+
+    expect(lastSearch().byVan).toBe('');
+  });
+
+  it('asks for the trips made by van, and for every trip again when pressed a second time', async () => {
+    await renderExplore();
+
+    press('tripByVan.label');
+    expect(lastSearch().byVan).toBe('true');
+
+    press('tripByVan.label');
+    expect(lastSearch().byVan).toBe('');
+  });
+
+  it('counts as a search, so the map steps aside and the filters can be cleared', async () => {
+    await renderExplore();
+
+    press('tripByVan.label');
+
+    expect(screen.queryByText('world-map')).toBeNull();
+    expect(screen.getByText('explore.clearFilters')).toBeTruthy();
+  });
+});

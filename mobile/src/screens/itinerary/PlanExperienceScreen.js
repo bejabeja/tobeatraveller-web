@@ -14,8 +14,9 @@ import {
   isPremiumRequiredError, ITINERARY_DRAFT_KINDS, itineraryCategories, NEW_ITINERARY_DEFAULT_VISIBILITY, placeCategories,
   reverseGeocode, searchDestinations, selectAuthUser, selectMe,
   setUserInfo, setUserInfoItineraries,
-  stepNameHintKey, ANALYTICS_EVENTS, TRIP_KINDS, experienceDates, isCalendarDay, tripCreatedProperties,
+  stepNameHintKey, ANALYTICS_EVENTS, TRIP_KINDS, TRAVEL_STYLES, experienceDates, isCalendarDay, tripCreatedProperties,
 } from '@tobeatraveller/shared';
+import { ByVanSection } from './ItineraryFormShared';
 import { trackEvent } from '../../utils/analytics';
 import { COLORS, shadow } from '../../utils/styles';
 import { getStepConfig } from '../../utils/stepConfig';
@@ -72,6 +73,8 @@ const PlanExperienceScreen = ({ navigation }) => {
   const [intention, setIntention]         = useState('');
   const [generating, setGenerating]       = useState(false);
   const [isPublic, setIsPublic]           = useState(NEW_ITINERARY_DEFAULT_VISIBILITY);
+  const [byVan, setByVan]                 = useState(me?.travelStyle === TRAVEL_STYLES.VAN);
+  const [byVanAnswered, setByVanAnswered] = useState(false);
 
   // Review state
   const [title, setTitle]         = useState('');
@@ -94,19 +97,26 @@ const PlanExperienceScreen = ({ navigation }) => {
   // The plan the AI wrote is what is worth keeping: it cost a generation to get.
   const hasProgress = steps.length > 0 || !!destination?.name;
 
+  // The profile may arrive after the screen: whoever lives in a van starts with the trip marked as by van,
+  // unless they have already answered themselves.
+  const livesInAVan = me?.travelStyle === TRAVEL_STYLES.VAN;
+  useEffect(() => {
+    if (livesInAVan && !byVanAnswered && !pendingDraft) setByVan(true);
+  }, [livesInAVan, byVanAnswered, pendingDraft]);
+
   useEffect(() => {
     if (!draftLoaded || pendingDraft) return undefined;
     if (!hasProgress) {
       clearDraft();
       return undefined;
     }
-    const values = { title, destination, destQuery, days, startDateText, category, travelers, intention, isPublic, places: steps };
+    const values = { title, destination, destQuery, days, startDateText, category, travelers, intention, isPublic, byVan, places: steps };
     const timer = setTimeout(
       () => saveDraft({ values, step: phase === 'review' ? REVIEW_STEP : 0, pace }),
       DRAFT_SAVE_DELAY_MS,
     );
     return () => clearTimeout(timer);
-  }, [draftLoaded, pendingDraft, hasProgress, title, destination, destQuery, days, startDateText, category, travelers, intention, isPublic, steps, phase, pace, saveDraft, clearDraft]);
+  }, [draftLoaded, pendingDraft, hasProgress, title, destination, destQuery, days, startDateText, category, travelers, intention, isPublic, byVan, steps, phase, pace, saveDraft, clearDraft]);
 
   const restoreDraft = () => {
     const saved = pendingDraft.values;
@@ -119,6 +129,8 @@ const PlanExperienceScreen = ({ navigation }) => {
     setTravelers(saved.travelers ?? 1);
     setIntention(saved.intention ?? '');
     setIsPublic(saved.isPublic ?? NEW_ITINERARY_DEFAULT_VISIBILITY);
+    setByVan(saved.byVan ?? false);
+    setByVanAnswered(true);
     setSteps(saved.places ?? []);
     if (pendingDraft.pace) setPace(pendingDraft.pace);
     setPhase(pendingDraft.step === REVIEW_STEP && saved.places?.length > 0 ? 'review' : 'input');
@@ -309,7 +321,7 @@ const PlanExperienceScreen = ({ navigation }) => {
         ...experienceDates(startDateText || null, days),
         budget: 0, currency: 'EUR',
         numberOfPeople: travelers,
-        category, isPublic, source: 'experience',
+        category, isPublic, byVan, source: 'experience',
         places: steps.filter(s => s.name.trim()).map((s, i) => ({
           description: s.personalNote?.trim()
             ? `${s.description}\n\n✍️ ${s.personalNote.trim()}`
@@ -574,6 +586,8 @@ const PlanExperienceScreen = ({ navigation }) => {
                 </TouchableOpacity>
               </View>
             </View>
+
+            <ByVanSection value={byVan} onChange={(value) => { setByVan(value); setByVanAnswered(true); }} />
 
             {/* Generate CTA */}
             <TouchableOpacity

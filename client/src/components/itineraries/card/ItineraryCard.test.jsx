@@ -1,4 +1,4 @@
-import { render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import ItineraryCard from "./ItineraryCard";
 
@@ -23,5 +23,19 @@ describe("ItineraryCard photo", () => {
     const { container } = renderCard({ ...TRIP, photoUrl: "https://example.com/a.jpg" });
 
     expect(container.querySelector(".itinerary-card__image")).toHaveAttribute("alt", "");
+  });
+});
+
+describe("ItineraryCard by van", () => {
+  it("marks a trip made by van, so it is told apart in the list", () => {
+    renderCard({ ...TRIP, byVan: true });
+
+    expect(screen.getByTitle("tripByVan.label")).toBeInTheDocument();
+  });
+
+  it("marks nothing on a trip that was not", () => {
+    renderCard({ ...TRIP, byVan: false });
+
+    expect(screen.queryByTitle("tripByVan.label")).not.toBeInTheDocument();
   });
 });

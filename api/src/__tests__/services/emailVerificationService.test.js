@@ -241,6 +241,21 @@ describe('EmailVerificationService', () => {
             expect(userRepository.updateUnverifiedEmail).not.toHaveBeenCalled();
         });
 
+        // Regression-in-waiting: confirming in another tab at the same moment left a link going to an address nobody had saved.
+        it('refuses, and sends nothing, when the address got confirmed while the change was under way', async () => {
+            userRepository.updateUnverifiedEmail.mockResolvedValue(false);
+
+            await expect(service.changeUnverifiedEmail('user-1', PASSWORD, 'ana@nuevo.com')).rejects.toBeInstanceOf(ConflictError);
+
+            expect(emailService.sendVerifyEmail).not.toHaveBeenCalled();
+        });
+
+        it('says the address is in use, instead of failing, when another account took it at the same moment', async () => {
+            userRepository.updateUnverifiedEmail.mockRejectedValue(Object.assign(new Error('duplicate key'), { code: '23505' }));
+
+            await expect(service.changeUnverifiedEmail('user-1', PASSWORD, 'ana@nuevo.com')).rejects.toMatchObject({ statusCode: 409, field: 'email' });
+        });
+
         it('leaves the address alone, and only sends the link again, when it is the same one', async () => {
             userRepository.findByEmail.mockResolvedValue({ id: 'user-1' });
 

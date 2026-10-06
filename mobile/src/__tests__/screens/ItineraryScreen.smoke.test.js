@@ -87,6 +87,18 @@ describe('comments by pages', () => {
     expect(screen.queryByText('common.loadMore')).toBeNull();
   });
 
+  // Regression-in-waiting: a total that promised more than the list had made a link to a comment ask for pages for ever.
+  it('stops offering more when a page comes back empty although the total promised more', async () => {
+    getCommentsPage.mockResolvedValueOnce({ comments: [comment('c1')], totalCount: 3 });
+    await renderTrip();
+
+    getCommentsPage.mockResolvedValueOnce({ comments: [], totalCount: 3 });
+    await act(async () => { fireEvent.press(screen.getByText('common.loadMore')); });
+
+    expect(screen.queryByText('common.loadMore')).toBeNull();
+    expect(screen.getByText('comment c1')).toBeTruthy();
+  });
+
   it('says it could not load more, and tries again on request', async () => {
     getCommentsPage.mockResolvedValueOnce({ comments: [comment('c1')], totalCount: 2 });
     await renderTrip();

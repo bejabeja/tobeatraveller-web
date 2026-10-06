@@ -29,6 +29,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { aiPaceOptions, DEFAULT_AI_PACE, experienceDates, isPremiumRequiredError, stepNameHintKey } from "@tobeatraveller/shared";
 import AiGenerationUpsell from "../../components/aiGenerationUpsell/AiGenerationUpsell";
 import Modal from "../../components/modal/Modal";
+import ByVanToggle from "../../components/form/ByVanToggle";
 import ImageUpload from "../itinerary/sectionsForm/ImageUpload";
 import { GENERATE_TIMEOUT_MESSAGE, generateSmartItinerary } from "../../services/itineraries";
 import { getItineraryById, updateItinerary } from "../../services/itinerary";
@@ -153,6 +154,7 @@ const EditExperience = () => {
   const [intention, setIntention]       = useState("");
   const [generating, setGenerating]     = useState(false);
   const [isPublic, setIsPublic]         = useState(EXISTING_ITINERARY_VISIBILITY_FALLBACK);
+  const [byVan, setByVan]               = useState(false);
   const [title, setTitle]               = useState("");
   const [photoUrl, setPhotoUrl]         = useState("");
   const [imageFile, setImageFile]       = useState(null);
@@ -179,6 +181,7 @@ const EditExperience = () => {
       setCategory((data.category || "adventure").split(",")[0]);
       setTravelers(data.numberOfPeople ?? 1);
       setIsPublic(data.isPublic ?? EXISTING_ITINERARY_VISIBILITY_FALLBACK);
+      setByVan(data.byVan ?? false);
 
       const dest = {
         name: data.location?.name ?? "",
@@ -333,7 +336,7 @@ const EditExperience = () => {
           lon: destination.coordinates?.lon ?? 0,
         },
         ...experienceDates(startDate, days),
-        budget: 0, currency: "EUR", numberOfPeople: travelers, category, isPublic,
+        budget: 0, currency: "EUR", numberOfPeople: travelers, category, isPublic, byVan,
         places: steps.filter(s => s.name.trim()).map((s, i) => ({
           id: s._id,
           description: s.personalNote?.trim()
@@ -535,6 +538,8 @@ const EditExperience = () => {
             </div>
           </div>
 
+          <ByVanToggle checked={byVan} onChange={setByVan} />
+
           <button
             className={`cexp__generate ${generating ? "cexp__generate--loading" : ""}`}
             onClick={handleGenerate}
@@ -636,6 +641,8 @@ const EditExperience = () => {
               </button>
             </div>
           </div>
+
+          <ByVanToggle checked={byVan} onChange={setByVan} />
 
           {isMyItinerary() && (
             <button type="button" className="cexp__save" onClick={handleSave} disabled={saving}>

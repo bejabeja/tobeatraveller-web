@@ -147,6 +147,16 @@ describe("Comments by pages", () => {
     await waitFor(() => expect(document.getElementById("comment-c3")).toHaveClass("comment--highlighted"));
   });
 
+  // Regression-in-waiting: a total that promised more than the list had made a link to a comment ask for pages for ever.
+  it("stops asking for more when a page comes back empty although the total promised more", async () => {
+    getCommentsPage.mockResolvedValueOnce({ comments: [], totalCount: 3 });
+    renderAtHash("#comment-nowhere");
+
+    await screen.findByText("first comment");
+    await waitFor(() => expect(screen.queryByRole("button", { name: "common.loadMore" })).not.toBeInTheDocument());
+    expect(getCommentsPage).toHaveBeenCalledTimes(2);
+  });
+
   it("says it could not load more, and lets them try again", async () => {
     jest.spyOn(console, "error").mockImplementation(() => {});
     getCommentsPage.mockRejectedValueOnce(new Error("offline")).mockResolvedValueOnce({ comments: LATER, totalCount: 3 });

@@ -142,6 +142,7 @@ export class ItineraryService {
             photoUrl: source.photoUrl,
             photoPublicId: null,
             isPublic: false,
+            byVan: source.byVan,
             source: source.source,
             clonedFromItineraryId: source.id,
         });

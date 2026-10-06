@@ -24,6 +24,7 @@ jest.mock('@tobeatraveller/shared', () => ({
   ...jest.requireActual('../../../../shared/src/utils/schemasValidation.js'),
   ...jest.requireActual('../../../../shared/src/utils/constants/constants.js'),
   ...jest.requireActual('../../../../shared/src/utils/constants/colors.js'),
+  ...jest.requireActual('../../../../shared/src/utils/travelStyle.js'),
   GENERATE_TIMEOUT_MESSAGE: 'AI generation timed out',
   generateSmartItinerary: jest.fn(),
   createItinerary: jest.fn(),
@@ -176,4 +177,43 @@ it('keeps the unfinished plan untouched while the person decides', async () => {
   await act(async () => { jest.advanceTimersByTime(SAVE_PAUSE_MS * 3); });
 
   expect((await storedDraftOf('user-1', AI_PLAN)).values.title).toBe('Ruta por Portugal');
+});
+
+describe('trips by van', () => {
+  const byVanSwitch = () => screen.getByLabelText('tripByVan.question');
+
+  // Regression-in-waiting: almost nobody would tick it, and the van filter in Explore would be empty.
+  it('starts marked as by van for whoever said they live in a van', async () => {
+    selectMe.mockReturnValue({ id: 'user-1', travelStyle: 'van' });
+    await renderScreen();
+
+    expect(byVanSwitch().props.value).toBe(true);
+  });
+
+  it('starts unmarked for everyone else', async () => {
+    selectMe.mockReturnValue({ id: 'user-1', travelStyle: 'occasional' });
+    await renderScreen();
+
+    expect(byVanSwitch().props.value).toBe(false);
+  });
+
+  it('respects the answer of someone who lives in a van and says this trip was not by van', async () => {
+    selectMe.mockReturnValue({ id: 'user-1', travelStyle: 'van' });
+    await renderScreen();
+
+    fireEvent(byVanSwitch(), 'valueChange', false);
+
+    expect(byVanSwitch().props.value).toBe(false);
+  });
+
+  it('keeps the answer in the draft', async () => {
+    await storeDraft('user-1', AI_PLAN, { step: 0, places: [] });
+    await renderScreen();
+    fireEvent.press(screen.getByText('createItinerary.draftContinue'));
+
+    fireEvent(byVanSwitch(), 'valueChange', true);
+    await act(async () => { jest.advanceTimersByTime(SAVE_PAUSE_MS); });
+
+    expect((await storedDraftOf('user-1', AI_PLAN)).values.byVan).toBe(true);
+  });
 });

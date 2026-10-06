@@ -46,6 +46,11 @@ const LifeDiary = () => {
     setLoadingMore(true);
     getLifeDiaryEntries({ limit: LIFE_DIARY_PAGE_SIZE, offset: entries.length })
       .then((page) => {
+        // An empty page is the end, whatever the total says: asking again would never end.
+        if (page.entries.length === 0) {
+          setTotalCount(entries.length);
+          return;
+        }
         setEntries((prev) => {
           const known = new Set(prev.map((entry) => entry.id));
           return [...prev, ...page.entries.filter((entry) => !known.has(entry.id))];

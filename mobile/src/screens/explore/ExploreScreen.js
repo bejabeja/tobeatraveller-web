@@ -53,6 +53,7 @@ const ExploreScreen = ({ navigation, route }) => {
 
   const [search, setSearch]           = useState(route?.params?.destination ?? '');
   const [category, setCategory]       = useState('');
+  const [byVan, setByVan]               = useState(false);
   const [sortBy, setSortBy]           = useState('recent');
   const [showFilters, setShowFilters] = useState(false);
   // Advanced filters
@@ -81,10 +82,10 @@ const ExploreScreen = ({ navigation, route }) => {
   }, [destinationParam, requestedAt]);
   const hasMore = currentPage < totalPages;
   const advancedCount = [budgetMin, budgetMax, durationMin, durationMax, travelersCount].filter(Boolean).length;
-  const activeFilters = !!(search || category || advancedCount);
+  const activeFilters = !!(search || category || byVan || advancedCount);
 
   const buildFilters = () => ({
-    destination: search, category, sortBy,
+    destination: search, category, sortBy, byVan: byVan ? 'true' : '',
     budgetMin, budgetMax, durationMin, durationMax, travelersCount,
   });
 
@@ -95,7 +96,7 @@ const ExploreScreen = ({ navigation, route }) => {
       dispatch(initExploreItineraries({ page: 1, ...buildFilters() }));
     }, search ? 400 : 0);
     return () => clearTimeout(searchTimer.current);
-  }, [search, category, sortBy, budgetMin, budgetMax, durationMin, durationMax, travelersCount]);
+  }, [search, category, byVan, sortBy, budgetMin, budgetMax, durationMin, durationMax, travelersCount]);
 
   const handleLoadMore = () => {
     if (hasMore && !loadingMore) {
@@ -108,7 +109,7 @@ const ExploreScreen = ({ navigation, route }) => {
   };
 
   const clearFilters = () => {
-    setSearch(''); setCategory(''); setSortBy('recent');
+    setSearch(''); setCategory(''); setByVan(false); setSortBy('recent');
     setBudgetMin(''); setBudgetMax('');
     setDurationMin(''); setDurationMax('');
     setTravelersCount('');
@@ -182,6 +183,15 @@ const ExploreScreen = ({ navigation, route }) => {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.categoriesRow}
         >
+          <TouchableOpacity
+            style={[styles.catChip, byVan && styles.catChipSelected]}
+            onPress={() => setByVan(prev => !prev)}
+            accessibilityRole="button"
+            accessibilityState={{ selected: byVan }}
+          >
+            <Text style={styles.catEmoji}>🚐</Text>
+            <Text style={[styles.catLabel, byVan && styles.catLabelSelected]}>{t('tripByVan.label')}</Text>
+          </TouchableOpacity>
           {itineraryCategories.filter(c => c.value !== 'other').map(cat => (
             <TouchableOpacity
               key={cat.value}

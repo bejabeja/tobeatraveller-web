@@ -210,6 +210,11 @@
     "shoppingNothing": "Niente da comprare",
     "unavailable": "Non disponibile ora"
   },
+  "tripByVan": {
+    "label": "In van",
+    "question": "Hai viaggiato in van o camper?",
+    "hint": "Così chi cerca viaggi in van lo troverà in Esplora."
+  },
   "explore": {
     "removeFilter": "Rimuovi filtro",
     "clearSearch": "Cancella la ricerca",

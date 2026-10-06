@@ -26,7 +26,7 @@ import {
 } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { aiPaceOptions, DEFAULT_AI_PACE, experienceDates, isPremiumRequiredError, ITINERARY_DRAFT_KINDS, stepNameHintKey } from "@tobeatraveller/shared";
+import { aiPaceOptions, DEFAULT_AI_PACE, experienceDates, isPremiumRequiredError, ITINERARY_DRAFT_KINDS, stepNameHintKey, TRAVEL_STYLES } from "@tobeatraveller/shared";
 import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState";
 import ItineraryDraftPrompt from "../../components/itineraryDraft/ItineraryDraftPrompt";
 import Modal from "../../components/modal/Modal";
@@ -40,6 +40,7 @@ import { selectMe } from "../../store/user/userInfoSelectors";
 import { itineraryCategories } from "../../utils/constants/constants";
 import { useGeocodeSearch } from "../../hooks/useGeocodeSearch";
 import { useCurrentLocation } from "../../hooks/useCurrentLocation";
+import ByVanToggle from "../../components/form/ByVanToggle";
 import UseCurrentLocationButton from "../../components/form/UseCurrentLocationButton";
 import { NEW_ITINERARY_DEFAULT_VISIBILITY } from "../../utils/schemasValidation";
 import { trackEvent } from "../../utils/analytics";
@@ -156,6 +157,8 @@ const CreateExperience = () => {
   const [intention, setIntention]       = useState("");
   const [generating, setGenerating]     = useState(false);
   const [isPublic, setIsPublic]         = useState(NEW_ITINERARY_DEFAULT_VISIBILITY);
+  const [byVan, setByVan]               = useState(userMe?.travelStyle === TRAVEL_STYLES.VAN);
+  const [byVanAnswered, setByVanAnswered] = useState(false);
   const [title, setTitle]               = useState("");
   const [steps, setSteps]               = useState([]);
   const [editingKey, setEditingKey]     = useState(null);
@@ -177,13 +180,13 @@ const CreateExperience = () => {
       clearDraft();
       return undefined;
     }
-    const values = { title, destination, destQuery, days, startDate, category, travelers, intention, isPublic, places: steps };
+    const values = { title, destination, destQuery, days, startDate, category, travelers, intention, isPublic, byVan, places: steps };
     const timer = setTimeout(
       () => saveDraft({ values, step: phase === "review" ? REVIEW_STEP : 0, pace }),
       DRAFT_SAVE_DELAY_MS,
     );
     return () => clearTimeout(timer);
-  }, [pendingDraft, hasProgress, title, destination, destQuery, days, startDate, category, travelers, intention, isPublic, steps, phase, pace, saveDraft, clearDraft]);
+  }, [pendingDraft, hasProgress, title, destination, destQuery, days, startDate, category, travelers, intention, isPublic, byVan, steps, phase, pace, saveDraft, clearDraft]);
 
   const restoreDraft = () => {
     const saved = pendingDraft.values;
@@ -196,6 +199,8 @@ const CreateExperience = () => {
     setTravelers(saved.travelers ?? 1);
     setIntention(saved.intention ?? "");
     setIsPublic(saved.isPublic ?? NEW_ITINERARY_DEFAULT_VISIBILITY);
+    setByVan(saved.byVan ?? false);
+    setByVanAnswered(true);
     setSteps(saved.places ?? []);
     if (pendingDraft.pace) setPace(pendingDraft.pace);
     setPhase(pendingDraft.step === REVIEW_STEP && saved.places?.length > 0 ? "review" : "input");
@@ -206,6 +211,18 @@ const CreateExperience = () => {
     clearDraft();
     resolvePending();
   };
+
+  const answerByVan = (value) => {
+    setByVan(value);
+    setByVanAnswered(true);
+  };
+
+  // The profile may arrive after the form: whoever lives in a van starts with the trip marked as by van,
+  // unless they have already answered themselves.
+  const livesInAVan = userMe?.travelStyle === TRAVEL_STYLES.VAN;
+  useEffect(() => {
+    if (livesInAVan && !byVanAnswered && !pendingDraft) setByVan(true);
+  }, [livesInAVan, byVanAnswered, pendingDraft]);
 
   const searchTimer = useRef(null);
   const locTimer    = useRef(null);
@@ -369,7 +386,7 @@ const CreateExperience = () => {
         description: ce("autoDescription", { count: days, destination: destination.name }),
         location: { name: destination.name, label: destination.label ?? destination.name, lat: destination.coordinates?.lat ?? 0, lon: destination.coordinates?.lon ?? 0 },
         ...experienceDates(startDate, days),
-        budget: 0, currency: "EUR", numberOfPeople: travelers, category, isPublic, source: "experience",
+        budget: 0, currency: "EUR", numberOfPeople: travelers, category, isPublic, byVan, source: "experience",
         places: steps.filter(s => s.name.trim()).map((s, i) => ({
           description: s.personalNote?.trim()
             ? `${s.description}\n\n✍️ ${s.personalNote.trim()}`
@@ -602,6 +619,8 @@ const CreateExperience = () => {
             </div>
           </div>
 
+          <ByVanToggle checked={byVan} onChange={answerByVan} />
+
           {/* Generate */}
           <button
             className={`cexp__generate ${generating ? "cexp__generate--loading" : ""}`}
@@ -705,6 +724,8 @@ const CreateExperience = () => {
               </button>
             </div>
           </div>
+
+          <ByVanToggle checked={byVan} onChange={answerByVan} />
 
           <button type="button" className="cexp__save" onClick={handleSave} disabled={saving}>
             {saving ? ce("saving") : ce("saveExperience")}

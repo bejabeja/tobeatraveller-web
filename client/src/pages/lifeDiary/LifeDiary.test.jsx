@@ -68,4 +68,16 @@ describe("the diary by pages", () => {
     expect(toast.error).toHaveBeenCalledWith("lifeDiary.loadMoreError");
     expect(screen.getByRole("button", { name: "common.loadMore" })).toBeInTheDocument();
   });
+
+  it("stops offering more when a page comes back empty although the total promised more", async () => {
+    getLifeDiaryEntries
+      .mockResolvedValueOnce({ entries: [entry("l1", "2026-09-21")], totalCount: 5 })
+      .mockResolvedValueOnce({ entries: [], totalCount: 5 });
+    render(<MemoryRouter><LifeDiary /></MemoryRouter>);
+
+    await userEvent.click(await screen.findByRole("button", { name: "common.loadMore" }));
+
+    await screen.findByText('"moment l1"');
+    expect(screen.queryByRole("button", { name: "common.loadMore" })).not.toBeInTheDocument();
+  });
 });

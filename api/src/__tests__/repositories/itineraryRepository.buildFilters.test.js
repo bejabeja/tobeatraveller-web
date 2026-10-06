@@ -160,4 +160,16 @@ describe('ItineraryRepository.buildFilters()', () => {
         expect(conditions.some(c => c.includes('$5'))).toBe(true);
         expect(nextIndex).toBe(6);
     });
+
+    it('keeps only the trips made by van when asked for them', () => {
+        const { conditions, values } = repo.buildFilters({ byVan: true });
+
+        expect(conditions).toContain('itineraries.by_van = true');
+        expect(values).toHaveLength(0);
+    });
+
+    it('does not narrow anything down when the trips by van are not asked for', () => {
+        expect(repo.buildFilters({}).conditions.some(c => c.includes('by_van'))).toBe(false);
+        expect(repo.buildFilters({ byVan: false }).conditions.some(c => c.includes('by_van'))).toBe(false);
+    });
 });

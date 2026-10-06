@@ -2,7 +2,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useRef, useState } from 'react';
 import {
   Alert, ActivityIndicator, FlatList, Image, Modal, ScrollView, StyleSheet,
-  Text, TextInput, TouchableOpacity, View,
+  Switch, Text, TextInput, TouchableOpacity, View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -414,6 +414,24 @@ export const VisibilitySection = ({ value, onChange }) => {
   );
 };
 
+// ─── ByVanSection ────────────────────────────────────────────────────────────
+export const ByVanSection = ({ value, onChange }) => {
+  const { t } = useTranslation();
+  return (
+    <Card title={`🚐 ${t('tripByVan.question')}`}>
+      <View style={s.byVanRow}>
+        <Text style={s.byVanHint}>{t('tripByVan.hint')}</Text>
+        <Switch
+          value={Boolean(value)}
+          onValueChange={onChange}
+          accessibilityLabel={t('tripByVan.question')}
+          trackColor={{ true: COLORS.primary }}
+        />
+      </View>
+    </Card>
+  );
+};
+
 // ─── PlacesSection ───────────────────────────────────────────────────────────
 export const PlacesSection = ({
   places, days, setPlaces, setDays, isPublic, complete,
@@ -782,6 +800,8 @@ export const s = StyleSheet.create({
   stepperValue: { fontSize: 20, fontWeight: '700', color: '#111827', minWidth: 28, textAlign: 'center' },
   stepperLabel: { fontSize: 14, color: '#6b7280', flex: 1 },
 
+  byVanRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  byVanHint: { flex: 1, fontSize: 13, color: '#6b7280' },
   visibilityRow: { flexDirection: 'row', gap: 10 },
   visibilityOption: {
     flex: 1, borderRadius: 12, padding: 14, borderWidth: 1.5,

@@ -109,6 +109,11 @@ const ItineraryScreen = ({ route, navigation }) => {
     setLoadMoreCommentsFailed(false);
     getCommentsPage(itinerary.id, { limit: COMMENTS_PAGE_SIZE, offset: comments.length })
       .then((page) => {
+        // An empty page is the end, whatever the total says: asking again would never end.
+        if (page.comments.length === 0) {
+          setCommentsTotal(comments.length);
+          return;
+        }
         setComments((prev) => {
           const known = new Set(prev.map((comment) => comment.id));
           return [...prev, ...page.comments.filter((comment) => !known.has(comment.id))];
@@ -351,6 +356,11 @@ const ItineraryScreen = ({ route, navigation }) => {
         </View>
 
         <View style={styles.heroContent}>
+          {itinerary.byVan && (
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>🚐 {t('tripByVan.label')}</Text>
+            </View>
+          )}
           {categoryKey && categoryKey !== OTHER_CATEGORY_KEY && (
             <View style={styles.badge}>
               <Text style={styles.badgeText}>{t(categoryKey)}</Text>
