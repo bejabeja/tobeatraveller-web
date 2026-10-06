@@ -733,6 +733,7 @@
     "noSavedTripsDesc": "Tocca l'icona del segnalibro su un itinerario per salvarlo qui."
   },
   "vanLog": {
+    "purpose": "Annota quello che spendi in viaggio, come carburante, acqua o spesa, e guarda dove va il denaro per mese, viaggio e paese.",
     "statsLoadError": "Impossibile caricare le statistiche. Riprova.",
     "title": "Spese",
     "addEntry": "Aggiungi voce",
@@ -838,6 +839,7 @@
     }
   },
   "supplies": {
+    "purpose": "La lista della spesa è ciò che devi ancora comprare e l'inventario è ciò che hai già a bordo. Segna un articolo come comprato e passa all'inventario.",
     "title": "Scorte",
     "addItem": "Aggiungi articolo",
     "editItem": "Modifica articolo",
@@ -917,6 +919,7 @@
     }
   },
   "packingChecklist": {
+    "purpose": "Liste di cosa portare in viaggio, da zero o da un modello. Spunta le cose mentre prepari la valigia.",
     "title": "Liste di viaggio",
     "progress": "{{checked}}/{{total}} pronti",
     "saveError": "Impossibile salvare. Riprova.",
@@ -1010,6 +1013,7 @@
     "newListForTrip": "Nuova lista per questo viaggio"
   },
   "lifeDiary": {
+    "purpose": "Un diario dei tuoi giorni on the road: dove eri, il tuo momento migliore e se ci torneresti.",
     "loadMoreError": "Impossibile caricare altre voci. Riprova.",
     "title": "Diario di vita",
     "addEntry": "Aggiungi pagina",

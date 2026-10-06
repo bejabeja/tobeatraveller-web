@@ -332,6 +332,7 @@ const Supplies = () => {
     <section className="supplies section__container">
       <ToolHeader
         title={s("title")}
+        description={s("purpose")}
         usage={currentListUsage}
         usageLabel={currentListUsage && s("freeTierUsage", { used: currentListUsage.used, limit: currentListUsage.limit })}
         actionLabel={s("addItem")}

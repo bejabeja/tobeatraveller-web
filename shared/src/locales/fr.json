@@ -733,6 +733,7 @@
     "noSavedTripsDesc": "Touche l'icône de signet sur n'importe quel itinéraire pour l'enregistrer ici."
   },
   "vanLog": {
+    "purpose": "Note ce que tu dépenses sur la route, comme le carburant, l'eau ou les courses, et vois où va l'argent par mois, voyage et pays.",
     "statsLoadError": "Impossible de charger les statistiques. Réessaie.",
     "title": "Dépenses",
     "addEntry": "Ajouter une entrée",
@@ -838,6 +839,7 @@
     }
   },
   "supplies": {
+    "purpose": "La liste de courses, c'est ce qu'il te reste à acheter, et l'inventaire, ce que tu as déjà à bord. Marque un article comme acheté et il passe dans l'inventaire.",
     "title": "Provisions",
     "addItem": "Ajouter un article",
     "editItem": "Modifier l'article",
@@ -917,6 +919,7 @@
     }
   },
   "packingChecklist": {
+    "purpose": "Des listes de ce qu'il faut emporter en voyage, à partir de zéro ou d'un modèle. Coche au fur et à mesure que tu prépares ta valise.",
     "title": "Listes de voyage",
     "progress": "{{checked}}/{{total}} prêts",
     "saveError": "Impossible d'enregistrer. Réessaie.",
@@ -1010,6 +1013,7 @@
     "newListForTrip": "Nouvelle liste pour ce voyage"
   },
   "lifeDiary": {
+    "purpose": "Un journal de tes jours sur la route : où tu étais, ton meilleur moment et si tu y retournerais.",
     "loadMoreError": "Impossible de charger d'autres entrées. Réessayez.",
     "title": "Journal de vie",
     "addEntry": "Ajouter une entrée",

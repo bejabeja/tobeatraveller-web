@@ -9,8 +9,8 @@ const PLANS_LINK = "/subscription#subscription-plans";
 // title, the free plan's usage and its main action. Once the free limit is
 // reached, the action leads to Premium instead of opening a form that could
 // only say "limit reached". `children` sits next to the title (the packing
-// progress).
-const ToolHeader = ({ title, usage, usageLabel, actionLabel, ActionIcon, onAction, children }) => {
+// progress). `description` says in one line what the tool is for.
+const ToolHeader = ({ title, description, usage, usageLabel, actionLabel, ActionIcon, onAction, children }) => {
   const { t } = useTranslation();
   const atFreeLimit = !!usage?.limited && usage.used >= usage.limit;
 
@@ -34,6 +34,7 @@ const ToolHeader = ({ title, usage, usageLabel, actionLabel, ActionIcon, onActio
           {ActionIcon && <ActionIcon aria-hidden="true" />} {actionLabel}
         </button>
       )}
+      {description && <p className="tool-header__description">{description}</p>}
     </div>
   );
 };

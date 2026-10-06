@@ -23,6 +23,15 @@
     color: var(--text-color);
   }
 
+  &__description {
+    order: 3;
+    flex: 0 0 100%;
+    width: auto;
+    max-width: 42rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary-color);
+  }
+
   &__usage {
     width: fit-content;
     padding: 0.3rem 0.65rem;

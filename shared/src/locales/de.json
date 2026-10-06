@@ -722,6 +722,7 @@
     "noSavedTripsDesc": "Tippe bei einem Reiseplan auf das Lesezeichen, um ihn hier zu speichern."
   },
   "vanLog": {
+    "purpose": "Halte fest, was du unterwegs ausgibst, etwa für Sprit, Wasser oder Einkäufe, und sieh nach Monat, Reise und Land, wohin das Geld geht.",
     "statsLoadError": "Die Statistiken konnten nicht geladen werden. Bitte versuche es erneut.",
     "title": "Ausgaben",
     "addEntry": "Eintrag hinzufügen",
@@ -826,6 +827,7 @@
     }
   },
   "supplies": {
+    "purpose": "Die Einkaufsliste ist, was du noch kaufen musst, und das Inventar ist, was du schon an Bord hast. Markierst du einen Artikel als gekauft, wandert er ins Inventar.",
     "title": "Vorräte",
     "addItem": "Artikel hinzufügen",
     "editItem": "Artikel bearbeiten",
@@ -902,6 +904,7 @@
     }
   },
   "packingChecklist": {
+    "purpose": "Checklisten für das, was auf eine Reise mitsoll, von Grund auf oder aus einer Vorlage. Hake beim Packen alles ab.",
     "title": "Reiselisten",
     "progress": "{{checked}}/{{total}} erledigt",
     "saveError": "Speichern fehlgeschlagen. Bitte versuch es erneut.",
@@ -995,6 +998,7 @@
     "newListForTrip": "Neue Liste für diese Reise"
   },
   "lifeDiary": {
+    "purpose": "Ein Tagebuch deiner Tage unterwegs: wo du warst, dein schönster Moment und ob du wieder hinfahren würdest.",
     "loadMoreError": "Weitere Einträge konnten nicht geladen werden. Bitte versuche es erneut.",
     "title": "Tagebuch",
     "addEntry": "Eintrag hinzufügen",

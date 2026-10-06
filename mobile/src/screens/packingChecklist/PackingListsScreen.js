@@ -143,6 +143,7 @@ const PackingListsScreen = ({ navigation, route }) => {
               {p('freeTierUsage', { used: usage.used, limit: usage.limit })}
             </Text>
           )}
+          <Text style={styles.purpose}>{p('purpose')}</Text>
         </View>
         <TouchableOpacity style={styles.newBtn} onPress={openForm} accessibilityRole="button">
           <Ionicons name={atFreeLimit ? 'sparkles' : 'add'} size={16} color="#fff" />
@@ -228,6 +229,7 @@ const styles = StyleSheet.create({
   headerTitles: { flex: 1 },
   title: { fontSize: 20, fontWeight: '800', color: '#111827' },
   usage: { fontSize: 12, color: '#6b7280', marginTop: 2 },
+  purpose: { fontSize: 12, color: '#6b7280', marginTop: 4 },
   usageFull: { color: COLORS.primary, fontWeight: '600' },
   newBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 4,

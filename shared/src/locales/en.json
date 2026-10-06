@@ -722,6 +722,7 @@
     "noSavedTripsDesc": "Tap the bookmark icon on any itinerary to save it here."
   },
   "vanLog": {
+    "purpose": "Log what you spend on the road, like fuel, water or groceries, and see where the money goes by month, trip and country.",
     "statsLoadError": "Could not load the statistics. Please try again.",
     "title": "Expenses",
     "addEntry": "Add entry",
@@ -826,6 +827,7 @@
     }
   },
   "supplies": {
+    "purpose": "The shopping list is what you still have to buy and the inventory is what you already have on board. Mark an item as bought and it moves to the inventory.",
     "title": "Supplies",
     "addItem": "Add item",
     "editItem": "Edit item",
@@ -902,6 +904,7 @@
     }
   },
   "packingChecklist": {
+    "purpose": "Checklists of what to bring on a trip, from scratch or from a template. Tick things off as you pack.",
     "title": "Trip lists",
     "progress": "{{checked}}/{{total}} done",
     "saveError": "Could not save. Please try again.",
@@ -995,6 +998,7 @@
     "newListForTrip": "New list for this trip"
   },
   "lifeDiary": {
+    "purpose": "A diary of your days on the road: where you were, your best moment and whether you would go back.",
     "loadMoreError": "Could not load more entries. Please try again.",
     "title": "Life diary",
     "addEntry": "Add entry",

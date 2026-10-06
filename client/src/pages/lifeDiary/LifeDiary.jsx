@@ -111,6 +111,7 @@ const LifeDiary = () => {
     <section className="life-diary section__container">
       <ToolHeader
         title={d("title")}
+        description={d("purpose")}
         usage={freeTierUsage}
         usageLabel={freeTierUsage && d("freeTierUsage", { used: freeTierUsage.used, limit: freeTierUsage.limit })}
         actionLabel={d("addEntry")}

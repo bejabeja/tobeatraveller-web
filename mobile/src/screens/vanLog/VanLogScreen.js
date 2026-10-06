@@ -481,6 +481,7 @@ const VanLogScreen = ({ navigation }) => {
             </TouchableOpacity>
           )}
         </View>
+        <Text style={styles.purpose}>{t('vanLog.purpose')}</Text>
       </View>
 
       <PendingChangesNotice />
@@ -642,6 +643,7 @@ const styles = StyleSheet.create({
   backBtn: { marginRight: 10, padding: 4 },
   backText: { fontSize: 20, color: '#374151' },
   title: { flex: 1, fontSize: 20, fontWeight: '800', color: '#111827' },
+  purpose: { fontSize: 13, color: '#6b7280', paddingHorizontal: 16, paddingTop: 6 },
   newBtn: {
     backgroundColor: '#E8743B', borderRadius: 999,
     paddingVertical: 7, paddingHorizontal: 14,

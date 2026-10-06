@@ -301,6 +301,7 @@ const VanLog = () => {
     <section className="van-log section__container">
       <ToolHeader
         title={t("vanLog.title")}
+        description={t("vanLog.purpose")}
         usage={freeTierUsage}
         usageLabel={freeTierUsage && t("vanLog.freeTierUsage", { used: freeTierUsage.used, limit: freeTierUsage.limit })}
         actionLabel={t("vanLog.quickAdd")}

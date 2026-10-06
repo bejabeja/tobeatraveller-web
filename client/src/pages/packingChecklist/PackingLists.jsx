@@ -102,6 +102,7 @@ const PackingLists = () => {
     <section className="packing-lists section__container">
       <ToolHeader
         title={p("title")}
+        description={p("purpose")}
         usage={usage}
         usageLabel={usage && p("freeTierUsage", { used: usage.used, limit: usage.limit })}
         actionLabel={p("newList")}
