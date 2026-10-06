@@ -1668,9 +1668,19 @@
       "Effettuare scraping, crawling o estrazione di dati dal Servizio con mezzi automatizzati.",
       "Spacciarti per un'altra persona o organizzazione."
     ],
-    "s6Title": "6. Privacy",
+    "moderationTitle": "6. Segnalazione di contenuti e moderazione",
+    "moderationBody": [
+      "Chiunque abbia effettuato l'accesso può segnalare un commento, un viaggio o un profilo con il pulsante Segnala. Se segnali un contenuto illegale, dicci perché è illegale: è ciò che ci serve per valutarlo.",
+      "Il nostro team esamina ogni segnalazione e decide se il contenuto viola questi termini (sezione 5) o la legge. Possiamo rimuovere o nascondere contenuti e sospendere o chiudere gli account che violano le regole in modo grave o ripetuto. Un viaggio che nascondiamo non può essere reso di nuovo pubblico dal suo autore.",
+      "Quando rimuoviamo o nascondiamo un contenuto, diciamo al suo autore cosa abbiamo fatto, perché, quale regola viola e come contestare. A chi ha segnalato diciamo cosa abbiamo deciso. Non diciamo mai alla persona segnalata chi l'ha segnalata.",
+      "Queste decisioni le prende una persona del nostro team; non usiamo sistemi automatici per decidere di rimuovere contenuti.",
+      "Se non sei d'accordo con una decisione, rispondi all'email che ti inviamo o scrivici dalla <a href=\"/contact\">pagina di contatto</a> e la riesamineremo. Puoi anche rivolgerti all'autorità competente o ai tribunali.",
+      "Puoi bloccare una persona dal suo profilo. Non vi seguite più, non vedete più i commenti e i viaggi dell'altro in Esplora e Community, e quella persona non può seguirti né commentare i tuoi viaggi. Non viene avvisata.",
+      "La <a href=\"/contact\">pagina di contatto</a> è anche il nostro punto di contatto per le autorità e per gli utenti, in inglese, spagnolo, tedesco, francese o italiano."
+    ],
+    "s6Title": "7. Privacy",
     "s6Body": "L'uso del Servizio è disciplinato anche dalla nostra <a href=\"/privacy-policy\">Informativa sulla privacy</a>, che è parte integrante dei presenti termini per rinvio.",
-    "subscriptionsTitle": "7. Abbonamenti Premium, pagamenti e diritto di recesso",
+    "subscriptionsTitle": "8. Abbonamenti Premium, pagamenti e diritto di recesso",
     "subscriptionsIntro": "Premium è un piano a pagamento facoltativo. Queste regole si applicano ad esso, oltre al resto dei presenti termini.",
     "subscriptionsItems": [
       "<strong>Pagamenti.</strong> I pagamenti sono elaborati da Stripe. Non vediamo né conserviamo mai i dati della tua carta. Il prezzo che paghi è quello mostrato al pagamento prima che tu confermi, e include le imposte applicabili dove vivi (come l'IVA) quando siamo tenuti a riscuoterle.",
@@ -1684,33 +1694,33 @@
       "<strong>Avvio immediato.</strong> Premium inizia non appena ti abboni; per questo, al momento del pagamento ti chiediamo di richiedere espressamente che inizi subito e di riconoscere che perdi il diritto di recesso una volta che il servizio sia stato pienamente eseguito. Se recedi entro i 14 giorni dopo aver chiesto l'avvio, pagherai un importo proporzionale a quanto hai utilizzato fino a quando ci hai comunicato il recesso. Conserviamo la data e la versione dei presenti termini che hai accettato.",
       "<strong>Altri rimborsi.</strong> I tuoi diritti di legge non sono pregiudicati dai presenti termini. Oltre a questi, possiamo rimborsare un pagamento a nostra discrezione. Se un pagamento viene rimborsato per intero o contestato presso la tua banca, l'abbonamento termina e Premium viene rimosso."
     ],
-    "s7Title": "8. Visibilità degli itinerari",
+    "s7Title": "9. Visibilità degli itinerari",
     "s7Body": "Gli itinerari contrassegnati come <strong>Pubblici</strong> sono visibili a chiunque, compresi gli utenti che non hanno effettuato l'accesso. Gli itinerari contrassegnati come <strong>Privati</strong> sono visibili solo a te. Puoi cambiare la visibilità di qualsiasi itinerario in qualunque momento dalla schermata di modifica.",
-    "s8Title": "9. Proprietà intellettuale",
+    "s8Title": "10. Proprietà intellettuale",
     "s8Body": [
       "Il nome, il logo e il design di ToBeATraveller sono di nostra proprietà intellettuale. Non puoi usarli senza previa autorizzazione scritta.",
       "Il codice e il design della piattaforma non sono concessi in licenza per il riutilizzo senza il nostro esplicito consenso scritto."
     ],
-    "s9Title": "10. Esclusione di garanzie",
+    "s9Title": "11. Esclusione di garanzie",
     "s9Body": [
       "Il Servizio è fornito \"così com'è\" e \"come disponibile\", senza garanzie di alcun tipo. Non garantiamo che il Servizio sia ininterrotto o privo di errori, né che i contenuti degli itinerari condivisi dagli utenti siano accurati, completi o sicuri da seguire.",
       "Viaggiare comporta rischi intrinseci. Verifica sempre le informazioni in modo indipendente prima di pianificare un viaggio basato sui contenuti trovati su questa piattaforma."
     ],
-    "s10Title": "11. Limitazione di responsabilità",
+    "s10Title": "12. Limitazione di responsabilità",
     "s10Body": [
       "Nella misura massima consentita dalla legge, ToBeATraveller non sarà responsabile di alcun danno indiretto, incidentale, speciale o consequenziale derivante dall'uso del Servizio o di qualsiasi contenuto presente su di esso.",
       "La nostra responsabilità complessiva per qualsiasi pretesa relativa al Servizio non supererà 100 €."
     ],
-    "s11Title": "12. Cessazione",
+    "s11Title": "13. Cessazione",
     "s11Body": [
       "Puoi eliminare il tuo account in qualsiasi momento dalle impostazioni del profilo. L'eliminazione è definitiva e rimuove tutti i tuoi contenuti dalla piattaforma.",
       "Possiamo sospendere o chiudere il tuo account se violi i presenti termini, con o senza preavviso a seconda della gravità della violazione."
     ],
-    "s12Title": "13. Modifiche ai presenti termini",
+    "s12Title": "14. Modifiche ai presenti termini",
     "s12Body": "Possiamo aggiornare periodicamente i presenti termini. Informeremo gli utenti delle modifiche significative aggiornando la data di \"Ultimo aggiornamento\". L'uso continuato del Servizio dopo le modifiche costituisce accettazione dei termini aggiornati.",
-    "s13Title": "14. Legge applicabile",
+    "s13Title": "15. Legge applicabile",
     "s13Body": "I presenti termini sono disciplinati dal diritto materiale svizzero, con esclusione delle sue norme di conflitto. Qualsiasi controversia è di competenza dei tribunali ordinari del luogo della nostra sede in Svizzera, fatte salve le norme imperative di tutela dei consumatori del paese in cui vivi e il tuo diritto, in quanto consumatore, di agire dinanzi ai tribunali del tuo luogo di residenza.",
-    "s14Title": "15. Contatti",
+    "s14Title": "16. Contatti",
     "s14Body": "ToBeATraveller è gestito dalla Svizzera. Per qualsiasi domanda sui presenti termini, contattaci all'indirizzo <a href=\"mailto:tobeatravellercompany@gmail.com\">tobeatravellercompany@gmail.com</a>.",
     "footerPrivacyLink": "Informativa sulla privacy",
     "footerBackHome": "Torna alla home"
@@ -1735,7 +1745,8 @@
       "<strong>Dati di registrazione:</strong> quando crei un account, registriamo il paese da cui proviene la richiesta (ricavato dal tuo indirizzo IP, che per il resto non conserviamo) e il tipo di browser/dispositivo. Questo ci aiuta a capire da dove cresce la nostra community e non richiede il consenso ai cookie, perché viene letto direttamente dalla richiesta di registrazione e non memorizzato sul tuo dispositivo.",
       "<strong>Dati analitici (solo se accetti i cookie):</strong> se accetti i cookie analitici nel banner dei cookie, raccogliamo tramite PostHog la posizione approssimativa (ricavata dal tuo indirizzo IP), il tipo di dispositivo e di browser e le pagine che visiti. Questi dati non vengono mai raccolti se rifiuti, e la registrazione delle sessioni è disattivata.",
       "<strong>Dati di abbonamento e pagamento:</strong> se ti abboni a Premium, il pagamento è gestito da Stripe e non vediamo né conserviamo mai i dati della tua carta. Conserviamo il tuo identificativo cliente Stripe, lo stato e le date del tuo abbonamento, e la data e la versione dei termini che hai accettato abbonandoti.",
-      "<strong>Messaggi di contatto:</strong> se ci scrivi dalla pagina o dall'app di contatto, riceviamo il tuo nome, il tuo indirizzo e-mail, il motivo, l'oggetto e il messaggio. Se lo fai con la sessione attiva, riceviamo anche il tuo nome utente, l'identificativo del tuo account, il tuo piano e lo stato del tuo abbonamento, per poter gestire la tua richiesta (ad esempio, un problema con un pagamento). Li usiamo solo per risponderti."
+      "<strong>Messaggi di contatto:</strong> se ci scrivi dalla pagina o dall'app di contatto, riceviamo il tuo nome, il tuo indirizzo e-mail, il motivo, l'oggetto e il messaggio. Se lo fai con la sessione attiva, riceviamo anche il tuo nome utente, l'identificativo del tuo account, il tuo piano e lo stato del tuo abbonamento, per poter gestire la tua richiesta (ad esempio, un problema con un pagamento). Li usiamo solo per risponderti.",
+      "<strong>Segnalazioni e blocchi:</strong> se segnali un commento, un viaggio o un profilo, conserviamo la tua segnalazione (cosa hai segnalato, il motivo, la spiegazione che aggiungi e il tuo account) perché il nostro team la esamini; se blocchi qualcuno, conserviamo chi hai bloccato."
     ],
     "s3Title": "3. Come usiamo i tuoi dati",
     "s3Intro": "Usiamo i tuoi dati personali esclusivamente per:",
@@ -1744,7 +1755,8 @@
       "Mostrare il tuo profilo pubblico e i tuoi itinerari agli altri utenti.",
       "Offrire le funzioni social (follow, commenti, mi piace, viaggi salvati).",
       "Inviarti, se necessario, comunicazioni relative all'account (ad es. la conferma dell'eliminazione dell'account).",
-      "Gestire il tuo abbonamento Premium e i tuoi pagamenti, inclusi i rimborsi e il diritto di recesso."
+      "Gestire il tuo abbonamento Premium e i tuoi pagamenti, inclusi i rimborsi e il diritto di recesso.",
+      "Esaminare le segnalazioni di contenuti che riceviamo, mantenere sicura la community e informare le persone coinvolte di ciò che è stato deciso (incluso a chi è stato rimosso un contenuto e perché, mai chi ha segnalato)."
     ],
     "s3Body2": "Non usiamo i tuoi dati per pubblicità o profilazione, né li vendiamo a terzi. Non inviamo email di marketing.",
     "s3Body3": "La base giuridica del trattamento è l'esecuzione di un contratto (art. 6, par. 1, lett. b) GDPR), ossia la fornitura del servizio che hai sottoscritto. Per il paese e il dispositivo di registrazione, la base giuridica è il nostro legittimo interesse (art. 6, par. 1, lett. f) GDPR) a capire da dove proviene la nostra community. Trattiamo i dati personali in conformità alla legge federale svizzera sulla protezione dei dati (LPD) e, per le persone nell'Unione europea e nello Spazio economico europeo, al GDPR.",
@@ -1760,7 +1772,7 @@
       "<strong>Brevo</strong>: usato per inviare le e-mail del servizio (benvenuto, reimpostazione della password, conferme e messaggi di contatto). Riceve l'indirizzo e-mail del destinatario e il contenuto del messaggio. Consulta la sua <a href=\"https://www.brevo.com/legal/privacypolicy/\">Informativa sulla privacy</a>."
     ],
     "s5Title": "5. Conservazione dei dati",
-    "s5Body": "Conserviamo i tuoi dati personali finché il tuo account è attivo. Se elimini il tuo account, tutti i tuoi dati personali (profilo, itinerari, commenti e connessioni social) vengono eliminati definitivamente dai nostri sistemi. Eventuali copie in cache o di backup possono persistere fino a 30 giorni prima di essere cancellate. Se elimini il tuo account, eliminiamo anche il tuo cliente su Stripe, il che annulla qualsiasi abbonamento; Stripe conserva i registri di pagamento che la legge lo obbliga a conservare. I messaggi di contatto vengono conservati nella nostra casella di posta finché la tua richiesta è in corso e fino a 12 mesi dopo l'ultimo scambio, poi vengono eliminati. Se vuoi che li cancelliamo prima, scrivici.",
+    "s5Body": "Conserviamo i tuoi dati personali finché il tuo account è attivo. Se elimini il tuo account, tutti i tuoi dati personali (profilo, itinerari, commenti e connessioni social) vengono eliminati definitivamente dai nostri sistemi. Eventuali copie in cache o di backup possono persistere fino a 30 giorni prima di essere cancellate. Se elimini il tuo account, eliminiamo anche il tuo cliente su Stripe, il che annulla qualsiasi abbonamento; Stripe conserva i registri di pagamento che la legge lo obbliga a conservare. I messaggi di contatto vengono conservati nella nostra casella di posta finché la tua richiesta è in corso e fino a 12 mesi dopo l'ultimo scambio, poi vengono eliminati. Se vuoi che li cancelliamo prima, scrivici. Le segnalazioni risolte vengono eliminate dopo 12 mesi, e quelle ancora aperte vengono conservate finché il nostro team non le decide. Il tuo elenco di persone bloccate viene conservato finché non le sblocchi o elimini il tuo account.",
     "s6Title": "6. I tuoi diritti (GDPR)",
     "s6Intro": "Se ti trovi nello Spazio economico europeo, hai i seguenti diritti:",
     "s6Items": [

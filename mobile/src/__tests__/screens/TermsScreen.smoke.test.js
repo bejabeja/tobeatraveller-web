@@ -20,6 +20,13 @@ const renderScreen = () => render(<TermsScreen navigation={{ navigate, goBack: j
 describe('TermsScreen', () => {
   beforeEach(() => navigate.mockClear());
 
+  it('explains how content is reported and moderated', () => {
+    renderScreen();
+
+    expect(screen.getByText('legalTerms.moderationTitle')).toBeTruthy();
+    expect(screen.getByText('legalTerms.moderationBody#1')).toBeTruthy();
+  });
+
   it('explains the Premium subscription', () => {
     renderScreen();
 

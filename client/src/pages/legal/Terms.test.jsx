@@ -26,6 +26,15 @@ describe("Terms", () => {
     expect(screen.getByText("legalTerms.subscriptionsWithdrawal#2")).toBeInTheDocument();
   });
 
+  // The law asks the terms to describe how content is moderated, and the app to say how to reach us.
+  it("explains how content is reported and moderated, right after the prohibited conduct", () => {
+    renderTerms();
+
+    expect(screen.getByText("legalTerms.moderationBody#1")).toBeInTheDocument();
+    const titles = screen.getAllByRole("heading", { level: 2 }).map((heading) => heading.textContent);
+    expect(titles.indexOf("legalTerms.moderationTitle")).toBe(titles.indexOf("legalTerms.s5Title") + 1);
+  });
+
   it("puts it after the privacy section and before the rest", () => {
     renderTerms();
 

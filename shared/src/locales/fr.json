@@ -1668,9 +1668,19 @@
       "Extraire des données du Service par des moyens automatisés (scraping, crawling ou autre).",
       "Usurper l'identité d'une autre personne ou d'une organisation."
     ],
-    "s6Title": "6. Confidentialité",
+    "moderationTitle": "6. Signalement de contenu et modération",
+    "moderationBody": [
+      "Toute personne connectée peut signaler un commentaire, un voyage ou un profil avec le bouton Signaler. Si tu signales un contenu illégal, dis-nous pourquoi il est illégal : c'est ce dont nous avons besoin pour l'évaluer.",
+      "Notre équipe examine chaque signalement et décide si le contenu enfreint ces conditions (section 5) ou la loi. Nous pouvons retirer ou masquer du contenu, et suspendre ou fermer les comptes qui enfreignent gravement ou à répétition les règles. Un voyage que nous masquons ne peut pas être rendu public de nouveau par son auteur.",
+      "Quand nous retirons ou masquons un contenu, nous indiquons à son auteur ce que nous avons fait, pourquoi, quelle règle il enfreint et comment contester. Nous disons à la personne qui a signalé ce que nous avons décidé. Nous ne disons jamais à la personne signalée qui l'a signalée.",
+      "Ces décisions sont prises par une personne de notre équipe ; nous n'utilisons pas de systèmes automatiques pour décider de retirer un contenu.",
+      "Si tu n'es pas d'accord avec une décision, réponds à l'e-mail que nous t'envoyons ou écris-nous depuis la <a href=\"/contact\">page de contact</a> et nous la réexaminerons. Tu peux aussi t'adresser à l'autorité compétente ou aux tribunaux.",
+      "Tu peux bloquer une personne depuis son profil. Vous ne vous suivez plus, vous ne voyez plus les commentaires ni les voyages de l'autre dans Explorer et Communauté, et cette personne ne peut ni te suivre ni commenter tes voyages. Elle n'est pas prévenue.",
+      "La <a href=\"/contact\">page de contact</a> est aussi notre point de contact pour les autorités et pour les utilisateurs, en anglais, espagnol, allemand, français ou italien."
+    ],
+    "s6Title": "7. Confidentialité",
     "s6Body": "Ton utilisation du Service est également régie par notre <a href=\"/privacy-policy\">Politique de confidentialité</a>, qui est intégrée par référence aux présentes conditions.",
-    "subscriptionsTitle": "7. Abonnements Premium, paiements et droit de rétractation",
+    "subscriptionsTitle": "8. Abonnements Premium, paiements et droit de rétractation",
     "subscriptionsIntro": "Premium est un plan payant facultatif. Ces règles s'y appliquent, en plus du reste de ces conditions.",
     "subscriptionsItems": [
       "<strong>Paiements.</strong> Les paiements sont traités par Stripe. Nous ne voyons ni ne conservons jamais les données de ta carte. Le prix que tu paies est celui affiché au paiement avant que tu confirmes, et il inclut les taxes applicables là où tu vis (comme la TVA) lorsque nous sommes tenus de les percevoir.",
@@ -1684,33 +1694,33 @@
       "<strong>Démarrage immédiat.</strong> Premium commence dès ton abonnement ; au moment du paiement, nous te demandons donc de demander expressément qu'il commence immédiatement et de reconnaître que tu perds le droit de rétractation une fois le service pleinement exécuté. Si tu te rétractes dans les 14 jours après avoir demandé le démarrage, tu paieras un montant proportionnel à ce que tu as utilisé jusqu'à ce que tu nous informes de ta rétractation. Nous conservons la date et la version de ces conditions que tu as acceptées.",
       "<strong>Autres remboursements.</strong> Tes droits légaux ne sont pas affectés par ces conditions. Au-delà, nous pouvons rembourser un paiement à notre discrétion. Si un paiement est intégralement remboursé ou contesté auprès de ta banque, l'abonnement prend fin et Premium est retiré."
     ],
-    "s7Title": "8. Visibilité des itinéraires",
+    "s7Title": "9. Visibilité des itinéraires",
     "s7Body": "Les itinéraires marqués comme <strong>Publics</strong> sont visibles par tout le monde, y compris les utilisateurs non connectés. Les itinéraires marqués comme <strong>Privés</strong> ne sont visibles que par toi. Tu peux modifier la visibilité de n'importe quel itinéraire à tout moment depuis l'écran de modification.",
-    "s8Title": "9. Propriété intellectuelle",
+    "s8Title": "10. Propriété intellectuelle",
     "s8Body": [
       "Le nom, le logo et le design de ToBeATraveller sont notre propriété intellectuelle. Tu ne peux pas les utiliser sans autorisation écrite préalable.",
       "Le code et le design de la plateforme ne sont pas concédés sous licence pour une réutilisation sans notre consentement écrit explicite."
     ],
-    "s9Title": "10. Exclusion de garanties",
+    "s9Title": "11. Exclusion de garanties",
     "s9Body": [
       "Le Service est fourni « en l'état » et « selon disponibilité », sans garantie d'aucune sorte. Nous ne garantissons pas que le Service sera ininterrompu ou exempt d'erreurs, ni que le contenu des itinéraires partagés par les utilisateurs est exact, complet ou sûr à suivre.",
       "Voyager comporte des risques par nature. Vérifie toujours les informations de manière indépendante avant de planifier un voyage à partir du contenu trouvé sur cette plateforme."
     ],
-    "s10Title": "11. Limitation de responsabilité",
+    "s10Title": "12. Limitation de responsabilité",
     "s10Body": [
       "Dans toute la mesure permise par la loi, ToBeATraveller ne saurait être tenu responsable des dommages indirects, accessoires, spéciaux ou consécutifs résultant de ton utilisation du Service ou de tout contenu qui s'y trouve.",
       "Notre responsabilité totale pour toute réclamation liée au Service ne pourra excéder 100 €."
     ],
-    "s11Title": "12. Résiliation",
+    "s11Title": "13. Résiliation",
     "s11Body": [
       "Tu peux supprimer ton compte à tout moment depuis les paramètres de ton profil. La suppression est définitive et retire tout ton contenu de la plateforme.",
       "Nous pouvons suspendre ou résilier ton compte si tu enfreins ces conditions, avec ou sans préavis selon la gravité de l'infraction."
     ],
-    "s12Title": "13. Modification des conditions",
+    "s12Title": "14. Modification des conditions",
     "s12Body": "Nous pouvons mettre à jour ces conditions de temps à autre. Nous informerons les utilisateurs des changements importants en mettant à jour la date de « Dernière mise à jour ». Continuer à utiliser le Service après ces changements vaut acceptation des conditions mises à jour.",
-    "s13Title": "14. Droit applicable",
+    "s13Title": "15. Droit applicable",
     "s13Body": "Les présentes conditions sont régies par le droit matériel suisse, à l'exclusion de ses règles de conflit de lois. Tout litige relève de la compétence des tribunaux ordinaires du lieu de notre établissement en Suisse, sans préjudice des règles impératives de protection des consommateurs du pays où tu vis ni de ton droit, en tant que consommateur, de saisir les tribunaux de ton lieu de résidence.",
-    "s14Title": "15. Contact",
+    "s14Title": "16. Contact",
     "s14Body": "ToBeATraveller est exploité depuis la Suisse. Pour toute question sur ces conditions, contacte-nous à <a href=\"mailto:tobeatravellercompany@gmail.com\">tobeatravellercompany@gmail.com</a>.",
     "footerPrivacyLink": "Politique de confidentialité",
     "footerBackHome": "Retour à l'accueil"
@@ -1735,7 +1745,8 @@
       "<strong>Données d'inscription :</strong> lorsque tu crées un compte, nous enregistrons le pays d'où provient ta demande (déduit de ton adresse IP, que nous ne stockons pas par ailleurs) et ton type de navigateur/appareil. Cela nous aide à comprendre d'où vient la croissance de notre communauté et ne nécessite pas de consentement aux cookies, car ces informations sont lues directement dans la demande d'inscription et ne sont pas stockées sur ton appareil.",
       "<strong>Données d'analyse (uniquement si tu acceptes les cookies) :</strong> si tu acceptes les cookies d'analyse dans le bandeau cookies, nous collectons ta localisation approximative (déduite de ton adresse IP), ton type d'appareil et de navigateur, et les pages que tu visites, via PostHog. Ces données ne sont jamais collectées si tu refuses, et l'enregistrement des sessions est désactivé.",
       "<strong>Données d'abonnement et de paiement :</strong> si tu t'abonnes à Premium, le paiement est géré par Stripe et nous ne voyons ni ne conservons jamais les données de ta carte. Nous conservons ton identifiant client Stripe, l'état et les dates de ton abonnement, ainsi que la date et la version des conditions que tu as acceptées en t'abonnant.",
-      "<strong>Messages de contact :</strong> si vous nous écrivez depuis la page ou l'app de contact, nous recevons votre nom, votre adresse e-mail, le motif, l'objet et le message. Si vous le faites en étant connecté, nous recevons aussi votre nom d'utilisateur, l'identifiant de votre compte, votre formule et l'état de votre abonnement, afin de pouvoir traiter votre demande (par exemple, un problème de paiement). Nous les utilisons uniquement pour vous répondre."
+      "<strong>Messages de contact :</strong> si vous nous écrivez depuis la page ou l'app de contact, nous recevons votre nom, votre adresse e-mail, le motif, l'objet et le message. Si vous le faites en étant connecté, nous recevons aussi votre nom d'utilisateur, l'identifiant de votre compte, votre formule et l'état de votre abonnement, afin de pouvoir traiter votre demande (par exemple, un problème de paiement). Nous les utilisons uniquement pour vous répondre.",
+      "<strong>Signalements et blocages :</strong> si tu signales un commentaire, un voyage ou un profil, nous conservons ton signalement (ce que tu as signalé, le motif, l'explication que tu ajoutes et ton compte) pour que notre équipe l'examine ; si tu bloques quelqu'un, nous conservons qui tu as bloqué."
     ],
     "s3Title": "3. Comment nous utilisons tes données",
     "s3Intro": "Nous utilisons tes données personnelles exclusivement pour :",
@@ -1744,7 +1755,8 @@
       "Afficher ton profil public et tes itinéraires aux autres utilisateurs.",
       "Fournir les fonctionnalités sociales (abonnements, commentaires, j'aime, voyages enregistrés).",
       "T'envoyer des communications liées à ton compte si nécessaire (par ex. confirmation de suppression du compte).",
-      "Gérer ton abonnement Premium et tes paiements, y compris les remboursements et le droit de rétractation."
+      "Gérer ton abonnement Premium et tes paiements, y compris les remboursements et le droit de rétractation.",
+      "Examiner les signalements de contenu que nous recevons, garder la communauté sûre et informer les personnes concernées de ce qui a été décidé (y compris à qui un contenu a été retiré et pourquoi, jamais qui a signalé)."
     ],
     "s3Body2": "Nous n'utilisons pas tes données à des fins publicitaires ou de profilage, et nous ne les vendons pas à des tiers. Nous n'envoyons pas d'e-mails marketing.",
     "s3Body3": "La base légale du traitement est l'exécution d'un contrat (art. 6, paragraphe 1, point b) du RGPD), c'est-à-dire la fourniture du service auquel tu as souscrit. Pour le pays et les données d'appareil à l'inscription, la base légale est notre intérêt légitime (art. 6, paragraphe 1, point f) du RGPD) à comprendre d'où vient notre communauté. Nous traitons les données personnelles conformément à la loi fédérale suisse sur la protection des données (LPD) et, pour les personnes situées dans l'Union européenne et l'Espace économique européen, conformément au RGPD.",
@@ -1760,7 +1772,7 @@
       "<strong>Brevo</strong> : utilisé pour envoyer les e-mails du service (bienvenue, réinitialisation du mot de passe, confirmations et messages de contact). Il reçoit l'adresse e-mail du destinataire et le contenu du message. Consultez sa <a href=\"https://www.brevo.com/legal/privacypolicy/\">Politique de confidentialité</a>."
     ],
     "s5Title": "5. Conservation des données",
-    "s5Body": "Nous conservons tes données personnelles tant que ton compte est actif. Si tu supprimes ton compte, toutes tes données personnelles (profil, itinéraires, commentaires et connexions sociales) sont définitivement supprimées de nos systèmes. Des copies en cache ou de sauvegarde peuvent subsister jusqu'à 30 jours avant d'être purgées. Si tu supprimes ton compte, nous supprimons aussi ton client chez Stripe, ce qui annule tout abonnement ; Stripe conserve les enregistrements de paiement que la loi l'oblige à garder. Les messages de contact sont conservés dans notre messagerie pendant le traitement de votre demande et jusqu'à 12 mois après le dernier échange, puis supprimés. Si vous souhaitez que nous les supprimions plus tôt, écrivez-nous.",
+    "s5Body": "Nous conservons tes données personnelles tant que ton compte est actif. Si tu supprimes ton compte, toutes tes données personnelles (profil, itinéraires, commentaires et connexions sociales) sont définitivement supprimées de nos systèmes. Des copies en cache ou de sauvegarde peuvent subsister jusqu'à 30 jours avant d'être purgées. Si tu supprimes ton compte, nous supprimons aussi ton client chez Stripe, ce qui annule tout abonnement ; Stripe conserve les enregistrements de paiement que la loi l'oblige à garder. Les messages de contact sont conservés dans notre messagerie pendant le traitement de votre demande et jusqu'à 12 mois après le dernier échange, puis supprimés. Si vous souhaitez que nous les supprimions plus tôt, écrivez-nous. Les signalements résolus sont supprimés après 12 mois, et ceux qui sont encore ouverts sont conservés jusqu'à ce que notre équipe les traite. Ta liste de personnes bloquées est conservée jusqu'à ce que tu les débloques ou que tu supprimes ton compte.",
     "s6Title": "6. Tes droits (RGPD)",
     "s6Intro": "Si tu te trouves dans l'Espace économique européen, tu disposes des droits suivants :",
     "s6Items": [

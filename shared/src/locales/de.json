@@ -1647,9 +1647,19 @@
       "Daten des Dienstes automatisiert auszulesen, zu crawlen oder zu extrahieren.",
       "dich als eine andere Person oder Organisation auszugeben."
     ],
-    "s6Title": "6. Datenschutz",
+    "moderationTitle": "6. Meldung von Inhalten und Moderation",
+    "moderationBody": [
+      "Jede angemeldete Person kann einen Kommentar, eine Reise oder ein Profil mit der Schaltfläche Melden melden. Wenn du illegale Inhalte meldest, sag uns, warum sie illegal sind: Das brauchen wir, um sie zu beurteilen.",
+      "Unser Team prüft jede Meldung und entscheidet, ob der Inhalt gegen diese Bedingungen (Abschnitt 5) oder gegen das Gesetz verstößt. Wir können Inhalte entfernen oder ausblenden und Konten sperren oder schließen, die schwer oder wiederholt gegen die Regeln verstoßen. Eine von uns ausgeblendete Reise kann von ihrem Autor nicht wieder öffentlich gemacht werden.",
+      "Wenn wir Inhalte entfernen oder ausblenden, teilen wir dem Autor mit, was wir getan haben, warum, gegen welche Regel sie verstoßen und wie er widersprechen kann. Der meldenden Person teilen wir mit, was wir entschieden haben. Der gemeldeten Person sagen wir nie, wer sie gemeldet hat.",
+      "Diese Entscheidungen trifft eine Person aus unserem Team; wir entscheiden nicht mit automatischen Systemen über das Entfernen von Inhalten.",
+      "Wenn du mit einer Entscheidung nicht einverstanden bist, antworte auf die E-Mail, die wir dir senden, oder schreib uns über die <a href=\"/contact\">Kontaktseite</a>, und wir sehen sie uns erneut an. Du kannst dich auch an die zuständige Behörde oder an die Gerichte wenden.",
+      "Du kannst eine Person über ihr Profil blockieren. Ihr folgt euch nicht mehr, ihr seht die Kommentare und Reisen der anderen Person in Entdecken und Community nicht mehr, und sie kann dir nicht folgen oder deine Reisen kommentieren. Sie wird nicht benachrichtigt.",
+      "Die <a href=\"/contact\">Kontaktseite</a> ist auch unsere Kontaktstelle für Behörden und für Nutzer, auf Englisch, Spanisch, Deutsch, Französisch oder Italienisch."
+    ],
+    "s6Title": "7. Datenschutz",
     "s6Body": "Für deine Nutzung des Dienstes gilt außerdem unsere <a href=\"/privacy-policy\">Datenschutzerklärung</a>, die durch Verweis Bestandteil dieser Bedingungen ist.",
-    "subscriptionsTitle": "7. Premium-Abos, Zahlungen und Widerrufsrecht",
+    "subscriptionsTitle": "8. Premium-Abos, Zahlungen und Widerrufsrecht",
     "subscriptionsIntro": "Premium ist ein optionaler kostenpflichtiger Plan. Für ihn gelten diese Regeln zusätzlich zu den übrigen Bedingungen.",
     "subscriptionsItems": [
       "<strong>Zahlungen.</strong> Zahlungen werden von Stripe abgewickelt. Wir sehen oder speichern niemals deine Kartendaten. Du zahlst den Preis, der beim Bezahlen vor deiner Bestätigung angezeigt wird; er enthält die an deinem Wohnort geltenden Steuern (wie die Mehrwertsteuer), sofern wir sie erheben müssen.",
@@ -1663,33 +1673,33 @@
       "<strong>Sofortiger Beginn.</strong> Premium beginnt, sobald du abonnierst. Beim Bezahlen bitten wir dich daher, ausdrücklich zu verlangen, dass es sofort beginnt, und anzuerkennen, dass du das Widerrufsrecht verlierst, sobald die Leistung vollständig erbracht ist. Widerrufst du innerhalb der 14 Tage, nachdem du den Beginn verlangt hast, zahlst du einen anteiligen Betrag für das, was du bis zu deiner Widerrufserklärung genutzt hast. Wir speichern das Datum und die Version dieser Bedingungen, denen du zugestimmt hast.",
       "<strong>Weitere Erstattungen.</strong> Deine gesetzlichen Rechte bleiben von diesen Bedingungen unberührt. Darüber hinaus können wir eine Zahlung nach eigenem Ermessen erstatten. Wird eine Zahlung vollständig erstattet oder bei deiner Bank angefochten, endet das Abo und Premium wird entfernt."
     ],
-    "s7Title": "8. Sichtbarkeit von Reiseplänen",
+    "s7Title": "9. Sichtbarkeit von Reiseplänen",
     "s7Body": "Als <strong>Öffentlich</strong> markierte Reisepläne sind für alle sichtbar, auch für Personen, die nicht angemeldet sind. Als <strong>Privat</strong> markierte Reisepläne sind nur für dich sichtbar. Du kannst die Sichtbarkeit jedes Reiseplans jederzeit im Bearbeitungsbildschirm ändern.",
-    "s8Title": "9. Geistiges Eigentum",
+    "s8Title": "10. Geistiges Eigentum",
     "s8Body": [
       "Der Name, das Logo und das Design von ToBeATraveller sind unser geistiges Eigentum. Du darfst sie nicht ohne unsere vorherige schriftliche Genehmigung verwenden.",
       "Der Code und das Design der Plattform sind ohne unsere ausdrückliche schriftliche Zustimmung nicht zur Weiterverwendung lizenziert."
     ],
-    "s9Title": "10. Gewährleistungsausschluss",
+    "s9Title": "11. Gewährleistungsausschluss",
     "s9Body": [
       "Der Dienst wird „wie besehen“ und „wie verfügbar“ ohne jegliche Gewährleistung bereitgestellt. Wir garantieren nicht, dass der Dienst unterbrechungs- oder fehlerfrei ist oder dass die von Nutzenden geteilten Reiseplaninhalte richtig, vollständig oder sicher umsetzbar sind.",
       "Reisen ist naturgemäß mit Risiken verbunden. Prüfe Informationen immer unabhängig, bevor du eine Reise auf Grundlage von Inhalten dieser Plattform planst."
     ],
-    "s10Title": "11. Haftungsbeschränkung",
+    "s10Title": "12. Haftungsbeschränkung",
     "s10Body": [
       "Soweit gesetzlich zulässig, haftet ToBeATraveller nicht für mittelbare, zufällige, besondere oder Folgeschäden, die sich aus deiner Nutzung des Dienstes oder der darin enthaltenen Inhalte ergeben.",
       "Unsere Gesamthaftung für alle Ansprüche im Zusammenhang mit dem Dienst übersteigt 100 € nicht."
     ],
-    "s11Title": "12. Kündigung",
+    "s11Title": "13. Kündigung",
     "s11Body": [
       "Du kannst dein Konto jederzeit in deinen Profileinstellungen löschen. Die Löschung ist endgültig und entfernt alle deine Inhalte von der Plattform.",
       "Wir können dein Konto sperren oder kündigen, wenn du gegen diese Bedingungen verstößt, je nach Schwere des Verstoßes mit oder ohne Ankündigung."
     ],
-    "s12Title": "13. Änderungen dieser Bedingungen",
+    "s12Title": "14. Änderungen dieser Bedingungen",
     "s12Body": "Wir können diese Bedingungen von Zeit zu Zeit aktualisieren. Über wesentliche Änderungen informieren wir, indem wir das Datum „Zuletzt aktualisiert“ anpassen. Wenn du den Dienst nach Änderungen weiter nutzt, gilt dies als Annahme der aktualisierten Bedingungen.",
-    "s13Title": "14. Anwendbares Recht",
+    "s13Title": "15. Anwendbares Recht",
     "s13Body": "Diese Bedingungen unterliegen dem materiellen Schweizer Recht unter Ausschluss seiner Kollisionsnormen. Für Streitigkeiten sind die ordentlichen Gerichte am Ort unserer Niederlassung in der Schweiz zuständig, unbeschadet der zwingenden Verbraucherschutzvorschriften des Landes, in dem du lebst, und deines Rechts als Verbraucher, die Gerichte an deinem Wohnsitz anzurufen.",
-    "s14Title": "15. Kontakt",
+    "s14Title": "16. Kontakt",
     "s14Body": "ToBeATraveller wird von der Schweiz aus betrieben. Bei Fragen zu diesen Bedingungen erreichst du uns unter <a href=\"mailto:tobeatravellercompany@gmail.com\">tobeatravellercompany@gmail.com</a>.",
     "footerPrivacyLink": "Datenschutzerklärung",
     "footerBackHome": "Zurück zur Startseite"
@@ -1714,7 +1724,8 @@
       "<strong>Registrierungsdaten:</strong> Wenn du ein Konto erstellst, erfassen wir das Land, aus dem deine Anfrage kam (abgeleitet aus deiner IP-Adresse, die wir ansonsten nicht speichern), und deinen Browser- bzw. Gerätetyp. Das hilft uns zu verstehen, woher unsere Community wächst, und erfordert keine Cookie-Einwilligung, da diese Daten direkt aus der Registrierungsanfrage gelesen und nicht auf deinem Gerät gespeichert werden.",
       "<strong>Analysedaten (nur wenn du Cookies akzeptierst):</strong> Wenn du im Cookie-Banner Analyse-Cookies akzeptierst, erheben wir über PostHog deinen ungefähren Standort (abgeleitet aus deiner IP-Adresse), Geräte- und Browsertyp sowie die Seiten, die du besuchst. Wenn du ablehnst, wird nichts davon erhoben, und die Sitzungsaufzeichnung ist deaktiviert.",
       "<strong>Abo- und Zahlungsdaten:</strong> Wenn du Premium abonnierst, wickelt Stripe die Zahlung ab und wir sehen oder speichern niemals deine Kartendaten. Wir speichern deine Stripe-Kundenkennung, den Status und die Daten deines Abos sowie das Datum und die Version der Bedingungen, denen du beim Abonnieren zugestimmt hast.",
-      "<strong>Kontaktnachrichten:</strong> Wenn du uns über die Kontaktseite oder die App schreibst, erhalten wir deinen Namen, deine E-Mail-Adresse, den Grund, den Betreff und die Nachricht. Wenn du angemeldet schreibst, erhalten wir außerdem deinen Benutzernamen, die Kennung deines Kontos, deinen Tarif und den Status deines Abonnements, damit wir dein Anliegen bearbeiten können (zum Beispiel ein Problem mit einer Zahlung). Wir verwenden sie nur, um dir zu antworten."
+      "<strong>Kontaktnachrichten:</strong> Wenn du uns über die Kontaktseite oder die App schreibst, erhalten wir deinen Namen, deine E-Mail-Adresse, den Grund, den Betreff und die Nachricht. Wenn du angemeldet schreibst, erhalten wir außerdem deinen Benutzernamen, die Kennung deines Kontos, deinen Tarif und den Status deines Abonnements, damit wir dein Anliegen bearbeiten können (zum Beispiel ein Problem mit einer Zahlung). Wir verwenden sie nur, um dir zu antworten.",
+      "<strong>Meldungen und Blockierungen:</strong> Wenn du einen Kommentar, eine Reise oder ein Profil meldest, speichern wir deine Meldung (was du gemeldet hast, den Grund, deine Erklärung und dein Konto), damit unser Team sie prüfen kann; wenn du jemanden blockierst, speichern wir, wen du blockiert hast."
     ],
     "s3Title": "3. Wie wir deine Daten nutzen",
     "s3Intro": "Wir nutzen deine personenbezogenen Daten ausschließlich, um:",
@@ -1723,7 +1734,8 @@
       "dein öffentliches Profil und deine Reisepläne anderen Personen anzuzeigen.",
       "soziale Funktionen bereitzustellen (Folgen, Kommentare, Likes, gespeicherte Reisen).",
       "dir bei Bedarf kontobezogene Mitteilungen zu senden (z. B. die Bestätigung einer Kontolöschung).",
-      "Dein Premium-Abo und deine Zahlungen verwalten, einschließlich Erstattungen und Widerrufsrecht."
+      "Dein Premium-Abo und deine Zahlungen verwalten, einschließlich Erstattungen und Widerrufsrecht.",
+      "Gemeldete Inhalte prüfen, die Community sicher halten und den Beteiligten mitteilen, was entschieden wurde (auch wem Inhalte entfernt wurden und warum, nie aber, wer gemeldet hat)."
     ],
     "s3Body2": "Wir nutzen deine Daten nicht für Werbung oder Profiling und verkaufen sie nicht an Dritte. Wir versenden keine Marketing-E-Mails.",
     "s3Body3": "Rechtsgrundlage der Verarbeitung ist die Erfüllung eines Vertrags (Art. 6 Abs. 1 lit. b DSGVO), also die Bereitstellung des Dienstes, für den du dich registriert hast. Für das Registrierungsland und die Gerätedaten ist die Rechtsgrundlage unser berechtigtes Interesse (Art. 6 Abs. 1 lit. f DSGVO) daran, zu verstehen, woher unsere Community kommt. Wir verarbeiten personenbezogene Daten gemäß dem schweizerischen Bundesgesetz über den Datenschutz (DSG) und, für Personen in der Europäischen Union und im Europäischen Wirtschaftsraum, gemäß der DSGVO.",
@@ -1739,7 +1751,7 @@
       "<strong>Brevo</strong>: wird verwendet, um die E-Mails des Dienstes zu versenden (Willkommen, Passwort zurücksetzen, Bestätigungen und Kontaktnachrichten). Brevo erhält die E-Mail-Adresse des Empfängers und den Inhalt der E-Mail. Siehe die <a href=\"https://www.brevo.com/legal/privacypolicy/\">Datenschutzerklärung</a>."
     ],
     "s5Title": "5. Speicherdauer",
-    "s5Body": "Wir speichern deine personenbezogenen Daten, solange dein Konto aktiv ist. Wenn du dein Konto löschst, werden alle deine personenbezogenen Daten (Profil, Reisepläne, Kommentare und soziale Verbindungen) endgültig aus unseren Systemen gelöscht. Zwischengespeicherte oder gesicherte Kopien können bis zu 30 Tage bestehen bleiben, bevor sie entfernt werden. Wenn du dein Konto löschst, löschen wir auch deinen Kunden bei Stripe, wodurch jedes Abo gekündigt wird; Stripe bewahrt die Zahlungsunterlagen auf, zu deren Aufbewahrung es gesetzlich verpflichtet ist. Kontaktnachrichten werden in unserem Postfach aufbewahrt, solange dein Anliegen bearbeitet wird, und bis zu 12 Monate nach dem letzten Austausch; danach werden sie gelöscht. Wenn wir sie früher löschen sollen, schreib uns.",
+    "s5Body": "Wir speichern deine personenbezogenen Daten, solange dein Konto aktiv ist. Wenn du dein Konto löschst, werden alle deine personenbezogenen Daten (Profil, Reisepläne, Kommentare und soziale Verbindungen) endgültig aus unseren Systemen gelöscht. Zwischengespeicherte oder gesicherte Kopien können bis zu 30 Tage bestehen bleiben, bevor sie entfernt werden. Wenn du dein Konto löschst, löschen wir auch deinen Kunden bei Stripe, wodurch jedes Abo gekündigt wird; Stripe bewahrt die Zahlungsunterlagen auf, zu deren Aufbewahrung es gesetzlich verpflichtet ist. Kontaktnachrichten werden in unserem Postfach aufbewahrt, solange dein Anliegen bearbeitet wird, und bis zu 12 Monate nach dem letzten Austausch; danach werden sie gelöscht. Wenn wir sie früher löschen sollen, schreib uns. Erledigte Meldungen werden nach 12 Monaten gelöscht, noch offene Meldungen bleiben, bis unser Team entschieden hat. Deine Liste blockierter Personen bleibt, bis du sie entblockst oder dein Konto löschst.",
     "s6Title": "6. Deine Rechte (DSGVO)",
     "s6Intro": "Wenn du dich im Europäischen Wirtschaftsraum befindest, hast du folgende Rechte:",
     "s6Items": [

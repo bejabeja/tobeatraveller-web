@@ -1668,9 +1668,19 @@
       "Extraer o recopilar datos del Servicio mediante medios automatizados.",
       "Suplantar a otra persona u organización."
     ],
-    "s6Title": "6. Privacidad",
+    "moderationTitle": "6. Denuncia de contenido y moderación",
+    "moderationBody": [
+      "Cualquier persona con sesión iniciada puede denunciar un comentario, un viaje o un perfil con el botón Denunciar. Si denuncias contenido ilegal, cuéntanos por qué es ilegal: es lo que necesitamos para valorarlo.",
+      "Nuestro equipo revisa cada denuncia y decide si el contenido incumple estos términos (apartado 5) o la ley. Podemos retirar u ocultar contenido, y suspender o cerrar las cuentas que incumplan las normas de forma grave o repetida. Un viaje que ocultamos no puede volver a hacerse público por su autor.",
+      "Cuando retiramos u ocultamos contenido, avisamos a su autor de lo que hicimos, por qué, qué norma incumple y cómo discrepar. A quien denunció le contamos lo que decidimos. Nunca decimos a la persona denunciada quién la denunció.",
+      "Estas decisiones las toma una persona de nuestro equipo; no usamos sistemas automáticos para decidir retirar contenido.",
+      "Si no estás de acuerdo con una decisión, responde al email que te enviamos o escríbenos desde la <a href=\"/contact\">página de contacto</a> y volveremos a mirarla. También puedes acudir a la autoridad competente o a los tribunales.",
+      "Puedes bloquear a una persona desde su perfil. Dejáis de seguiros, dejáis de ver los comentarios y los viajes del otro en Explorar y Comunidad, y esa persona no puede seguirte ni comentar en tus viajes. No se le avisa.",
+      "La <a href=\"/contact\">página de contacto</a> es también nuestro punto de contacto para autoridades y para usuarios, en inglés, español, alemán, francés o italiano."
+    ],
+    "s6Title": "7. Privacidad",
     "s6Body": "El uso que hagas del Servicio también se rige por nuestra <a href=\"/privacy-policy\">Política de Privacidad</a>, que queda incorporada a estos términos por referencia.",
-    "subscriptionsTitle": "7. Suscripciones Premium, pagos y derecho de desistimiento",
+    "subscriptionsTitle": "8. Suscripciones Premium, pagos y derecho de desistimiento",
     "subscriptionsIntro": "Premium es un plan de pago opcional. Estas reglas se aplican a él, además del resto de estos términos.",
     "subscriptionsItems": [
       "<strong>Pagos.</strong> Los pagos los procesa Stripe. Nunca vemos ni guardamos los datos de tu tarjeta. El precio que pagas es el que se muestra en el pago antes de que confirmes, e incluye los impuestos que se aplican donde vives (como el IVA) cuando estamos obligados a cobrarlos.",
@@ -1684,33 +1694,33 @@
       "<strong>Inicio inmediato.</strong> Premium empieza en cuanto te suscribes, así que al pagar te pedimos que solicites expresamente que empiece de inmediato y que reconozcas que pierdes el derecho de desistimiento una vez que el servicio se haya prestado por completo. Si desistes dentro de los 14 días después de pedir que empiece, pagarás un importe proporcional a lo que hayas usado hasta que nos comuniques que desistes. Guardamos constancia de la fecha y de la versión de estos términos que aceptaste.",
       "<strong>Otros reembolsos.</strong> Estos términos no afectan a tus derechos legales. Más allá de ellos, podemos reembolsar un pago a nuestra discreción. Si un pago se reembolsa por completo o lo disputas con tu banco, la suscripción termina y se retira Premium."
     ],
-    "s7Title": "8. Visibilidad del itinerario",
+    "s7Title": "9. Visibilidad del itinerario",
     "s7Body": "Los itinerarios marcados como <strong>Públicos</strong> son visibles para cualquiera, incluidos usuarios sin sesión iniciada. Los itinerarios marcados como <strong>Privados</strong> solo son visibles para ti. Puedes cambiar la visibilidad de cualquier itinerario en cualquier momento desde la pantalla de edición.",
-    "s8Title": "9. Propiedad intelectual",
+    "s8Title": "10. Propiedad intelectual",
     "s8Body": [
       "El nombre, logotipo y diseño de ToBeATraveller son propiedad intelectual nuestra. No puedes usarlos sin permiso previo por escrito.",
       "El código y el diseño de la plataforma no están licenciados para su reutilización sin nuestro consentimiento explícito por escrito."
     ],
-    "s9Title": "10. Exclusión de garantías",
+    "s9Title": "11. Exclusión de garantías",
     "s9Body": [
       "El Servicio se proporciona \"tal cual\" y \"según disponibilidad\", sin garantías de ningún tipo. No garantizamos que el Servicio esté libre de interrupciones o errores, ni que el contenido de los itinerarios compartidos por los usuarios sea preciso, completo o seguro de seguir.",
       "Viajar conlleva riesgos inherentes. Verifica siempre la información de forma independiente antes de planificar un viaje basándote en contenido encontrado en esta plataforma."
     ],
-    "s10Title": "11. Limitación de responsabilidad",
+    "s10Title": "12. Limitación de responsabilidad",
     "s10Body": [
       "En la máxima medida permitida por la ley, ToBeATraveller no será responsable de daños indirectos, incidentales, especiales o consecuentes derivados del uso del Servicio o de cualquier contenido encontrado en él.",
       "Nuestra responsabilidad total por cualquier reclamación relacionada con el Servicio no excederá los 100 €."
     ],
-    "s11Title": "12. Terminación",
+    "s11Title": "13. Terminación",
     "s11Body": [
       "Puedes eliminar tu cuenta en cualquier momento desde los ajustes de tu perfil. La eliminación es permanente y elimina todo tu contenido de la plataforma.",
       "Podemos suspender o cancelar tu cuenta si incumples estos términos, con o sin previo aviso según la gravedad de la infracción."
     ],
-    "s12Title": "13. Cambios en estos términos",
+    "s12Title": "14. Cambios en estos términos",
     "s12Body": "Podemos actualizar estos términos ocasionalmente. Notificaremos a los usuarios de cambios significativos actualizando la fecha de \"Última actualización\". El uso continuado del Servicio tras los cambios constituye la aceptación de los términos actualizados.",
-    "s13Title": "14. Ley aplicable",
+    "s13Title": "15. Ley aplicable",
     "s13Body": "Estos términos se rigen por el derecho material suizo, con exclusión de sus normas de conflicto de leyes. Cualquier controversia será competencia de los tribunales ordinarios del lugar donde tenemos nuestro establecimiento en Suiza, sin perjuicio de las normas imperativas de protección de los consumidores del país donde vives ni de tu derecho, como consumidor, a acudir a los tribunales de tu lugar de residencia.",
-    "s14Title": "15. Contacto",
+    "s14Title": "16. Contacto",
     "s14Body": "ToBeATraveller se gestiona desde Suiza. Para cualquier pregunta sobre estos términos, contáctanos en <a href=\"mailto:tobeatravellercompany@gmail.com\">tobeatravellercompany@gmail.com</a>.",
     "footerPrivacyLink": "Política de Privacidad",
     "footerBackHome": "Volver al inicio"
@@ -1735,7 +1745,8 @@
       "<strong>Datos de registro:</strong> cuando creas una cuenta, registramos el país desde el que llegó la solicitud (a partir de tu dirección IP, que no guardamos de otra forma) y el tipo de navegador/dispositivo. Esto nos ayuda a entender de dónde crece nuestra comunidad y no requiere consentimiento de cookies, porque se lee directamente de la solicitud de registro y no se guarda nada en tu dispositivo.",
       "<strong>Datos analíticos (solo si aceptas las cookies):</strong> si aceptas las cookies analíticas en el aviso de cookies, recopilamos ubicación aproximada (a partir de tu dirección IP), tipo de dispositivo y navegador, y qué páginas visitas, mediante PostHog. Nunca se recopila si lo rechazas, y la grabación de sesión está desactivada.",
       "<strong>Datos de suscripción y pago:</strong> si te suscribes a Premium, el pago lo gestiona Stripe y nunca vemos ni guardamos los datos de tu tarjeta. Guardamos tu identificador de cliente de Stripe, el estado y las fechas de tu suscripción, y la fecha y la versión de los términos que aceptaste al suscribirte.",
-      "<strong>Mensajes de contacto:</strong> si nos escribes desde la página o la app de contacto, recibimos tu nombre, tu correo electrónico, el motivo, el asunto y el mensaje. Si lo haces con la sesión iniciada, también recibimos tu nombre de usuario, el identificador de tu cuenta, tu plan y el estado de tu suscripción, para poder atender tu consulta (por ejemplo, un problema con un pago). Los usamos solo para responderte."
+      "<strong>Mensajes de contacto:</strong> si nos escribes desde la página o la app de contacto, recibimos tu nombre, tu correo electrónico, el motivo, el asunto y el mensaje. Si lo haces con la sesión iniciada, también recibimos tu nombre de usuario, el identificador de tu cuenta, tu plan y el estado de tu suscripción, para poder atender tu consulta (por ejemplo, un problema con un pago). Los usamos solo para responderte.",
+      "<strong>Denuncias y bloqueos:</strong> si denuncias un comentario, un viaje o un perfil, guardamos tu denuncia (qué denunciaste, el motivo, la explicación que añadas y tu cuenta) para que nuestro equipo la revise; si bloqueas a alguien, guardamos a quién bloqueaste."
     ],
     "s3Title": "3. Cómo usamos tus datos",
     "s3Intro": "Usamos tus datos personales exclusivamente para:",
@@ -1744,7 +1755,8 @@
       "Mostrar tu perfil público y tus itinerarios a otros usuarios.",
       "Ofrecer funciones sociales (seguir, comentarios, me gusta, viajes guardados).",
       "Enviarte comunicaciones relacionadas con tu cuenta cuando sea necesario (p. ej. confirmación de eliminación de cuenta).",
-      "Gestionar tu suscripción Premium y tus pagos, incluidos los reembolsos y el derecho de desistimiento."
+      "Gestionar tu suscripción Premium y tus pagos, incluidos los reembolsos y el derecho de desistimiento.",
+      "Revisar las denuncias de contenido que recibimos, mantener segura la comunidad y contar a las personas implicadas lo que se decidió (incluido a quién se le retiró contenido y por qué, nunca quién denunció)."
     ],
     "s3Body2": "No usamos tus datos para publicidad, elaboración de perfiles ni venta a terceros. No enviamos correos de marketing.",
     "s3Body3": "La base legal para el tratamiento es la ejecución de un contrato (art. 6.1.b RGPD), es decir, prestar el servicio al que te has suscrito. Para el país y dispositivo de registro, la base legal es nuestro interés legítimo (art. 6.1.f RGPD) en entender de dónde viene nuestra comunidad. Tratamos los datos personales conforme a la Ley Federal suiza de Protección de Datos (LPD) y, para las personas de la Unión Europea y del Espacio Económico Europeo, conforme al RGPD.",
@@ -1760,7 +1772,7 @@
       "<strong>Brevo</strong>: usado para enviar los correos del servicio (bienvenida, restablecimiento de contraseña, confirmaciones y mensajes de contacto). Recibe la dirección de correo del destinatario y el contenido del correo. Consulta su <a href=\"https://www.brevo.com/legal/privacypolicy/\">Política de Privacidad</a>."
     ],
     "s5Title": "5. Conservación de datos",
-    "s5Body": "Conservamos tus datos personales mientras tu cuenta esté activa. Si eliminas tu cuenta, todos tus datos personales (perfil, itinerarios, comentarios y conexiones sociales) se eliminan permanentemente de nuestros sistemas. Las copias en caché o de respaldo pueden persistir hasta 30 días antes de ser purgadas. Si eliminas tu cuenta, también eliminamos tu cliente en Stripe, lo que cancela cualquier suscripción; Stripe conserva los registros de pago que la ley le obliga a guardar. Los mensajes de contacto se conservan en nuestra bandeja de correo mientras se atiende tu consulta y hasta 12 meses después del último intercambio; después se eliminan. Si quieres que los borremos antes, escríbenos.",
+    "s5Body": "Conservamos tus datos personales mientras tu cuenta esté activa. Si eliminas tu cuenta, todos tus datos personales (perfil, itinerarios, comentarios y conexiones sociales) se eliminan permanentemente de nuestros sistemas. Las copias en caché o de respaldo pueden persistir hasta 30 días antes de ser purgadas. Si eliminas tu cuenta, también eliminamos tu cliente en Stripe, lo que cancela cualquier suscripción; Stripe conserva los registros de pago que la ley le obliga a guardar. Los mensajes de contacto se conservan en nuestra bandeja de correo mientras se atiende tu consulta y hasta 12 meses después del último intercambio; después se eliminan. Si quieres que los borremos antes, escríbenos. Las denuncias resueltas se eliminan a los 12 meses, y las que siguen abiertas se conservan hasta que nuestro equipo las decida. Tu lista de personas bloqueadas se conserva hasta que las desbloquees o elimines tu cuenta.",
     "s6Title": "6. Tus derechos (RGPD)",
     "s6Intro": "Si te encuentras en el Espacio Económico Europeo, tienes los siguientes derechos:",
     "s6Items": [

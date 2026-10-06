@@ -29,7 +29,7 @@ const TermsScreen = ({ navigation }) => {
       </View>
 
       <ScrollView contentContainerStyle={[styles.body, { paddingBottom: insets.bottom + 32 }]}>
-        <Text style={styles.meta}>{lt('lastUpdated', { date: '30 September 2026' })}</Text>
+        <Text style={styles.meta}>{lt('lastUpdated', { date: '6 October 2026' })}</Text>
 
         <Section title={lt('s1Title')}>
           {lt('s1Body', { returnObjects: true }).map((p, i) => <Text key={i} style={styles.p}>{p}</Text>)}
@@ -48,6 +48,17 @@ const TermsScreen = ({ navigation }) => {
         <Section title={lt('s5Title')}>
           <Text style={styles.p}>{lt('s5Intro')}</Text>
           {lt('s5Items', { returnObjects: true }).map((item, i) => <Bullet key={i} text={item} />)}
+        </Section>
+        <Section title={lt('moderationTitle')}>
+          {lt('moderationBody', { returnObjects: true }).map((paragraph, i) => (
+            <RichText
+              key={i}
+              text={paragraph}
+              style={styles.p}
+              linkStyle={styles.link}
+              onInternalLink={onInternalLink(navigation)}
+            />
+          ))}
         </Section>
         <Section title={lt('s6Title')}>
           <RichText

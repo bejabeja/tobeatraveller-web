@@ -1647,9 +1647,19 @@
       "Scrape, crawl, or extract data from the Service by automated means.",
       "Impersonate another person or organisation."
     ],
-    "s6Title": "6. Privacy",
+    "moderationTitle": "6. Reporting content and moderation",
+    "moderationBody": [
+      "Anyone signed in can report a comment, a trip or a profile with the Report button. If you report illegal content, tell us why it is illegal: it is what we need to assess it.",
+      "Our team reviews each report and decides whether the content breaks these terms (section 5) or the law. We may remove or hide content, and suspend or close accounts that break the rules seriously or repeatedly. A trip we hide cannot be made public again by its author.",
+      "When we remove or hide content, we tell its author what we did, why, which rule it breaks and how to disagree. We tell the person who reported it what we decided. We never tell the reported person who reported them.",
+      "A person on our team takes these decisions; we do not use automated systems to decide to remove content.",
+      "If you disagree with a decision, reply to the email we send you or write to us through the <a href=\"/contact\">contact page</a> and we will look at it again. You can also turn to the competent authority or the courts.",
+      "You can block a person from their profile. You stop following each other, you stop seeing each other's comments and trips in Explore and Community, and they cannot follow you or comment on your trips. They are not told.",
+      "The <a href=\"/contact\">contact page</a> is also our point of contact for authorities and for users, in English, Spanish, German, French or Italian."
+    ],
+    "s6Title": "7. Privacy",
     "s6Body": "Your use of the Service is also governed by our <a href=\"/privacy-policy\">Privacy Policy</a>, which is incorporated into these terms by reference.",
-    "subscriptionsTitle": "7. Premium subscriptions, payments and right of withdrawal",
+    "subscriptionsTitle": "8. Premium subscriptions, payments and right of withdrawal",
     "subscriptionsIntro": "Premium is an optional paid plan. These rules apply to it, in addition to the rest of these terms.",
     "subscriptionsItems": [
       "<strong>Payments.</strong> Payments are processed by Stripe. We never see or store your card details. The price you pay is the one shown at checkout before you confirm, and it includes the taxes that apply where you live (such as VAT) when we are required to charge them.",
@@ -1663,33 +1673,33 @@
       "<strong>Starting right away.</strong> Premium starts as soon as you subscribe, so when you pay we ask you to expressly request that it starts at once and to acknowledge that you lose the right of withdrawal once the service has been fully provided. If you withdraw within the 14 days after asking it to start, you will pay a proportional amount for what you used until you told us you were withdrawing. We keep a record of the date and the version of these terms you accepted.",
       "<strong>Other refunds.</strong> Your legal rights are not affected by these terms. Beyond them, we may refund a payment at our discretion. If a payment is fully refunded or disputed with your bank, the subscription ends and Premium is removed."
     ],
-    "s7Title": "8. Itinerary visibility",
+    "s7Title": "9. Itinerary visibility",
     "s7Body": "Itineraries marked as <strong>Public</strong> are visible to anyone, including users who are not logged in. Itineraries marked as <strong>Private</strong> are only visible to you. You can change the visibility of any itinerary at any time from the edit screen.",
-    "s8Title": "9. Intellectual property",
+    "s8Title": "10. Intellectual property",
     "s8Body": [
       "The ToBeATraveller name, logo, and design are our intellectual property. You may not use them without prior written permission.",
       "The platform code and design are not licensed for reuse without our explicit written consent."
     ],
-    "s9Title": "10. Disclaimer of warranties",
+    "s9Title": "11. Disclaimer of warranties",
     "s9Body": [
       "The Service is provided \"as is\" and \"as available\" without warranties of any kind. We do not guarantee that the Service will be uninterrupted, error-free, or that the itinerary content shared by users is accurate, complete, or safe to follow.",
       "Travel inherently involves risk. Always verify information independently before planning a trip based on content found on this platform."
     ],
-    "s10Title": "11. Limitation of liability",
+    "s10Title": "12. Limitation of liability",
     "s10Body": [
       "To the maximum extent permitted by law, ToBeATraveller shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of the Service or any content found on it.",
       "Our total liability for any claim relating to the Service shall not exceed €100."
     ],
-    "s11Title": "12. Termination",
+    "s11Title": "13. Termination",
     "s11Body": [
       "You can delete your account at any time from your profile settings. Deletion is permanent and removes all your content from the platform.",
       "We may suspend or terminate your account if you violate these terms, with or without notice depending on the severity of the violation."
     ],
-    "s12Title": "13. Changes to these terms",
+    "s12Title": "14. Changes to these terms",
     "s12Body": "We may update these terms from time to time. We will notify users of significant changes by updating the \"Last updated\" date. Continued use of the Service after changes constitutes acceptance of the updated terms.",
-    "s13Title": "14. Governing law",
+    "s13Title": "15. Governing law",
     "s13Body": "These terms are governed by Swiss substantive law, excluding its conflict-of-laws rules. Any disputes fall under the jurisdiction of the ordinary courts at our place of business in Switzerland, without prejudice to the mandatory consumer protection rules of the country where you live and to your right, as a consumer, to bring proceedings before the courts of your place of residence.",
-    "s14Title": "15. Contact",
+    "s14Title": "16. Contact",
     "s14Body": "ToBeATraveller is operated from Switzerland. For any questions about these terms, contact us at <a href=\"mailto:tobeatravellercompany@gmail.com\">tobeatravellercompany@gmail.com</a>.",
     "footerPrivacyLink": "Privacy Policy",
     "footerBackHome": "Back to home"
@@ -1714,7 +1724,8 @@
       "<strong>Sign-up data:</strong> when you create an account, we record the country your request came from (derived from your IP address, which we do not otherwise store) and your browser/device type. This helps us understand where our community is growing from and does not require cookie consent, as it is read directly from the sign-up request rather than stored on your device.",
       "<strong>Analytics data (only if you accept cookies):</strong> if you accept analytics cookies in the cookie banner, we collect approximate location (derived from your IP address), device and browser type, and which pages you visit, via PostHog. This is never collected if you decline, and session recording is disabled.",
       "<strong>Subscription and payment data:</strong> if you subscribe to Premium, the payment is handled by Stripe and we never see or store your card details. We keep your Stripe customer identifier, your subscription status and dates, and the date and version of the terms you accepted when subscribing.",
-      "<strong>Contact messages:</strong> if you write to us from the contact page or the app, we receive your name, email address, the reason, the subject and the message. If you do it while signed in, we also receive your username, your account identifier, your plan and the state of your subscription, so we can deal with your request (for example, a problem with a payment). We use them only to answer you."
+      "<strong>Contact messages:</strong> if you write to us from the contact page or the app, we receive your name, email address, the reason, the subject and the message. If you do it while signed in, we also receive your username, your account identifier, your plan and the state of your subscription, so we can deal with your request (for example, a problem with a payment). We use them only to answer you.",
+      "<strong>Reports and blocks:</strong> if you report a comment, a trip or a profile, we keep your report (what you reported, the reason, any explanation you add and your account) so our team can review it; if you block someone, we keep who you blocked."
     ],
     "s3Title": "3. How we use your data",
     "s3Intro": "We use your personal data exclusively to:",
@@ -1723,7 +1734,8 @@
       "Display your public profile and itineraries to other users.",
       "Provide social features (following, comments, likes, saved trips).",
       "Send you account-related communications if necessary (e.g. account deletion confirmation).",
-      "Manage your Premium subscription and payments, including refunds and the right of withdrawal."
+      "Manage your Premium subscription and payments, including refunds and the right of withdrawal.",
+      "Review the reports of content we receive, keep the community safe and tell the people involved what was decided (including who had content removed and why, never who reported it)."
     ],
     "s3Body2": "We do not use your data for advertising, profiling, or selling to third parties. We do not send marketing emails.",
     "s3Body3": "The legal basis for processing is the performance of a contract (Art. 6(1)(b) GDPR), i.e., providing the service you signed up for. For sign-up country and device data, the legal basis is our legitimate interest (Art. 6(1)(f) GDPR) in understanding where our community comes from. We process personal data in line with the Swiss Federal Act on Data Protection (FADP) and, for people in the European Union and the European Economic Area, with the GDPR.",
@@ -1739,7 +1751,7 @@
       "<strong>Brevo</strong>: used to send the emails of the service (welcome, password reset, confirmations and contact messages). It receives the recipient's email address and the content of the email. See its <a href=\"https://www.brevo.com/legal/privacypolicy/\">Privacy Policy</a>."
     ],
     "s5Title": "5. Data retention",
-    "s5Body": "We retain your personal data for as long as your account is active. If you delete your account, all your personal data (profile, itineraries, comments, and social connections) is permanently deleted from our systems. Cached or backed-up copies may persist for up to 30 days before being purged. If you delete your account, we also delete your customer at Stripe, which cancels any subscription; Stripe keeps the payment records it is required to keep by law. Contact messages are kept in our mailbox while your request is being dealt with and for up to 12 months after the last exchange, and are then deleted. If you want us to delete them sooner, write to us.",
+    "s5Body": "We retain your personal data for as long as your account is active. If you delete your account, all your personal data (profile, itineraries, comments, and social connections) is permanently deleted from our systems. Cached or backed-up copies may persist for up to 30 days before being purged. If you delete your account, we also delete your customer at Stripe, which cancels any subscription; Stripe keeps the payment records it is required to keep by law. Contact messages are kept in our mailbox while your request is being dealt with and for up to 12 months after the last exchange, and are then deleted. If you want us to delete them sooner, write to us. Resolved reports are deleted after 12 months, and reports still open are kept until our team decides them. Your list of blocked people is kept until you unblock them or delete your account.",
     "s6Title": "6. Your rights (GDPR)",
     "s6Intro": "If you are in the European Economic Area, you have the following rights:",
     "s6Items": [
