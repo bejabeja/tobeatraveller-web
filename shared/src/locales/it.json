@@ -1387,7 +1387,20 @@
       "user": "profilo"
     }
   },
+  "block": {
+    "button": "Blocca",
+    "unblockButton": "Sblocca",
+    "confirmTitle": "Bloccare @{{username}}?",
+    "confirmDesc": "Smetterai di vedere i suoi commenti e i suoi viaggi in Esplora e Community, e non vi seguirete più. Non potrà seguirti né commentare i tuoi viaggi. Non viene avvisato.",
+    "confirmButton": "Blocca",
+    "blocked": "@{{username}} bloccato",
+    "unblocked": "@{{username}} sbloccato",
+    "error": "Non siamo riusciti a modificare il blocco. Riprova."
+  },
   "validation": {
+    "blockYourself": "Non puoi bloccare te stesso",
+    "blockedCannotFollow": "Non puoi seguire questa persona",
+    "blockedCannotComment": "Non puoi commentare questo viaggio",
     "reportTarget": "Questo non si può segnalare",
     "reportReason": "Scegli un motivo",
     "reportIllegalNeedsDetails": "Spiega perché è illegale (almeno 10 caratteri)",

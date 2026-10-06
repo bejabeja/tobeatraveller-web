@@ -1367,7 +1367,20 @@
       "user": "profile"
     }
   },
+  "block": {
+    "button": "Block",
+    "unblockButton": "Unblock",
+    "confirmTitle": "Block @{{username}}?",
+    "confirmDesc": "You will stop seeing their comments and their trips in Explore and Community, and you will stop following each other. They will not be able to follow you or comment on your trips. They are not told.",
+    "confirmButton": "Block",
+    "blocked": "@{{username}} blocked",
+    "unblocked": "@{{username}} unblocked",
+    "error": "We could not change the block. Please try again."
+  },
   "validation": {
+    "blockYourself": "You can't block yourself",
+    "blockedCannotFollow": "You can't follow this person",
+    "blockedCannotComment": "You can't comment on this trip",
     "reportTarget": "That can't be reported",
     "reportReason": "Choose a reason",
     "reportIllegalNeedsDetails": "Explain why it is illegal (at least 10 characters)",

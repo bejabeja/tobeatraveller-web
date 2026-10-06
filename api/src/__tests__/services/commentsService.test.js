@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { ForbiddenError } from '../../errors/ForbiddenError.js';
 import { NotFoundError } from '../../errors/NotFoundError.js';
 import { CommentsService } from '../../services/commentsService.js';
 
@@ -31,6 +32,13 @@ describe('CommentsService', () => {
             itineraryRepository.findById.mockResolvedValue(makeItinerary({ isPublic: true }));
         });
 
+        it('lists the comments for the viewer, so those of someone blocked with them stay out', async () => {
+            await service.getCommentsPageByItinerary('itin-1', 'viewer-1', { limit: 50, offset: 0 });
+
+            expect(commentsRepository.getCommentsByItinerary).toHaveBeenCalledWith('itin-1', { limit: 50, offset: 0, viewerId: 'viewer-1' });
+            expect(commentsRepository.countByItinerary).toHaveBeenCalledWith('itin-1', 'viewer-1');
+        });
+
         it('returns the slice asked for with the total, so the client knows if there are more', async () => {
             const result = await service.getCommentsPageByItinerary('itin-1', undefined, { limit: 50, offset: 50 });
 
@@ -61,6 +69,17 @@ describe('CommentsService', () => {
 
             expect(commentsRepository.addComment).toHaveBeenCalledWith('commenter-1', 'itin-1', 'Nice trip!');
             expect(notificationsService.createNotification).toHaveBeenCalled();
+        });
+
+        it('does not let someone comment on the trip of a person they are blocked with', async () => {
+            const blocksRepository = { isBlockedEitherWay: vi.fn().mockResolvedValue(true) };
+            service = new CommentsService(commentsRepository, {}, notificationsService, itineraryRepository, blocksRepository);
+            itineraryRepository.findById.mockResolvedValue(makeItinerary({ isPublic: true, userId: 'owner-1' }));
+
+            await expect(service.addComment('commenter-1', 'itin-1', 'hi')).rejects.toBeInstanceOf(ForbiddenError);
+
+            expect(blocksRepository.isBlockedEitherWay).toHaveBeenCalledWith('commenter-1', 'owner-1');
+            expect(commentsRepository.addComment).not.toHaveBeenCalled();
         });
 
         it('throws NotFoundError when commenting on a private itinerary you do not own', async () => {

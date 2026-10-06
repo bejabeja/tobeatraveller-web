@@ -1,6 +1,7 @@
 import db from '../db/clientPostgres.js';
 import { User } from '../models/user.js';
 import { RETIRED_REFERRAL_CODE_RESERVATION } from '../utils/referralCode.js';
+import { notBlockedWithViewer } from '../utils/blockFilter.js';
 import { ROLES } from '../utils/roles.js';
 
 const FEATURED_USERS_LIMIT = 3;
@@ -305,7 +306,7 @@ export class UserRepository {
         return result.rows.map(row => User.fromDb(row));
     }
 
-    async findByFilters({ searchName, offset = 0, limit = 9, sortBy = 'username', role, isPremium }) {
+    async findByFilters({ searchName, offset = 0, limit = 9, sortBy = 'username', role, isPremium, viewerId }) {
         const searchTerm = `%${searchName}%`;
 
         const ORDER_CLAUSES = {
@@ -326,6 +327,11 @@ export class UserRepository {
             conditions.push('premium_until > NOW()');
         } else if (isPremium === false) {
             conditions.push('(premium_until IS NULL OR premium_until <= NOW())');
+        }
+
+        if (viewerId) {
+            values.push(viewerId);
+            conditions.push(notBlockedWithViewer(`$${values.length}`, 'users.id'));
         }
 
         const whereClause = conditions.join(' AND ');

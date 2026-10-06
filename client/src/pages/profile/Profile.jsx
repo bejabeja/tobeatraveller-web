@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { IoChevronForward, IoFlagOutline, IoLinkOutline, IoLocationOutline, IoLockClosedOutline, IoOptionsOutline, IoSettingsOutline, IoShareSocialOutline } from "react-icons/io5";
+import { IoBanOutline, IoChevronForward, IoFlagOutline, IoLinkOutline, IoLocationOutline, IoLockClosedOutline, IoOptionsOutline, IoSettingsOutline, IoShareSocialOutline } from "react-icons/io5";
 import { MdOutlineCalendarMonth, MdOutlineEdit } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
@@ -23,6 +23,7 @@ import { BADGE_EMOJI, countryFlag, filterItineraries, formatDate, profileShareUr
 import { getMyReferralInfo } from "../../services/referral";
 import FollowsModal from "../../components/follows/FollowsModal";
 import ReportModal from "../../components/report/ReportModal";
+import { useBlock } from "../../hooks/useBlock";
 import PassportShareDialog from "../../components/passport/PassportShareDialog";
 import RecapBanner, { RECAP_SOURCES } from "../../components/recap/RecapBanner";
 import { PASSPORT_SHARE_SOURCES } from "../../utils/analyticsEvents";
@@ -59,8 +60,10 @@ const Profile = ({ id: idFromName }) => {
   } = useProfileData(id);
   const dispatch = useDispatch();
   const { isFollowing, toggleFollow, isLoadingFollow } = useFollow(id);
+  const { isBlocked, isLoadingBlock, toggleBlock } = useBlock(user?.id, !isMyProfile && isAuthenticated, user?.username);
   const [showUnfollowModal, setShowUnfollowModal] = useState(false);
   const [isReportOpen, setIsReportOpen] = useState(false);
+  const [showBlockModal, setShowBlockModal] = useState(false);
   const [followsModal, setFollowsModal] = useState(null); // null | 'followers' | 'following'
   const [visibility, setVisibility] = useState('all');
   const [tripFilters, setTripFilters] = useState({});
@@ -124,6 +127,12 @@ const Profile = ({ id: idFromName }) => {
 
   if (error) return <Error message={t("errors.profileLoad")} />;
 
+  // Blocking asks first: it ends any follow and hides their comments. Unblocking does not.
+  const handleBlockClick = () => {
+    if (isBlocked) toggleBlock();
+    else setShowBlockModal(true);
+  };
+
   const handleFollowToggle = () => {
     if (isFollowing) setShowUnfollowModal(true);
     else toggleFollow();
@@ -168,6 +177,9 @@ const Profile = ({ id: idFromName }) => {
               onFollowToggle={handleFollowToggle}
               onCopyLink={handleCopyLink}
               onReport={() => setIsReportOpen(true)}
+              isBlocked={isBlocked}
+              isLoadingBlock={isLoadingBlock}
+              onBlockClick={handleBlockClick}
               isAuthenticated={isAuthenticated}
               isLoadingFollow={isLoadingFollow}
               onOpenFollows={setFollowsModal}
@@ -308,6 +320,16 @@ const Profile = ({ id: idFromName }) => {
       <ReportModal isOpen={isReportOpen} onClose={() => setIsReportOpen(false)} targetType="user" targetId={user?.id} />
 
       <Modal
+        isOpen={showBlockModal}
+        onClose={() => setShowBlockModal(false)}
+        onConfirm={() => { toggleBlock(); setShowBlockModal(false); }}
+        title={t("block.confirmTitle", { username: user?.username })}
+        description={t("block.confirmDesc")}
+        confirmText={t("block.confirmButton")}
+        type="danger"
+      />
+
+      <Modal
         isOpen={showUnfollowModal}
         onClose={() => setShowUnfollowModal(false)}
         onConfirm={() => { toggleFollow(); setShowUnfollowModal(false); }}
@@ -325,7 +347,7 @@ export default Profile;
 // ─── Header card ──────────────────────────────────────────────────────────────
 const HeaderSection = ({
   user, isMyProfile, isFollowing, followsYou, onFollowToggle,
-  onCopyLink, onReport, isAuthenticated, isLoadingFollow, onOpenFollows, tripsCount, onShowTrips, t,
+  onCopyLink, onReport, isBlocked, isLoadingBlock, onBlockClick, isAuthenticated, isLoadingFollow, onOpenFollows, tripsCount, onShowTrips, t,
 }) => {
   const { i18n } = useTranslation();
   const location = useLocation();
@@ -410,6 +432,19 @@ const HeaderSection = ({
                   title={t("report.button")}
                 >
                   <IoFlagOutline aria-hidden="true" />
+                </button>
+              )}
+              {!isMyProfile && isAuthenticated && (
+                <button
+                  type="button"
+                  className={`btn profile__copy-btn${isBlocked ? " profile__copy-btn--active" : ""}`}
+                  onClick={onBlockClick}
+                  disabled={isLoadingBlock}
+                  aria-pressed={isBlocked}
+                  aria-label={isBlocked ? t("block.unblockButton") : t("block.button")}
+                  title={isBlocked ? t("block.unblockButton") : t("block.button")}
+                >
+                  <IoBanOutline aria-hidden="true" />
                 </button>
               )}
             </div>

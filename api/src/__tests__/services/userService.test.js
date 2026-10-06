@@ -651,6 +651,20 @@ describe('UserService.create()', () => {
 });
 
 describe('UserService.exportUserData()', () => {
+    it('includes the people the user has blocked, since it is their own data', async () => {
+        const db = (await import('../../db/clientPostgres.js')).default;
+        db.query.mockImplementation(async (sql) => (
+            sql.includes('user_blocks') ? { rows: [{ username: 'pest', created_at: '2026-10-01T10:00:00Z' }] } : { rows: [] }
+        ));
+        const userRepository = { getUserById: async () => makeUser(), findRetiredReferralCodes: async () => [] };
+        const service = new UserService(userRepository, { findByUserId: async () => [] }, { getFollowers: async () => [], getFollowing: async () => [] });
+
+        const exported = await service.exportUserData('user-1', { id: 'user-1', username: 'jane' });
+
+        expect(exported.blockedUsers).toEqual([{ username: 'pest', blockedAt: '2026-10-01T10:00:00Z' }]);
+        db.query.mockResolvedValue({ rows: [] });
+    });
+
     it('logs a data_exported event for the requesting user, a GDPR data-subject request', async () => {
         let loggedEntry;
         const userRepository = { getUserById: async () => makeUser(), findRetiredReferralCodes: async () => [] };

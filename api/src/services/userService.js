@@ -118,7 +118,7 @@ export class UserService {
         return users.map(user => user.toSimpleDTO());
     }
 
-    async getFilteredAllUsers({ searchName, page, limit, sortBy }) {
+    async getFilteredAllUsers({ searchName, page, limit, sortBy, viewerId }) {
         const offset = (page - 1) * limit;
 
         const { users, total } = await this.userRepository.findByFilters({
@@ -126,6 +126,7 @@ export class UserService {
             offset,
             limit,
             sortBy,
+            viewerId,
         });
 
         // totalItineraries already comes from findByFilters' SQL; only
@@ -447,7 +448,7 @@ export class UserService {
         const [
             itineraries, followers, following, commentsResult, likesResult, favoritesResult,
             lifeDiaryEntries, vanLogEntries, inventoryItems, shoppingListItems, packingChecklistItems, packingLists,
-            pushDevices, badges, countryStamps, declaredCountries, previousReferralCodes, subscriptions,
+            pushDevices, badges, countryStamps, declaredCountries, previousReferralCodes, subscriptions, blockedUsersResult,
         ] = await Promise.all([
             this.itinerariesRepository.findByUserId(id),
             this.followRepository.getFollowers(id),
@@ -482,6 +483,12 @@ export class UserService {
             this.badgeRepository ? this.badgeRepository.findDeclaredCountries(id) : [],
             this.userRepository.findRetiredReferralCodes(id),
             this.subscriptionRepository ? this.subscriptionRepository.findByUserId(id) : [],
+            db.query(
+                `SELECT u.username, b.created_at
+                 FROM user_blocks b
+                 JOIN users u ON u.id = b.blocked_id
+                 WHERE b.blocker_id = $1 ORDER BY b.created_at DESC`, [id]
+            ),
         ]);
 
         // Same batched entry+images composition as LifeDiaryService.getEntriesByUser.
@@ -551,6 +558,7 @@ export class UserService {
             countryStamps,
             declaredCountries,
             followers: followers.map(f => ({ id: f.id, username: f.username })),
+            blockedUsers: blockedUsersResult.rows.map(row => ({ username: row.username, blockedAt: row.created_at })),
             following: following.map(f => ({ id: f.id, username: f.username })),
         };
     }

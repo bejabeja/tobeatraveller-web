@@ -19,6 +19,23 @@ describe('ItineraryRepository.buildFilters()', () => {
         expect(values).toHaveLength(0);
     });
 
+    // Blocking someone keeps their trips out of the other person's listings, both ways.
+    it('keeps out the trips of whoever is blocked with the viewer, only when there is a viewer', () => {
+        const withViewer = repo.buildFilters({ viewerId: 'viewer-1' });
+        const withoutViewer = repo.buildFilters({});
+
+        expect(withViewer.values).toEqual(['viewer-1']);
+        expect(withViewer.conditions.some(c => c.includes('user_blocks') && c.includes('itineraries.user_id'))).toBe(true);
+        expect(withoutViewer.conditions.some(c => c.includes('user_blocks'))).toBe(false);
+    });
+
+    it('numbers the viewer placeholder after the other filters', () => {
+        const { conditions, values } = repo.buildFilters({ category: 'relax', viewerId: 'viewer-1' });
+
+        expect(values).toEqual(['relax', 'viewer-1']);
+        expect(conditions.at(-1)).toContain('$2');
+    });
+
     it('adds category condition when category is not "all"', () => {
         const { conditions, values } = repo.buildFilters({ category: 'adventure' });
 

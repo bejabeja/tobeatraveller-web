@@ -10,7 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import {
   BADGE_EMOJI, countryFlag, filterItineraries, summarizePassport,
-  followUser, getItinerariesByUserId, getUserById, getUserFavorites, logoutUser,
+  blockUser, followUser, getBlockStatus, getItinerariesByUserId, getUserById, getUserFavorites, logoutUser, unblockUser,
   selectAuthUser, selectIsAuthenticated, selectMe, selectMyItineraries,
   PASSPORT_SHARE_SOURCES, RECAP_SOURCES, setUserInfo, unfollowUser, formatDate, selectMyItinerariesLoaded,
   getMyReferralInfo, profileShareUrl, ANALYTICS_EVENTS, PLAN_COMPARISON,
@@ -112,6 +112,8 @@ const ProfileScreen = ({ route, navigation }) => {
   const { passport } = useUserPassport(passportUserId);
   const [isPassportShareOpen, setIsPassportShareOpen] = useState(false);
   const [isReportOpen, setIsReportOpen] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(false);
+  const [blockLoading, setBlockLoading] = useState(false);
   const passportSummary = summarizePassport(passport, MAX_PASSPORT_CARD_FLAGS);
   // Other viewers only see the card once there is something public in it.
   const showPassportCard = passportSummary
@@ -167,6 +169,42 @@ const ProfileScreen = ({ route, navigation }) => {
       const url = profileShareUrl(WEB_URL, user?.username, referralCode);
       await Share.share({ message: `${t('profile.shareText', { username: user?.username })} ${url}`, url, title: user?.username });
     } catch {}
+  };
+
+  useEffect(() => {
+    setIsBlocked(false);
+    if (isOwnProfile || !isAuthenticated || !profileId) return undefined;
+    let cancelled = false;
+    getBlockStatus(profileId).then(({ blocked }) => { if (!cancelled) setIsBlocked(blocked); }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [profileId, isOwnProfile, isAuthenticated]);
+
+  // Blocking also ends any follow between the two, so the followed list is read again.
+  const changeBlock = async (block) => {
+    setBlockLoading(true);
+    try {
+      if (block) await blockUser(profileId);
+      else await unblockUser(profileId);
+      setIsBlocked(block);
+      if (block) setIsFollowing(false);
+      if (me?.id) dispatch(setUserInfo(me.id));
+    } catch {
+      Alert.alert(t('errors.somethingWrong'), t('block.error'));
+    } finally {
+      setBlockLoading(false);
+    }
+  };
+
+  // Blocking asks first: it ends any follow and hides their comments. Unblocking does not.
+  const handleBlockPress = () => {
+    if (isBlocked) {
+      changeBlock(false);
+      return;
+    }
+    Alert.alert(t('block.confirmTitle', { username: user?.username }), t('block.confirmDesc'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('block.confirmButton'), style: 'destructive', onPress: () => changeBlock(true) },
+    ]);
   };
 
   const handleFollowToggle = async () => {
@@ -303,6 +341,18 @@ const ProfileScreen = ({ route, navigation }) => {
                     accessibilityLabel={t('report.button')}
                   >
                     <Ionicons name="flag-outline" size={16} color="#374151" />
+                  </TouchableOpacity>
+                )}
+                {isAuthenticated && (
+                  <TouchableOpacity
+                    style={[styles.iconBtn, isBlocked && styles.iconBtnActive]}
+                    onPress={handleBlockPress}
+                    disabled={blockLoading}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: isBlocked, disabled: blockLoading }}
+                    accessibilityLabel={isBlocked ? t('block.unblockButton') : t('block.button')}
+                  >
+                    <Ionicons name="ban-outline" size={16} color={isBlocked ? '#dc2626' : '#374151'} />
                   </TouchableOpacity>
                 )}
               </>
@@ -665,6 +715,7 @@ const styles = StyleSheet.create({
     borderWidth: 1.5, borderColor: '#e5e7eb',
     alignItems: 'center', justifyContent: 'center',
   },
+  iconBtnActive: { borderColor: '#dc2626' },
   iconBtnText: { fontSize: 16, color: '#374151' },
   primaryBtn: {
     backgroundColor: '#E8743B', borderRadius: 999,

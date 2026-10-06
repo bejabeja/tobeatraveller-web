@@ -14,7 +14,8 @@ export class ItinerariesController {
                 sortBy,
                 page: parseInt(page),
                 limit: parseInt(limit),
-                ...restFilters
+                ...restFilters,
+                viewerId: req.user?.id,
             };
 
             filters.byVan = filters.byVan === 'true';

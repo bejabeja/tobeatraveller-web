@@ -4,6 +4,7 @@ export * from './services/itineraries.js';
 export * from './services/itinerary.js';
 export * from './services/comments.js';
 export * from './services/contentReports.js';
+export * from './services/blocks.js';
 export * from './services/favorites.js';
 export * from './services/followers.js';
 export * from './services/likes.js';

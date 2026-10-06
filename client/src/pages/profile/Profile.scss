@@ -86,6 +86,11 @@ $avatar-size-tablet: 112px;
       color: var(--text-color);
       box-shadow: none;
     }
+
+    &--active {
+      border-color: var(--error-color);
+      color: var(--error-color);
+    }
   }
 
   &__btn {

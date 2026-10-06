@@ -53,7 +53,7 @@ export const createItinerariesRouter = () => {
     router.get("/feed",         authenticate, itinerariesController.getFeed.bind(itinerariesController));
     router.get("/mine",         authenticate, itinerariesController.getMyItineraries.bind(itinerariesController));
     router.get("/user/:id",     itinerariesController.getItinerariesByUserId.bind(itinerariesController));
-    router.get("/",             itinerariesController.filterItinerariesBy.bind(itinerariesController));
+    router.get("/",             optionalAuthenticate, itinerariesController.filterItinerariesBy.bind(itinerariesController));
 
     // ── Single itinerary CRUD ─────────────────────────────────────────────────
     router.get("/:id",          optionalAuthenticate, itineraryController.getItineraryById.bind(itineraryController));

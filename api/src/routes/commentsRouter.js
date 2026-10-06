@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { CommentsController } from "../controllers/commentsController.js";
 import { authenticate, optionalAuthenticate } from "../middlewares/authenticate.js";
+import { BlocksRepository } from "../repositories/blocksRepository.js";
 import { CommentsRepository } from "../repositories/commentsRepository.js";
 import { UserRepository } from "../repositories/userRepository.js";
 import { CommentsService } from "../services/commentsService.js";
@@ -19,7 +20,7 @@ export const createCommentsRouter = () => {
     const notificationsRepository = new NotificationsRepository()
     const pushNotificationsService = new PushNotificationsService(new PushTokensRepository(), userRepository, itineraryRepository)
     const notificationsService = new NotificationsService(notificationsRepository, pushNotificationsService)
-    const commentsService = new CommentsService(commentsRepository, userRepository, notificationsService, itineraryRepository)
+    const commentsService = new CommentsService(commentsRepository, userRepository, notificationsService, itineraryRepository, new BlocksRepository())
     const commentsController = new CommentsController(commentsService)
 
     router.get('/itinerary/:itineraryId', optionalAuthenticate, commentsController.getComments.bind(commentsController));

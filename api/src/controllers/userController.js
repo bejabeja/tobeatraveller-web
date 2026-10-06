@@ -225,6 +225,7 @@ export class UserController {
                 page: parseInt(page),
                 limit: parseInt(limit),
                 sortBy,
+                viewerId: req.user?.id,
             };
             const { users, totalPages, currentPage, totalCount } = await this.userService.getFilteredAllUsers(filters);
             res.status(200).json({ users, totalPages, currentPage, totalCount });

@@ -59,6 +59,9 @@ jest.mock('@tobeatraveller/shared', () => {
     getUserFavorites: jest.fn().mockResolvedValue([]),
     getUserPassport: jest.fn(),
     logoutUser: jest.fn(() => 'logout-thunk'),
+    getBlockStatus: jest.fn().mockResolvedValue({ blocked: false }),
+    blockUser: jest.fn().mockResolvedValue(null),
+    unblockUser: jest.fn().mockResolvedValue(null),
     setUserInfo: jest.fn(),
     selectAuthUser: jest.fn(),
     selectIsAuthenticated: jest.fn(),
@@ -69,7 +72,7 @@ jest.mock('@tobeatraveller/shared', () => {
 });
 
 import {
-  checkIsLiked, getMyReferralInfo, getUserPassport, selectAuthUser, selectIsAuthenticated, selectMe, selectMyItineraries, selectMyItinerariesLoaded,
+  blockUser, checkIsLiked, getBlockStatus, getMyReferralInfo, getUserById, getUserPassport, unblockUser, selectAuthUser, selectIsAuthenticated, selectMe, selectMyItineraries, selectMyItinerariesLoaded,
 } from '@tobeatraveller/shared';
 import { Alert, Share } from 'react-native';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
@@ -220,5 +223,53 @@ describe('signing out', () => {
     await act(async () => { await buttons.find((button) => button.style === 'destructive').onPress(); });
 
     expect(mockDispatch).toHaveBeenCalledWith('logout-thunk');
+  });
+});
+
+describe('blocking someone from their profile', () => {
+  const ANA = { id: 'user-2', username: 'ana', name: 'Ana', followers: 0, following: 0, totalItineraries: 0, createdAt: '2026-05-01T00:00:00Z' };
+
+  const renderOtherProfile = async () => {
+    getUserById.mockResolvedValue(ANA);
+    getUserPassport.mockResolvedValue({ owner: { id: 'user-2', username: 'ana' }, achievements: [], countries: [] });
+    render(
+      <SafeAreaProvider initialMetrics={INITIAL_METRICS}>
+        <ProfileScreen route={{ name: 'UserProfile', params: { id: 'user-2' } }} navigation={{ navigate: jest.fn(), canGoBack: () => true, goBack: jest.fn() }} />
+      </SafeAreaProvider>
+    );
+    await act(async () => {});
+  };
+
+  it('asks before blocking, and blocks only when it is confirmed', async () => {
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    await renderOtherProfile();
+
+    await act(async () => { fireEvent.press(screen.getByLabelText('block.button')); });
+
+    expect(alertSpy).toHaveBeenCalledWith('block.confirmTitle:ana', 'block.confirmDesc', expect.any(Array));
+    expect(blockUser).not.toHaveBeenCalled();
+
+    const [, , buttons] = alertSpy.mock.calls[0];
+    await act(async () => { await buttons.find((button) => button.style === 'destructive').onPress(); });
+
+    expect(blockUser).toHaveBeenCalledWith('user-2');
+    expect(screen.getByLabelText('block.unblockButton')).toBeTruthy();
+  });
+
+  it('unblocks at once, without asking, someone who is already blocked', async () => {
+    getBlockStatus.mockResolvedValue({ blocked: true });
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    await renderOtherProfile();
+
+    await act(async () => { fireEvent.press(screen.getByLabelText('block.unblockButton')); });
+
+    expect(alertSpy).not.toHaveBeenCalled();
+    expect(unblockUser).toHaveBeenCalledWith('user-2');
+  });
+
+  it('offers no block button on your own profile', async () => {
+    await renderOwnProfile();
+
+    expect(screen.queryByLabelText('block.button')).toBeNull();
   });
 });

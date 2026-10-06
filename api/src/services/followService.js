@@ -1,12 +1,14 @@
 import { ConflictError } from "../errors/ConflictError.js";
+import { ForbiddenError } from "../errors/ForbiddenError.js";
 import { NotFoundError } from "../errors/NotFoundError.js";
 
 export class FollowService {
-    constructor(userRepository, followRepository, notificationsService = null, badgeService = null) {
+    constructor(userRepository, followRepository, notificationsService = null, badgeService = null, blocksRepository = null) {
         this.userRepository = userRepository;
         this.followRepository = followRepository;
         this.notificationsService = notificationsService;
         this.badgeService = badgeService;
+        this.blocksRepository = blocksRepository;
     }
 
     async followUser(followerId, followedId) {
@@ -17,6 +19,10 @@ export class FollowService {
         const followedUserExist = await this.userRepository.getUserById(followedId);
         if (!followedUserExist) {
             throw new NotFoundError("User to follow not found");
+        }
+
+        if (await this.blocksRepository?.isBlockedEitherWay(followerId, followedId)) {
+            throw new ForbiddenError("validation.blockedCannotFollow");
         }
 
         const alreadyFollowing = await this.followRepository.isFollowing(followerId, followedId);

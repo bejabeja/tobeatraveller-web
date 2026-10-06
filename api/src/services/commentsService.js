@@ -1,18 +1,23 @@
 import { AuthError } from "../errors/AuthError.js";
+import { ForbiddenError } from "../errors/ForbiddenError.js";
 import { NotFoundError } from "../errors/NotFoundError.js";
 import { assertItineraryVisible } from "../utils/itineraryAccess.js";
 
 export class CommentsService {
-    constructor(commentsRepository, userRepository, notificationsService = null, itineraryRepository = null) {
+    constructor(commentsRepository, userRepository, notificationsService = null, itineraryRepository = null, blocksRepository = null) {
         this.commentsRepository = commentsRepository;
         this.userRepository = userRepository;
         this.notificationsService = notificationsService;
         this.itineraryRepository = itineraryRepository;
+        this.blocksRepository = blocksRepository;
     }
 
     async addComment(userId, itineraryId, content) {
         const itinerary = await this.itineraryRepository?.findById(itineraryId);
         assertItineraryVisible(itinerary, userId);
+        if (itinerary && await this.blocksRepository?.isBlockedEitherWay(userId, itinerary.userId)) {
+            throw new ForbiddenError("validation.blockedCannotComment");
+        }
         const result = await this.commentsRepository.addComment(userId, itineraryId, content);
 
         if (itinerary?.userId && itinerary.userId !== userId) {
@@ -29,8 +34,8 @@ export class CommentsService {
         const itinerary = await this.itineraryRepository?.findById(itineraryId);
         assertItineraryVisible(itinerary, requestingUserId);
         const [comments, totalCount] = await Promise.all([
-            this.commentsRepository.getCommentsByItinerary(itineraryId, { limit, offset }),
-            this.commentsRepository.countByItinerary(itineraryId),
+            this.commentsRepository.getCommentsByItinerary(itineraryId, { limit, offset, viewerId: requestingUserId }),
+            this.commentsRepository.countByItinerary(itineraryId, requestingUserId),
         ]);
         return { comments: comments.map(comment => comment.toDTO()), totalCount };
     }

@@ -1367,7 +1367,20 @@
       "user": "Profil"
     }
   },
+  "block": {
+    "button": "Blockieren",
+    "unblockButton": "Entblocken",
+    "confirmTitle": "@{{username}} blockieren?",
+    "confirmDesc": "Du siehst weder Kommentare noch Reisen dieser Person in Entdecken und Community, und ihr folgt euch nicht mehr. Sie kann dir nicht folgen oder deine Reisen kommentieren. Sie wird nicht benachrichtigt.",
+    "confirmButton": "Blockieren",
+    "blocked": "@{{username}} blockiert",
+    "unblocked": "@{{username}} entblockt",
+    "error": "Wir konnten die Blockierung nicht ändern. Bitte versuche es erneut."
+  },
   "validation": {
+    "blockYourself": "Du kannst dich nicht selbst blockieren",
+    "blockedCannotFollow": "Du kannst dieser Person nicht folgen",
+    "blockedCannotComment": "Du kannst diese Reise nicht kommentieren",
     "reportTarget": "Das kann nicht gemeldet werden",
     "reportReason": "Wähle einen Grund",
     "reportIllegalNeedsDetails": "Erkläre, warum es illegal ist (mindestens 10 Zeichen)",

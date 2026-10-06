@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import client from '../db/clientPostgres.js';
 import { Itinerary } from '../models/itinerary.js';
 import { countryCodeFromLabel } from '../utils/countryCodes.js';
+import { notBlockedWithViewer } from '../utils/blockFilter.js';
 
 export class ItineraryRepository {
   async findByUserId(userId) {
@@ -344,6 +345,11 @@ export class ItineraryRepository {
     if (filters.currency) {
       conditions.push(`UPPER(currency) = UPPER($${i++})`);
       values.push(filters.currency);
+    }
+
+    if (filters.viewerId) {
+      conditions.push(notBlockedWithViewer(`$${i++}`, 'itineraries.user_id'));
+      values.push(filters.viewerId);
     }
 
     return { conditions, values, nextIndex: i };
