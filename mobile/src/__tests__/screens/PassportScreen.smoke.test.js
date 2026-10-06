@@ -245,6 +245,23 @@ it("shows a member the countries they share with someone and how many of theirs 
   expect(getMyPassportLeaderboard).not.toHaveBeenCalled();
 });
 
+it('says the ranking could not be loaded, and loads it again on request', async () => {
+  getUserPassport.mockResolvedValue({ owner: { id: 'user-1', username: 'jane' }, achievements: [], countries: [] });
+  getMyPassportLeaderboard
+    .mockRejectedValueOnce(new Error('offline'))
+    .mockResolvedValueOnce({
+      followsAnyone: true,
+      entries: [{ user: { id: 'ana', username: 'ana', avatarUrl: null }, countries: 9, rank: 1, isMe: false }],
+    });
+  await renderScreen();
+
+  expect(screen.getByText('passport.leaderboardError')).toBeTruthy();
+  await act(async () => { fireEvent.press(screen.getByText('common.retry')); });
+
+  expect(screen.getByText('@ana')).toBeTruthy();
+  expect(screen.queryByText('passport.leaderboardError')).toBeNull();
+});
+
 it('ranks the owner among the people they follow, opening their passports', async () => {
   getUserPassport.mockResolvedValue({ owner: { id: 'user-1', username: 'jane' }, achievements: [], countries: [] });
   getMyPassportLeaderboard.mockResolvedValue({

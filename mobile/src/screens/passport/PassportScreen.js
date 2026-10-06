@@ -175,14 +175,21 @@ const CountriesInCommon = ({ comparison, t }) => {
 
 // The owner among the people they follow, by countries from public trips.
 const PassportLeaderboard = ({ navigation, t }) => {
-  const { leaderboard, loading, error } = usePassportLeaderboard(true);
+  const { leaderboard, loading, error, reload } = usePassportLeaderboard(true);
   if (loading) return null;
 
   return (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>{t('passport.leaderboardTitle')}</Text>
       <Text style={styles.sectionHint}>{t('passport.leaderboardHint')}</Text>
-      {error && <Text style={styles.sectionHint}>{t('passport.leaderboardError')}</Text>}
+      {error && (
+        <View accessibilityRole="alert">
+          <Text style={styles.sectionHint}>{t('passport.leaderboardError')}</Text>
+          <TouchableOpacity onPress={reload} accessibilityRole="button">
+            <Text style={styles.leaderboardRetry}>{t('common.retry')}</Text>
+          </TouchableOpacity>
+        </View>
+      )}
       {leaderboard && !leaderboard.followsAnyone && (
         <TouchableOpacity onPress={() => navigation.navigate('Community')} accessibilityRole="link">
           <Text style={styles.sectionHint}>
@@ -535,6 +542,7 @@ const styles = StyleSheet.create({
     backgroundColor: PASSPORT_PAPER, opacity: 0.85,
   },
   declaredCountryName: { color: '#8a8172' },
+  leaderboardRetry: { marginTop: 6, fontSize: 13, fontWeight: '700', color: PASSPORT_INK_MUTED, textDecorationLine: 'underline' },
   sectionHint: { marginTop: 4, fontSize: 12, color: PASSPORT_INK_MUTED },
   privateLegend: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
   privateLegendText: { marginTop: 0 },

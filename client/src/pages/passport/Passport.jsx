@@ -175,14 +175,19 @@ const CountriesInCommon = ({ comparison, t }) => {
 
 // The owner among the people they follow, by countries from public trips.
 const PassportLeaderboard = ({ t }) => {
-  const { leaderboard, loading, error } = usePassportLeaderboard(true);
+  const { leaderboard, loading, error, reload } = usePassportLeaderboard(true);
   if (loading) return null;
 
   return (
     <section className="passport__section" aria-labelledby="passport-leaderboard">
       <h2 id="passport-leaderboard" className="passport__section-title">{t("passport.leaderboardTitle")}</h2>
       <p className="passport__section-hint">{t("passport.leaderboardHint")}</p>
-      {error && <p className="passport__empty">{t("passport.leaderboardError")}</p>}
+      {error && (
+        <p className="passport__empty" role="alert">
+          {t("passport.leaderboardError")}{" "}
+          <button type="button" className="passport__more" onClick={reload}>{t("common.retry")}</button>
+        </p>
+      )}
       {leaderboard && !leaderboard.followsAnyone && (
         <p className="passport__empty">
           {t("passport.leaderboardEmpty")}{" "}

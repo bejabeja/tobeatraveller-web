@@ -361,6 +361,23 @@ describe("Passport page", () => {
     expect(screen.queryByText(/passport.compare/)).not.toBeInTheDocument();
   });
 
+  it("says the ranking could not be loaded, and loads it again on request", async () => {
+    getUserPassport.mockResolvedValue(PASSPORT);
+    getMyPassportLeaderboard
+      .mockRejectedValueOnce(new Error("offline"))
+      .mockResolvedValueOnce({
+        followsAnyone: true,
+        entries: [{ user: { id: "ana", username: "ana", avatarUrl: null }, countries: 9, rank: 1, isMe: false }],
+      });
+    renderPassport();
+
+    expect(await screen.findByText(/passport.leaderboardError/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "common.retry" }));
+
+    expect(await screen.findByText("@ana")).toBeInTheDocument();
+    expect(screen.queryByText(/passport.leaderboardError/)).not.toBeInTheDocument();
+  });
+
   it("ranks the owner among the people they follow, each linking to their passport", async () => {
     getUserPassport.mockResolvedValue(PASSPORT);
     getMyPassportLeaderboard.mockResolvedValue({

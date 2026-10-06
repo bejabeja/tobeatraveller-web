@@ -3,6 +3,7 @@ import { getMyPassportLeaderboard } from "../services/passport";
 
 // Only loaded on the owner's own passport (`enabled`).
 export const usePassportLeaderboard = (enabled) => {
+  const [attempt, setAttempt] = useState(0);
   const [state, setState] = useState({ leaderboard: null, loading: enabled, error: false });
 
   useEffect(() => {
@@ -13,7 +14,7 @@ export const usePassportLeaderboard = (enabled) => {
       .then((leaderboard) => { if (!cancelled) setState({ leaderboard, loading: false, error: false }); })
       .catch(() => { if (!cancelled) setState({ leaderboard: null, loading: false, error: true }); });
     return () => { cancelled = true; };
-  }, [enabled]);
+  }, [enabled, attempt]);
 
-  return state;
+  return { ...state, reload: () => setAttempt((count) => count + 1) };
 };
