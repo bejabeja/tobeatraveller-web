@@ -146,12 +146,12 @@
     color: var(--text-color);
     background: var(--white-color);
 
-    &--danger {
-      color: var(--error-color);
-
-      .account__link-icon {
-        color: var(--error-color);
-      }
+    // The same row as a link, for what is an action and not a page (sign out).
+    &:is(button) {
+      width: 100%;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
     }
   }
 

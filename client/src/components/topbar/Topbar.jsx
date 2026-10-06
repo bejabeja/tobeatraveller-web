@@ -16,6 +16,7 @@ import { selectUnreadCount } from "@tobeatraveller/shared";
 import { selectMe, selectMeLoading } from "../../store/user/userInfoSelectors.js";
 import { generateAvatar } from "../../utils/constants/constants";
 import { optimizedCloudinaryUrl } from "../../utils/cloudinaryUrl.js";
+import { useLogout } from "../../hooks/useLogout";
 import NotificationsPanel from "./NotificationsPanel";
 import "./Topbar.scss";
 
@@ -31,6 +32,7 @@ const Topbar = ({ onOpenSearch }) => {
   const { t } = useTranslation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const logout = useLogout();
   const userMe = useSelector(selectMe);
   const userMeLoading = useSelector(selectMeLoading);
   const unreadCount = useSelector(selectUnreadCount);
@@ -119,10 +121,10 @@ const Topbar = ({ onOpenSearch }) => {
               <span>{t("settings.contactUs")}</span>
             </Link>
             <div className="topbar__menu-divider" />
-            <Link to="/logout" className="topbar__menu-item topbar__menu-item--danger">
+            <button type="button" className="topbar__menu-item" onClick={logout}>
               <GoSignOut className="topbar__menu-icon" />
               <span>{t("auth.logout")}</span>
-            </Link>
+            </button>
           </div>
         </div>
       </div>

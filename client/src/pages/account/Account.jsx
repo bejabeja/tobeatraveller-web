@@ -15,6 +15,7 @@ import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import Spinner from "../../components/spinner/Spinner";
+import { useLogout } from "../../hooks/useLogout";
 import { selectMe } from "../../store/user/userInfoSelectors";
 import { generateAvatar } from "../../utils/constants/constants";
 import { optimizedCloudinaryUrl } from "../../utils/cloudinaryUrl";
@@ -23,6 +24,7 @@ import "./Account.scss";
 const Account = () => {
   const { t } = useTranslation();
   const userMe = useSelector(selectMe);
+  const logout = useLogout();
 
   if (!userMe) return <Spinner />;
 
@@ -51,7 +53,7 @@ const Account = () => {
       items: [
         { to: "/settings", Icon: IoSettingsOutline, label: t("settings.title") },
         { to: "/contact", Icon: IoMailOutline, label: t("settings.contactUs") },
-        { to: "/logout", Icon: GoSignOut, label: t("auth.logout"), mobileOnly: true, danger: true },
+        { onClick: logout, Icon: GoSignOut, label: t("auth.logout"), mobileOnly: true },
       ],
     },
   ];
@@ -63,15 +65,24 @@ const Account = () => {
     >
       {section.title && <h3 className="account__section-title">{section.title}</h3>}
       <ul className="account__links">
-        {section.items.map(({ to, Icon, label, mobileOnly, danger }) => (
-          <li key={to} className={mobileOnly ? "account__link-item--mobile-only" : undefined}>
-            <Link to={to} className={`account__link${danger ? " account__link--danger" : ""}`}>
+        {section.items.map(({ to, onClick, Icon, label, mobileOnly }) => {
+          const content = (
+            <>
               <Icon className="account__link-icon" aria-hidden="true" />
               <span className="account__link-label">{label}</span>
               <IoChevronForward className="account__link-arrow" aria-hidden="true" />
-            </Link>
-          </li>
-        ))}
+            </>
+          );
+          return (
+            <li key={to ?? label} className={mobileOnly ? "account__link-item--mobile-only" : undefined}>
+              {to ? (
+                <Link to={to} className="account__link">{content}</Link>
+              ) : (
+                <button type="button" className="account__link" onClick={onClick}>{content}</button>
+              )}
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

@@ -68,6 +68,23 @@ const ProfileScreen = ({ route, navigation }) => {
     dispatch(logoutUser());
   };
 
+  // Signing out is not undone by asking, so it only asks when it would lose something:
+  // the changes made without a connection that have not reached the server yet.
+  const handleSignOutPress = () => {
+    if (unsyncedChanges.length === 0) {
+      handleLogout();
+      return;
+    }
+    Alert.alert(
+      t('auth.confirmLogoutTitle'),
+      t('offline.logoutLosesChanges', { count: unsyncedChanges.length }),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        { text: t('auth.logout'), style: 'destructive', onPress: handleLogout },
+      ]
+    );
+  };
+
   const profileId = route.params?.id;
   const isOwnProfile = !profileId || (me && String(profileId) === String(me.id));
 
@@ -452,19 +469,7 @@ const ProfileScreen = ({ route, navigation }) => {
             >
               <Text style={styles.contactText}>{t('profile.contactUs')}</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.logoutBtn}
-              onPress={() => Alert.alert(
-                t('auth.confirmLogoutTitle'),
-                unsyncedChanges.length > 0
-                  ? t('offline.logoutLosesChanges', { count: unsyncedChanges.length })
-                  : t('auth.confirmLogoutDesc'),
-                [
-                  { text: t('common.cancel'), style: 'cancel' },
-                  { text: t('auth.logout'), style: 'destructive', onPress: handleLogout },
-                ]
-              )}
-            >
+            <TouchableOpacity style={styles.logoutBtn} onPress={handleSignOutPress}>
               <Text style={styles.logoutText}>{t('profile.signOut')}</Text>
             </TouchableOpacity>
           </>

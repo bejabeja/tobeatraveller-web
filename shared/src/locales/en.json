@@ -67,7 +67,6 @@
     "logoutFailed": "Failed to log out",
     "logout": "Logout",
     "confirmLogoutTitle": "Log out?",
-    "confirmLogoutDesc": "You'll need to sign in again to access your account.",
     "register": "Register",
     "signInLink": "Sign in",
     "noAccount": "New here?",

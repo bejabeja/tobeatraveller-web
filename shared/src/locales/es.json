@@ -67,7 +67,6 @@
     "logoutFailed": "No se pudo cerrar sesión",
     "logout": "Salir",
     "confirmLogoutTitle": "¿Cerrar sesión?",
-    "confirmLogoutDesc": "Tendrás que volver a iniciar sesión para acceder a tu cuenta.",
     "register": "Registrarse",
     "signInLink": "Inicia sesión",
     "noAccount": "¿Nuevo por aquí?",

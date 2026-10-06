@@ -41,7 +41,6 @@ import { loadMyUserInfo } from "./store/user/userInfoActions";
 // since it's the most common cold-landing page and shouldn't wait on a chunk fetch.
 const Login = lazy(() => import("./pages/auth/Login"));
 const Signup = lazy(() => import("./pages/auth/Signup"));
-const Logout = lazy(() => import("./pages/auth/Logout"));
 const ForgotPassword = lazy(() => import("./pages/auth/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/auth/ResetPassword"));
 const Explore = lazy(() => import("./pages/explore/Explore"));
@@ -181,7 +180,6 @@ const App = () => {
               {/* public routes */}
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Signup />} />
-              <Route path="/logout" element={<Logout />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/" element={<Home />} />

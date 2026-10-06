@@ -67,7 +67,6 @@
     "logoutFailed": "Impossible de se déconnecter",
     "logout": "Déconnexion",
     "confirmLogoutTitle": "Se déconnecter ?",
-    "confirmLogoutDesc": "Tu devras te reconnecter pour accéder à ton compte.",
     "register": "S'inscrire",
     "signInLink": "Se connecter",
     "noAccount": "Première visite ?",

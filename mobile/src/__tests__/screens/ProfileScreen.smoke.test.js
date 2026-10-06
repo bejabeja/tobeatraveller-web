@@ -1,3 +1,6 @@
+const mockDispatch = jest.fn();
+let mockUnsyncedChanges = [];
+
 jest.mock('@react-navigation/native', () => {
   const { useEffect } = jest.requireActual('react');
   return {
@@ -8,7 +11,7 @@ jest.mock('@react-navigation/native', () => {
 
 jest.mock('react-redux', () => ({
   useSelector: (selector) => selector(),
-  useDispatch: () => jest.fn(),
+  useDispatch: () => mockDispatch,
 }));
 
 jest.mock('react-i18next', () => ({
@@ -27,7 +30,7 @@ jest.mock('../../utils/session', () => ({
 jest.mock('../../utils/config', () => ({ WEB_URL: 'https://tobeatraveller.test' }));
 
 jest.mock('../../offline/useOutbox', () => ({
-  useOutbox: () => ({ changes: [] }),
+  useOutbox: () => ({ changes: mockUnsyncedChanges }),
 }));
 
 jest.mock('@tobeatraveller/shared', () => {
@@ -55,7 +58,7 @@ jest.mock('@tobeatraveller/shared', () => {
     getUserById: jest.fn(),
     getUserFavorites: jest.fn().mockResolvedValue([]),
     getUserPassport: jest.fn(),
-    logoutUser: jest.fn(),
+    logoutUser: jest.fn(() => 'logout-thunk'),
     setUserInfo: jest.fn(),
     selectAuthUser: jest.fn(),
     selectIsAuthenticated: jest.fn(),
@@ -68,9 +71,10 @@ jest.mock('@tobeatraveller/shared', () => {
 import {
   checkIsLiked, getMyReferralInfo, getUserPassport, selectAuthUser, selectIsAuthenticated, selectMe, selectMyItineraries, selectMyItinerariesLoaded,
 } from '@tobeatraveller/shared';
-import { Share } from 'react-native';
+import { Alert, Share } from 'react-native';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { clearDeviceSessionData } from '../../utils/session';
 import ProfileScreen from '../../screens/profile/ProfileScreen';
 
 const INITIAL_METRICS = { frame: { x: 0, y: 0, width: 390, height: 844 }, insets: { top: 0, left: 0, right: 0, bottom: 0 } };
@@ -86,6 +90,7 @@ beforeEach(() => {
   selectAuthUser.mockReturnValue(ME);
   selectMyItineraries.mockReturnValue([]);
   selectMyItinerariesLoaded.mockReturnValue(true);
+  mockUnsyncedChanges = [];
 });
 
 // Guards the header markup (moved around more than once), which no other
@@ -188,3 +193,32 @@ it('marks no tool as Premium, all of them being free up to a limit', async () =>
   expect(screen.getByText('🎒 packingChecklist.title')).toBeTruthy();
 });
 
+describe('signing out', () => {
+  // Regression: it always asked "Log out?", although with nothing unsent there is nothing to lose.
+  it('signs out at once when there is nothing waiting to be sent', async () => {
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    await renderOwnProfile();
+
+    await act(async () => { fireEvent.press(screen.getByText('profile.signOut')); });
+
+    expect(alertSpy).not.toHaveBeenCalled();
+    expect(clearDeviceSessionData).toHaveBeenCalled();
+    expect(mockDispatch).toHaveBeenCalledWith('logout-thunk');
+  });
+
+  it('warns how many changes would be lost, and signs out only if it is confirmed', async () => {
+    mockUnsyncedChanges = [{ id: 'c1' }, { id: 'c2' }];
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    await renderOwnProfile();
+
+    await act(async () => { fireEvent.press(screen.getByText('profile.signOut')); });
+
+    expect(alertSpy).toHaveBeenCalledWith('auth.confirmLogoutTitle', 'offline.logoutLosesChanges', expect.any(Array));
+    expect(mockDispatch).not.toHaveBeenCalledWith('logout-thunk');
+
+    const [, , buttons] = alertSpy.mock.calls[0];
+    await act(async () => { await buttons.find((button) => button.style === 'destructive').onPress(); });
+
+    expect(mockDispatch).toHaveBeenCalledWith('logout-thunk');
+  });
+});

@@ -173,16 +173,18 @@
   text-decoration: none;
   transition: background-color 0.15s;
 
-  &:hover {
-    background-color: var(--surface-color);
+  // An action and not a page (sign out): the same row as the links.
+  &:is(button) {
+    width: 100%;
+    border: 0;
+    background: none;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
   }
 
-  &--danger {
-    color: var(--error-color);
-
-    &:hover {
-      background-color: rgba(230, 57, 70, 0.08);
-    }
+  &:hover {
+    background-color: var(--surface-color);
   }
 }
 
