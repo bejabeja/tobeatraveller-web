@@ -492,6 +492,21 @@ describe('ItineraryService', () => {
       expect(badgeService.evaluateUserInBackground).toHaveBeenCalledWith('user-1');
     });
 
+    // Regression guard: a trip the team hid after a report must not be published again by its owner.
+    it('does not let the owner publish again a trip the team hid', async () => {
+      itinerariesRepository.findById.mockResolvedValue(makeItinerary({ moderationHiddenAt: new Date('2026-10-01') }));
+
+      await expect(service.updateItinerary('itin-1', { ...baseUpdateData, isPublic: true }, null, [], 'user-1'))
+        .rejects.toBeInstanceOf(ConflictError);
+    });
+
+    it('still lets the owner edit a hidden trip while it stays private', async () => {
+      itinerariesRepository.findById.mockResolvedValue(makeItinerary({ moderationHiddenAt: new Date('2026-10-01') }));
+
+      await expect(service.updateItinerary('itin-1', { ...baseUpdateData, isPublic: false }, null, [], 'user-1'))
+        .resolves.not.toThrow();
+    });
+
     it('lets an experience drop its date', async () => {
       itinerariesRepository.findById.mockResolvedValue(makeItinerary({ source: 'experience' }));
 

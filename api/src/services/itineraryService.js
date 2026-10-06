@@ -198,6 +198,9 @@ export class ItineraryService {
             throw new NotFoundError("Itinerary not found");
         }
         assertItineraryOwner(itinerary, userId);
+        if (itinerary.moderationHiddenAt && itineraryData.isPublic) {
+            throw new ConflictError("validation.tripHiddenByModeration", "isPublic");
+        }
         if (!itineraryData.startDate && itinerary.source !== ITINERARY_SOURCES.EXPERIENCE) {
             throw new ValidationError("validation.dateRequired");
         }

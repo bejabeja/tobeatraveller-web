@@ -7,6 +7,9 @@ import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from "./languages.js";
 import { TRAVEL_STYLES } from "./travelStyles.js";
 import { ISO_COUNTRY_CODES } from "./countryCodes.js";
 import { EXPERIENCE_MAX_DAYS, ITINERARY_SOURCES } from "./itinerarySources.js";
+import {
+    REPORT_DECISIONS, REPORT_DETAILS_MAX_LENGTH, REPORT_ILLEGAL_DETAILS_MIN_LENGTH, REPORT_REASONS, REPORT_TARGET_TYPES,
+} from "./contentReports.js";
 
 // Messages a person can run into are the translation keys the apps share
 // (`validation.*` in shared/src/locales), shown in their language; checks
@@ -254,6 +257,21 @@ export const updateTravelStyleSchema = z.object({
 
 export const commentSchema = z.object({
     text: z.string().min(1, "validation.commentEmpty").max(COMMENT_MAX_LENGTH, "validation.tooLong"),
+});
+
+export const reportSchema = z.object({
+    targetType: z.enum(Object.values(REPORT_TARGET_TYPES), { errorMap: () => ({ message: "validation.reportTarget" }) }),
+    targetId: z.string().uuid("validation.reportTarget"),
+    reason: z.enum(Object.values(REPORT_REASONS), { errorMap: () => ({ message: "validation.reportReason" }) }),
+    details: z.string().trim().max(REPORT_DETAILS_MAX_LENGTH, "validation.tooLong").optional(),
+}).refine(
+    ({ reason, details }) => reason !== REPORT_REASONS.ILLEGAL || (details?.length ?? 0) >= REPORT_ILLEGAL_DETAILS_MIN_LENGTH,
+    { message: "validation.reportIllegalNeedsDetails", path: ["details"] },
+);
+
+export const reportDecisionSchema = z.object({
+    decision: z.enum(Object.values(REPORT_DECISIONS), { errorMap: () => ({ message: "validation.reportDecision" }) }),
+    note: z.string().trim().max(REPORT_DETAILS_MAX_LENGTH, "validation.tooLong").optional(),
 });
 
 export const userIdParamSchema = z.string().uuid("Invalid user id");

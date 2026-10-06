@@ -40,6 +40,13 @@ export class ItineraryRepository {
     return result.rows.length ? Itinerary.fromDb(result.rows[0]) : null;
   }
 
+  async hideForModeration(itineraryId) {
+    await client.query(
+      `UPDATE itineraries SET is_public = false, moderation_hidden_at = NOW() WHERE id = $1`,
+      [itineraryId]
+    );
+  }
+
   async findPublicSitemapEntries() {
     const result = await client.query(`
       SELECT i.id, i.updated_at

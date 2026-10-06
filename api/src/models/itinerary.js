@@ -25,7 +25,7 @@ const PLACEHOLDER_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80
 const PLACEHOLDER_IMAGE = `data:image/svg+xml;base64,${Buffer.from(PLACEHOLDER_SVG).toString('base64')}`;
 
 export class Itinerary {
-    constructor({ id, userId, title, description, location, startDate, endDate, totalDays, createdAt, updatedAt, photoUrl, photoPublicId, budget, numberOfPeople, likesCount, commentsCount, category, currency, isPublic, byVan, source, clonedFromItineraryId }) {
+    constructor({ id, userId, title, description, location, startDate, endDate, totalDays, createdAt, updatedAt, photoUrl, photoPublicId, budget, numberOfPeople, likesCount, commentsCount, category, currency, isPublic, byVan, source, clonedFromItineraryId, moderationHiddenAt }) {
         this.id = id;
         this.userId = userId;
         this.title = title;
@@ -48,6 +48,7 @@ export class Itinerary {
         this.byVan = byVan ?? false;
         this.source = source ?? 'itinerary';
         this.clonedFromItineraryId = clonedFromItineraryId ?? null;
+        this.moderationHiddenAt = moderationHiddenAt ?? null;
         this.places = [];
         this.images = [];
         this.user = null;
@@ -82,6 +83,7 @@ export class Itinerary {
             byVan: row.by_van,
             source: row.source ?? 'itinerary',
             clonedFromItineraryId: row.cloned_from_itinerary_id,
+            moderationHiddenAt: row.moderation_hidden_at,
         });
     }
 

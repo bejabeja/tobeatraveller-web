@@ -32,6 +32,7 @@ import { createSubscriptionWebhookRouter } from './src/routes/subscriptionWebhoo
 import { createSubscriptionCronRouter } from './src/routes/subscriptionCronRouter.js';
 import { createReferralRouter } from './src/routes/referralRouter.js';
 import { createPushTokensRouter } from './src/routes/pushTokensRouter.js';
+import { createContentReportsRouter } from './src/routes/contentReportsRouter.js';
 
 const app = express();
 
@@ -54,6 +55,7 @@ app.use('/itineraries', createItinerariesRouter());
 app.use('/favorites', authenticate, createFavoritesRouter());
 app.use('/likes', authenticate, createLikesRouter());
 app.use('/comments', createCommentsRouter());
+app.use('/reports', createContentReportsRouter());
 app.use('/notifications', authenticate, createNotificationsRouter());
 // Not premium-gated at the mount point: Van Log, Life Diary, Supplies and
 // the packing lists are free up to a cap enforced in their own service

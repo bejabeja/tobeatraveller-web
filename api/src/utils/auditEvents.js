@@ -31,4 +31,8 @@ export const AUDIT_EVENTS = Object.freeze({
     SUBSCRIPTION_DISPUTED: 'subscription_disputed',
     REFERRAL_REWARD_GRANTED: 'referral_reward_granted',
     REFERRAL_REWARD_CAPPED: 'referral_reward_capped',
+    CONTENT_REPORTED: 'content_reported',
+    REPORT_RESOLVED: 'report_resolved',
+    CONTENT_REMOVED_BY_MODERATION: 'content_removed_by_moderation',
+    REPORTS_PURGED: 'reports_purged',
 });

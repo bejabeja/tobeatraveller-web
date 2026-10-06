@@ -5,6 +5,7 @@ import {
     registerPushTokenSchema, createVanLogEntrySchema, vanLogEntrySchema as vanLogUpdateSchema,
     declaredCountriesSchema, contactSchema, updateLanguageSchema, updateUserTierSchema,
     createPackingListSchema, packingListSchema, updatePackingListSchema, createCheckoutSessionSchema, updateTravelStyleSchema,
+    reportSchema, reportDecisionSchema,
 } from '../../utils/schemasValidation.js';
 
 const validSignupData = {
@@ -476,5 +477,38 @@ describe('createCheckoutSessionSchema', () => {
 
     it('rejects a startTrial that is not a boolean', () => {
         expect(createCheckoutSessionSchema.safeParse({ plan: 'annual', startTrial: 'no' }).success).toBe(false);
+    });
+});
+
+describe('reportSchema', () => {
+    const report = { targetType: 'comment', targetId: '0a5f8d67-e58e-4eb0-b224-1b86cf215060', reason: 'spam' };
+
+    it('accepts a report without details', () => {
+        expect(reportSchema.safeParse(report).success).toBe(true);
+    });
+
+    it('rejects a reason that is not one of the list', () => {
+        expect(reportSchema.safeParse({ ...report, reason: 'dislike' }).success).toBe(false);
+    });
+
+    it('rejects a target that is not an id', () => {
+        expect(reportSchema.safeParse({ ...report, targetId: 'abc' }).success).toBe(false);
+    });
+
+    // The law asks that a notice about illegal content explains why it is illegal.
+    it('asks for an explanation when the reason is illegal content', () => {
+        const withoutDetails = reportSchema.safeParse({ ...report, reason: 'illegal' });
+        const withDetails = reportSchema.safeParse({ ...report, reason: 'illegal', details: 'It sells counterfeit goods' });
+
+        expect(withoutDetails.success).toBe(false);
+        expect(withoutDetails.error.errors[0].message).toBe('validation.reportIllegalNeedsDetails');
+        expect(withDetails.success).toBe(true);
+    });
+});
+
+describe('reportDecisionSchema', () => {
+    it('accepts the three decisions and rejects anything else', () => {
+        expect(['remove', 'dismiss', 'resolve'].every((decision) => reportDecisionSchema.safeParse({ decision }).success)).toBe(true);
+        expect(reportDecisionSchema.safeParse({ decision: 'ban' }).success).toBe(false);
     });
 });
