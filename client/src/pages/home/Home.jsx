@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
+import toast from "react-hot-toast";
 import { selectIsAuthenticated } from "../../store/auth/authSelectors.js";
 import { selectMe, selectMeError } from "../../store/user/userInfoSelectors.js";
 
@@ -128,12 +129,16 @@ const Home = () => {
         {isAuthenticated && (
           <div className="home__tabs">
             <button
+              type="button"
+              aria-pressed={isTabDecided && tab === HOME_TABS.DISCOVER}
               className={`home__tab${isTabDecided && tab === HOME_TABS.DISCOVER ? " home__tab--active" : ""}`}
               onClick={() => setChosenTab(HOME_TABS.DISCOVER)}
             >
               {t("home.tabDiscover")}
             </button>
             <button
+              type="button"
+              aria-pressed={isTabDecided && tab === HOME_TABS.FOLLOWING}
               className={`home__tab${isTabDecided && tab === HOME_TABS.FOLLOWING ? " home__tab--active" : ""}`}
               onClick={() => setChosenTab(HOME_TABS.FOLLOWING)}
             >
@@ -163,9 +168,11 @@ const Home = () => {
               <>
                 <ItinerariesSection itineraries={feed} isLoading={feedLoading} />
                 {feedPage < feedTotalPages && (
-                  <div style={{ marginTop: "1rem", display: "flex", justifyContent: "center" }}>
+                  <div className="home__load-more">
                     <LoadingButton
-                      onClick={() => dispatch(initFeed(feedPage + 1))}
+                      onClick={() => dispatch(initFeed(feedPage + 1)).then((loaded) => {
+                        if (!loaded) toast.error(t("explore.loadMoreError"));
+                      })}
                       isLoading={feedLoading}
                     >
                       {t("common.loadMore")}

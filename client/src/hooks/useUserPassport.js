@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getUserPassport } from "../services/passport";
 
+const MISSING_USER_STATUSES = [400, 404];
+
 export const useUserPassport = (userId) => {
-  const [state, setState] = useState({ passport: null, loading: Boolean(userId), error: false });
+  const [state, setState] = useState({ passport: null, loading: Boolean(userId), error: false, notFound: false });
   const [reloadCount, setReloadCount] = useState(0);
   const loadedUserIdRef = useRef(null);
 
@@ -14,15 +16,19 @@ export const useUserPassport = (userId) => {
     // stamps must not show meanwhile. A reload of the same one keeps it on
     // screen until the fresh one arrives.
     if (loadedUserIdRef.current !== userId) {
-      setState({ passport: null, loading: true, error: false });
+      setState({ passport: null, loading: true, error: false, notFound: false });
     }
     getUserPassport(userId)
       .then((passport) => {
         if (cancelled) return;
         loadedUserIdRef.current = userId;
-        setState({ passport, loading: false, error: false });
+        setState({ passport, loading: false, error: false, notFound: false });
       })
-      .catch(() => { if (!cancelled) setState({ passport: null, loading: false, error: true }); });
+      .catch((error) => {
+        if (cancelled) return;
+        const notFound = MISSING_USER_STATUSES.includes(error.status);
+        setState({ passport: null, loading: false, error: !notFound, notFound });
+      });
     return () => { cancelled = true; };
   }, [userId, reloadCount]);
 

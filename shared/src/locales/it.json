@@ -216,6 +216,7 @@
     "hint": "Così chi cerca viaggi in van lo troverà in Esplora."
   },
   "explore": {
+    "loadMoreError": "Impossibile caricare altri viaggi. Riprova.",
     "removeFilter": "Rimuovi filtro",
     "clearSearch": "Cancella la ricerca",
     "title": "Esplora il mondo",

@@ -13,6 +13,7 @@ import {
   formatAmount, formatBudgetAmount, formatCalendarDay, formatNumber, groupVanLogEntriesByMonth, groupVanLogEntriesByTrip, isNetworkError,
   isPremiumRequiredError, selectAuthUser, selectMyItineraries,
   vanLogCategories, vanLogCategoryEmoji as CATEGORY_EMOJI,
+  locationLine,
 } from '@tobeatraveller/shared';
 import FeatureLoadState from '../../components/FeatureLoadState';
 import { PendingChangesNotice } from '../../components/PendingChangesNotice';
@@ -541,13 +542,11 @@ const VanLogScreen = ({ navigation }) => {
             ? `${formatNumber(item.pricePerLiter, language, { minimumFractionDigits: 3, maximumFractionDigits: 3 })} ${item.currency || ''}/L`
             : null;
           const isExpanded = expandedEntryId === item.id;
-          const locationLine = item.location?.name
-            ? `${item.location.name}${item.location.country ? `, ${item.location.country}` : ''}`
-            : null;
+          const itemLocation = locationLine(item.location);
           const detailParts = [
             item.title ? categoryLabel(item.category) : null,
             item.entryDate ? formatCalendarDay(item.entryDate, language, SHORT_DAY) : null,
-            locationLine,
+            itemLocation,
             priceLine,
           ].filter(Boolean);
 

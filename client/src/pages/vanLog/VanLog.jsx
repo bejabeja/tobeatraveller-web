@@ -10,6 +10,7 @@ import {
 import {
   formatAmount, formatBudgetAmount, formatCalendarDay, formatNumber, getTripBudgetProgress, getVanLogDateRangePresets,
   groupVanLogEntriesByMonth, groupVanLogEntriesByTrip, isPremiumRequiredError, localCalendarDay, normalizeSearchText, vanLogCategories, vanLogCategoryEmoji,
+  locationLine,
 } from "@tobeatraveller/shared";
 import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState";
 import SelectMenu from "../../components/form/SelectMenu";
@@ -21,6 +22,7 @@ import VanLogEntryNotes from "./VanLogEntryNotes";
 import VanLogStatsView from "./VanLogStatsView";
 import ToolHeader from "../../components/toolPage/ToolHeader";
 import ToolEmptyState from "../../components/toolPage/ToolEmptyState";
+import { usePageMeta } from "../../hooks/usePageMeta.js";
 import "./VanLog.scss";
 
 const EMPTY_FILTERS = { category: "", country: "", currency: "", dateFrom: "", dateTo: "", itineraryId: "" };
@@ -57,6 +59,7 @@ const buildVanLogCsv = (entriesToExport, t, categoryLabel) => {
 
 const VanLog = () => {
   const { t, i18n } = useTranslation();
+  usePageMeta({ title: t("nav.vanLog") });
   const language = i18n.language;
   const myItineraries = useSelector(selectMyItineraries);
   const [entries, setEntries] = useState([]);
@@ -569,13 +572,11 @@ const VanLog = () => {
                       const priceLine = entry.category === "fuel" && entry.pricePerLiter != null
                         ? `${formatNumber(entry.pricePerLiter, language, { minimumFractionDigits: 3, maximumFractionDigits: 3 })} ${entry.currency || ""}/L`
                         : null;
-                      const locationLine = entry.location?.name
-                        ? `${entry.location.name}${entry.location.country ? `, ${entry.location.country}` : ""}`
-                        : null;
+                      const entryLocation = locationLine(entry.location);
                       const detailParts = [
                         entry.title ? categoryLabel(entry.category) : null,
                         entry.entryDate ? formatCalendarDay(entry.entryDate, language, SHORT_DAY) : null,
-                        locationLine,
+                        entryLocation,
                         priceLine,
                       ].filter(Boolean);
                       return (

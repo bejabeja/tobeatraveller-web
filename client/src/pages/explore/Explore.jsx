@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
+import toast from "react-hot-toast";
 import { IoCloseOutline, IoSearchOutline } from "react-icons/io5";
 
 import LoadingButton from "../../components/LoadingButton.jsx";
@@ -108,7 +109,9 @@ const Explore = () => {
   const loadMore = () => {
     const nextPage = page + 1;
     dispatch(setExplorePagination(nextPage));
-    dispatch(loadMoreExploreItineraries({ page: nextPage, ...filters, sortBy }));
+    dispatch(loadMoreExploreItineraries({ page: nextPage, ...filters, sortBy })).then((loaded) => {
+      if (!loaded) toast.error(t("explore.loadMoreError"));
+    });
   };
 
   const handleRetry = () => {
@@ -219,7 +222,7 @@ const Explore = () => {
               {filters.travelersCount && (
                 <FilterTag onRemove={() => removeFilters("travelersCount")} removeLabel={t("explore.removeFilter")}>{t(`explore.${filters.travelersCount}`)}</FilterTag>
               )}
-              <button className="explore__clear-all" onClick={clearAllFilters}>
+              <button type="button" className="explore__clear-all" onClick={clearAllFilters}>
                 {t("explore.clearAll")}
               </button>
             </div>

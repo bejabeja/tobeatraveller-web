@@ -8,6 +8,7 @@ export const SET_EXPLORE_ITINERARIES = "@exploreItineraries/setItineraries";
 export const SET_EXPLORE_ITINERARIES_ERROR = "@exploreItineraries/setError";
 export const SET_EXPLORE_PAGINATION = "@exploreItineraries/setPagination";
 export const START_LOADING_MORE_ITINERARIES = "@exploreItineraries/startLoadingMore";
+export const SET_LOAD_MORE_ITINERARIES_FAILED = "@exploreItineraries/loadMoreFailed";
 export const SET_STATS = "@stats/set";
 export const UPDATE_COMMENTS_COUNT = "@itinerary/updateCommentsCount";
 
@@ -64,11 +65,13 @@ export const loadMoreExploreItineraries = (filters) => async (dispatch) => {
             type: SET_EXPLORE_ITINERARIES,
             payload: { itineraries, totalPages, totalItems, page: filters.page },
         });
+        return true;
     } catch (error) {
         dispatch({
-            type: SET_EXPLORE_ITINERARIES_ERROR,
-            payload: 'Error fetching explore itineraries',
+            type: SET_LOAD_MORE_ITINERARIES_FAILED,
+            payload: { page: filters.page - 1 },
         });
+        return false;
     }
 };
 
@@ -92,8 +95,10 @@ export const initFeed = (page = 1) => async (dispatch) => {
     try {
         const { itineraries, totalPages, totalItems, currentPage } = await getFeedItineraries(page);
         dispatch({ type: SET_FEED, payload: { itineraries, totalPages, totalItems, page: currentPage, append: page > 1 } });
+        return true;
     } catch {
         dispatch({ type: SET_FEED_ERROR });
+        return false;
     }
 };
 

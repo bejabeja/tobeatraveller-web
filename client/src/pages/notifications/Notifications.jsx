@@ -13,10 +13,12 @@ import {
   selectNotificationsTotalPages,
 } from "@tobeatraveller/shared";
 import NotificationItem from "../../components/notifications/NotificationItem";
+import { usePageMeta } from "../../hooks/usePageMeta.js";
 import "./Notifications.scss";
 
 const Notifications = () => {
   const { t } = useTranslation();
+  usePageMeta({ title: t("notifications.title") });
   const dispatch = useDispatch();
   const notifications = useSelector(selectNotifications);
   const loading = useSelector(selectNotificationsLoading);

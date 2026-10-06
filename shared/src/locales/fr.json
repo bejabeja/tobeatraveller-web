@@ -216,6 +216,7 @@
     "hint": "Ainsi, ceux qui cherchent des voyages en van le trouveront dans Explorer."
   },
   "explore": {
+    "loadMoreError": "Impossible de charger plus de voyages. Réessaie.",
     "removeFilter": "Retirer le filtre",
     "clearSearch": "Effacer la recherche",
     "title": "Explore le monde",

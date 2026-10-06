@@ -45,6 +45,15 @@ describe("Community", () => {
     expect(screen.queryByText("community.inviteTitle")).not.toBeInTheDocument();
   });
 
+  // Regression: the list of travellers to follow included the person looking at it.
+  it("does not list the signed-in person among the travellers to follow", () => {
+    mockState = buildState({ users: [{ id: "u1", username: "me" }, { id: "u2", username: "ana" }] });
+    renderCommunity();
+
+    expect(screen.getByText("@ana")).toBeInTheDocument();
+    expect(screen.queryByText("@me")).not.toBeInTheDocument();
+  });
+
   // Regression: finding nobody showed four messages and a second way to
   // clear the search, with inviting them as a small link at the end.
   it("says once who was not found and offers to invite them", () => {

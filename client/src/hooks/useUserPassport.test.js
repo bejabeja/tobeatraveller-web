@@ -49,3 +49,26 @@ describe("useUserPassport reload", () => {
     await waitFor(() => expect(result.current.passport.declaredCountries).toEqual([{ code: "JP" }]));
   });
 });
+
+describe("useUserPassport when the user does not exist", () => {
+  // Regression: a passport of a user that does not exist showed "Couldn't load" with a retry that could never work.
+  it.each([404, 400])("reports it as not found instead of a retryable error on status %i", async (status) => {
+    getUserPassport.mockRejectedValueOnce(Object.assign(new Error("User not found"), { status }));
+    const { result } = renderHook(() => useUserPassport("missing"));
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(result.current.notFound).toBe(true);
+    expect(result.current.error).toBe(false);
+  });
+
+  it("keeps a server failure as a retryable error", async () => {
+    getUserPassport.mockRejectedValueOnce(Object.assign(new Error("boom"), { status: 500 }));
+    const { result } = renderHook(() => useUserPassport("user-a"));
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(result.current.notFound).toBe(false);
+    expect(result.current.error).toBe(true);
+  });
+});

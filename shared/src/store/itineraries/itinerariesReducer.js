@@ -3,6 +3,7 @@ import {
     SET_EXPLORE_ITINERARIES_ERROR,
     SET_EXPLORE_PAGINATION,
     SET_FEATURED_ITINERARIES,
+    SET_LOAD_MORE_ITINERARIES_FAILED,
     SET_FEATURED_ITINERARIES_ERROR,
     SET_FEED, SET_FEED_ERROR, START_LOADING_FEED, START_LOADING_MORE_FEED,
     SET_STATS,
@@ -99,6 +100,16 @@ export const itinerariesReducer = (state = initialState, action) => {
                     ...state.exploreItineraries,
                     error: action.payload,
                     loading: false,
+                }
+            };
+
+        case SET_LOAD_MORE_ITINERARIES_FAILED:
+            return {
+                ...state,
+                exploreItineraries: {
+                    ...state.exploreItineraries,
+                    loadingMore: false,
+                    page: action.payload.page,
                 }
             };
 

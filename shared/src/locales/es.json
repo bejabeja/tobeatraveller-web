@@ -216,6 +216,7 @@
     "hint": "Así quien busque viajes en furgo lo encontrará en Explore."
   },
   "explore": {
+    "loadMoreError": "No se pudieron cargar más viajes. Inténtalo de nuevo.",
     "removeFilter": "Quitar filtro",
     "clearSearch": "Borrar búsqueda",
     "title": "Explorar el mundo",

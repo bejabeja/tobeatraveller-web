@@ -10,6 +10,7 @@ import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
   formatCalendarDay, getLifeDiaryEntries, isNetworkError, LIFE_DIARY_PAGE_SIZE, isPremiumRequiredError, selectAuthUser,
+  locationLine,
 } from '@tobeatraveller/shared';
 import FeatureLoadState from '../../components/FeatureLoadState';
 import { PendingChangesNotice } from '../../components/PendingChangesNotice';
@@ -211,7 +212,7 @@ const LifeDiaryScreen = ({ navigation }) => {
                     <View style={styles.entryLocationRow}>
                       <Ionicons name="location-outline" size={13} color="#6b7280" />
                       <Text style={styles.entryLocation}>
-                        {item.location.name}{item.location.country ? `, ${item.location.country}` : ''}
+                        {locationLine(item.location)}
                       </Text>
                     </View>
                   )}

@@ -20,6 +20,7 @@ jest.mock('@tobeatraveller/shared', () => ({
   isPremiumRequiredError: () => false,
   selectAuthUser: () => ({ id: 'u1' }),
   formatCalendarDay: (day) => day,
+  locationLine: jest.requireActual('../../../../shared/src/utils/locationLine.js').locationLine,
 }));
 
 import { Alert, FlatList } from 'react-native';

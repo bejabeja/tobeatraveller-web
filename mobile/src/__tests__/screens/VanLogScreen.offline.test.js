@@ -29,6 +29,7 @@ jest.mock('@tobeatraveller/shared', () => {
   const parseError = jest.requireActual('../../../../shared/src/utils/parseError.js');
   return {
     ...jest.requireActual('../../../../shared/src/utils/formatLocale.js'),
+    ...jest.requireActual('../../../../shared/src/utils/locationLine.js'),
     groupVanLogEntriesByMonth: vanLogStats.groupVanLogEntriesByMonth,
     getVanLogFuelPriceTrend: vanLogStats.getVanLogFuelPriceTrend,
     getVanLogSpendingByCurrency: vanLogStats.getVanLogSpendingByCurrency,

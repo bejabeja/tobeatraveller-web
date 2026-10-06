@@ -18,6 +18,7 @@ import {
 import SupplyFormModal from "./SupplyFormModal";
 import ToolHeader from "../../components/toolPage/ToolHeader";
 import ToolEmptyState from "../../components/toolPage/ToolEmptyState";
+import { usePageMeta } from "../../hooks/usePageMeta.js";
 import "./Supplies.scss";
 
 // Buying is not final for this long: the check is shown at once and the
@@ -30,6 +31,7 @@ const DEFAULT_QUICK_ADD_CATEGORY = "food";
 
 const Supplies = () => {
   const { t, i18n } = useTranslation();
+  usePageMeta({ title: t("nav.supplies") });
   const s = (key, vars) => t(`supplies.${key}`, vars);
   // Agrees with the amount: "1 unidad", "2 unidades".
   const unitLabel = (value, amount) => s(`unit.${value}`, { count: amount, defaultValue: value });

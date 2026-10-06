@@ -24,6 +24,7 @@ import { trackEvent } from "../../utils/analytics";
 import { optimizedCloudinaryUrl } from "../../utils/cloudinaryUrl";
 import { generateAvatar } from "../../utils/constants/constants";
 import { ANALYTICS_EVENTS, PASSPORT_SHARE_SOURCES, PASSPORT_START_STEPS, PASSPORT_VIEWERS } from "../../utils/analyticsEvents";
+import NotFound from "../error/NotFound.jsx";
 import "./Passport.scss";
 
 // "2026-03-01" is a calendar date, not an instant: parsed as local so it
@@ -346,7 +347,7 @@ const Passport = () => {
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const isAuthChecked = useSelector(selectIsAuthChecked);
   const location = useLocation();
-  const { passport, loading, error, reload } = useUserPassport(id);
+  const { passport, loading, error, notFound, reload } = useUserPassport(id);
   const [isDeclaredOpen, setIsDeclaredOpen] = useState(false);
   const [savingDeclared, setSavingDeclared] = useState(false);
   const closeDeclared = useCallback(() => setIsDeclaredOpen(false), []);
@@ -442,6 +443,8 @@ const Passport = () => {
   if (loading) {
     return <div className="passport section__container"><div className="passport__skeleton" /></div>;
   }
+
+  if (notFound) return <NotFound />;
 
   if (error || !passport) {
     return (

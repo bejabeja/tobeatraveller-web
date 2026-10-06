@@ -100,7 +100,9 @@ const ExploreScreen = ({ navigation, route }) => {
 
   const handleLoadMore = () => {
     if (hasMore && !loadingMore) {
-      dispatch(loadMoreExploreItineraries({ page: currentPage + 1, ...buildFilters() }));
+      dispatch(loadMoreExploreItineraries({ page: currentPage + 1, ...buildFilters() })).then((loaded) => {
+        if (!loaded) Alert.alert(t('errors.somethingWrong'), t('explore.loadMoreError'));
+      });
     }
   };
 

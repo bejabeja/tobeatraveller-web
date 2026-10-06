@@ -212,6 +212,7 @@
     "hint": "So finden alle, die Van-Reisen suchen, ihn in Entdecken."
   },
   "explore": {
+    "loadMoreError": "Weitere Reisen konnten nicht geladen werden. Versuche es erneut.",
     "removeFilter": "Filter entfernen",
     "clearSearch": "Suche löschen",
     "title": "Erkunde die Welt",

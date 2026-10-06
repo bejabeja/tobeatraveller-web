@@ -25,6 +25,7 @@ import TravellersForm from "../sectionsForm/TravellersForm";
 import VisibilityForm from "../sectionsForm/VisibilityForm";
 import { trackEvent } from "../../../utils/analytics";
 import { ANALYTICS_EVENTS, TRIP_KINDS, tripCreatedProperties } from "../../../utils/analyticsEvents";
+import { usePageMeta } from "../../../hooks/usePageMeta.js";
 import "./CreateItinerary.scss";
 
 const TOTAL_STEPS = 5;
@@ -41,6 +42,7 @@ const STEP_META = [
 
 const CreateItinerary = () => {
   const { t } = useTranslation();
+  usePageMeta({ title: t("nav.createTrip") });
   const dispatch = useDispatch();
   const navigate = useNavigate();
 

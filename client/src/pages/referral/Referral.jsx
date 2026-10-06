@@ -7,6 +7,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { getMyReferralInfo } from "../../services/referral";
 import { generateAvatar } from "../../utils/constants/constants";
+import { usePageMeta } from "../../hooks/usePageMeta.js";
 import "./Referral.scss";
 
 const STEPS = [
@@ -23,6 +24,7 @@ const INVITE_STATUS_LABEL_KEYS = {
 
 const Referral = () => {
   const { t } = useTranslation();
+  usePageMeta({ title: t("referral.title") });
   const [info, setInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadFailed, setLoadFailed] = useState(false);

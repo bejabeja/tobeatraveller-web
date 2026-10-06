@@ -23,6 +23,7 @@ import { setUserInfo } from "../../store/user/userInfoActions";
 import { selectMe, selectMeLoading } from "../../store/user/userInfoSelectors";
 import "../../components/modal/Modal.scss";
 import "../profile/EditProfile.scss";
+import { usePageMeta } from "../../hooks/usePageMeta.js";
 import "./Settings.scss";
 
 const HOME_PATH = "/";
@@ -53,6 +54,7 @@ const SettingsActionRow = ({ as: Component = "button", label, hint, danger = fal
 
 const Settings = () => {
   const { t } = useTranslation();
+  usePageMeta({ title: t("settings.title") });
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const goBack = useGoBack(HOME_PATH);

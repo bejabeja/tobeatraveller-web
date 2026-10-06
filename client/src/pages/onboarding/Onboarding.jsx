@@ -9,6 +9,7 @@ import {
 import { trackEvent } from "../../utils/analytics";
 import { ANALYTICS_EVENTS } from "../../utils/analyticsEvents";
 import { generateAvatar } from "../../utils/constants/constants";
+import { usePageMeta } from "../../hooks/usePageMeta.js";
 import "./Onboarding.scss";
 
 const DOTS = 3;
@@ -32,6 +33,7 @@ const START_ACTIONS = {
 
 const Onboarding = () => {
   const { t } = useTranslation();
+  usePageMeta({ title: t("onboarding.welcomeTitle") });
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();

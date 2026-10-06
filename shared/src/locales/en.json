@@ -212,6 +212,7 @@
     "hint": "This way anyone looking for van trips will find it in Explore."
   },
   "explore": {
+    "loadMoreError": "Could not load more trips. Please try again.",
     "removeFilter": "Remove filter",
     "clearSearch": "Clear search",
     "title": "Explore the world",

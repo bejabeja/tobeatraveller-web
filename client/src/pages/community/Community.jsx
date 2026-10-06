@@ -8,7 +8,7 @@ import UsersSection from "../../components/users/UsersSection.jsx";
 import useDebouncedEffect from "../../hooks/useDebounced.js";
 import { usePageMeta } from "../../hooks/usePageMeta.js";
 import { returnToState } from "../../utils/returnTo.js";
-import { selectIsAuthenticated } from "../../store/auth/authSelectors.js";
+import { selectAuthUser, selectIsAuthenticated } from "../../store/auth/authSelectors.js";
 import {
   initAllUsers, loadMoreUsers,
   selectAllUsers,
@@ -28,12 +28,15 @@ const Community = () => {
   const location = useLocation();
 
   const isAuthenticated = useSelector(selectIsAuthenticated);
-  const users = useSelector(selectAllUsers);
+  const authUser = useSelector(selectAuthUser);
+  const allUsers = useSelector(selectAllUsers);
   const loading = useSelector(selectAllUsersLoading);
   const loadingMore = useSelector(selectAllUsersLoadingMore);
   const error = useSelector(selectAllUsersError);
   const currentPage = useSelector(selectAllUsersCurrentPage);
   const totalPages = useSelector(selectAllUsersTotalPages);
+
+  const users = allUsers?.filter((user) => user.id !== authUser?.id);
 
   usePageMeta({ title: t("community.title"), description: t("community.subtitle") });
 

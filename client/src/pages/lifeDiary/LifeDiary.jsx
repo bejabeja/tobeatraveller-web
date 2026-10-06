@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import {
   IoAddOutline, IoJournalOutline, IoLocationOutline, IoPencilOutline, IoTrashOutline,
 } from "react-icons/io5";
-import { formatCalendarDay, isPremiumRequiredError, LIFE_DIARY_PAGE_SIZE } from "@tobeatraveller/shared";
+import { formatCalendarDay, isPremiumRequiredError, LIFE_DIARY_PAGE_SIZE, locationLine } from "@tobeatraveller/shared";
 import LoadingButton from "../../components/LoadingButton";
 import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState";
 import Modal from "../../components/modal/Modal";
@@ -12,12 +12,14 @@ import { deleteLifeDiaryEntry, getLifeDiaryEntries, getLifeDiaryUsage } from "..
 import LifeDiaryFormModal from "./LifeDiaryFormModal";
 import ToolHeader from "../../components/toolPage/ToolHeader";
 import ToolEmptyState from "../../components/toolPage/ToolEmptyState";
+import { usePageMeta } from "../../hooks/usePageMeta.js";
 import "./LifeDiary.scss";
 
 const ENTRY_DATE_FORMAT = { day: "numeric", month: "short", year: "numeric" };
 
 const LifeDiary = () => {
   const { t, i18n } = useTranslation();
+  usePageMeta({ title: t("nav.lifeDiary") });
   const d = (key, vars) => t(`lifeDiary.${key}`, vars);
 
   const [entries, setEntries] = useState([]);
@@ -135,7 +137,7 @@ const LifeDiary = () => {
                   <div className="life-diary__entry-place">
                     {entry.location?.name && (
                       <span className="life-diary__entry-location">
-                        <IoLocationOutline className="life-diary__entry-location-icon" /> {entry.location.name}{entry.location.country ? `, ${entry.location.country}` : ""}
+                        <IoLocationOutline className="life-diary__entry-location-icon" /> {locationLine(entry.location)}
                       </span>
                     )}
                     <span className="life-diary__entry-date">{formatCalendarDay(entry.entryDate, i18n.language, ENTRY_DATE_FORMAT)}</span>

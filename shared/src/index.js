@@ -79,6 +79,7 @@ export * from './utils/dayPlaces.js';
 export * from './utils/nextTrip.js';
 export * from './utils/unfinishedDraft.js';
 export * from './utils/greetingName.js';
+export * from './utils/locationLine.js';
 export * from './utils/homeTab.js';
 export * from './utils/constants/packingTemplates.js';
 export * from './utils/packingLists.js';

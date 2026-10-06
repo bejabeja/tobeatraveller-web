@@ -16,6 +16,7 @@ import { selectMyItineraries, selectMyItinerariesLoaded } from "../../store/user
 import { trackEvent } from "../../utils/analytics";
 import { ANALYTICS_EVENTS } from "../../utils/analyticsEvents";
 import PackingListFormModal from "./PackingListFormModal";
+import { usePageMeta } from "../../hooks/usePageMeta.js";
 import "./PackingLists.scss";
 
 const SKELETON_CARDS = 3;
@@ -27,6 +28,7 @@ const FOR_TRIP_PARAM = "forTrip";
 // with how far along it is.
 const PackingLists = () => {
   const { t, i18n } = useTranslation();
+  usePageMeta({ title: t("nav.packingChecklist") });
   const p = (key, vars) => t(`packingChecklist.${key}`, vars);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();

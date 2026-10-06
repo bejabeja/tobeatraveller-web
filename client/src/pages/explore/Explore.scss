@@ -289,9 +289,13 @@
       padding: 4.5rem 3rem;
     }
 
-    &__filters-sticky {
-      position: sticky;
-      top: calc(var(--app-bar-height) + 1rem);
+    // Only on tall screens: on a short one the pinned bar (search + categories)
+    // takes a fifth of the viewport and hides the trips it filters.
+    @media (min-height: 800px) {
+      &__filters-sticky {
+        position: sticky;
+        top: calc(var(--app-bar-height) + 1rem);
+      }
     }
   }
 }
