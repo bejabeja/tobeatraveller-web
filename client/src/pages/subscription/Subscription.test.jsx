@@ -120,6 +120,9 @@ describe("Subscription", () => {
 
       expect(screen.getByRole("heading", { name: "subscription.guestTitle" })).toBeInTheDocument();
       expect(screen.getByText("subscription.guestDesc")).toBeInTheDocument();
+      // "When it ends" would contradict a Premium with no end.
+      expect(screen.getByText("subscription.guestNote")).toBeInTheDocument();
+      expect(screen.queryByText("subscription.noPaidSubscriptionNote")).not.toBeInTheDocument();
       expect(screen.queryByText(/subscription.premiumUntilDesc/)).not.toBeInTheDocument();
     });
 

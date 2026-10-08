@@ -359,7 +359,7 @@ const Subscription = () => {
                 {manageHint}
               </>
             ) : (
-              <p className="subscription__manage-hint">{t("subscription.noPaidSubscriptionNote")}</p>
+              <p className="subscription__manage-hint">{t(view.indefinite ? "subscription.guestNote" : "subscription.noPaidSubscriptionNote")}</p>
             )}
           </div>
         );

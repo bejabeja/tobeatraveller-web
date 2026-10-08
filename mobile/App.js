@@ -13,6 +13,7 @@ import {
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import Navigation from './src/navigation';
+import ErrorBoundary from './src/components/ErrorBoundary';
 import { OfflineBanner } from './src/components/OfflineBanner';
 import { API_URL } from './src/utils/config';
 import { usePushNotificationReceived, usePushTokenRegistration } from './src/hooks/usePushNotifications';
@@ -108,7 +109,9 @@ function AppContent() {
     <>
       <StatusBar style="auto" />
       <OfflineBanner />
-      <Navigation />
+      <ErrorBoundary>
+        <Navigation />
+      </ErrorBoundary>
     </>
   );
 }

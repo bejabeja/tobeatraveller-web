@@ -407,7 +407,8 @@
     "metaTitle": "Planes Premium",
     "metaDescription": "Controla gastos, provisiones y tu diario en ruta, trabaja sin conexión en la app y planifica viajes con IA. 7 días de prueba gratis, sin tarjeta.",
     "guestTitle": "Invitado de honor",
-    "guestDesc": "Tu Premium va por nuestra cuenta, sin fecha de fin. Gracias por ser una de las personas que hacen ToBeATraveller lo que es."
+    "guestDesc": "Tu Premium va por nuestra cuenta, sin fecha de fin. Gracias por ser una de las personas que hacen ToBeATraveller lo que es.",
+    "guestNote": "No es una suscripción de pago, así que aquí no hay nada que gestionar."
   },
   "admin": {
     "reportOpenTarget": "Abrir",
@@ -856,7 +857,7 @@
     }
   },
   "supplies": {
-    "purpose": "La lista de la compra es lo que aún tienes que comprar y el inventario es lo que ya llevas a bordo. Marca un artículo como comprado y pasa al inventario.",
+    "purpose": "La lista de la compra es lo que aún tienes que comprar y el inventario es lo que ya tienes. Marca un artículo como comprado y pasa al inventario.",
     "title": "Suministros",
     "addItem": "Añadir producto",
     "editItem": "Editar producto",

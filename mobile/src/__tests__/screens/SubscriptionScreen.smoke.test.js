@@ -90,8 +90,8 @@ describe('when the user is Premium', () => {
   const IN_TWO_WEEKS = new Date(Date.now() + 14 * 86400000).toISOString();
   const date = (iso) => formatDate(iso, 'es');
   const paidSubscription = (overrides = {}) => ({ status: 'active', currentPeriodEnd: IN_TWO_WEEKS, cancelAtPeriodEnd: false, ...overrides });
-  const renderPremium = async (subscription) => {
-    mockUser = { id: 'user-1', isPremium: true, premiumUntil: IN_TWO_WEEKS };
+  const renderPremium = async (subscription, premiumUntil = IN_TWO_WEEKS) => {
+    mockUser = { id: 'user-1', isPremium: true, premiumUntil };
     getMySubscription.mockResolvedValue(subscription);
     renderScreen();
     await act(async () => {});
@@ -122,6 +122,15 @@ describe('when the user is Premium', () => {
     expect(screen.getByText(`subscription.premiumUntilDesc:${date(IN_TWO_WEEKS)}`)).toBeTruthy();
     expect(screen.queryByText('subscription.manageLink')).toBeNull();
     expect(createPortalSession).not.toHaveBeenCalled();
+  });
+
+  it('greets someone whose Premium has no end date as a guest of honour, without saying when it ends', async () => {
+    await renderPremium(null, '2126-08-08T00:00:00.000Z');
+
+    expect(screen.getByText('subscription.guestTitle')).toBeTruthy();
+    expect(screen.getByText('subscription.guestDesc')).toBeTruthy();
+    expect(screen.getByText('subscription.guestNote')).toBeTruthy();
+    expect(screen.queryByText('subscription.noPaidSubscriptionNote')).toBeNull();
   });
 
   it('keeps the way to billing when the subscription could not be read', async () => {

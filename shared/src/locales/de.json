@@ -401,7 +401,8 @@
     "metaTitle": "Premium-Tarife",
     "metaDescription": "Behalte Ausgaben, Vorräte und dein Tagebuch unterwegs im Blick, arbeite offline in der App und plane Reisen mit KI. 7 Tage kostenlos testen, ohne Karte.",
     "guestTitle": "Ehrengast",
-    "guestDesc": "Dein Premium geht auf uns, ohne Enddatum. Danke, dass du zu denen gehörst, die ToBeATraveller ausmachen."
+    "guestDesc": "Dein Premium geht auf uns, ohne Enddatum. Danke, dass du zu denen gehörst, die ToBeATraveller ausmachen.",
+    "guestNote": "Das ist kein bezahltes Abo, daher gibt es hier nichts zu verwalten."
   },
   "admin": {
     "reportOpenTarget": "Öffnen",
@@ -859,7 +860,7 @@
     }
   },
   "supplies": {
-    "purpose": "Die Einkaufsliste ist, was du noch kaufen musst, und das Inventar ist, was du schon an Bord hast. Markierst du einen Artikel als gekauft, wandert er ins Inventar.",
+    "purpose": "Die Einkaufsliste ist, was du noch kaufen musst, und das Inventar ist, was du schon hast. Markierst du einen Artikel als gekauft, wandert er ins Inventar.",
     "title": "Vorräte",
     "addItem": "Artikel hinzufügen",
     "editItem": "Artikel bearbeiten",

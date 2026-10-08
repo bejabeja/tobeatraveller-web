@@ -394,7 +394,7 @@ const SubscriptionScreen = ({ navigation }) => {
             </Text>
 
             {view.kind === 'granted' ? (
-              <Text style={styles.manageHint}>{t('subscription.noPaidSubscriptionNote')}</Text>
+              <Text style={styles.manageHint}>{t(view.indefinite ? 'subscription.guestNote' : 'subscription.noPaidSubscriptionNote')}</Text>
             ) : (
               <>
                 <View style={styles.alreadyPremiumActions}>

@@ -401,7 +401,8 @@
     "metaTitle": "Premium plans",
     "metaDescription": "Track expenses, supplies and your diary on the road, work offline in the app and plan trips with AI. 7-day free trial, no card needed.",
     "guestTitle": "Guest of honour",
-    "guestDesc": "Premium is on us, with no end date. Thank you for being one of the people who make ToBeATraveller what it is."
+    "guestDesc": "Premium is on us, with no end date. Thank you for being one of the people who make ToBeATraveller what it is.",
+    "guestNote": "This is not a paid subscription, so there is nothing to manage here."
   },
   "admin": {
     "reportOpenTarget": "Open",
@@ -859,7 +860,7 @@
     }
   },
   "supplies": {
-    "purpose": "The shopping list is what you still have to buy and the inventory is what you already have on board. Mark an item as bought and it moves to the inventory.",
+    "purpose": "The shopping list is what you still have to buy and the inventory is what you already have. Mark an item as bought and it moves to the inventory.",
     "title": "Supplies",
     "addItem": "Add item",
     "editItem": "Edit item",

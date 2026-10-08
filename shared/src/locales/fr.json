@@ -407,7 +407,8 @@
     "metaTitle": "Formules Premium",
     "metaDescription": "Suivez vos dépenses, vos provisions et votre journal en route, travaillez hors ligne dans l'app et planifiez vos voyages avec l'IA. 7 jours d'essai gratuit, sans carte.",
     "guestTitle": "Invité d'honneur",
-    "guestDesc": "Ton Premium est offert, sans date de fin. Merci de faire partie des personnes qui font ToBeATraveller."
+    "guestDesc": "Ton Premium est offert, sans date de fin. Merci de faire partie des personnes qui font ToBeATraveller.",
+    "guestNote": "Ce n'est pas un abonnement payant, il n'y a donc rien à gérer ici."
   },
   "admin": {
     "reportOpenTarget": "Ouvrir",
@@ -872,7 +873,7 @@
     }
   },
   "supplies": {
-    "purpose": "La liste de courses, c'est ce qu'il te reste à acheter, et l'inventaire, ce que tu as déjà à bord. Marque un article comme acheté et il passe dans l'inventaire.",
+    "purpose": "La liste de courses, c'est ce qu'il te reste à acheter, et l'inventaire, ce que tu as déjà. Marque un article comme acheté et il passe dans l'inventaire.",
     "title": "Provisions",
     "addItem": "Ajouter un article",
     "editItem": "Modifier l'article",

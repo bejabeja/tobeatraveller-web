@@ -27,6 +27,7 @@ import { identifyUser, initAnalyticsIfConsented } from "./utils/analytics";
 import { useSyncPendingDeclaredCountries } from "./hooks/useSyncPendingDeclaredCountries";
 import { useSyncUserLanguage } from "./hooks/useSyncUserLanguage";
 import { useAchievementCelebrations } from "./hooks/useAchievementCelebrations";
+import ErrorBoundary from "./components/errorBoundary/ErrorBoundary";
 import PageSkeleton from "./components/pageSkeleton/PageSkeleton";
 import AchievementCelebration from "./components/celebration/AchievementCelebration";
 
@@ -176,74 +177,76 @@ const App = () => {
         {isAuthenticated && !isAuthRoute && <Topbar onOpenSearch={() => setSearchOpen(true)} />}
         {isAuthenticated && !isAuthRoute && <EmailVerificationBanner />}
         <main className="content">
-          <Suspense fallback={isAuthRoute ? <Spinner /> : <PageSkeleton />}>
-            <Routes>
-              {/* public routes */}
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Signup />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/" element={<Home />} />
-              <Route path="/explore" element={<Explore />} />
-              <Route path="/community" element={<Community />} />
-              <Route path="/subscription" element={<Subscription />} />
-              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-              <Route path="/terms" element={<Terms />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/verify-email" element={<VerifyEmail />} />
+          <ErrorBoundary key={location.pathname}>
+            <Suspense fallback={isAuthRoute ? <Spinner /> : <PageSkeleton />}>
+              <Routes>
+                {/* public routes */}
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Signup />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/" element={<Home />} />
+                <Route path="/explore" element={<Explore />} />
+                <Route path="/community" element={<Community />} />
+                <Route path="/subscription" element={<Subscription />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/terms" element={<Terms />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/verify-email" element={<VerifyEmail />} />
 
-              {/* routes to decide if private or not */}
-              <Route path="/friend-profile/:id" element={<Profile />} />
-              {/* /@username. One segment, so it also catches unknown addresses and says so. */}
-              <Route path="/:handle" element={<ProfileByHandle />} />
-              <Route path="/itinerary/:id" element={<Itinerary />} />
-              <Route path="/profile/:id/followers" element={<FollowersList />} />
-              <Route path="/profile/:id/following" element={<FollowingList />} />
-              <Route path="/profile/:id/passport" element={<Passport />} />
+                {/* routes to decide if private or not */}
+                <Route path="/friend-profile/:id" element={<Profile />} />
+                {/* /@username. One segment, so it also catches unknown addresses and says so. */}
+                <Route path="/:handle" element={<ProfileByHandle />} />
+                <Route path="/itinerary/:id" element={<Itinerary />} />
+                <Route path="/profile/:id/followers" element={<FollowersList />} />
+                <Route path="/profile/:id/following" element={<FollowingList />} />
+                <Route path="/profile/:id/passport" element={<Passport />} />
 
-              {/* private routes */}
-              <Route element={<PrivateLayout />}>
-                <Route path="/welcome" element={<Onboarding />} />
-                <Route path="/recap" element={<Recap />} />
-                <Route path="/notifications" element={<Notifications />} />
-                <Route path="/account" element={<Account />} />
-                <Route path="/invite" element={<Referral />} />
-                {/* Your trips live in your profile now; kept so saved links still land there. */}
-                <Route
-                  path="/my-itineraries"
-                  element={<Navigate to={`/profile/${userAuthenticated?.id}`} replace />}
-                />
-                {/* Saved trips live in your profile; kept so saved links still land there. */}
-                <Route
-                  path="/itineraries/saved"
-                  element={<Navigate to={`/profile/${userAuthenticated?.id}?tab=saved`} replace />}
-                />
-                <Route path="/van-log" element={<VanLog />} />
-                <Route path="/supplies" element={<Supplies />} />
-                <Route path="/packing-checklist" element={<PackingLists />} />
-                <Route path="/packing-checklist/:listId" element={<PackingList />} />
-                <Route path="/life-diary" element={<LifeDiary />} />
-                <Route path="/profile/:id" element={<Profile />} />
-                <Route path="/profile/edit/:id" element={<EditProfile />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/create-itinerary" element={<CreateItinerary />} />
-                <Route path="/create-experience" element={<CreateExperience />} />
-                <Route path="/experience/edit/:id" element={<EditExperience />} />
-                <Route path="/itinerary/edit/:id" element={<EditItinerary />} />
+                {/* private routes */}
+                <Route element={<PrivateLayout />}>
+                  <Route path="/welcome" element={<Onboarding />} />
+                  <Route path="/recap" element={<Recap />} />
+                  <Route path="/notifications" element={<Notifications />} />
+                  <Route path="/account" element={<Account />} />
+                  <Route path="/invite" element={<Referral />} />
+                  {/* Your trips live in your profile now; kept so saved links still land there. */}
+                  <Route
+                    path="/my-itineraries"
+                    element={<Navigate to={`/profile/${userAuthenticated?.id}`} replace />}
+                  />
+                  {/* Saved trips live in your profile; kept so saved links still land there. */}
+                  <Route
+                    path="/itineraries/saved"
+                    element={<Navigate to={`/profile/${userAuthenticated?.id}?tab=saved`} replace />}
+                  />
+                  <Route path="/van-log" element={<VanLog />} />
+                  <Route path="/supplies" element={<Supplies />} />
+                  <Route path="/packing-checklist" element={<PackingLists />} />
+                  <Route path="/packing-checklist/:listId" element={<PackingList />} />
+                  <Route path="/life-diary" element={<LifeDiary />} />
+                  <Route path="/profile/:id" element={<Profile />} />
+                  <Route path="/profile/edit/:id" element={<EditProfile />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="/create-itinerary" element={<CreateItinerary />} />
+                  <Route path="/create-experience" element={<CreateExperience />} />
+                  <Route path="/experience/edit/:id" element={<EditExperience />} />
+                  <Route path="/itinerary/edit/:id" element={<EditItinerary />} />
 
-                <Route element={<InternalGuard />}>
-                  <Route path="/internal" element={<InternalDashboard />}>
-                    <Route index element={<Navigate to="/internal/users" replace />} />
-                    <Route path="users" element={<InternalUsers />} />
-                    <Route path="audit-log" element={<InternalAuditLog />} />
-                    <Route path="referrals" element={<InternalReferrals />} />
-                    <Route path="reports" element={<InternalReports />} />
+                  <Route element={<InternalGuard />}>
+                    <Route path="/internal" element={<InternalDashboard />}>
+                      <Route index element={<Navigate to="/internal/users" replace />} />
+                      <Route path="users" element={<InternalUsers />} />
+                      <Route path="audit-log" element={<InternalAuditLog />} />
+                      <Route path="referrals" element={<InternalReferrals />} />
+                      <Route path="reports" element={<InternalReports />} />
+                    </Route>
                   </Route>
                 </Route>
-              </Route>
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+          </ErrorBoundary>
         </main>
 
         {isPublicRoute && <Footer />}

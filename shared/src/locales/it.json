@@ -407,7 +407,8 @@
     "metaTitle": "Piani Premium",
     "metaDescription": "Tieni sotto controllo spese, scorte e diario in viaggio, lavora offline nell'app e pianifica i viaggi con l'IA. 7 giorni di prova gratuita, senza carta.",
     "guestTitle": "Ospite d'onore",
-    "guestDesc": "Il tuo Premium è offerto da noi, senza data di fine. Grazie di essere una delle persone che rendono ToBeATraveller quello che è."
+    "guestDesc": "Il tuo Premium è offerto da noi, senza data di fine. Grazie di essere una delle persone che rendono ToBeATraveller quello che è.",
+    "guestNote": "Non è un abbonamento a pagamento, quindi qui non c'è nulla da gestire."
   },
   "admin": {
     "reportOpenTarget": "Apri",
@@ -872,7 +873,7 @@
     }
   },
   "supplies": {
-    "purpose": "La lista della spesa è ciò che devi ancora comprare e l'inventario è ciò che hai già a bordo. Segna un articolo come comprato e passa all'inventario.",
+    "purpose": "La lista della spesa è ciò che devi ancora comprare e l'inventario è ciò che hai già. Segna un articolo come comprato e passa all'inventario.",
     "title": "Scorte",
     "addItem": "Aggiungi articolo",
     "editItem": "Modifica articolo",

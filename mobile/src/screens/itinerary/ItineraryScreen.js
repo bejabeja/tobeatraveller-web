@@ -143,7 +143,8 @@ const ItineraryScreen = ({ route, navigation }) => {
   }, [itinerary?.id, isAuthenticated]);
 
   useEffect(() => {
-    if (!targetCommentId || handledCommentIdRef.current === targetCommentId || comments.length === 0) return;
+    // findNodeHandle does not exist on the web build, where it crashed the whole screen.
+    if (Platform.OS === 'web' || !targetCommentId || handledCommentIdRef.current === targetCommentId || comments.length === 0) return;
     const commentNode = commentNodesRef.current[targetCommentId];
     const scrollNode = findNodeHandle(scrollViewRef.current);
     if (!commentNode || !scrollNode) return;
