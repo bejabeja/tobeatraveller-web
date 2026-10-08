@@ -43,7 +43,7 @@ const SettingsRow = ({
 }) => {
   const trailing = children ?? (
     <View style={styles.rowTrailing}>
-      {!!value && <Text style={styles.rowValue} numberOfLines={1}>{value}</Text>}
+      {!!value && <Text style={styles.rowValue} numberOfLines={2}>{value}</Text>}
       {option && selected && <Ionicons name="checkmark" size={18} color="#E8743B" />}
       {onPress && !option && (
         <Ionicons name={expanded ? 'chevron-up' : expanded === false ? 'chevron-down' : 'chevron-forward'} size={16} color="#9ca3af" />
@@ -553,7 +553,8 @@ const styles = StyleSheet.create({
   rowLabelSelected: { color: '#E8743B', fontWeight: '600' },
   rowHint: { fontSize: 13, color: '#6b7280', lineHeight: 18 },
   rowTrailing: { flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 1, maxWidth: '55%' },
-  rowValue: { fontSize: 14, color: '#6b7280', flexShrink: 1 },
+  // Two lines, right-aligned: an email or "Ich lebe oder reise im Van" must not be cut short on a narrow screen.
+  rowValue: { fontSize: 14, color: '#6b7280', flexShrink: 1, textAlign: 'right' },
 
   passwordForm: { gap: 0, paddingBottom: 12 },
   errorText: { fontSize: 13, color: '#dc2626', marginTop: 8 },

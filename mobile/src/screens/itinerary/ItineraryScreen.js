@@ -2,7 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useRef, useState } from 'react';
 import {
-  Alert, findNodeHandle, Image, Linking, Platform, ScrollView, Share,
+  Alert, findNodeHandle, Image, KeyboardAvoidingView, Linking, Platform, ScrollView, Share,
   StyleSheet, Text, TextInput, TouchableOpacity, View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -328,8 +328,10 @@ const ItineraryScreen = ({ route, navigation }) => {
 
   const categoryKey = tripCategoryLabelKey(itinerary?.category);
 
+  // The comment box is at the very end of a long page: the keyboard must not cover it.
   return (
-    <ScrollView ref={scrollViewRef} style={styles.container} showsVerticalScrollIndicator={false}>
+    <KeyboardAvoidingView style={styles.keyboardAvoider} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <ScrollView ref={scrollViewRef} style={styles.container} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
       {/* Hero */}
       <View style={styles.heroContainer}>
         <TripPhoto uri={itinerary.photoUrl} style={styles.heroImage} />
@@ -643,6 +645,7 @@ const ItineraryScreen = ({ route, navigation }) => {
         />
       )}
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -797,6 +800,7 @@ const StatCard = ({ icon, label, value, subvalue }) => (
 );
 
 const styles = StyleSheet.create({
+  keyboardAvoider: { flex: 1 },
   container: { flex: 1, backgroundColor: '#fff' },
   errorScreen: { flex: 1, backgroundColor: '#fff' },
   errorBackBtn: { position: 'absolute', left: 16, width: 40, padding: 4 },

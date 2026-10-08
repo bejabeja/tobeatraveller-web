@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator, Alert, FlatList, Modal, RefreshControl, ScrollView,
+  ActivityIndicator, Alert, FlatList, KeyboardAvoidingView, Modal, Platform, RefreshControl, ScrollView,
   StyleSheet, Text, TextInput, TouchableOpacity, View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -294,7 +294,7 @@ const ExploreScreen = ({ navigation, route }) => {
 
       {/* Advanced filters modal */}
       <Modal visible={showFilters} animationType="slide" transparent onRequestClose={() => setShowFilters(false)}>
-        <View style={styles.modalBackdrop}>
+        <KeyboardAvoidingView style={styles.modalBackdrop} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
           <View style={styles.modalSheet}>
             <View style={styles.modalHandle} />
             <View style={styles.modalHeader}>
@@ -370,7 +370,7 @@ const ExploreScreen = ({ navigation, route }) => {
               <Text style={styles.applyBtnText}>{t('explore.applyFilters')}</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );

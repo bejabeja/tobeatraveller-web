@@ -551,6 +551,12 @@ const ProfileScreen = ({ route, navigation }) => {
           <Text style={styles.sectionTitle}>
             {isOwnProfile ? t('profile.myTrips') : t('profile.otherTrips')} ({itineraries.length})
           </Text>
+          {/* The full list of my trips was only behind tapping the trips counter, which nothing says. */}
+          {isOwnProfile && itineraries.length > 0 && (
+            <TouchableOpacity onPress={() => navigation.navigate('MyItineraries')} accessibilityRole="button">
+              <Text style={styles.seeAll}>{t('profile.seeAll')}</Text>
+            </TouchableOpacity>
+          )}
         </View>
         {isOwnProfile && (
           <View style={styles.visibilityToggle}>
@@ -720,7 +726,8 @@ const styles = StyleSheet.create({
   },
   avatarInitial: { color: '#fff', fontSize: 32, fontWeight: '700' },
 
-  cardActions: { flexDirection: 'row', gap: 8, alignItems: 'center' },
+  // Wraps instead of running off the screen: "Profil bearbeiten" next to two icons does not fit on 360 px.
+  cardActions: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-end', flexShrink: 1, gap: 8, alignItems: 'center' },
   iconBtn: {
     width: 36, height: 36, borderRadius: 18,
     borderWidth: 1.5, borderColor: '#e5e7eb',

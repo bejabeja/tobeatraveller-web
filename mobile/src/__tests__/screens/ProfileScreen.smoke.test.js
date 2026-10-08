@@ -196,6 +196,28 @@ it('marks no tool as Premium, all of them being free up to a limit', async () =>
   expect(screen.getByText('🎒 packingChecklist.title')).toBeTruthy();
 });
 
+// Regression: the full list of my trips could only be reached by tapping the trips counter, which nothing hints at.
+it('offers a "see all" for my trips, which opens the full list', async () => {
+  selectMyItineraries.mockReturnValue([{
+    id: 't1', isPublic: true, title: 'Trip 1', location: { name: 'Lisbon' }, tripTotalDays: 3, category: 'relax',
+    photoUrl: null, images: [], likesCount: 0, commentsCount: 0, user: { id: 'user-1', username: 'jane' },
+  }]);
+  selectMe.mockReturnValue(ME);
+  getUserPassport.mockResolvedValue({ owner: { id: 'user-1', username: 'jane' }, achievements: [], countries: [] });
+  checkIsLiked.mockResolvedValue({ isLiked: false, likesCount: 0 });
+  const navigation = { navigate: jest.fn(), canGoBack: () => true, goBack: jest.fn() };
+  render(
+    <SafeAreaProvider initialMetrics={INITIAL_METRICS}>
+      <ProfileScreen route={{ name: 'Profile', params: {} }} navigation={navigation} />
+    </SafeAreaProvider>
+  );
+  await act(async () => {});
+
+  fireEvent.press(screen.getAllByText('profile.seeAll')[0]);
+
+  expect(navigation.navigate).toHaveBeenCalledWith('MyItineraries');
+});
+
 describe('signing out', () => {
   // Regression: it always asked "Log out?", although with nothing unsent there is nothing to lose.
   it('signs out at once when there is nothing waiting to be sent', async () => {
