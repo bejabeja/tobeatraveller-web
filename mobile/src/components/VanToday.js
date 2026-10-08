@@ -4,14 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { formatAmount } from '@tobeatraveller/shared';
 import { useVanToday } from '../hooks/useVanToday';
 import { shadow } from '../utils/styles';
-
-// The four tools of the road, within reach of the first screen.
-const TOOLS = [
-  { screen: 'VanLog', icon: 'book-outline', labelKey: 'nav.vanLog' },
-  { screen: 'Supplies', icon: 'cart-outline', labelKey: 'nav.supplies' },
-  { screen: 'PackingChecklist', icon: 'briefcase-outline', labelKey: 'nav.packingChecklist' },
-  { screen: 'LifeDiary', icon: 'journal-outline', labelKey: 'nav.lifeDiary' },
-];
+import ToolShortcuts from './ToolShortcuts';
 
 const LOADING_TEXT = '…';
 
@@ -57,14 +50,7 @@ const VanToday = ({ navigation, userId }) => {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.tools}>
-        {TOOLS.map(({ screen, icon, labelKey }) => (
-          <TouchableOpacity key={screen} style={styles.tool} onPress={() => navigation.navigate(screen)} accessibilityRole="button">
-            <Ionicons name={icon} size={22} color="#E8743B" />
-            <Text style={styles.toolText} numberOfLines={1}>{t(labelKey)}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      <ToolShortcuts navigation={navigation} />
     </View>
   );
 };
@@ -86,12 +72,6 @@ const styles = StyleSheet.create({
   card: { flex: 1, backgroundColor: '#f8fafc', borderRadius: 12, padding: 12, gap: 4 },
   cardLabel: { fontSize: 12, color: '#6b7280' },
   cardValue: { fontSize: 15, fontWeight: '700', color: '#111827' },
-  tools: { flexDirection: 'row', gap: 8 },
-  tool: {
-    flex: 1, alignItems: 'center', gap: 4, paddingVertical: 10, paddingHorizontal: 2,
-    borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 12,
-  },
-  toolText: { fontSize: 11, fontWeight: '600', color: '#374151' },
 });
 
 export default VanToday;

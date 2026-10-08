@@ -90,6 +90,14 @@ $seal-size: 11rem;
     animation: celebration-rise 0.4s ease-out 0.65s both;
   }
 
+  &__where {
+    width: auto;
+    margin: 0.6rem 0 0;
+    font-size: 0.85rem;
+    color: rgba(#fff, 0.7);
+    text-align: center;
+  }
+
   &__progress {
     width: auto;
     margin: 0.75rem 0 0;

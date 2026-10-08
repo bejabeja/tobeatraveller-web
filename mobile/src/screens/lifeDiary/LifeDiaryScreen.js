@@ -21,6 +21,9 @@ import { useOutbox, useRefetchAfterSync } from '../../offline/useOutbox';
 import { cacheGet, cacheSet } from '../../utils/offlineCache';
 import { shadow } from '../../utils/styles';
 
+// The icons are small and sit next to each other: the touch area reaches halfway to the neighbour.
+const ACTION_HIT_SLOP = { top: 6, bottom: 6, left: 6, right: 6 };
+
 const ENTRY_DATE_FORMAT = { day: 'numeric', month: 'short', year: 'numeric' };
 
 const LifeDiaryScreen = ({ navigation }) => {
@@ -195,6 +198,9 @@ const LifeDiaryScreen = ({ navigation }) => {
               <View style={styles.empty}>
                 <Text style={styles.emptyEmoji}>📔</Text>
                 <Text style={styles.emptyTitle}>{d('noEntries')}</Text>
+                <TouchableOpacity style={styles.emptyBtn} onPress={() => navigation.navigate('LifeDiaryEntryForm')} accessibilityRole="button">
+                  <Text style={styles.emptyBtnText}>{d('addEntry')}</Text>
+                </TouchableOpacity>
               </View>
             )
           ) : null
@@ -222,11 +228,12 @@ const LifeDiaryScreen = ({ navigation }) => {
                 <View style={styles.entryActions}>
                   <TouchableOpacity
                     style={styles.entryActionBtn}
+                    hitSlop={ACTION_HIT_SLOP}
                     onPress={() => navigation.navigate('LifeDiaryEntryForm', { entry: item })}
                   >
                     <Ionicons name="pencil-outline" size={16} color="#6b7280" />
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.entryActionBtn} onPress={() => handleDelete(item)}>
+                  <TouchableOpacity style={styles.entryActionBtn} hitSlop={ACTION_HIT_SLOP} onPress={() => handleDelete(item)}>
                     <Ionicons name="trash-outline" size={16} color="#ef4444" />
                   </TouchableOpacity>
                 </View>
@@ -349,6 +356,8 @@ const styles = StyleSheet.create({
   empty: { alignItems: 'center', paddingTop: 56, paddingHorizontal: 32 },
   emptyEmoji: { fontSize: 40, marginBottom: 12 },
   emptyTitle: { fontSize: 15, color: '#6b7280', textAlign: 'center' },
+  emptyBtn: { backgroundColor: '#E8743B', borderRadius: 999, paddingVertical: 10, paddingHorizontal: 20, marginTop: 16 },
+  emptyBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
 });
 
 export default LifeDiaryScreen;

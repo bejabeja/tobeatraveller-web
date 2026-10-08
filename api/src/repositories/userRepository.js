@@ -306,11 +306,12 @@ export class UserRepository {
         return result.rows.map(row => User.fromDb(row));
     }
 
-    async findByFilters({ searchName, offset = 0, limit = 9, sortBy = 'username', role, isPremium, viewerId }) {
+    async findByFilters({ searchName, offset = 0, limit = 9, sortBy = 'username', role, isPremium, viewerId, publicTripsOnly = false }) {
         const searchTerm = `%${searchName}%`;
+        const tripsCount = `(SELECT COUNT(*) FROM itineraries WHERE itineraries.user_id = users.id${publicTripsOnly ? ' AND itineraries.is_public = true' : ''})`;
 
         const ORDER_CLAUSES = {
-            itineraries: '(SELECT COUNT(*) FROM itineraries WHERE itineraries.user_id = users.id) DESC, username ASC',
+            itineraries: `${tripsCount} DESC, username ASC`,
             newest: 'created_at DESC',
             username: 'username ASC',
         };
@@ -338,7 +339,7 @@ export class UserRepository {
 
         const result = await db.query(
             `
-            SELECT users.*, (SELECT COUNT(*) FROM itineraries WHERE itineraries.user_id = users.id) AS total_itineraries
+            SELECT users.*, ${tripsCount} AS total_itineraries
             FROM users
             WHERE ${whereClause}
             ORDER BY ${orderClause}

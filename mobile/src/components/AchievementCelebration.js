@@ -88,6 +88,7 @@ const AchievementCelebration = ({ celebration, position, total, onDismiss, onSha
         <Animated.View style={[styles.texts, riseStyle]}>
           <Text style={styles.title} accessibilityRole="header">{title}</Text>
           <Text style={styles.name}>{name}</Text>
+          <Text style={styles.where}>{t('passport.celebrationWhere')}</Text>
           {total > 1 && <Text style={styles.progress}>{t('passport.celebrationProgress', { current: position, total })}</Text>}
         </Animated.View>
 
@@ -123,6 +124,7 @@ const styles = StyleSheet.create({
   texts: { alignItems: 'center', alignSelf: 'stretch' },
   title: { fontSize: 24, fontWeight: '800', color: GOLD, textAlign: 'center' },
   name: { marginTop: 6, fontSize: 20, fontWeight: '700', color: '#fff', textAlign: 'center' },
+  where: { marginTop: 10, fontSize: 13, color: 'rgba(255, 255, 255, 0.7)', textAlign: 'center', paddingHorizontal: 24 },
   progress: { marginTop: 12, fontSize: 13, color: 'rgba(255, 255, 255, 0.7)' },
   actions: { flexDirection: 'row', gap: 12, width: '100%', maxWidth: 360, marginTop: 32 },
   shareBtn: { flex: 1, paddingVertical: 14, borderRadius: 10, alignItems: 'center', backgroundColor: '#E8743B' },

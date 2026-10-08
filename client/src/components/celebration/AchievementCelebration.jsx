@@ -54,6 +54,7 @@ const AchievementCelebration = ({ celebration, userId, position, total, onDismis
         </div>
         <h2 id="celebration-title" className="celebration__title">{title}</h2>
         <p className="celebration__name">{name}</p>
+        <p className="celebration__where">{t("passport.celebrationWhere")}</p>
         {total > 1 && <p className="celebration__progress">{t("passport.celebrationProgress", { current: position, total })}</p>}
         <div className="celebration__actions">
           <button type="button" className="celebration__share" onClick={share}>{t("passport.celebrationShare")}</button>

@@ -518,13 +518,17 @@ const VanLogScreen = ({ navigation }) => {
               <FeatureLoadState status={loadError} onRetry={fetchEntries} />
             ) : (
               <View style={styles.empty}>
-                <Text style={styles.emptyEmoji}>🚐</Text>
+                <Text style={styles.emptyEmoji}>🧾</Text>
                 <Text style={styles.emptyTitle}>
                   {hasActiveFilters ? t('vanLog.noEntriesFiltered') : t('vanLog.noEntries')}
                 </Text>
-                {hasActiveFilters && (
+                {hasActiveFilters ? (
                   <TouchableOpacity onPress={clearFilters}>
                     <Text style={styles.emptyLink}>{t('common.reset')}</Text>
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity style={styles.emptyBtn} onPress={() => navigation.navigate('VanLogEntryForm')} accessibilityRole="button">
+                    <Text style={styles.emptyBtnText}>{t('vanLog.addEntry')}</Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -775,6 +779,8 @@ const styles = StyleSheet.create({
   emptyEmoji: { fontSize: 40, marginBottom: 12 },
   emptyTitle: { fontSize: 15, color: '#6b7280', textAlign: 'center' },
   emptyLink: { fontSize: 14, color: '#E8743B', fontWeight: '600', marginTop: 10 },
+  emptyBtn: { backgroundColor: '#E8743B', borderRadius: 999, paddingVertical: 10, paddingHorizontal: 20, marginTop: 16 },
+  emptyBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
 });
 
 export default VanLogScreen;

@@ -25,6 +25,9 @@ import { trackEvent } from '../../utils/analytics';
 import { cacheGet, cacheSet, packingListItemsCacheKey, suppliesCacheKey } from '../../utils/offlineCache';
 import { COLORS, shadow } from '../../utils/styles';
 
+// The icons are small and sit next to each other: the touch area reaches halfway to the neighbour.
+const ACTION_HIT_SLOP = { top: 6, bottom: 6, left: 6, right: 6 };
+
 // No supply category maps cleanly onto every packing category, anything without
 // an obvious match falls back to "other" rather than guessing wrong.
 const PACKING_TO_SUPPLY_CATEGORY = { cleaning: 'cleaning', toiletries: 'hygiene' };
@@ -607,10 +610,10 @@ const PackingListScreen = ({ navigation, route }) => {
                             }
                           </TouchableOpacity>
                         ))}
-                        <TouchableOpacity style={styles.itemActionBtn} onPress={() => setEditingItem(item)} accessibilityRole="button" accessibilityLabel={p('editItem')}>
+                        <TouchableOpacity style={styles.itemActionBtn} hitSlop={ACTION_HIT_SLOP} onPress={() => setEditingItem(item)} accessibilityRole="button" accessibilityLabel={p('editItem')}>
                           <Ionicons name="pencil-outline" size={16} color="#6b7280" />
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.itemActionBtn} onPress={() => removeItem(item)} accessibilityRole="button" accessibilityLabel={t('common.delete')}>
+                        <TouchableOpacity style={styles.itemActionBtn} hitSlop={ACTION_HIT_SLOP} onPress={() => removeItem(item)} accessibilityRole="button" accessibilityLabel={t('common.delete')}>
                           <Ionicons name="trash-outline" size={16} color="#ef4444" />
                         </TouchableOpacity>
                       </View>

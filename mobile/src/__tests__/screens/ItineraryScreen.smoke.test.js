@@ -10,7 +10,7 @@ jest.mock('../../utils/config', () => ({ WEB_URL: 'https://example.com' }));
 jest.mock('@tobeatraveller/shared', () => ({
   addComment: jest.fn(), addFavorite: jest.fn(), checkIsFavorite: jest.fn(() => Promise.resolve(false)),
   checkIsLiked: jest.fn(() => Promise.resolve({ isLiked: false, likesCount: 0 })), deleteComment: jest.fn(),
-  deleteItinerary: jest.fn(() => Promise.resolve()), getCommentsPage: jest.fn(() => Promise.resolve({ comments: [], totalCount: 0 })), COMMENTS_PAGE_SIZE: 50,
+  cloneItinerary: jest.fn(), deleteItinerary: jest.fn(() => Promise.resolve()), getCommentsPage: jest.fn(() => Promise.resolve({ comments: [], totalCount: 0 })), COMMENTS_PAGE_SIZE: 50,
   getItineraryById: jest.fn(), getUserById: jest.fn(() => Promise.resolve({ id: 'u1', username: 'tbat' })),
   removeFavorite: jest.fn(), toggleLike: jest.fn(),
   selectIsAuthenticated: () => true, selectMe: () => ({ id: 'u1', username: 'tbat' }),
@@ -27,7 +27,7 @@ import { Alert, Share } from 'react-native';
 import { trackEvent } from '../../utils/analytics';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { deleteItinerary, getCommentsPage, getItineraryById } from '@tobeatraveller/shared';
+import { cloneItinerary, deleteItinerary, getCommentsPage, getItineraryById } from '@tobeatraveller/shared';
 import ItineraryScreen from '../../screens/itinerary/ItineraryScreen';
 
 const INITIAL_METRICS = { frame: { x: 0, y: 0, width: 390, height: 844 }, insets: { top: 0, left: 0, right: 0, bottom: 0 } };
@@ -214,5 +214,67 @@ describe('right after publishing a trip', () => {
     fireEvent.press(screen.getByText('itinerary.publishedDismiss'));
 
     expect(navigation.setParams).toHaveBeenCalledWith({ justPublished: undefined });
+  });
+});
+
+describe("someone else's trip", () => {
+  const OTHERS_TRIP = { ...TRIP, userId: 'u2', title: 'Algarve' };
+
+  const renderOthersTrip = async (navigation = { navigate: jest.fn(), goBack: jest.fn() }) => {
+    getItineraryById.mockResolvedValue(OTHERS_TRIP);
+    render(
+      <SafeAreaProvider initialMetrics={INITIAL_METRICS}>
+        <ItineraryScreen route={{ params: { id: 't1' } }} navigation={navigation} />
+      </SafeAreaProvider>
+    );
+    await act(async () => {});
+    return navigation;
+  };
+
+  const optionsOf = (alertSpy) => alertSpy.mock.calls.at(-1)[2];
+
+  it('offers to copy it to my trips and to report it, behind the "more" button', async () => {
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    await renderOthersTrip();
+
+    fireEvent.press(screen.getByLabelText('common.moreOptions'));
+
+    expect(optionsOf(alertSpy).map((option) => option.text)).toEqual(['itinerary.cloneToMyTrips', 'report.button', 'common.cancel']);
+  });
+
+  it('opens the copy to edit it before publishing', async () => {
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    cloneItinerary.mockResolvedValue({ id: 'copy-1', source: 'itinerary' });
+    const navigation = await renderOthersTrip();
+
+    fireEvent.press(screen.getByLabelText('common.moreOptions'));
+    await act(async () => { await optionsOf(alertSpy).find((option) => option.text === 'itinerary.cloneToMyTrips').onPress(); });
+
+    expect(cloneItinerary).toHaveBeenCalledWith('t1');
+    expect(navigation.navigate).toHaveBeenCalledWith('EditItinerary', { id: 'copy-1' });
+  });
+
+  it('says the copy failed, and goes nowhere', async () => {
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    cloneItinerary.mockRejectedValue(new Error('down'));
+    const navigation = await renderOthersTrip();
+
+    fireEvent.press(screen.getByLabelText('common.moreOptions'));
+    await act(async () => { await optionsOf(alertSpy).find((option) => option.text === 'itinerary.cloneToMyTrips').onPress(); });
+
+    expect(alertSpy).toHaveBeenLastCalledWith('errors.somethingWrong', 'itinerary.cloneFailed');
+    expect(navigation.navigate).not.toHaveBeenCalled();
+  });
+});
+
+describe('moderating the comments on my own trip', () => {
+  const comment = { id: 'c1', content: 'hello', postedAgo: '1h', user: { id: 'u9', username: 'ana' } };
+
+  it('lets the owner delete a comment someone else left, and still report it', async () => {
+    getCommentsPage.mockResolvedValueOnce({ comments: [comment], totalCount: 1 });
+    await renderTrip();
+
+    expect(screen.getByLabelText('report.button')).toBeTruthy();
+    expect(screen.getByText('✕')).toBeTruthy();
   });
 });

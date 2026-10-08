@@ -1203,3 +1203,15 @@ describe('UserService.isUsernameAvailable() for the one asking', () => {
         await expect(service.isUsernameAvailable('jane', 'user-1')).resolves.toBe(false);
     });
 });
+
+// Regression: Community counted a person's private trips, so it said "2 trips" next to a profile that showed one.
+describe('UserService.getFilteredAllUsers()', () => {
+    it('asks for public trips only, since it is what anyone else can see', async () => {
+        const userRepository = { findByFilters: vi.fn().mockResolvedValue({ users: [], total: 0 }) };
+        const service = new UserService(userRepository, { findLastByUserId: vi.fn() }, null, null);
+
+        await service.getFilteredAllUsers({ searchName: '', page: 1, limit: 9, sortBy: 'itineraries', viewerId: 'user-1' });
+
+        expect(userRepository.findByFilters).toHaveBeenCalledWith(expect.objectContaining({ publicTripsOnly: true }));
+    });
+});

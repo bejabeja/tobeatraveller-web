@@ -230,6 +230,32 @@ describe('UserRepository.findByFilters() sort options', () => {
     });
 });
 
+// Regression: Community showed "2 trips" for someone whose profile showed one, because the count included their private trip.
+describe('UserRepository.findByFilters() trip counts', () => {
+    const repo = new UserRepository();
+    const listQueryOf = () => db.query.mock.calls.find(([q]) => q.includes('ORDER BY'))[0];
+
+    beforeEach(() => {
+        db.query.mockReset();
+        db.query.mockImplementation((query) =>
+            query.includes('ORDER BY') ? { rows: [] } : { rows: [{ count: '0' }] }
+        );
+    });
+
+    it('counts only public trips, in the number and in the ordering, when asked to', async () => {
+        await repo.findByFilters({ searchName: '', sortBy: 'itineraries', publicTripsOnly: true });
+
+        expect(listQueryOf()).toMatch(/AS total_itineraries/);
+        expect(listQueryOf().match(/itineraries\.is_public = true/g)).toHaveLength(2);
+    });
+
+    it('counts every trip by default, as the staff list needs', async () => {
+        await repo.findByFilters({ searchName: '', sortBy: 'itineraries' });
+
+        expect(listQueryOf()).not.toMatch(/is_public/);
+    });
+});
+
 describe('UserRepository.findByFilters() role and premium filters', () => {
     const repo = new UserRepository();
 

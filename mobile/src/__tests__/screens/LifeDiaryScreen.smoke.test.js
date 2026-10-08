@@ -24,7 +24,7 @@ jest.mock('@tobeatraveller/shared', () => ({
 }));
 
 import { Alert, FlatList } from 'react-native';
-import { act, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { getLifeDiaryEntries } from '@tobeatraveller/shared';
 import { cacheGet, cacheSet } from '../../utils/offlineCache';
@@ -33,13 +33,14 @@ import LifeDiaryScreen from '../../screens/lifeDiary/LifeDiaryScreen';
 const INITIAL_METRICS = { frame: { x: 0, y: 0, width: 390, height: 844 }, insets: { top: 0, left: 0, right: 0, bottom: 0 } };
 const entry = (id, entryDate) => ({ id, entryDate, location: { name: 'Sagres' }, bestMoment: `moment ${id}`, images: [], wouldReturn: null });
 
-const renderScreen = async () => {
+const renderScreen = async (navigation = { navigate: jest.fn(), goBack: jest.fn() }) => {
   render(
     <SafeAreaProvider initialMetrics={INITIAL_METRICS}>
-      <LifeDiaryScreen navigation={{ navigate: jest.fn(), goBack: jest.fn() }} />
+      <LifeDiaryScreen navigation={navigation} />
     </SafeAreaProvider>
   );
   await act(async () => {});
+  return navigation;
 };
 
 const scrollToEnd = async () => {
@@ -119,4 +120,14 @@ it('asks no more when a page comes back empty although the total promised more',
   await scrollToEnd();
 
   expect(getLifeDiaryEntries).toHaveBeenCalledTimes(2);
+});
+
+// Regression: an empty diary said "write about your first day" and gave no button to do it, unlike the web.
+it('offers to write the first entry from the empty diary itself', async () => {
+  getLifeDiaryEntries.mockResolvedValueOnce({ entries: [], totalCount: 0 });
+  const navigation = await renderScreen();
+
+  fireEvent.press(screen.getAllByText('lifeDiary.addEntry').at(-1));
+
+  expect(navigation.navigate).toHaveBeenCalledWith('LifeDiaryEntryForm');
 });

@@ -127,6 +127,7 @@ export class UserService {
             limit,
             sortBy,
             viewerId,
+            publicTripsOnly: true,
         });
 
         // totalItineraries already comes from findByFilters' SQL; only

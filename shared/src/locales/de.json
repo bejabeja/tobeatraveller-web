@@ -132,11 +132,11 @@
     "me": "Ich",
     "login": "Anmelden",
     "createAccountBtn": "Konto erstellen",
-    "createSheetTitle": "Was möchtest du erstellen?",
-    "createSheetItinerary": "Reiseplan",
-    "createSheetItineraryDesc": "Plane Tag für Tag: Orte, Budget und alle Details.",
-    "createSheetExperience": "Erlebnis",
-    "createSheetExperienceDesc": "Sag der KI, wohin du fährst, sie plant die Reise.",
+    "createSheetTitle": "Reise planen",
+    "createSheetItinerary": "Selbst planen",
+    "createSheetItineraryDesc": "Tag für Tag: Orte, Budget und alle Details.",
+    "createSheetExperience": "Mit KI planen",
+    "createSheetExperienceDesc": "Sag der KI, wohin du fährst, und sie plant die Reise für dich.",
     "createSheetCancel": "Abbrechen",
     "settings": "Einstellungen"
   },
@@ -178,7 +178,6 @@
     "joinCommunityDesc": "Halte dein Leben unterwegs in Ordnung, teile deine Routen und lerne andere Reisende kennen.",
     "noTripsYet": "Noch keine Reisepläne.",
     "trips": "Reisen",
-    "destinationsCount": "{{count}} Reiseziele",
     "nextTripLabel": "Deine nächste Reise",
     "nextTripIn_one": "Morgen",
     "nextTripIn_other": "In {{count}} Tagen",
@@ -192,7 +191,10 @@
     "draftContinue": "Da weitermachen, wo du aufgehört hast",
     "openTrip": "Reise ansehen",
     "prepareTrip": "Packen",
-    "tripListProgress": "{{name}}: {{checked}} von {{total}} erledigt"
+    "tripListProgress": "{{name}}: {{checked}} von {{total}} erledigt",
+    "yourTools": "Deine Werkzeuge",
+    "destinationsCount_one": "{{count}} Reiseziel",
+    "destinationsCount_other": "{{count}} Reiseziele"
   },
   "vanToday": {
     "title": "Dein Van heute",
@@ -675,12 +677,12 @@
     "confirmDeletion": "Löschen bestätigen",
     "deleteDesc": "Möchtest du diesen Reiseplan wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
     "delete": "Löschen",
-    "deletedSuccess": "Reiseplan erfolgreich gelöscht",
+    "deletedSuccess": "Reise erfolgreich gelöscht",
     "deleteFailed": "Reiseplan konnte nicht gelöscht werden",
     "cloneSuccess": "Reise kopiert! Prüfe sie, bevor du sie veröffentlichst.",
     "cloneFailed": "Reise konnte nicht kopiert werden",
     "errorLoading": "Der Reiseplan konnte nicht geladen werden. Bitte versuch es später erneut.",
-    "createItinerary": "Reiseplan erstellen",
+    "createItinerary": "Reise erstellen",
     "shareJourney": "Teile deine Reise mit der Welt",
     "planningTo": "Du planst deine Reise nach <strong>{{destination}}</strong>",
     "complete": "% fertig",
@@ -706,14 +708,14 @@
     "step4Hint": "Titelbild und wer diese Reise sehen kann",
     "editItinerary": "Reiseplan bearbeiten",
     "updateItineraryBtn": "Reiseplan aktualisieren",
-    "updatedSuccess": "Reiseplan aktualisiert! 🎉",
+    "updatedSuccess": "Reise aktualisiert! 🎉",
     "confirmUpdateTitle": "Änderungen speichern?",
     "confirmUpdateDesc": "Deine Änderungen an diesem Reiseplan werden gespeichert.",
     "confirmUpdate": "Speichern",
     "deleteItinerary": "Reiseplan löschen",
     "deleteItineraryConfirm": "Möchtest du diesen Reiseplan wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
     "itineraryNotFound": "Reiseplan nicht gefunden.",
-    "deleteAlert": "Reiseplan löschen",
+    "deleteAlert": "Reise löschen",
     "deleteAlertDesc": "Möchtest du diesen Reiseplan wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
     "deleteCommentAlert": "Kommentar löschen",
     "deleteCommentDesc": "Diesen Kommentar löschen?",
@@ -1189,7 +1191,7 @@
     "seeAll": "Alle {{total}} Reisen ansehen"
   },
   "createItinerary": {
-    "newItinerary": "Neuer Reiseplan",
+    "newItinerary": "Neue Reise",
     "saving": "Wird gespeichert…",
     "create": "Erstellen",
     "percentComplete": "{{percent}} % fertig",
@@ -1199,7 +1201,7 @@
     "titlePlaceholder": "Ein Wochenende in Rom…",
     "destinationPlaceholder": "Wohin geht's?",
     "descriptionPlaceholder": "Was macht diese Reise besonders?",
-    "stillNeeded": "Es fehlt noch: {{items}}",
+    "stillNeeded": "Noch nicht hinzugefügt: {{items}}",
     "creating": "Reiseplan wird erstellt…",
     "createBtn": "Reiseplan erstellen 🎉",
     "emptyDaysTitle": "Leere Tage",
@@ -1224,7 +1226,7 @@
     "draftNote": "Fotos werden in Entwürfen nicht gespeichert: Du musst sie erneut hinzufügen."
   },
   "editItinerary": {
-    "title": "Reiseplan bearbeiten",
+    "title": "Reise bearbeiten",
     "loadError": "Der Reiseplan konnte nicht geladen werden.",
     "destinationLocked": "Das Reiseziel kann nach dem Erstellen nicht mehr geändert werden.",
     "errorSave": "Speichern fehlgeschlagen. Bitte versuch es erneut."
@@ -1518,7 +1520,7 @@
     "occasionalHint": "Plane Reisen, teile sie und füll deinen Pass."
   },
   "createExperience": {
-    "heroInput": "Erlebnis erstellen",
+    "heroInput": "Reise mit KI planen",
     "heroReview": "Gestalte deine Reise",
     "heroSubInput": "Deine Reise, deine Geschichte, die KI kümmert sich um die Planung",
     "editBtn": "Bearbeiten",
@@ -1547,7 +1549,7 @@
     "buildExperience": "Mein Erlebnis erstellen",
     "building": "Dein Erlebnis in {{destination}} wird erstellt…",
     "enterDest": "Gib ein Reiseziel ein, um loszulegen",
-    "experienceName": "Name des Erlebnisses",
+    "experienceName": "Name der Reise",
     "namePlaceholder": "Gib deinem Erlebnis einen Namen…",
     "moments": "Momente",
     "regenerate": "Neu erstellen",
@@ -1556,7 +1558,7 @@
     "addMoment": "Moment hinzufügen",
     "saveExperience": "Erlebnis speichern",
     "saving": "Wird gespeichert…",
-    "savedSuccess": "Erlebnis gespeichert!",
+    "savedSuccess": "Reise gespeichert!",
     "saveError": "Das Erlebnis konnte nicht gespeichert werden. Versuch es erneut.",
     "generateError": "Das Erlebnis konnte nicht erstellt werden. Versuch es erneut.",
     "generateTimeout": "Das dauert zu lange. Versuch es mit weniger Tagen oder einer einfacheren Anfrage.",
@@ -1966,16 +1968,16 @@
       "goal": "Schreib 50 Tagebucheinträge"
     },
     "nextTip": {
-      "trips_one": "Noch {{count}} Reise bis {{next}}",
-      "trips_other": "Noch {{count}} Reisen bis {{next}}",
-      "countries_one": "Noch {{count}} Land bis {{next}}",
-      "countries_other": "Noch {{count}} Länder bis {{next}}",
-      "followers_one": "Noch {{count}} Follower bis {{next}}",
-      "followers_other": "Noch {{count}} Follower bis {{next}}",
-      "vanLog_one": "Noch {{count}} Ausgabe bis {{next}}",
-      "vanLog_other": "Noch {{count}} Ausgaben bis {{next}}",
-      "lifeDiary_one": "Noch {{count}} Eintrag bis {{next}}",
-      "lifeDiary_other": "Noch {{count}} Einträge bis {{next}}"
+      "trips_one": "Noch {{count}} Reise bis zum Stempel {{next}}",
+      "trips_other": "Noch {{count}} Reisen bis zum Stempel {{next}}",
+      "countries_one": "Noch {{count}} Land bis zum Stempel {{next}}",
+      "countries_other": "Noch {{count}} Länder bis zum Stempel {{next}}",
+      "followers_one": "Noch {{count}} Follower bis zum Stempel {{next}}",
+      "followers_other": "Noch {{count}} Follower bis zum Stempel {{next}}",
+      "vanLog_one": "Noch {{count}} Ausgabe bis zum Stempel {{next}}",
+      "vanLog_other": "Noch {{count}} Ausgaben bis zum Stempel {{next}}",
+      "lifeDiary_one": "Noch {{count}} Eintrag bis zum Stempel {{next}}",
+      "lifeDiary_other": "Noch {{count}} Einträge bis zum Stempel {{next}}"
     },
     "onlyYou": "Nur du siehst das",
     "title": "Erfolge"
@@ -2094,7 +2096,8 @@
     "shareError": "Der Pass konnte nicht geteilt werden.",
     "shareText": "Schau dir meinen Reisepass auf ToBeATraveller an",
     "stampsCount_one": "{{count}} Stempel",
-    "stampsCount_other": "{{count}} Stempel"
+    "stampsCount_other": "{{count}} Stempel",
+    "celebrationWhere": "Deine Stempel findest du in deinem Reisepass, in deinem Profil."
   },
   "recap": {
     "title": "Dein {{year}} unterwegs",

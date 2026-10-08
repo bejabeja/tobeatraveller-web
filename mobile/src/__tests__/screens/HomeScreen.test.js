@@ -15,6 +15,10 @@ jest.mock('../../components/VanToday', () => {
   const { Text } = require('react-native');
   return () => <Text>van-today</Text>;
 });
+jest.mock('../../components/YourTools', () => {
+  const { Text } = require('react-native');
+  return () => <Text>your-tools</Text>;
+});
 jest.mock('../../components/PassportSummary', () => {
   const { Text } = require('react-native');
   return () => <Text>passport-summary</Text>;
@@ -149,6 +153,17 @@ it('goes where they choose, whatever opened first', async () => {
 
     expect(screen.getByText('van-today')).toBeTruthy();
     expect(screen.queryByText('passport-summary')).toBeNull();
+    expect(screen.queryByText('your-tools')).toBeNull();
+  });
+
+  // Regression: expenses, lists and a diary are for any trip, but without the van panel they sat only behind the profile.
+  it('puts the same tools within reach of whoever does not live in a van', async () => {
+    mockMe = { id: 'u1', travelStyle: 'occasional', followingListIds: [] };
+
+    await renderHome();
+
+    expect(screen.getByText('your-tools')).toBeTruthy();
+    expect(screen.getByText('passport-summary')).toBeTruthy();
   });
 });
 

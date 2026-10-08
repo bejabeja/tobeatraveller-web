@@ -22,6 +22,7 @@ import NextTripCard from '../../components/NextTripCard';
 import VanToday from '../../components/VanToday';
 import HomeNews from '../../components/HomeNews';
 import PassportSummary from '../../components/PassportSummary';
+import YourTools from '../../components/YourTools';
 import WorldMapSection from '../../components/WorldMapSection';
 import { ItineraryCardSkeleton, UserAvatarSkeleton } from '../../components/Skeleton';
 import { COLORS, shadow } from '../../utils/styles';
@@ -162,6 +163,7 @@ const HomeScreen = ({ navigation }) => {
 
       {/* Whoever does not live in a van, once the profile says so: not before, or it would flash for those who do. */}
       {isAuthenticated && me && !isInAVan && <PassportSummary navigation={navigation} userId={me.id} />}
+      {isAuthenticated && me && !isInAVan && <YourTools navigation={navigation} />}
 
       {isAuthenticated && <HomeNews navigation={navigation} />}
 

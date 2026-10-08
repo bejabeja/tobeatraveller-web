@@ -21,7 +21,7 @@ import { COLORS, shadow, textShadow } from '../../utils/styles';
 import { getStepConfig } from '../../utils/stepConfig';
 import { WEB_URL } from '../../utils/config';
 import {
-  addComment, addFavorite, checkIsFavorite, checkIsLiked, deleteComment,
+  addComment, addFavorite, checkIsFavorite, checkIsLiked, cloneItinerary, deleteComment,
   deleteItinerary, getCommentsPage, COMMENTS_PAGE_SIZE,
   getItineraryById, getUserById, removeFavorite, toggleLike,
   selectIsAuthenticated, selectMe, MAX_COMMENT_LENGTH, updateCommentsCount, setUserInfo, setUserInfoItineraries,
@@ -249,6 +249,27 @@ const ItineraryScreen = ({ route, navigation }) => {
     ]);
   };
 
+  const handleClone = async () => {
+    try {
+      const cloned = await cloneItinerary(itinerary.id);
+      trackEvent(ANALYTICS_EVENTS.TRIP_CLONED);
+      if (me?.id) dispatch(setUserInfoItineraries());
+      Alert.alert(t('itinerary.cloneSuccess'));
+      navigation.navigate(cloned.source === 'experience' ? 'EditExperience' : 'EditItinerary', { id: cloned.id });
+    } catch {
+      Alert.alert(t('errors.somethingWrong'), t('itinerary.cloneFailed'));
+    }
+  };
+
+  // What someone can do with a trip that is not theirs, behind "⋯" like the owner's actions.
+  const openVisitorActions = () => {
+    Alert.alert(itinerary.title, undefined, [
+      { text: t('itinerary.cloneToMyTrips'), onPress: handleClone },
+      { text: t('report.button'), onPress: () => setReportTarget({ targetType: 'itinerary', targetId: itinerary.id }) },
+      { text: t('common.cancel'), style: 'cancel' },
+    ]);
+  };
+
   const handleDelete = () => {
     Alert.alert(
       t('itinerary.deleteAlert'),
@@ -359,11 +380,11 @@ const ItineraryScreen = ({ route, navigation }) => {
           {!isMyItinerary && isAuthenticated && (
             <TouchableOpacity
               style={styles.actionBtn}
-              onPress={() => setReportTarget({ targetType: 'itinerary', targetId: itinerary.id })}
+              onPress={openVisitorActions}
               accessibilityRole="button"
-              accessibilityLabel={t('report.button')}
+              accessibilityLabel={t('common.moreOptions')}
             >
-              <Ionicons name="flag-outline" size={18} color="#fff" />
+              <Ionicons name="ellipsis-horizontal" size={18} color="#fff" />
             </TouchableOpacity>
           )}
         </View>

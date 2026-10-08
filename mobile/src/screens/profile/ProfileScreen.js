@@ -821,12 +821,12 @@ const styles = StyleSheet.create({
     fontSize: 10, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.4,
     paddingVertical: 2, paddingHorizontal: 7, borderRadius: 999,
   },
+  // Quiet on purpose: signing out is not what anyone opens their profile for.
   logoutBtn: {
-    marginHorizontal: 16, marginTop: 10,
-    borderWidth: 1, borderColor: '#fecaca',
-    borderRadius: 10, paddingVertical: 10, alignItems: 'center',
+    marginHorizontal: 16, marginTop: 18,
+    paddingVertical: 10, alignItems: 'center',
   },
-  logoutText: { color: '#ef4444', fontSize: 14, fontWeight: '600' },
+  logoutText: { color: '#6b7280', fontSize: 14, fontWeight: '600' },
 
   section: { marginHorizontal: 16, marginTop: 16 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
