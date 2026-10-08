@@ -45,7 +45,12 @@ export const EmailVerificationBanner = () => {
 
   return (
     <View style={styles.banner} accessibilityRole="alert">
-      <Text style={styles.text}>{t('emailVerification.bannerText', { email: me.email })}</Text>
+      <View style={styles.message}>
+        <Text style={styles.text}>{t('emailVerification.bannerText', { email: me.email })}</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('Settings')} accessibilityRole="link" hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
+          <Text style={styles.changeLink}>{t('emailVerification.changeLink')}</Text>
+        </TouchableOpacity>
+      </View>
       {status === 'sent' ? (
         <Text style={styles.sent}>{t('emailVerification.bannerSent')}</Text>
       ) : (
@@ -60,19 +65,18 @@ export const EmailVerificationBanner = () => {
           </Text>
         </TouchableOpacity>
       )}
-      <TouchableOpacity onPress={() => navigation.navigate('Settings')} accessibilityRole="link">
-        <Text style={styles.changeLink}>{t('emailVerification.changeLink')}</Text>
-      </TouchableOpacity>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  // One strip, the message on the left and the action on the right, instead of three stacked lines on every screen it shows on.
   banner: {
     backgroundColor: '#fff7ed', borderBottomWidth: 1, borderBottomColor: '#fed7aa',
-    paddingVertical: 10, paddingHorizontal: 16, alignItems: 'center', gap: 8,
+    paddingVertical: 8, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', gap: 12,
   },
-  text: { color: '#9a3412', fontSize: 13, textAlign: 'center' },
+  message: { flex: 1, gap: 2 },
+  text: { color: '#9a3412', fontSize: 12 },
   sent: { color: '#9a3412', fontSize: 13, fontWeight: '700' },
   button: { borderWidth: 1.5, borderColor: '#9a3412', borderRadius: 999, paddingVertical: 5, paddingHorizontal: 16 },
   changeLink: { color: '#9a3412', fontSize: 12, textDecorationLine: 'underline' },

@@ -138,22 +138,6 @@ const HomeScreen = ({ navigation }) => {
           )}
         </View>
         {isAuthenticated && <NextTripCard navigation={navigation} />}
-        {isAuthenticated && (
-          <View style={styles.tabs}>
-            <TouchableOpacity
-              style={[styles.tab, isTabDecided && tab === HOME_TABS.DISCOVER && styles.tabActive]}
-              onPress={() => setChosenTab(HOME_TABS.DISCOVER)}
-            >
-              <Text style={[styles.tabText, isTabDecided && tab === HOME_TABS.DISCOVER && styles.tabTextActive]}>{t('home.tabDiscover')}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.tab, isTabDecided && tab === HOME_TABS.FOLLOWING && styles.tabActive]}
-              onPress={() => setChosenTab(HOME_TABS.FOLLOWING)}
-            >
-              <Text style={[styles.tabText, isTabDecided && tab === HOME_TABS.FOLLOWING && styles.tabTextActive]}>{t('home.tabFollowing')}</Text>
-            </TouchableOpacity>
-          </View>
-        )}
       </LinearGradient>
 
       {isAuthenticated && <EmailVerificationBanner />}
@@ -166,6 +150,28 @@ const HomeScreen = ({ navigation }) => {
       {isAuthenticated && me && !isInAVan && <YourTools navigation={navigation} />}
 
       {isAuthenticated && <HomeNews navigation={navigation} />}
+
+      {/* Right above the trips they choose between, not up in the header, far from what they change. */}
+      {isAuthenticated && (
+        <View style={styles.tabs} accessibilityRole="tablist">
+          <TouchableOpacity
+            accessibilityRole="tab"
+            accessibilityState={{ selected: isTabDecided && tab === HOME_TABS.DISCOVER }}
+            style={[styles.tab, isTabDecided && tab === HOME_TABS.DISCOVER && styles.tabActive]}
+            onPress={() => setChosenTab(HOME_TABS.DISCOVER)}
+          >
+            <Text style={[styles.tabText, isTabDecided && tab === HOME_TABS.DISCOVER && styles.tabTextActive]}>{t('home.tabDiscover')}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            accessibilityRole="tab"
+            accessibilityState={{ selected: isTabDecided && tab === HOME_TABS.FOLLOWING }}
+            style={[styles.tab, isTabDecided && tab === HOME_TABS.FOLLOWING && styles.tabActive]}
+            onPress={() => setChosenTab(HOME_TABS.FOLLOWING)}
+          >
+            <Text style={[styles.tabText, isTabDecided && tab === HOME_TABS.FOLLOWING && styles.tabTextActive]}>{t('home.tabFollowing')}</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {isAuthenticated && !isTabDecided && (
         <View style={styles.section}>
@@ -337,7 +343,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.bg },
 
   hero: {
-    paddingHorizontal: 20, paddingBottom: 0,
+    paddingHorizontal: 20, paddingBottom: 4,
   },
   heroRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: 20 },
   heroTitle: { fontSize: 26, fontWeight: '800', color: '#fff', letterSpacing: -0.3 },
@@ -357,17 +363,13 @@ const styles = StyleSheet.create({
   bellBadgeText: { color: '#fff', fontSize: 9, fontWeight: '700' },
 
   tabs: {
-    flexDirection: 'row', gap: 4,
-    borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.2)',
-    paddingTop: 4,
+    flexDirection: 'row', gap: 4, marginHorizontal: 16, marginTop: 20, padding: 4,
+    backgroundColor: '#eef0f3', borderRadius: 12,
   },
-  tab: {
-    paddingVertical: 10, paddingHorizontal: 16,
-    borderBottomWidth: 2, borderBottomColor: 'transparent',
-  },
-  tabActive: { borderBottomColor: '#fff' },
-  tabText: { fontSize: 13, fontWeight: '600', color: 'rgba(255,255,255,0.6)' },
-  tabTextActive: { color: '#fff' },
+  tab: { flex: 1, alignItems: 'center', paddingVertical: 9, borderRadius: 9 },
+  tabActive: { backgroundColor: '#fff', ...shadow(1, 0.08, 4, 1) },
+  tabText: { fontSize: 13, fontWeight: '600', color: '#6b7280' },
+  tabTextActive: { color: '#111827' },
 
   feedEmpty: { alignItems: 'center', paddingVertical: 40, gap: 8 },
   feedEmptyIcon: { fontSize: 40 },

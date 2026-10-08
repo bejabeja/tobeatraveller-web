@@ -167,6 +167,21 @@ it('goes where they choose, whatever opened first', async () => {
   });
 });
 
+// Regression-in-waiting: the two tabs sat in the header, far from the trips they change, and a screen reader could not tell which one was on.
+describe('Home tabs', () => {
+  it('are a set of tabs that says which one is selected, and changes when another is pressed', async () => {
+    mockAuthenticated = true;
+    mockMe = { id: 'u1', followingListIds: [] };
+
+    await renderHome();
+
+    fireEvent.press(screen.getByText('home.tabFollowing'));
+
+    expect(screen.getByRole('tab', { name: /home.tabFollowing/, selected: true })).toBeTruthy();
+    expect(screen.getByRole('tab', { name: /home.tabDiscover/, selected: false })).toBeTruthy();
+  });
+});
+
 describe('Home for a visitor', () => {
   it('keeps the map and the pitch, which is what it is for', async () => {
     mockAuthenticated = false;

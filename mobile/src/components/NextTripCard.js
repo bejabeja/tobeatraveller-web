@@ -47,7 +47,7 @@ const NextTripCard = ({ navigation }) => {
           <Text style={styles.when} numberOfLines={1}>{t('home.draftContinue')} →</Text>
         </TouchableOpacity>
         <View style={styles.links}>
-          <TouchableOpacity onPress={planTrip} accessibilityRole="button" hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+          <TouchableOpacity style={styles.planPill} onPress={planTrip} accessibilityRole="button" hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
             <Text style={styles.planLink}>{t('home.planTrip')}</Text>
           </TouchableOpacity>
         </View>
@@ -85,6 +85,7 @@ const NextTripCard = ({ navigation }) => {
       <View style={styles.links}>
         {tripList === undefined ? null : tripList ? (
           <TouchableOpacity
+            style={styles.planPill}
             onPress={() => navigation.navigate('PackingList', { listId: tripList.id, name: tripList.name, itinerary: tripList.itinerary })}
             accessibilityRole="button"
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -93,6 +94,7 @@ const NextTripCard = ({ navigation }) => {
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
+            style={styles.planPill}
             onPress={() => navigation.navigate('PackingChecklist', { forTripId: itinerary.id })}
             accessibilityRole="button"
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -101,11 +103,11 @@ const NextTripCard = ({ navigation }) => {
           </TouchableOpacity>
         )}
         {draft && (
-          <TouchableOpacity onPress={() => navigation.navigate(draft.screen)} accessibilityRole="button" hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+          <TouchableOpacity style={styles.planPill} onPress={() => navigation.navigate(draft.screen)} accessibilityRole="button" hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
             <Text style={styles.planLink}>✏️ {t('home.draftLabel')}: {draft.name || t('home.draftUnnamed')}</Text>
           </TouchableOpacity>
         )}
-        <TouchableOpacity onPress={planTrip} accessibilityRole="button" hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+        <TouchableOpacity style={styles.planPill} onPress={planTrip} accessibilityRole="button" hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
           <Text style={styles.planLink}>{t('home.planTrip')}</Text>
         </TouchableOpacity>
       </View>
@@ -123,8 +125,13 @@ const styles = StyleSheet.create({
   label: { fontSize: 11, fontWeight: '700', letterSpacing: 0.6, textTransform: 'uppercase', color: 'rgba(255,255,255,0.85)' },
   title: { fontSize: 17, fontWeight: '700', color: '#fff', marginTop: 2 },
   when: { fontSize: 13, color: 'rgba(255,255,255,0.9)', marginTop: 2 },
-  links: { flexDirection: 'row', flexWrap: 'wrap', gap: 16 },
-  planLink: { fontSize: 13, fontWeight: '600', color: '#fff', textDecorationLine: 'underline' },
+  // Buttons, not underlined words: they are things to tap, and they were easy to miss on the gradient.
+  links: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  planPill: {
+    borderRadius: 999, borderWidth: 1, borderColor: 'rgba(255,255,255,0.5)', backgroundColor: 'rgba(255,255,255,0.12)',
+    paddingVertical: 7, paddingHorizontal: 14,
+  },
+  planLink: { fontSize: 13, fontWeight: '600', color: '#fff' },
 
   none: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingBottom: 16 },
   noneText: { flex: 1, fontSize: 14, color: 'rgba(255,255,255,0.92)' },
