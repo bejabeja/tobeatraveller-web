@@ -64,6 +64,21 @@ describe('ContentReportsService', () => {
             }));
         });
 
+        // Regression: the activity log showed a user id where the name of who wrote it should be.
+        it('names, in the audit record, who wrote what was reported', async () => {
+            commentsRepository.getCommentById.mockResolvedValue({ content: 'x', itineraryId: 'itin-1', user: { id: 'author-1', username: 'bob' } });
+
+            await service.submitReport(REPORTER, report);
+
+            expect(auditLogService.log).toHaveBeenCalledWith(expect.objectContaining({ targetUsername: 'bob' }));
+        });
+
+        it('names the owner of a reported trip in the audit record', async () => {
+            await service.submitReport(REPORTER, { targetType: 'itinerary', targetId: 'itin-1', reason: 'misleading' });
+
+            expect(auditLogService.log).toHaveBeenCalledWith(expect.objectContaining({ targetUsername: 'author-1' }));
+        });
+
         it('keeps only the start of a long text as the excerpt', async () => {
             commentsRepository.getCommentById.mockResolvedValue({ content: 'x'.repeat(500), itineraryId: 'itin-1', user: { id: 'author-1' } });
 
@@ -187,14 +202,14 @@ describe('ContentReportsService', () => {
 
     describe('decideReport()', () => {
         it('deletes a reported comment, marks the report as removed and audits who decided', async () => {
-            contentReportsRepository.findById.mockResolvedValue(openReport());
+            contentReportsRepository.findById.mockResolvedValue(openReport({ targetOwnerUsername: 'bob' }));
 
             await service.decideReport('report-1', STAFF, { decision: 'remove', note: 'spam' });
 
             expect(commentsRepository.deleteComment).toHaveBeenCalledWith('comment-1');
             expect(contentReportsRepository.resolve).toHaveBeenCalledWith('report-1', { status: 'removed', resolvedBy: 'staff-1', resolutionNote: 'spam' });
             expect(auditLogService.log).toHaveBeenCalledWith(expect.objectContaining({
-                action: AUDIT_EVENTS.CONTENT_REMOVED_BY_MODERATION, actorId: 'staff-1', targetUserId: 'author-1',
+                action: AUDIT_EVENTS.CONTENT_REMOVED_BY_MODERATION, actorId: 'staff-1', targetUserId: 'author-1', targetUsername: 'bob',
             }));
         });
 

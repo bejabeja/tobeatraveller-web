@@ -56,19 +56,18 @@ const ReportModal = ({ isOpen, onClose, targetType, targetId }) => {
           </label>
         ))}
       </fieldset>
-      {reason && (
-        <label className="report-modal__details">
-          <span>{t(isIllegal ? "report.detailsLabelIllegal" : "report.detailsLabel")}</span>
-          <textarea
-            value={details}
-            onChange={(event) => setDetails(event.target.value)}
-            maxLength={REPORT_DETAILS_MAX_LENGTH}
-            placeholder={t("report.detailsPlaceholder")}
-            rows={4}
-          />
-          {isIllegal && detailsError && <small role="status">{t(detailsError)}</small>}
-        </label>
-      )}
+      {/* Always there, so the window does not grow (and the button move) when a reason is chosen. */}
+      <label className="report-modal__details">
+        <span>{t(isIllegal ? "report.detailsLabelIllegal" : "report.detailsLabel")}</span>
+        <textarea
+          value={details}
+          onChange={(event) => setDetails(event.target.value)}
+          maxLength={REPORT_DETAILS_MAX_LENGTH}
+          placeholder={t("report.detailsPlaceholder")}
+          rows={4}
+        />
+        <small role="status" className="report-modal__hint">{isIllegal && detailsError ? t(detailsError) : ""}</small>
+      </label>
     </Modal>
   );
 };

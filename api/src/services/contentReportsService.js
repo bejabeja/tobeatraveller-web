@@ -48,6 +48,7 @@ export class ContentReportsService {
             actorUsername: reporter.username,
             action: AUDIT_EVENTS.CONTENT_REPORTED,
             targetUserId: target.ownerId,
+            targetUsername: target.ownerUsername,
             metadata: { reportId: report.id, targetType, targetId, reason },
         });
 
@@ -102,6 +103,7 @@ export class ContentReportsService {
             actorUsername: staff.username,
             action: decision === REPORT_DECISIONS.REMOVE ? AUDIT_EVENTS.CONTENT_REMOVED_BY_MODERATION : AUDIT_EVENTS.REPORT_RESOLVED,
             targetUserId: report.targetOwnerId,
+            targetUsername: report.targetOwnerUsername,
             metadata: { reportId, targetType: report.targetType, targetId: report.targetId, decision },
         });
     }
@@ -132,17 +134,18 @@ export class ContentReportsService {
             if (!comment) throw new NotFoundError('Report target not found');
             const itinerary = await this.itineraryRepository.findById(comment.itineraryId);
             assertItineraryVisible(itinerary, reporterId);
-            return { ownerId: comment.user.id, excerpt: comment.content };
+            return { ownerId: comment.user.id, ownerUsername: comment.user.username ?? null, excerpt: comment.content };
         }
         if (targetType === REPORT_TARGET_TYPES.ITINERARY) {
             const itinerary = await this.itineraryRepository.findById(targetId);
             if (!itinerary) throw new NotFoundError('Report target not found');
             assertItineraryVisible(itinerary, reporterId);
-            return { ownerId: itinerary.userId, excerpt: itinerary.title };
+            const owner = await this.userRepository.getUserById(itinerary.userId);
+            return { ownerId: itinerary.userId, ownerUsername: owner?.username ?? null, excerpt: itinerary.title };
         }
         const user = await this.userRepository.getUserById(targetId);
         if (!user) throw new NotFoundError('Report target not found');
-        return { ownerId: user.id, excerpt: user.username };
+        return { ownerId: user.id, ownerUsername: user.username, excerpt: user.username };
     }
 
     async _removeTarget(report) {
