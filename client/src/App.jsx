@@ -11,7 +11,6 @@ import Topbar from "./components/topbar/Topbar";
 import Spinner from "./components/spinner/Spinner";
 import InternalGuard from "./pages/InternalGuard";
 import PrivateLayout from "./pages/PrivateLayout";
-import Home from "./pages/home/Home";
 import { clearError, initAuthUser } from "./store/auth/authActions";
 import {
   momentFromShareRequest,
@@ -41,6 +40,7 @@ import { loadMyUserInfo } from "./store/user/userInfoActions";
 
 // Code-split per route so the initial bundle isn't the whole app; Home stays eager
 // since it's the most common cold-landing page and shouldn't wait on a chunk fetch.
+const Home = lazy(() => import("./pages/home/Home"));
 const Login = lazy(() => import("./pages/auth/Login"));
 const Signup = lazy(() => import("./pages/auth/Signup"));
 const ForgotPassword = lazy(() => import("./pages/auth/ForgotPassword"));

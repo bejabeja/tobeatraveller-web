@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
@@ -24,7 +24,8 @@ import {
 import VanToday from "../../components/home/VanToday.jsx";
 import HomeNews from "../../components/home/HomeNews.jsx";
 import PassportSummary from "../../components/home/PassportSummary.jsx";
-import WorldMap from "../../components/home/WorldMap.jsx";
+// The map library is the heaviest thing in the app, and only a visitor who is not signed in sees this map.
+const WorldMap = lazy(() => import("../../components/home/WorldMap.jsx"));
 import LoadingButton from "../../components/LoadingButton.jsx";
 import { FEATURES } from "../../utils/constants/constants.js";
 import "./Home.scss";
@@ -211,7 +212,9 @@ const Home = () => {
                   <h2>{t("home.exploreTheWorld")}</h2>
                   <p>{t("home.exploreSubtitle")}</p>
                 </div>
-                <WorldMap />
+                <Suspense fallback={<div className="skeleton home__map-placeholder" />}>
+                  <WorldMap />
+                </Suspense>
               </div>
             )}
             {/* Real content (trips, people, the map) comes first so a

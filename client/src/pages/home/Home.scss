@@ -1,3 +1,5 @@
+@use "../../components/SkeletonBase.scss";
+
 .home {
   display: flex;
   flex-direction: column;
@@ -61,6 +63,13 @@
 }
 
 .home__users,
+.home__map-placeholder {
+  // The height of the map, so the page does not jump when it arrives.
+  width: 100%;
+  height: 420px;
+  border-radius: 1.25rem;
+}
+
 .home__destinations {
   width: 100%;
 }
