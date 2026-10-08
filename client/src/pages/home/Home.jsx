@@ -117,11 +117,7 @@ const Home = () => {
         </div>
       )}
 
-      {isAuthenticated && (
-        <div className="section__container">
-          <HomeNews />
-        </div>
-      )}
+      {isAuthenticated && <HomeNews />}
 
       <div className="section__container home__container">
 

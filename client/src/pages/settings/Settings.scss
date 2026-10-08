@@ -191,5 +191,10 @@ $settings-row-min-height: 48px;
   // The language menu sits at the right of its row.
   &__select {
     max-width: 55%;
+
+    // "I travel from time to time" was cut short next to a label of its own.
+    @media (max-width: 480px) {
+      max-width: 65%;
+    }
   }
 }

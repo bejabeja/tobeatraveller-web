@@ -24,15 +24,17 @@ const HomeNews = () => {
   if (news.length === 0) return null;
 
   return (
-    <section className="home-news" aria-labelledby="home-news-title">
-      <div className="home-news__header">
-        <h2 id="home-news-title" className="home-news__title">{t("home.newsTitle")}</h2>
-        <Link to="/notifications" className="home-news__see-all">{t("common.seeAll")}</Link>
-      </div>
-      <div className="home-news__list">
-        {news.slice(0, MAX_NEWS).map((notification) => <NotificationItem key={notification.id} notification={notification} />)}
-      </div>
-    </section>
+    <div className="section__container">
+      <section className="home-news" aria-labelledby="home-news-title">
+        <div className="home-news__header">
+          <h2 id="home-news-title" className="home-news__title">{t("home.newsTitle")}</h2>
+          <Link to="/notifications" className="home-news__see-all">{t("common.seeAll")}</Link>
+        </div>
+        <div className="home-news__list">
+          {news.slice(0, MAX_NEWS).map((notification) => <NotificationItem key={notification.id} notification={notification} />)}
+        </div>
+      </section>
+    </div>
   );
 };
 

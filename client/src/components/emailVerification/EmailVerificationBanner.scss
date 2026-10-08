@@ -10,6 +10,13 @@
   color: #9a3412;
   font-size: 0.875rem;
 
+  // On a phone it sat on top of every page taking a sixth of the screen.
+  @media (max-width: 600px) {
+    gap: 0.25rem 0.75rem;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8rem;
+  }
+
   &__text {
     margin: 0;
     width: auto;

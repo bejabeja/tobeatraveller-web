@@ -26,6 +26,7 @@ import {
 import { selectMyItineraries } from "../../store/user/userInfoSelectors";
 import { trackEvent } from "../../utils/analytics";
 import { ANALYTICS_EVENTS } from "../../utils/analyticsEvents";
+import { usePageMeta } from "../../hooks/usePageMeta.js";
 import PackingItemFormModal from "./PackingItemFormModal";
 import PackingListFormModal from "./PackingListFormModal";
 import PackingListTripModal from "./PackingListTripModal";
@@ -65,6 +66,7 @@ const PackingList = () => {
   const [restarting, setRestarting] = useState(false);
   const [search, setSearch] = useState("");
   const [renaming, setRenaming] = useState(false);
+  usePageMeta({ title: list?.name });
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [capReached, setCapReached] = useState(false);

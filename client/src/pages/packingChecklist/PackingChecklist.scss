@@ -196,6 +196,12 @@
     padding: 0.3rem;
     border-radius: 8px;
 
+    // A finger needs more than the pointer does, and edit sits next to delete.
+    @media (pointer: coarse) {
+      padding: 0.6rem;
+      font-size: 1.1rem;
+    }
+
     &:hover {
       background: var(--surface-color);
       color: var(--text-color);

@@ -264,3 +264,10 @@ it("takes the list off its trip", async () => {
   await waitFor(() => expect(screen.queryByRole("link", { name: /packingChecklist.forTrip/ })).not.toBeInTheDocument());
 });
 
+
+// Regression: the tab said "ToBeATraveller: your life on the road" on a list's page, like on no page at all.
+it("names the browser tab after the list", async () => {
+  renderList();
+
+  await waitFor(() => expect(document.title).toBe(`${LIST.name} - ToBeATraveller`));
+});
