@@ -44,16 +44,19 @@ const renderPage = (trip) => {
   updateItinerary.mockResolvedValue({});
   render(
     <MemoryRouter initialEntries={["/itinerary/edit/t1"]}>
-      <Routes><Route path="/itinerary/edit/:id" element={<EditItinerary />} /></Routes>
+      <Routes>
+        <Route path="/itinerary/edit/:id" element={<EditItinerary />} />
+        <Route path="/itinerary/:id" element={<p>the trip page</p>} />
+      </Routes>
     </MemoryRouter>
   );
 };
 
 const savedBody = () => JSON.parse(updateItinerary.mock.calls[0][1].get("itinerary"));
 
+// Saving is not destructive and the form can be left unchanged: one tap saves, with no "are you sure" in between.
 const save = async () => {
   fireEvent.click(await screen.findByRole("button", { name: "itinerary.updateItineraryBtn" }));
-  fireEvent.click(await screen.findByRole("button", { name: "itinerary.confirmUpdate" }));
   await waitFor(() => expect(updateItinerary).toHaveBeenCalled());
 };
 
@@ -88,5 +91,18 @@ describe("EditItinerary: trips by van", () => {
     await save();
 
     expect(savedBody().byVan).toBe(false);
+  });
+});
+
+// Regression: editing a trip ended on the profile, while editing an AI-planned one ended on the trip itself.
+describe("EditItinerary: after saving", () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it("shows the trip that was just edited, not the profile", async () => {
+    renderPage(TRIP);
+
+    await save();
+
+    expect(await screen.findByText("the trip page")).toBeInTheDocument();
   });
 });

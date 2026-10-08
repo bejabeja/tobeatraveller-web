@@ -36,7 +36,6 @@ const EditItinerary = () => {
   const myTripsPath = `/profile/${authUser?.id}`;
 
   const [itineraryData, setItineraryData] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [imageFile, setImageFile] = useState(null);
   const [galleryImages, setGalleryImages] = useState([]);
@@ -55,7 +54,6 @@ const EditItinerary = () => {
     formState: { errors, isDirty },
     watch,
     setValue,
-    trigger,
   } = useForm({
     resolver: zodResolver(createItinerarySchema),
     defaultValues: {
@@ -211,7 +209,7 @@ const EditItinerary = () => {
     });
     dispatch(setUserInfo(userMe.id));
     dispatch(loadMyUserInfo(userMe.id));
-    navigate(`/profile/${userMe.id}`);
+    navigate(`/itinerary/${id}`);
   };
 
   const galleryChanged = () => {
@@ -279,34 +277,19 @@ const EditItinerary = () => {
             <button
               type="button"
               className="btn btn--primary"
-              onClick={async () => {
-                const isValid = await trigger();
-                if (isValid) {
-                  setIsModalOpen(true);
+              onClick={handleSubmit(async (data) => {
+                try {
+                  await editItinerary(data);
+                } catch {
+                  // editItinerary already told the person why.
                 }
-              }}
+              })}
             >
               {t("itinerary.updateItineraryBtn")}
             </button>
           </div>
         )}
       </form>
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onConfirm={handleSubmit(async (data) => {
-          try {
-            await editItinerary(data);
-          } catch {
-            return;
-          }
-          setIsModalOpen(false);
-        })}
-        title={t("itinerary.confirmUpdateTitle")}
-        description={t("itinerary.confirmUpdateDesc")}
-        confirmText={t("itinerary.confirmUpdate")}
-        type="confirm"
-      />
       <Modal
         isOpen={showExitConfirm}
         onClose={() => setShowExitConfirm(false)}

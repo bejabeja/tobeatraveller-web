@@ -3,6 +3,7 @@ import { Controller } from "react-hook-form";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { useTranslation } from "react-i18next";
 import { translateValidationMessage } from "@tobeatraveller/shared";
+import "./InputForm.scss";
 
 export const PasswordInputForm = ({ label, name, control, error, hint, autoComplete }) => {
   const { t } = useTranslation();
