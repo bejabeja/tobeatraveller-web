@@ -397,7 +397,9 @@
     "paymentFailedTitle": "There's a problem with your last payment",
     "paymentFailedDesc": "We couldn't charge your card. Update your payment method to keep your Premium access.",
     "metaTitle": "Premium plans",
-    "metaDescription": "Track expenses, supplies and your diary on the road, work offline in the app and plan trips with AI. 7-day free trial, no card needed."
+    "metaDescription": "Track expenses, supplies and your diary on the road, work offline in the app and plan trips with AI. 7-day free trial, no card needed.",
+    "guestTitle": "Guest of honour",
+    "guestDesc": "Premium is on us, with no end date. Thank you for being one of the people who make ToBeATraveller what it is."
   },
   "admin": {
     "reportOpenTarget": "Open",
@@ -746,7 +748,7 @@
     "noSavedTripsDesc": "Tap the bookmark icon on any itinerary to save it here."
   },
   "vanLog": {
-    "purpose": "Log what you spend on the road, like fuel, water or groceries, and see where the money goes by month, trip and country.",
+    "purpose": "Log what you spend while travelling, like fuel, food or transport, and see where the money goes by month, trip and country.",
     "statsLoadError": "Could not load the statistics. Please try again.",
     "title": "Expenses",
     "addEntry": "Add entry",
@@ -820,7 +822,7 @@
     "yesterday": "Yesterday",
     "daysAgo_one": "{{count}} day ago",
     "daysAgo_other": "{{count}} days ago",
-    "noEntries": "No entries yet. Log your first gas, water, or grocery stop.",
+    "noEntries": "No entries yet. Log your first expense: fuel, a meal or a ticket.",
     "noEntriesFiltered": "No entries match these filters.",
     "searchPlaceholder": "Search title, notes, location...",
     "noSearchResults": "No entries match \"{{query}}\".",
@@ -847,7 +849,11 @@
       "tolls": "Tolls",
       "overnight_stay": "Overnight stay",
       "maintenance": "Maintenance",
-      "other": "Other"
+      "other": "Other",
+      "eating_out": "Eating out",
+      "transport": "Transport",
+      "activities": "Activities",
+      "shopping": "Shopping"
     }
   },
   "supplies": {
@@ -978,7 +984,7 @@
       },
       "winter": {
         "name": "Winter",
-        "desc": "Cold, snow and a van ready for both"
+        "desc": "Warm clothes and what the cold asks for"
       }
     },
     "listProgress": "{{checked}} of {{total}} done",
@@ -1335,7 +1341,9 @@
     "notifyOnTripReminders": "Packing reminder before a trip",
     "travelStyle": "How you travel",
     "travelStyleNotSet": "Not set",
-    "travelStyleSaved": "Saved"
+    "travelStyleSaved": "Saved",
+    "blockedPeople": "Blocked people",
+    "blockedPeopleEmpty": "You have not blocked anyone."
   },
   "report": {
     "button": "Report",
@@ -1365,7 +1373,8 @@
       "comment": "comment",
       "itinerary": "trip",
       "user": "profile"
-    }
+    },
+    "reported": "Reported"
   },
   "block": {
     "button": "Block",
@@ -1375,7 +1384,8 @@
     "confirmButton": "Block",
     "blocked": "@{{username}} blocked",
     "unblocked": "@{{username}} unblocked",
-    "error": "We could not change the block. Please try again."
+    "error": "We could not change the block. Please try again.",
+    "listError": "We could not load the people you blocked. Please try again."
   },
   "validation": {
     "blockYourself": "You can't block yourself",

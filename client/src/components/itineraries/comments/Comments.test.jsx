@@ -184,3 +184,33 @@ describe("Comments by pages", () => {
     expect(getCommentsPage).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("Comments moderation", () => {
+  const renderFor = (itineraryOwnerId) =>
+    render(
+      <MemoryRouter initialEntries={["/itinerary/itin-1"]}>
+        <Comments itineraryId="itin-1" itineraryOwnerId={itineraryOwnerId} isAuthenticated />
+      </MemoryRouter>
+    );
+
+  beforeEach(() => {
+    getCommentsPage.mockResolvedValue({ comments: COMMENTS, totalCount: COMMENTS.length });
+  });
+
+  it("lets the owner of the trip delete comments other people left on it", async () => {
+    renderFor("me-1");
+
+    await screen.findByText("first comment");
+
+    expect(screen.getAllByRole("button", { name: "comments.delete" })).toHaveLength(COMMENTS.length);
+  });
+
+  it("gives someone else's trip only the report option on other people's comments", async () => {
+    renderFor("someone-else");
+
+    await screen.findByText("first comment");
+
+    expect(screen.queryByRole("button", { name: "comments.delete" })).not.toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: "report.button" })).toHaveLength(COMMENTS.length);
+  });
+});

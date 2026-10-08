@@ -1,1 +1,1 @@
-export { getBlockStatus, blockUser, unblockUser } from "@tobeatraveller/shared";
+export { getBlockedUsers, getBlockStatus, blockUser, unblockUser } from "@tobeatraveller/shared";

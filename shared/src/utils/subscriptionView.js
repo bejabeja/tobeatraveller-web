@@ -14,6 +14,13 @@
 // user is Premium for another reason.
 const LIVE_SUBSCRIPTION_STATUSES = ['active', 'trialing', 'past_due'];
 
+// A gift with no end date is stored a century out (see userService.js), so
+// anything this far away means "for as long as they are here".
+const INDEFINITE_AFTER_YEARS = 50;
+
+export const isIndefinitePremium = (premiumUntil) =>
+    Boolean(premiumUntil) && new Date(premiumUntil).getFullYear() - new Date().getFullYear() > INDEFINITE_AFTER_YEARS;
+
 export const getPremiumView = ({ isPremium, activating = false, activationStalled = false, subscription, subscriptionState, premiumUntil }) => {
     if (!isPremium) {
         if (activating) return { kind: 'activating' };
@@ -28,6 +35,6 @@ export const getPremiumView = ({ isPremium, activating = false, activationStalle
         if (subscription.status === 'trialing') return { kind: 'trial', date };
         return { kind: 'active', date };
     }
-    if (subscriptionState !== 'failed' && premiumUntil) return { kind: 'granted', date: premiumUntil };
+    if (subscriptionState !== 'failed' && premiumUntil) return { kind: 'granted', date: premiumUntil, ...(isIndefinitePremium(premiumUntil) && { indefinite: true }) };
     return { kind: 'unknown' };
 };

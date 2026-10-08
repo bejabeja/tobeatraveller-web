@@ -402,7 +402,9 @@
     "paymentFailedTitle": "Il y a un problème avec ton dernier paiement",
     "paymentFailedDesc": "Nous n'avons pas pu débiter ta carte. Mets à jour ton moyen de paiement pour garder ton accès Premium.",
     "metaTitle": "Formules Premium",
-    "metaDescription": "Suivez vos dépenses, vos provisions et votre journal en route, travaillez hors ligne dans l'app et planifiez vos voyages avec l'IA. 7 jours d'essai gratuit, sans carte."
+    "metaDescription": "Suivez vos dépenses, vos provisions et votre journal en route, travaillez hors ligne dans l'app et planifiez vos voyages avec l'IA. 7 jours d'essai gratuit, sans carte.",
+    "guestTitle": "Invité d'honneur",
+    "guestDesc": "Ton Premium est offert, sans date de fin. Merci de faire partie des personnes qui font ToBeATraveller."
   },
   "admin": {
     "reportOpenTarget": "Ouvrir",
@@ -757,7 +759,7 @@
     "noSavedTripsDesc": "Touche l'icône de signet sur n'importe quel itinéraire pour l'enregistrer ici."
   },
   "vanLog": {
-    "purpose": "Note ce que tu dépenses sur la route, comme le carburant, l'eau ou les courses, et vois où va l'argent par mois, voyage et pays.",
+    "purpose": "Note ce que tu dépenses en voyage, comme le carburant, les repas ou les transports, et vois où va l'argent par mois, voyage et pays.",
     "statsLoadError": "Impossible de charger les statistiques. Réessaie.",
     "title": "Dépenses",
     "addEntry": "Ajouter une entrée",
@@ -832,7 +834,7 @@
     "daysAgo_one": "Il y a {{count}} jour",
     "daysAgo_other": "Il y a {{count}} jours",
     "daysAgo_many": "Il y a {{count}} jours",
-    "noEntries": "Aucune entrée pour l'instant. Note ton premier plein, ton premier remplissage d'eau ou tes premières courses.",
+    "noEntries": "Aucune entrée pour l'instant. Note ta première dépense : carburant, un repas ou un billet.",
     "noEntriesFiltered": "Aucune entrée ne correspond à ces filtres.",
     "searchPlaceholder": "Rechercher un titre, des notes, un lieu...",
     "noSearchResults": "Aucune entrée ne correspond à « {{query}} ».",
@@ -859,7 +861,11 @@
       "tolls": "Péages",
       "overnight_stay": "Nuitée",
       "maintenance": "Entretien",
-      "other": "Autre"
+      "other": "Autre",
+      "eating_out": "Restaurants",
+      "transport": "Transports",
+      "activities": "Activités",
+      "shopping": "Achats"
     }
   },
   "supplies": {
@@ -993,7 +999,7 @@
       },
       "winter": {
         "name": "Hiver",
-        "desc": "Froid, neige et fourgon prêt"
+        "desc": "Vêtements chauds et ce que demande le froid"
       }
     },
     "listProgress": "{{checked}} sur {{total}} prêts",
@@ -1355,7 +1361,9 @@
     "notifyOnTripReminders": "Rappel des bagages avant un voyage",
     "travelStyle": "Comment tu voyages",
     "travelStyleNotSet": "Non indiqué",
-    "travelStyleSaved": "Enregistré"
+    "travelStyleSaved": "Enregistré",
+    "blockedPeople": "Personnes bloquées",
+    "blockedPeopleEmpty": "Tu n'as bloqué personne."
   },
   "report": {
     "button": "Signaler",
@@ -1385,7 +1393,8 @@
       "comment": "commentaire",
       "itinerary": "voyage",
       "user": "profil"
-    }
+    },
+    "reported": "Signalé"
   },
   "block": {
     "button": "Bloquer",
@@ -1395,7 +1404,8 @@
     "confirmButton": "Bloquer",
     "blocked": "@{{username}} bloqué",
     "unblocked": "@{{username}} débloqué",
-    "error": "Nous n'avons pas pu modifier le blocage. Réessaie."
+    "error": "Nous n'avons pas pu modifier le blocage. Réessaie.",
+    "listError": "Nous n'avons pas pu charger les personnes que tu as bloquées. Réessaie."
   },
   "validation": {
     "blockYourself": "Tu ne peux pas te bloquer toi-même",

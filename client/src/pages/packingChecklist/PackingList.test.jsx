@@ -4,7 +4,7 @@ import { chooseOption } from "../../testUtils/chooseOption";
 
 let mockTrips = [];
 jest.mock("react-redux", () => ({ useSelector: (selector) => selector() }));
-jest.mock("../../store/user/userInfoSelectors", () => ({ selectMyItineraries: () => mockTrips }));
+jest.mock("../../store/user/userInfoSelectors", () => ({ selectMe: () => ({ travelStyle: "van" }), selectMyItineraries: () => mockTrips }));
 jest.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (key, vars) => (vars && typeof vars === "object" ? `${key}:${Object.values(vars).join("/")}` : key), i18n: { language: "es" } }),
 }));

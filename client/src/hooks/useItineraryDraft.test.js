@@ -59,4 +59,25 @@ describe("useItineraryDraft", () => {
 
     expect(result.current.pendingDraft).toBeNull();
   });
+
+  // Regression: the form stayed on screen while the published trip's page loaded, kept autosaving,
+  // and the trip came back as "unfinished" in Home and in Create trip.
+  it("does not bring a published trip back as a draft when the form saves once more", () => {
+    const { result } = renderHook(() => useItineraryDraft("user-1"));
+    act(() => result.current.save(draft));
+
+    act(() => result.current.finish());
+    act(() => result.current.save(draft));
+
+    expect(localStorage.getItem(itineraryDraftKey("user-1"))).toBeNull();
+  });
+
+  it("keeps saving after a draft was merely cleared, since the person can start writing again", () => {
+    const { result } = renderHook(() => useItineraryDraft("user-1"));
+
+    act(() => result.current.clear());
+    act(() => result.current.save(draft));
+
+    expect(localStorage.getItem(itineraryDraftKey("user-1"))).not.toBeNull();
+  });
 });

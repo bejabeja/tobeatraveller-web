@@ -75,6 +75,17 @@
       color: var(--text-secondary-color);
     }
 
+    &__actions {
+      display: flex;
+      gap: 1rem;
+    }
+
+    &__reported {
+      color: var(--text-secondary-color);
+      font-size: 0.85rem;
+      margin-top: 0.25rem;
+    }
+
     &__report {
       background: none;
       color: var(--text-secondary-color);

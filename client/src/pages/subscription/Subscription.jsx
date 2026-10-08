@@ -346,12 +346,12 @@ const Subscription = () => {
         const description = {
           trial: () => t("subscription.trialActiveDesc", { date: dateOf(view.date) }),
           active: () => t("subscription.renewsOn", { date: dateOf(view.date) }),
-          granted: () => t("subscription.premiumUntilDesc", { date: dateOf(view.date) }),
+          granted: () => (view.indefinite ? t("subscription.guestDesc") : t("subscription.premiumUntilDesc", { date: dateOf(view.date) })),
         }[view.kind]?.() ?? t("subscription.alreadyPremiumDesc");
         return (
           <div className="subscription__already-premium">
             <IoCheckmarkCircle className="subscription__already-premium-icon" aria-hidden="true" />
-            <h2>{t("subscription.alreadyPremiumTitle")}</h2>
+            <h2>{t(view.indefinite ? "subscription.guestTitle" : "subscription.alreadyPremiumTitle")}</h2>
             <p>{description}</p>
             {hasBilling ? (
               <>

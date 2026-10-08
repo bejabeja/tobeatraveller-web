@@ -79,8 +79,8 @@ describe("Subscription", () => {
     const IN_TWO_WEEKS = new Date(Date.now() + 14 * 86400000).toISOString();
     const date = (iso) => formatDate(iso, "es");
     const paidSubscription = (overrides = {}) => ({ status: "active", currentPeriodEnd: IN_TWO_WEEKS, cancelAtPeriodEnd: false, ...overrides });
-    const renderPremium = async (subscription) => {
-      mockMe = { id: "user-1", isPremium: true, premiumUntil: IN_TWO_WEEKS };
+    const renderPremium = async (subscription, premiumUntil = IN_TWO_WEEKS) => {
+      mockMe = { id: "user-1", isPremium: true, premiumUntil };
       getMySubscription.mockResolvedValue(subscription);
       renderPage();
       await act(async () => {});
@@ -113,6 +113,14 @@ describe("Subscription", () => {
       expect(screen.getByText(`subscription.premiumUntilDesc:${date(IN_TWO_WEEKS)}`)).toBeInTheDocument();
       expect(screen.queryByRole("button", { name: "subscription.manageLink" })).not.toBeInTheDocument();
       expect(createPortalSession).not.toHaveBeenCalled();
+    });
+
+    it("greets someone whose Premium has no end date as a guest of honour, without a date a century away", async () => {
+      await renderPremium(null, "2126-08-08T00:00:00.000Z");
+
+      expect(screen.getByRole("heading", { name: "subscription.guestTitle" })).toBeInTheDocument();
+      expect(screen.getByText("subscription.guestDesc")).toBeInTheDocument();
+      expect(screen.queryByText(/subscription.premiumUntilDesc/)).not.toBeInTheDocument();
     });
 
     it("keeps the way to billing when the subscription could not be read, as they may well be paying", async () => {

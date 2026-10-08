@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getPremiumView } from '../../utils/subscriptionView.js';
+import { getPremiumView, isIndefinitePremium } from '../../utils/subscriptionView.js';
 
 const IN_TWO_WEEKS = '2026-10-13T00:00:00.000Z';
 const PREMIUM_UNTIL = '2026-12-28T00:00:00.000Z';
@@ -78,5 +78,26 @@ describe('getPremiumView', () => {
 
     it('does not claim a date it does not have', () => {
         expect(view({ subscription: null, premiumUntil: null }).kind).toBe('unknown');
+    });
+});
+
+describe('guests of honour', () => {
+    const NO_END = '2126-08-08T00:00:00.000Z';
+    const grantedView = (premiumUntil) => getPremiumView({
+        isPremium: true, subscription: null, subscriptionState: 'loaded', premiumUntil,
+    });
+
+    it('tells a Premium with no end date from one that ends', () => {
+        expect(isIndefinitePremium(NO_END)).toBe(true);
+        expect(isIndefinitePremium('2026-12-28T00:00:00.000Z')).toBe(false);
+        expect(isIndefinitePremium(null)).toBe(false);
+    });
+
+    it('marks a grant with no end date, so the page does not announce a date a century away', () => {
+        expect(grantedView(NO_END)).toEqual({ kind: 'granted', date: NO_END, indefinite: true });
+    });
+
+    it('does not mark a grant that ends', () => {
+        expect(grantedView('2026-12-28T00:00:00.000Z').indefinite).toBeFalsy();
     });
 });

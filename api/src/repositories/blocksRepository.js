@@ -1,4 +1,5 @@
 import client from '../db/clientPostgres.js';
+import { User } from '../models/user.js';
 
 export class BlocksRepository {
   // Blocking also ends any follow between the two, in one statement so it cannot
@@ -37,5 +38,17 @@ export class BlocksRepository {
       [userId, otherUserId]
     );
     return result.rows.length > 0;
+  }
+
+  async getBlockedUsers(blockerId) {
+    const result = await client.query(
+      `SELECT users.*
+       FROM user_blocks
+       JOIN users ON user_blocks.blocked_id = users.id
+       WHERE user_blocks.blocker_id = $1
+       ORDER BY user_blocks.created_at DESC`,
+      [blockerId]
+    );
+    return result.rows.map(row => User.fromDb(row));
   }
 }

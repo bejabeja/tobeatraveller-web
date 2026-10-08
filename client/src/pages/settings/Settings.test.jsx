@@ -27,6 +27,7 @@ jest.mock("../../components/form/SelectMenu", () => {
 });
 jest.mock("../../components/spinner/Spinner", () => () => null);
 jest.mock("../../utils/analytics", () => ({ REOPEN_COOKIE_PREFERENCES_EVENT: "reopen-cookie-preferences" }));
+jest.mock("../../services/blocks", () => ({ getBlockedUsers: jest.fn(() => Promise.resolve([])), unblockUser: jest.fn() }));
 jest.mock("../../services/users", () => ({ changePassword: jest.fn(), deleteMyAccount: jest.fn(), exportMyData: jest.fn() }));
 jest.mock("../../store/auth/authActions", () => ({ logoutUser: jest.fn() }));
 jest.mock("../../store/auth/authSelectors", () => ({ selectAuthUser: () => ({ id: "user-1", username: "jane" }) }));

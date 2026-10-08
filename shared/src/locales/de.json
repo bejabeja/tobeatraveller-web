@@ -397,7 +397,9 @@
     "paymentFailedTitle": "Es gibt ein Problem mit deiner letzten Zahlung",
     "paymentFailedDesc": "Wir konnten deine Karte nicht belasten. Aktualisiere deine Zahlungsmethode, um deinen Premium-Zugang zu behalten.",
     "metaTitle": "Premium-Tarife",
-    "metaDescription": "Behalte Ausgaben, Vorräte und dein Tagebuch unterwegs im Blick, arbeite offline in der App und plane Reisen mit KI. 7 Tage kostenlos testen, ohne Karte."
+    "metaDescription": "Behalte Ausgaben, Vorräte und dein Tagebuch unterwegs im Blick, arbeite offline in der App und plane Reisen mit KI. 7 Tage kostenlos testen, ohne Karte.",
+    "guestTitle": "Ehrengast",
+    "guestDesc": "Dein Premium geht auf uns, ohne Enddatum. Danke, dass du zu denen gehörst, die ToBeATraveller ausmachen."
   },
   "admin": {
     "reportOpenTarget": "Öffnen",
@@ -746,7 +748,7 @@
     "noSavedTripsDesc": "Tippe bei einem Reiseplan auf das Lesezeichen, um ihn hier zu speichern."
   },
   "vanLog": {
-    "purpose": "Halte fest, was du unterwegs ausgibst, etwa für Sprit, Wasser oder Einkäufe, und sieh nach Monat, Reise und Land, wohin das Geld geht.",
+    "purpose": "Halte fest, was du auf Reisen ausgibst, etwa für Sprit, Essen oder Transport, und sieh nach Monat, Reise und Land, wohin das Geld geht.",
     "statsLoadError": "Die Statistiken konnten nicht geladen werden. Bitte versuche es erneut.",
     "title": "Ausgaben",
     "addEntry": "Eintrag hinzufügen",
@@ -820,7 +822,7 @@
     "yesterday": "Gestern",
     "daysAgo_one": "vor {{count}} Tag",
     "daysAgo_other": "vor {{count}} Tagen",
-    "noEntries": "Noch keine Einträge. Trag deinen ersten Stopp zum Tanken, Wasserholen oder Einkaufen ein.",
+    "noEntries": "Noch keine Einträge. Trag deine erste Ausgabe ein: Sprit, eine Mahlzeit oder ein Ticket.",
     "noEntriesFiltered": "Keine Einträge passen zu diesen Filtern.",
     "searchPlaceholder": "Titel, Notizen, Ort suchen...",
     "noSearchResults": "Keine Einträge passen zu „{{query}}“.",
@@ -847,7 +849,11 @@
       "tolls": "Maut",
       "overnight_stay": "Übernachtung",
       "maintenance": "Wartung",
-      "other": "Sonstiges"
+      "other": "Sonstiges",
+      "eating_out": "Essen gehen",
+      "transport": "Transport",
+      "activities": "Aktivitäten",
+      "shopping": "Einkaufen"
     }
   },
   "supplies": {
@@ -978,7 +984,7 @@
       },
       "winter": {
         "name": "Winter",
-        "desc": "Kälte, Schnee und ein startklarer Camper"
+        "desc": "Warme Kleidung und was die Kälte verlangt"
       }
     },
     "listProgress": "{{checked}} von {{total}} erledigt",
@@ -1335,7 +1341,9 @@
     "notifyOnTripReminders": "Packerinnerung vor einer Reise",
     "travelStyle": "Wie du reist",
     "travelStyleNotSet": "Nicht angegeben",
-    "travelStyleSaved": "Gespeichert"
+    "travelStyleSaved": "Gespeichert",
+    "blockedPeople": "Blockierte Personen",
+    "blockedPeopleEmpty": "Du hast niemanden blockiert."
   },
   "report": {
     "button": "Melden",
@@ -1365,7 +1373,8 @@
       "comment": "Kommentar",
       "itinerary": "Reise",
       "user": "Profil"
-    }
+    },
+    "reported": "Gemeldet"
   },
   "block": {
     "button": "Blockieren",
@@ -1375,7 +1384,8 @@
     "confirmButton": "Blockieren",
     "blocked": "@{{username}} blockiert",
     "unblocked": "@{{username}} entblockt",
-    "error": "Wir konnten die Blockierung nicht ändern. Bitte versuche es erneut."
+    "error": "Wir konnten die Blockierung nicht ändern. Bitte versuche es erneut.",
+    "listError": "Wir konnten die blockierten Personen nicht laden. Bitte versuche es erneut."
   },
   "validation": {
     "blockYourself": "Du kannst dich nicht selbst blockieren",

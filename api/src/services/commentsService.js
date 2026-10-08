@@ -44,10 +44,15 @@ export class CommentsService {
         const comment = await this.commentsRepository.getCommentById(commentId);
         if (!comment) throw new NotFoundError("Comment not found");
 
-        if (comment.user.id !== userId) {
+        if (comment.user.id !== userId && !await this.isItineraryOwner(comment.itineraryId, userId)) {
             throw new AuthError();
         }
 
-        await this.commentsRepository.deleteComment(commentId)
+        await this.commentsRepository.deleteComment(commentId);
+    }
+
+    async isItineraryOwner(itineraryId, userId) {
+        const itinerary = await this.itineraryRepository?.findById(itineraryId);
+        return itinerary?.userId === userId;
     }
 }

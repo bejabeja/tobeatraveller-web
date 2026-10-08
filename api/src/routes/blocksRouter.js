@@ -10,6 +10,7 @@ export const createBlocksRouter = () => {
 
     const blocksController = new BlocksController(new BlocksService(new BlocksRepository(), new UserRepository()));
 
+    router.get("/", authenticate, blocksController.listBlocked.bind(blocksController));
     router.get("/:userId", authenticate, blocksController.getStatus.bind(blocksController));
     router.post("/:userId", authenticate, blocksController.block.bind(blocksController));
     router.delete("/:userId", authenticate, blocksController.unblock.bind(blocksController));

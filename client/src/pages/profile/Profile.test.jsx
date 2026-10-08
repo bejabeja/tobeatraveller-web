@@ -4,6 +4,8 @@ import { Link, MemoryRouter, Route, Routes } from "react-router-dom";
 let mockIsMyProfile = true;
 let mockTripsLoaded = true;
 let mockTripsError = null;
+let mockIsBlocked = false;
+const mockToggleBlock = jest.fn();
 const mockDispatch = jest.fn();
 
 jest.mock("react-redux", () => ({ useSelector: () => ({ id: "user-1" }), useDispatch: () => mockDispatch }));
@@ -19,6 +21,7 @@ jest.mock("../../hooks/useProfileData", () => ({
   }),
 }));
 jest.mock("../../hooks/useFollow", () => ({ useFollow: () => ({ isFollowing: false, toggleFollow: jest.fn(), isLoadingFollow: false }) }));
+jest.mock("../../hooks/useBlock", () => ({ useBlock: () => ({ isBlocked: mockIsBlocked, isLoadingBlock: false, toggleBlock: mockToggleBlock }) }));
 jest.mock("../../hooks/useUserPassport", () => ({ useUserPassport: () => ({ passport: null }) }));
 jest.mock("../../hooks/usePageMeta", () => ({ usePageMeta: jest.fn() }));
 jest.mock("../../hooks/useSavedTrips", () => ({ useSavedTrips: jest.fn() }));
@@ -230,5 +233,28 @@ describe("Profile trips", () => {
 
       expect(navigator.clipboard.writeText).toHaveBeenCalledWith(`${window.location.origin}/@jane`);
     });
+  });
+});
+
+describe("Profile of a person the viewer has blocked", () => {
+  beforeEach(() => {
+    mockIsMyProfile = false;
+    mockIsBlocked = true;
+    mockToggleBlock.mockClear();
+  });
+
+  afterEach(() => {
+    mockIsMyProfile = true;
+    mockIsBlocked = false;
+  });
+
+  it("offers to unblock instead of follow", () => {
+    renderProfile();
+
+    expect(screen.queryByRole("button", { name: "profile.follow" })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "block.unblockButton" }));
+
+    expect(mockToggleBlock).toHaveBeenCalledTimes(1);
   });
 });

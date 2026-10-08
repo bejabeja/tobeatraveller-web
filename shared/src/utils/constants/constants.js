@@ -56,18 +56,22 @@ export const tripCategoryLabelKey = (category) => {
 // Keep values in sync with api/src/models/vanLogEntry.js#VAN_LOG_CATEGORIES
 // (api/ doesn't depend on shared/, so this list is duplicated by necessity).
 export const vanLogCategories = [
+  { value: "fuel", label: "Fuel" },
+  { value: "groceries", label: "Groceries" },
+  { value: "eating_out", label: "Eating out" },
+  { value: "transport", label: "Transport" },
+  { value: "activities", label: "Activities" },
+  { value: "shopping", label: "Shopping" },
+  { value: "overnight_stay", label: "Overnight stay" },
+  { value: "parking", label: "Parking" },
+  { value: "tolls", label: "Tolls" },
+  { value: "laundry", label: "Laundry" },
+  { value: "maintenance", label: "Maintenance" },
   { value: "gas_bottle", label: "Gas bottle" },
   { value: "water_fresh", label: "Fresh water" },
   { value: "water_grey", label: "Grey water" },
   { value: "water_black", label: "Black water" },
   { value: "trash", label: "Trash" },
-  { value: "fuel", label: "Fuel" },
-  { value: "groceries", label: "Groceries" },
-  { value: "laundry", label: "Laundry" },
-  { value: "parking", label: "Parking" },
-  { value: "tolls", label: "Tolls" },
-  { value: "overnight_stay", label: "Overnight stay" },
-  { value: "maintenance", label: "Maintenance" },
   { value: "other", label: "Other" },
 ];
 
@@ -76,6 +80,7 @@ export const vanLogCategoryEmoji = {
   gas_bottle: "🔥", water_fresh: "💧", water_grey: "🚿", water_black: "🚽",
   trash: "🗑️", fuel: "⛽", groceries: "🛒", laundry: "🧺",
   parking: "🅿️", tolls: "🛣️", overnight_stay: "🌙", maintenance: "🔧", other: "📍",
+  eating_out: "🍽️", transport: "🚆", activities: "🎟️", shopping: "🛍️",
 };
 
 // Currency picker on Van Log entry forms: EUR first since the app targets

@@ -77,7 +77,7 @@ const CreateItinerary = () => {
     },
   });
 
-  const { pendingDraft, resolvePending, save: saveDraft, clear: clearDraft } = useItineraryDraft(authUser?.id);
+  const { pendingDraft, resolvePending, save: saveDraft, clear: clearDraft, finish: finishDraft } = useItineraryDraft(authUser?.id);
   const formValues = useWatch({ control });
 
   const startDate = watch("startDate");
@@ -212,7 +212,7 @@ const CreateItinerary = () => {
       trackEvent(ANALYTICS_EVENTS.TRIP_CREATED, tripCreatedProperties({
         kind: TRIP_KINDS.ITINERARY, isPublic: data.isPublic, places: body.places.length, days: days.length,
       }));
-      clearDraft();
+      finishDraft();
       dispatch(setUserInfo(userMe.id));
       dispatch(setUserInfoItineraries());
       // To the trip itself, with the way to share it at hand; the profile if the answer has no id.

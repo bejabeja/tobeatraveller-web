@@ -3,6 +3,7 @@ import { toCalendarDay } from '../utils/date.js';
 export const VAN_LOG_CATEGORIES = [
     'gas_bottle', 'water_fresh', 'water_grey', 'water_black', 'trash',
     'fuel', 'groceries', 'laundry', 'parking', 'tolls', 'overnight_stay', 'maintenance', 'other',
+    'eating_out', 'transport', 'activities', 'shopping',
 ];
 
 // pg parses a DATE column into a Date at local midnight; JSON.stringify would

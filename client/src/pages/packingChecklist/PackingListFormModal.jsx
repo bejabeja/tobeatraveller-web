@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { IoLockClosedOutline } from "react-icons/io5";
+import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { FREE_PLAN_LIMITS, PACKING_LIST_NAME_MAX_LENGTH, PACKING_TEMPLATES, packingTemplateOptions } from "@tobeatraveller/shared";
+import { FREE_PLAN_LIMITS, PACKING_LIST_NAME_MAX_LENGTH, PACKING_TEMPLATES, packingTemplateOptionsFor, TRAVEL_STYLES } from "@tobeatraveller/shared";
 import SelectMenu from "../../components/form/SelectMenu";
 import SubmitButton from "../../components/form/SubmitButton";
+import { selectMe } from "../../store/user/userInfoSelectors";
 import "../../components/form/InputForm.scss";
 import "./PackingListFormModal.scss";
 
@@ -17,6 +19,7 @@ const PackingListFormModal = ({
 }) => {
   const { t } = useTranslation();
   const p = (key, vars) => t(`packingChecklist.${key}`, vars);
+  const isInAVan = useSelector(selectMe)?.travelStyle === TRAVEL_STYLES.VAN;
   const [template, setTemplate] = useState(initialTemplate);
   const [tripId, setTripId] = useState(initialTripId);
   const [name, setName] = useState(initialName);
@@ -72,7 +75,7 @@ const PackingListFormModal = ({
             {withTemplates && (
               <fieldset className="packing-list-form__templates">
                 <legend className="input__label">{p("startWith")}</legend>
-                {packingTemplateOptions.map(({ id, emoji }) => (
+                {packingTemplateOptionsFor(isInAVan).map(({ id, emoji }) => (
                   <label key={id} className={`packing-list-form__template${template === id ? " packing-list-form__template--selected" : ""}`}>
                     <input type="radio" name="template" value={id} checked={template === id} onChange={() => chooseTemplate(id)} />
                     <span className="packing-list-form__template-emoji" aria-hidden="true">{emoji}</span>

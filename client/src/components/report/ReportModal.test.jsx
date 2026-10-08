@@ -42,6 +42,22 @@ describe("ReportModal", () => {
     expect(onClose).toHaveBeenCalled();
   });
 
+  // Regression: reporting the same thing twice left the window open with an error, though the team already had it.
+  it("closes and marks it reported when the person had already reported it", async () => {
+    const onClose = jest.fn();
+    const onSent = jest.fn();
+    submitReport.mockRejectedValue(Object.assign(new Error("You already reported this. We will review it."), { status: 409 }));
+    renderModal({ onClose, onSent });
+
+    fireEvent.click(screen.getByLabelText("report.reason.spam"));
+    fireEvent.click(screen.getByRole("button", { name: "report.submit" }));
+
+    await waitFor(() => expect(onSent).toHaveBeenCalledWith("comment-1"));
+    expect(toast.success).toHaveBeenCalledWith("You already reported this. We will review it.");
+    expect(toast.error).not.toHaveBeenCalled();
+    expect(onClose).toHaveBeenCalled();
+  });
+
   // The law asks that a notice about illegal content says why it is illegal.
   it("asks to explain why when the content is illegal, and sends once it is explained", async () => {
     renderModal();

@@ -402,7 +402,9 @@
     "paymentFailedTitle": "Hay un problema con tu último pago",
     "paymentFailedDesc": "No hemos podido cobrar tu tarjeta. Actualiza tu método de pago para no perder el acceso Premium.",
     "metaTitle": "Planes Premium",
-    "metaDescription": "Controla gastos, provisiones y tu diario en ruta, trabaja sin conexión en la app y planifica viajes con IA. 7 días de prueba gratis, sin tarjeta."
+    "metaDescription": "Controla gastos, provisiones y tu diario en ruta, trabaja sin conexión en la app y planifica viajes con IA. 7 días de prueba gratis, sin tarjeta.",
+    "guestTitle": "Invitado de honor",
+    "guestDesc": "Tu Premium va por nuestra cuenta, sin fecha de fin. Gracias por ser una de las personas que hacen ToBeATraveller lo que es."
   },
   "admin": {
     "reportOpenTarget": "Abrir",
@@ -741,7 +743,7 @@
     "noSavedTripsDesc": "Toca el icono de marcador en cualquier itinerario para guardarlo aquí."
   },
   "vanLog": {
-    "purpose": "Apunta lo que gastas en ruta, como combustible, agua o compra, y mira a dónde se va el dinero por mes, viaje y país.",
+    "purpose": "Apunta lo que gastas viajando, como combustible, comidas o transporte, y mira a dónde se va el dinero por mes, viaje y país.",
     "statsLoadError": "No se pudieron cargar las estadísticas. Inténtalo de nuevo.",
     "title": "Gastos",
     "addEntry": "Añadir apunte",
@@ -816,7 +818,7 @@
     "daysAgo_one": "hace {{count}} día",
     "daysAgo_other": "hace {{count}} días",
     "daysAgo_many": "hace {{count}} días",
-    "noEntries": "Todavía no hay apuntes. Registra tu primera bombona, agua o compra.",
+    "noEntries": "Todavía no hay apuntes. Registra tu primer gasto: combustible, una comida o un billete.",
     "noEntriesFiltered": "Ningún apunte coincide con estos filtros.",
     "searchPlaceholder": "Buscar título, notas, ubicación...",
     "noSearchResults": "Ningún apunte coincide con \"{{query}}\".",
@@ -843,7 +845,11 @@
       "tolls": "Peajes",
       "overnight_stay": "Pernocta",
       "maintenance": "Mantenimiento",
-      "other": "Otros"
+      "other": "Otros",
+      "eating_out": "Comer fuera",
+      "transport": "Transporte",
+      "activities": "Actividades",
+      "shopping": "Compras"
     }
   },
   "supplies": {
@@ -977,7 +983,7 @@
       },
       "winter": {
         "name": "Invierno",
-        "desc": "Frío, nieve y la furgo preparada"
+        "desc": "Ropa de abrigo y lo que pide el frío"
       }
     },
     "listProgress": "{{checked}} de {{total}} listos",
@@ -1355,7 +1361,9 @@
     "notifyOnTripReminders": "Recordatorio de equipaje antes de un viaje",
     "travelStyle": "Cómo viajas",
     "travelStyleNotSet": "Sin indicar",
-    "travelStyleSaved": "Guardado"
+    "travelStyleSaved": "Guardado",
+    "blockedPeople": "Personas bloqueadas",
+    "blockedPeopleEmpty": "No has bloqueado a nadie."
   },
   "report": {
     "button": "Denunciar",
@@ -1385,7 +1393,8 @@
       "comment": "comentario",
       "itinerary": "viaje",
       "user": "perfil"
-    }
+    },
+    "reported": "Denunciado"
   },
   "block": {
     "button": "Bloquear",
@@ -1395,7 +1404,8 @@
     "confirmButton": "Bloquear",
     "blocked": "@{{username}} bloqueado",
     "unblocked": "@{{username}} desbloqueado",
-    "error": "No hemos podido cambiar el bloqueo. Inténtalo de nuevo."
+    "error": "No hemos podido cambiar el bloqueo. Inténtalo de nuevo.",
+    "listError": "No pudimos cargar a las personas que bloqueaste. Inténtalo de nuevo."
   },
   "validation": {
     "blockYourself": "No puedes bloquearte a ti mismo o a ti misma",

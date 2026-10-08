@@ -24,4 +24,9 @@ export class BlocksService {
     async getStatus(blockerId, userId) {
         return { blocked: await this.blocksRepository.isBlocking(blockerId, userId) };
     }
+
+    async getBlockedUsers(blockerId) {
+        const blockedUsers = await this.blocksRepository.getBlockedUsers(blockerId);
+        return blockedUsers.map(user => user.toDTO());
+    }
 }

@@ -19,7 +19,7 @@ import { ANALYTICS_EVENTS } from "../../../utils/analyticsEvents";
 import "./Comments.scss";
 
 
-const Comments = ({ itineraryId, isAuthenticated }) => {
+const Comments = ({ itineraryId, itineraryOwnerId, isAuthenticated }) => {
   const { t } = useTranslation();
   const location = useLocation();
   const [comments, setComments] = useState([]);
@@ -32,6 +32,7 @@ const Comments = ({ itineraryId, isAuthenticated }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState(null);
   const [commentToReport, setCommentToReport] = useState(null);
+  const [reportedCommentIds, setReportedCommentIds] = useState(() => new Set());
   const [highlightedCommentId, setHighlightedCommentId] = useState(null);
   const handledCommentHashRef = useRef(null);
 
@@ -121,6 +122,11 @@ const Comments = ({ itineraryId, isAuthenticated }) => {
     }
   };
 
+  const askToDelete = (commentId) => {
+    setCommentToDelete(commentId);
+    setIsModalOpen(true);
+  };
+
   const handleDeleteComment = async (commentId) => {
     try {
       await deleteComment(commentId);
@@ -158,22 +164,24 @@ const Comments = ({ itineraryId, isAuthenticated }) => {
                   <span className="comment__timestamp">{comment.createdAt ? formatTimeAgo(t, comment.createdAt) : comment.postedAgo}</span>
                 )}
                 {isAuthenticated && comment.user?.id !== userMe?.id && (
-                  <div>
-                    <button type="button" className="comment__report" onClick={() => setCommentToReport(comment.id)}>
-                      {t("report.button")}
-                    </button>
+                  <div className="comment__actions">
+                    {reportedCommentIds.has(comment.id) ? (
+                      <span className="comment__reported">{t("report.reported")}</span>
+                    ) : (
+                      <button type="button" className="comment__report" onClick={() => setCommentToReport(comment.id)}>
+                        {t("report.button")}
+                      </button>
+                    )}
+                    {userMe?.id === itineraryOwnerId && (
+                      <button type="button" className="comment__delete" onClick={() => askToDelete(comment.id)}>
+                        {t("comments.delete")}
+                      </button>
+                    )}
                   </div>
                 )}
                 {isAuthenticated && comment.user?.id === userMe?.id && (
                   <div>
-                    <button
-                      className="comment__delete"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setCommentToDelete(comment.id);
-                        setIsModalOpen(true);
-                      }}
-                    >
+                    <button type="button" className="comment__delete" onClick={() => askToDelete(comment.id)}>
                       {t("comments.delete")}
                     </button>
                   </div>
@@ -266,6 +274,7 @@ const Comments = ({ itineraryId, isAuthenticated }) => {
       <ReportModal
         isOpen={commentToReport !== null}
         onClose={() => setCommentToReport(null)}
+        onSent={(commentId) => setReportedCommentIds((previous) => new Set(previous).add(commentId))}
         targetType="comment"
         targetId={commentToReport}
       />

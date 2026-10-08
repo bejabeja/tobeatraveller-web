@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { AuthError } from '../../errors/AuthError.js';
 import { ForbiddenError } from '../../errors/ForbiddenError.js';
 import { NotFoundError } from '../../errors/NotFoundError.js';
 import { CommentsService } from '../../services/commentsService.js';
@@ -21,6 +22,8 @@ describe('CommentsService', () => {
             addComment: vi.fn().mockResolvedValue({ id: 'comment-1', toDTO: () => ({ id: 'comment-1' }) }),
             getCommentsByItinerary: vi.fn().mockResolvedValue([{ toDTO: () => ({ id: 'comment-1' }) }]),
             countByItinerary: vi.fn().mockResolvedValue(120),
+            getCommentById: vi.fn(),
+            deleteComment: vi.fn().mockResolvedValue(),
         };
         itineraryRepository = { findById: vi.fn() };
         notificationsService = { createNotification: vi.fn().mockResolvedValue() };
@@ -108,6 +111,41 @@ describe('CommentsService', () => {
 
             expect(toDTO).toHaveBeenCalled();
             expect(result).toEqual({ id: 'comment-1', postedAgo: 'just now' });
+        });
+    });
+
+    describe('deleteComment()', () => {
+        const commentBy = (authorId) => ({ id: 'comment-1', itineraryId: 'itin-1', user: { id: authorId } });
+
+        it('lets the author delete their own comment', async () => {
+            commentsRepository.getCommentById.mockResolvedValue(commentBy('author-1'));
+
+            await service.deleteComment('comment-1', 'author-1');
+
+            expect(commentsRepository.deleteComment).toHaveBeenCalledWith('comment-1');
+        });
+
+        it('lets the owner of the trip delete a comment someone else left on it', async () => {
+            commentsRepository.getCommentById.mockResolvedValue(commentBy('author-1'));
+            itineraryRepository.findById.mockResolvedValue(makeItinerary({ userId: 'owner-1' }));
+
+            await service.deleteComment('comment-1', 'owner-1');
+
+            expect(commentsRepository.deleteComment).toHaveBeenCalledWith('comment-1');
+        });
+
+        it('does not let a third person delete the comment', async () => {
+            commentsRepository.getCommentById.mockResolvedValue(commentBy('author-1'));
+            itineraryRepository.findById.mockResolvedValue(makeItinerary({ userId: 'owner-1' }));
+
+            await expect(service.deleteComment('comment-1', 'stranger-1')).rejects.toBeInstanceOf(AuthError);
+            expect(commentsRepository.deleteComment).not.toHaveBeenCalled();
+        });
+
+        it('throws NotFoundError when the comment does not exist', async () => {
+            commentsRepository.getCommentById.mockResolvedValue(null);
+
+            await expect(service.deleteComment('missing', 'author-1')).rejects.toBeInstanceOf(NotFoundError);
         });
     });
 });

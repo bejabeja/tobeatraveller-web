@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
-import { ADMIN_NOTICE_MAX_LENGTH, adminNoticeSchema, formatDate } from "@tobeatraveller/shared";
+import { ADMIN_NOTICE_MAX_LENGTH, adminNoticeSchema, formatDate, isIndefinitePremium } from "@tobeatraveller/shared";
 import { IoEyeOutline, IoMailOutline, IoTrashOutline } from "react-icons/io5";
 import { useSelector } from "react-redux";
 import { TextAreaForm } from "../../components/form/InputForm";
@@ -26,12 +26,6 @@ const REMOVE_PREMIUM = "free";
 const GIFT_PREFIX = "gift:";
 const TIER_FILTER_PREMIUM = "premium";
 const TIER_FILTER_FREE = "free";
-// A gift with no end date is stored a century out (see userService.js).
-const INDEFINITE_AFTER_YEARS = 50;
-
-const isIndefinite = (premiumUntil) =>
-  new Date(premiumUntil).getFullYear() - new Date().getFullYear() > INDEFINITE_AFTER_YEARS;
-
 const InternalUsers = () => {
   const { t, i18n } = useTranslation();
   const authUser = useSelector(selectAuthUser);
@@ -109,7 +103,7 @@ const InternalUsers = () => {
 
   const tierStatus = (user) => {
     if (!user.isPremium) return t("admin.free");
-    return isIndefinite(user.premiumUntil)
+    return isIndefinitePremium(user.premiumUntil)
       ? t("admin.premiumIndefinite")
       : t("admin.premiumUntil", { date: shortDate(user.premiumUntil) });
   };

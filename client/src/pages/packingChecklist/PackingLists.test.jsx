@@ -3,9 +3,11 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 
 let mockTrips = [];
 let mockTripsLoaded = true;
-beforeEach(() => { mockTripsLoaded = true; });
+let mockTravelStyle = "van";
+beforeEach(() => { mockTripsLoaded = true; mockTravelStyle = "van"; });
 jest.mock("react-redux", () => ({ useSelector: (selector) => selector() }));
 jest.mock("../../store/user/userInfoSelectors", () => ({
+  selectMe: () => ({ travelStyle: mockTravelStyle }),
   selectMyItineraries: () => mockTrips,
   selectMyItinerariesLoaded: () => mockTripsLoaded,
 }));
@@ -101,6 +103,17 @@ it("offers Premium when the server says the free lists are used up", async () =>
   fireEvent.click(screen.getByRole("button", { name: "packingChecklist.createList" }));
 
   expect(await screen.findByText("packingChecklist.listCapTitle:2")).toBeInTheDocument();
+});
+
+it("does not offer the before-driving-off list to someone who travels from time to time", async () => {
+  mockTravelStyle = "occasional";
+  getPackingLists.mockResolvedValue({ lists: [], freeTierUsage: FREE_USAGE });
+
+  renderPage();
+  fireEvent.click((await screen.findAllByRole("button", { name: /packingChecklist.newList/ }))[0]);
+
+  expect(await screen.findByRole("radio", { name: /packingChecklist.templates.weekend.name/ })).toBeInTheDocument();
+  expect(screen.queryByRole("radio", { name: /packingChecklist.templates.departure.name/ })).not.toBeInTheDocument();
 });
 
 it("starts a list for the trip it was opened for, named after it and with a template for its length", async () => {

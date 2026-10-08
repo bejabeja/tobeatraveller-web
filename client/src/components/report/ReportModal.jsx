@@ -6,9 +6,11 @@ import { submitReport } from "../../services/contentReports";
 import Modal from "../modal/Modal";
 import "./ReportModal.scss";
 
+const ALREADY_REPORTED_STATUS = 409;
+
 // Reports a comment, a trip or a profile. The team reads it; the reported
 // person is never told who sent it.
-const ReportModal = ({ isOpen, onClose, targetType, targetId }) => {
+const ReportModal = ({ isOpen, onClose, onSent, targetType, targetId }) => {
   const { t } = useTranslation();
   const [reason, setReason] = useState("");
   const [details, setDetails] = useState("");
@@ -28,8 +30,15 @@ const ReportModal = ({ isOpen, onClose, targetType, targetId }) => {
     try {
       await submitReport({ targetType, targetId, reason, details });
       toast.success(t("report.sent"));
+      onSent?.(targetId);
       close();
     } catch (error) {
+      if (error.status === ALREADY_REPORTED_STATUS) {
+        toast.success(error.message);
+        onSent?.(targetId);
+        close();
+        return;
+      }
       toast.error(error.message || t("report.sendError"));
     } finally {
       setSending(false);

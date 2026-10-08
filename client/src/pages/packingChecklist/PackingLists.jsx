@@ -6,13 +6,13 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
   isPackingListCapReachedError, localCalendarDay, PACKING_TEMPLATES, packingTemplateItems, suggestedTemplateForTrip,
-  toAppLanguage, tripsToLinkTo,
+  toAppLanguage, TRAVEL_STYLES, tripsToLinkTo,
 } from "@tobeatraveller/shared";
 import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState";
 import ToolEmptyState from "../../components/toolPage/ToolEmptyState";
 import ToolHeader from "../../components/toolPage/ToolHeader";
 import { createPackingList, getPackingLists } from "../../services/packingChecklist";
-import { selectMyItineraries, selectMyItinerariesLoaded } from "../../store/user/userInfoSelectors";
+import { selectMe, selectMyItineraries, selectMyItinerariesLoaded } from "../../store/user/userInfoSelectors";
 import { trackEvent } from "../../utils/analytics";
 import { ANALYTICS_EVENTS } from "../../utils/analyticsEvents";
 import PackingListFormModal from "./PackingListFormModal";
@@ -34,6 +34,7 @@ const PackingLists = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const trips = tripsToLinkTo(useSelector(selectMyItineraries), localCalendarDay());
   const tripsLoaded = useSelector(selectMyItinerariesLoaded);
+  const isInAVan = useSelector(selectMe)?.travelStyle === TRAVEL_STYLES.VAN;
   const forTripId = searchParams.get(FOR_TRIP_PARAM) ?? "";
   const forTrip = trips.find(trip => trip.id === forTripId);
 
@@ -78,7 +79,7 @@ const PackingLists = () => {
 
   const createList = async ({ name, template, itineraryId }) => {
     try {
-      const list = await createPackingList({ name, items: packingTemplateItems(template, toAppLanguage(i18n.language)), itineraryId });
+      const list = await createPackingList({ name, items: packingTemplateItems(template, toAppLanguage(i18n.language), { isInAVan }), itineraryId });
       trackEvent(ANALYTICS_EVENTS.PACKING_LIST_CREATED, { template, for_trip: Boolean(itineraryId) });
       navigate(`/packing-checklist/${list.id}`);
     } catch (err) {

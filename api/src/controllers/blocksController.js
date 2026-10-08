@@ -37,4 +37,12 @@ export class BlocksController {
             next(error);
         }
     }
+
+    async listBlocked(req, res, next) {
+        try {
+            return res.status(200).json(await this.blocksService.getBlockedUsers(req.user.id));
+        } catch (error) {
+            next(error);
+        }
+    }
 }

@@ -215,7 +215,7 @@ const Itinerary = () => {
         </div>
 
         <div className="itinerary__comments" id="comments">
-          <Comments itineraryId={itinerary.id} isAuthenticated={isAuthenticated} />
+          <Comments itineraryId={itinerary.id} itineraryOwnerId={itinerary.userId} isAuthenticated={isAuthenticated} />
         </div>
       </div>
 
@@ -419,7 +419,7 @@ const Stats = ({ itinerary, hasDescription, t }) => {
         <div className="itinerary__stat">
           <div className="itinerary__stat-icon"><MdOutlineLocationOn /></div>
           <span className="itinerary__stat-label">{t("itinerary.destination")}</span>
-          <span className="itinerary__stat-value">{itinerary.location.name}</span>
+          <span className="itinerary__stat-value">{itinerary.location.label || itinerary.location.name}</span>
         </div>
       )}
       <div className="itinerary__stat">

@@ -4,6 +4,14 @@ import { parseError } from '../utils/parseError';
 
 const baseUrl = () => `${getApiUrl()}/blocks`;
 
+export const getBlockedUsers = async () => {
+    const response = await authFetch(baseUrl());
+    if (!response.ok) {
+        await parseError(response, 'Failed to load the blocked people');
+    }
+    return response.json();
+};
+
 export const getBlockStatus = async (userId) => {
     const response = await authFetch(`${baseUrl()}/${userId}`);
     if (!response.ok) {

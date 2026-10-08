@@ -413,6 +413,14 @@ const HeaderSection = ({
                     <IoSettingsOutline aria-hidden="true" />
                   </Link>
                 </>
+              ) : isBlocked ? (
+                <button
+                  className="btn profile__btn btn--secondary"
+                  onClick={onBlockClick}
+                  disabled={isLoadingBlock}
+                >
+                  {t("block.unblockButton")}
+                </button>
               ) : (
                 <button
                   ref={followBtnRef}
@@ -434,15 +442,14 @@ const HeaderSection = ({
                   <IoFlagOutline aria-hidden="true" />
                 </button>
               )}
-              {!isMyProfile && isAuthenticated && (
+              {!isMyProfile && isAuthenticated && !isBlocked && (
                 <button
                   type="button"
-                  className={`btn profile__copy-btn${isBlocked ? " profile__copy-btn--active" : ""}`}
+                  className="btn profile__copy-btn"
                   onClick={onBlockClick}
                   disabled={isLoadingBlock}
-                  aria-pressed={isBlocked}
-                  aria-label={isBlocked ? t("block.unblockButton") : t("block.button")}
-                  title={isBlocked ? t("block.unblockButton") : t("block.button")}
+                  aria-label={t("block.button")}
+                  title={t("block.button")}
                 >
                   <IoBanOutline aria-hidden="true" />
                 </button>

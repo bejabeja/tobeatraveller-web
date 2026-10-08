@@ -13,6 +13,7 @@ describe('BlocksService', () => {
             block: vi.fn().mockResolvedValue(),
             unblock: vi.fn().mockResolvedValue(),
             isBlocking: vi.fn().mockResolvedValue(false),
+            getBlockedUsers: vi.fn().mockResolvedValue([]),
         };
         userRepository = { getUserById: vi.fn().mockResolvedValue({ id: 'user-2' }) };
         service = new BlocksService(blocksRepository, userRepository);
@@ -49,5 +50,13 @@ describe('BlocksService', () => {
 
         expect(await service.getStatus('user-1', 'user-2')).toEqual({ blocked: true });
         expect(blocksRepository.isBlocking).toHaveBeenCalledWith('user-1', 'user-2');
+    });
+
+    it('lists the people the viewer has blocked as public profiles', async () => {
+        const toDTO = vi.fn().mockReturnValue({ id: 'user-2', username: 'otherwalker' });
+        blocksRepository.getBlockedUsers.mockResolvedValue([{ toDTO }]);
+
+        expect(await service.getBlockedUsers('user-1')).toEqual([{ id: 'user-2', username: 'otherwalker' }]);
+        expect(blocksRepository.getBlockedUsers).toHaveBeenCalledWith('user-1');
     });
 });

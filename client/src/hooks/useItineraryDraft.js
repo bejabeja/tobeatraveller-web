@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { clearItineraryDraft, readItineraryDraft, saveItineraryDraft } from "../utils/itineraryDraftStorage";
 
 const lookFor = (userId, kind) => ({ userId, kind, draft: userId ? readItineraryDraft(userId, kind) : null });
@@ -13,15 +13,24 @@ export const useItineraryDraft = (userId, kind) => {
   if (found.userId !== userId || found.kind !== kind) setFound(lookFor(userId, kind));
   const pendingDraft = found.userId === userId && found.kind === kind ? found.draft : null;
 
+  // Once the trip is published the form can stay on screen for a moment (the next page is
+  // still loading) and keep autosaving, which would bring the trip back as "unfinished".
+  const finished = useRef(false);
+
   const save = useCallback((draft) => {
-    if (userId) saveItineraryDraft(userId, draft, kind);
+    if (userId && !finished.current) saveItineraryDraft(userId, draft, kind);
   }, [userId, kind]);
 
   const clear = useCallback(() => {
     if (userId) clearItineraryDraft(userId, kind);
   }, [userId, kind]);
 
+  const finish = useCallback(() => {
+    finished.current = true;
+    if (userId) clearItineraryDraft(userId, kind);
+  }, [userId, kind]);
+
   const resolvePending = useCallback(() => setFound((current) => ({ ...current, draft: null })), []);
 
-  return { pendingDraft, resolvePending, save, clear };
+  return { pendingDraft, resolvePending, save, clear, finish };
 };

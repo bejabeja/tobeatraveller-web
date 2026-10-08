@@ -15,6 +15,7 @@ import { useGoBack } from "../../hooks/useGoBack";
 import SelectMenu from "../../components/form/SelectMenu";
 import Modal from "../../components/modal/Modal";
 import Spinner from "../../components/spinner/Spinner";
+import BlockedPeopleSection from "./BlockedPeopleSection";
 import { REOPEN_COOKIE_PREFERENCES_EVENT } from "../../utils/analytics";
 import { changePassword, deleteMyAccount, exportMyData } from "../../services/users";
 import { logoutUser } from "../../store/auth/authActions";
@@ -312,6 +313,8 @@ const Settings = () => {
             </div>
           )}
         </section>
+
+        <BlockedPeopleSection />
 
         <section className="ep__section settings__group">
           <div className="ep__section-heading">

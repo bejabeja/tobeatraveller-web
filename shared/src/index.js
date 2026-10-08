@@ -56,7 +56,7 @@ export {
     isShoppingListCapReachedError, isInventoryCapReachedError, isPackingListCapReachedError, isNetworkError, isTimeoutError,
 } from './utils/parseError.js';
 export { normalizeSearchText } from './utils/normalizeSearchText.js';
-export { getPremiumView } from './utils/subscriptionView.js';
+export { getPremiumView, isIndefinitePremium } from './utils/subscriptionView.js';
 export { findSupplyByName, groupSuppliesByCategory, resolveQuickAddSupply, suggestSupplies } from './utils/supplies.js';
 export { initialVanLogTripId, vanLogEntryToFormValues, vanLogFormValuesToPayload } from './utils/vanLogEntryForm.js';
 export { groupVanLogEntriesByMonth, groupVanLogEntriesByTrip, getVanLogFuelPriceTrend, getTripBudgetProgress, getVanLogDateRangePresets, getVanLogSpendingByCurrency, getVanLogBreakdownByCurrency } from './utils/vanLogStats.js';

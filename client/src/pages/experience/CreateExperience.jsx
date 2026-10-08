@@ -170,7 +170,7 @@ const CreateExperience = () => {
   const [locResults, setLocResults]     = useState([]);
   const [locSearching, setLocSearching] = useState(false);
 
-  const { pendingDraft, resolvePending, save: saveDraft, clear: clearDraft } = useItineraryDraft(authUser?.id, ITINERARY_DRAFT_KINDS.AI_PLAN);
+  const { pendingDraft, resolvePending, save: saveDraft, clear: clearDraft, finish: finishDraft } = useItineraryDraft(authUser?.id, ITINERARY_DRAFT_KINDS.AI_PLAN);
   // The plan the AI wrote is what is worth keeping: it cost a generation to get.
   const hasProgress = steps.length > 0 || !!destination?.name;
 
@@ -404,7 +404,7 @@ const CreateExperience = () => {
         kind: TRIP_KINDS.EXPERIENCE, isPublic, places: body.places.length, days, hasDate: Boolean(body.startDate),
       }));
       toast.success(ce("savedSuccess"));
-      clearDraft();
+      finishDraft();
       dispatch(setUserInfo(userMe.id));
       dispatch(setUserInfoItineraries());
       // To the trip itself, with the way to share it at hand; the profile if the answer has no id.

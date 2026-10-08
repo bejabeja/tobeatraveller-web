@@ -5,6 +5,7 @@ import { getItineraryById, createItinerary, deleteItinerary, updateItinerary } f
 import { getFeedItineraries, getMyItineraries, generateSmartItinerary } from '../../services/itineraries.js';
 import { getCommentsPage, addComment, deleteComment } from '../../services/comments.js';
 import { addFavorite, removeFavorite, getUserFavorites, checkIsFavorite } from '../../services/favorites.js';
+import { getBlockedUsers } from '../../services/blocks.js';
 import { toggleLike, checkIsLiked } from '../../services/likes.js';
 import { followUser, unfollowUser, getAllFollowers, getAllFollowing } from '../../services/followers.js';
 import { fetchNotifications, fetchUnreadCount, markNotificationsRead } from '../../services/notifications.js';
@@ -35,6 +36,7 @@ const AUTHENTICATED_CALLS = [
     ['removeFavorite', () => removeFavorite('itinerary-1')],
     ['getUserFavorites', () => getUserFavorites()],
     ['checkIsFavorite', () => checkIsFavorite('itinerary-1')],
+    ['getBlockedUsers', () => getBlockedUsers()],
     ['toggleLike', () => toggleLike('itinerary-1')],
     ['checkIsLiked', () => checkIsLiked('itinerary-1')],
     ['followUser', () => followUser('user-1')],

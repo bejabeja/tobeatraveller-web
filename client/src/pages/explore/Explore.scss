@@ -303,6 +303,11 @@
 .explore__map {
   margin-bottom: 1.5rem;
 
+  // On a short screen the trips would start below the fold, so the map takes less of it.
+  .world-map__container {
+    height: clamp(220px, 32vh, 420px);
+  }
+
   &-header {
     display: flex;
     flex-wrap: wrap;

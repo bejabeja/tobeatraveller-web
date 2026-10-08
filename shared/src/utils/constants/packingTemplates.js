@@ -11,11 +11,16 @@ export const PACKING_TEMPLATES = Object.freeze({
 
 export const packingTemplateOptions = [
     { id: PACKING_TEMPLATES.EMPTY, emoji: '📝' },
-    { id: PACKING_TEMPLATES.DEPARTURE, emoji: '🚐' },
+    { id: PACKING_TEMPLATES.DEPARTURE, emoji: '🚐', vanOnly: true },
     { id: PACKING_TEMPLATES.WEEKEND, emoji: '🏕️' },
     { id: PACKING_TEMPLATES.LONG_TRIP, emoji: '🗺️' },
     { id: PACKING_TEMPLATES.WINTER, emoji: '❄️' },
 ];
+
+// The templates a person is offered: the ones about the van are left out for
+// someone who said they travel from time to time.
+export const packingTemplateOptionsFor = (isInAVan) =>
+    packingTemplateOptions.filter(option => isInAVan || !option.vanOnly);
 
 const VAN_CATEGORY = 'van';
 const FALLBACK_LANGUAGE = 'en';
@@ -83,7 +88,7 @@ export const suggestedTemplateForTrip = (itinerary) => {
 };
 
 // The things a template starts a list with, in the app's language.
-export const packingTemplateItems = (template, language) => {
+export const packingTemplateItems = (template, language, { isInAVan = true } = {}) => {
     const lang = defaultPackingItems[language] ? language : FALLBACK_LANGUAGE;
     switch (template) {
         case PACKING_TEMPLATES.DEPARTURE:
@@ -96,7 +101,7 @@ export const packingTemplateItems = (template, language) => {
             return [
                 ...inCategory('clothing', WINTER_CLOTHING[lang]),
                 ...picked(lang, WINTER_PICKS),
-                ...inCategory(VAN_CATEGORY, WINTER_VAN[lang]),
+                ...(isInAVan ? inCategory(VAN_CATEGORY, WINTER_VAN[lang]) : []),
             ];
         default:
             return [];

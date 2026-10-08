@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { packingCategories } from '../../utils/constants/constants.js';
 import {
-    PACKING_TEMPLATES, packingTemplateItems, packingTemplateOptions, suggestedTemplateForTrip,
+    PACKING_TEMPLATES, packingTemplateItems, packingTemplateOptions, packingTemplateOptionsFor, suggestedTemplateForTrip,
 } from '../../utils/constants/packingTemplates.js';
 
 const LANGUAGES = ['en', 'es', 'fr', 'it', 'de'];
@@ -36,6 +36,21 @@ describe('packingTemplateItems', () => {
             { category: 'clothing', name: 'Plumífero' },
             { category: 'van', name: 'Cadenas para la nieve' },
         ]));
+    });
+
+    it('leaves the van items out of a winter list for someone who does not travel by van', () => {
+        const items = packingTemplateItems(PACKING_TEMPLATES.WINTER, 'es', { isInAVan: false });
+
+        expect(items.some(item => item.category === 'van')).toBe(false);
+        expect(items).toContainEqual({ category: 'clothing', name: 'Plumífero' });
+    });
+
+    it('offers the before-driving-off list only to someone who travels by van', () => {
+        const ids = (isInAVan) => packingTemplateOptionsFor(isInAVan).map(option => option.id);
+
+        expect(ids(true)).toContain(PACKING_TEMPLATES.DEPARTURE);
+        expect(ids(false)).not.toContain(PACKING_TEMPLATES.DEPARTURE);
+        expect(ids(false)).toContain(PACKING_TEMPLATES.WEEKEND);
     });
 
     it('writes every template in every language, with nothing missing or repeated', () => {

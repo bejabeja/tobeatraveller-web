@@ -382,14 +382,14 @@ const SubscriptionScreen = ({ navigation }) => {
           // manage: the portal would fail.
           <View style={styles.alreadyPremium}>
             <Ionicons name="checkmark-circle" size={36} color="#16a34a" style={styles.alreadyPremiumIcon} />
-            <Text style={styles.alreadyPremiumTitle}>{t('subscription.alreadyPremiumTitle')}</Text>
+            <Text style={styles.alreadyPremiumTitle}>{t(view.indefinite ? 'subscription.guestTitle' : 'subscription.alreadyPremiumTitle')}</Text>
             <Text style={styles.alreadyPremiumDesc}>
               {view.kind === 'trial'
                 ? t('subscription.trialActiveDesc', { date: formatDate(view.date, i18n.language) })
                 : view.kind === 'active'
                   ? t('subscription.renewsOn', { date: formatDate(view.date, i18n.language) })
                   : view.kind === 'granted'
-                    ? t('subscription.premiumUntilDesc', { date: formatDate(view.date, i18n.language) })
+                    ? (view.indefinite ? t('subscription.guestDesc') : t('subscription.premiumUntilDesc', { date: formatDate(view.date, i18n.language) }))
                     : t('subscription.alreadyPremiumDesc')}
             </Text>
 

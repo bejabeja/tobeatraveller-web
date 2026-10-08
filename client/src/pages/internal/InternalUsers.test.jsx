@@ -13,6 +13,7 @@ jest.mock("@tobeatraveller/shared", () => {
   const { z } = require("zod");
   return {
     formatDate: (date) => new Date(date).toISOString().slice(0, 10),
+    isIndefinitePremium: (date) => new Date(date).getFullYear() > 2100,
     ADMIN_NOTICE_MAX_LENGTH: 500,
     adminNoticeSchema: z.object({ message: z.string().min(3) }),
   };
