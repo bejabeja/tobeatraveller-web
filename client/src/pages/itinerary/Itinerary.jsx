@@ -21,7 +21,7 @@ import PublishedNotice from "../../components/itineraries/PublishedNotice.jsx";
 import TripActionsMenu from "../../components/itineraries/TripActionsMenu.jsx";
 import ReportModal from "../../components/report/ReportModal.jsx";
 import TripLists from "../../components/itineraries/TripLists.jsx";
-import Spinner from "../../components/spinner/Spinner.jsx";
+import ItinerarySkeleton from "./ItinerarySkeleton.jsx";
 import { useGoBack } from "../../hooks/useGoBack.js";
 import { useLike } from "../../hooks/useLike.js";
 import {
@@ -142,7 +142,7 @@ const Itinerary = () => {
     url: itinerary && window.location.href,
   });
 
-  if (loading) return <Spinner />;
+  if (loading) return <ItinerarySkeleton />;
   if (error) {
     const message = error === "Itinerary not found"
       ? t("errors.itineraryNotFoundOrPrivate")

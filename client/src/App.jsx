@@ -27,6 +27,7 @@ import { identifyUser, initAnalyticsIfConsented } from "./utils/analytics";
 import { useSyncPendingDeclaredCountries } from "./hooks/useSyncPendingDeclaredCountries";
 import { useSyncUserLanguage } from "./hooks/useSyncUserLanguage";
 import { useAchievementCelebrations } from "./hooks/useAchievementCelebrations";
+import PageSkeleton from "./components/pageSkeleton/PageSkeleton";
 import AchievementCelebration from "./components/celebration/AchievementCelebration";
 
 import CustomToaster from "./components/toast/CustomToaster";
@@ -175,7 +176,7 @@ const App = () => {
         {isAuthenticated && !isAuthRoute && <Topbar onOpenSearch={() => setSearchOpen(true)} />}
         {isAuthenticated && !isAuthRoute && <EmailVerificationBanner />}
         <main className="content">
-          <Suspense fallback={<Spinner />}>
+          <Suspense fallback={isAuthRoute ? <Spinner /> : <PageSkeleton />}>
             <Routes>
               {/* public routes */}
               <Route path="/login" element={<Login />} />

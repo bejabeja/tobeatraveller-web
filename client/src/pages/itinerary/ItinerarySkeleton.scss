@@ -1,0 +1,37 @@
+@use "../../components/SkeletonBase.scss";
+
+.itinerary-skeleton {
+  &__cover {
+    width: 100%;
+    height: clamp(220px, 40vh, 420px);
+    border-radius: 0;
+  }
+
+  &__stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  &__stat {
+    height: 76px;
+    border-radius: 12px;
+  }
+
+  &__line {
+    width: 80%;
+    height: 14px;
+    margin-bottom: 0.6rem;
+
+    &--short {
+      width: 50%;
+    }
+  }
+
+  &__body {
+    height: 220px;
+    margin-top: 1.5rem;
+    border-radius: 12px;
+  }
+}

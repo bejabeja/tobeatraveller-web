@@ -63,6 +63,18 @@ it("still shows the trip, without an author, when the author cannot be loaded", 
   expect(screen.queryByText(/@/)).not.toBeInTheDocument();
 });
 
+it("shows the shape of the trip while it loads, instead of a spinner", () => {
+  getItineraryById.mockReturnValue(new Promise(() => {}));
+
+  render(
+    <MemoryRouter initialEntries={["/itinerary/t1"]}>
+      <Routes><Route path="/itinerary/:id" element={<Itinerary />} /></Routes>
+    </MemoryRouter>
+  );
+
+  expect(screen.getByRole("status")).toHaveAttribute("aria-busy", "true");
+});
+
 // Two cities can share a name (Porto, Porto Alegre), so the destination says which country it is in.
 it("shows the destination with its country when it has one", async () => {
   getItineraryById.mockResolvedValue({ ...TRIP, location: { name: "Porto", label: "Porto, Portugal" } });

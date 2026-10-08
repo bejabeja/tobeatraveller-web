@@ -685,6 +685,14 @@ const StatNumber = ({ value, pending = false }) => {
 };
 
 // ─── Skeleton
+export const ProfileLoadingSkeleton = () => (
+  <section className="profile section__container">
+    <div className="profile__layout">
+      <ProfileCardSkeleton />
+    </div>
+  </section>
+);
+
 const ProfileCardSkeleton = () => (
   <div className="profile__card">
     <div className="profile__card-top">

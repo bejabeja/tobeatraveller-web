@@ -3,7 +3,11 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 
 jest.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key) => key }) }));
 jest.mock("../../services/users", () => ({ getUserByUsername: jest.fn() }));
-jest.mock("./Profile", () => ({ __esModule: true, default: ({ id }) => <p>profile:{id}</p> }));
+jest.mock("./Profile", () => ({
+  __esModule: true,
+  default: ({ id }) => <p>profile:{id}</p>,
+  ProfileLoadingSkeleton: () => <p>profile-skeleton</p>,
+}));
 
 import { getUserByUsername } from "../../services/users";
 import ProfileByHandle from "./ProfileByHandle";
@@ -24,6 +28,14 @@ describe("ProfileByHandle", () => {
 
     expect(await screen.findByText("profile:user-1")).toBeInTheDocument();
     expect(getUserByUsername).toHaveBeenCalledWith("tbat");
+  });
+
+  it("shows the shape of a profile, not a spinner, while it looks the name up", async () => {
+    getUserByUsername.mockReturnValue(new Promise(() => {}));
+
+    renderAt("/@tbat");
+
+    expect(screen.getByText("profile-skeleton")).toBeInTheDocument();
   });
 
   it("says so when nobody has that name", async () => {

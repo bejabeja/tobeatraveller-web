@@ -1,0 +1,31 @@
+@use "../SkeletonBase.scss";
+
+.page-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 960px;
+
+  &__title {
+    width: 40%;
+    height: 28px;
+    border-radius: 8px;
+  }
+
+  &__line {
+    width: 65%;
+    height: 14px;
+  }
+
+  &__blocks {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  &__block {
+    height: 160px;
+    border-radius: 12px;
+  }
+}
