@@ -42,7 +42,7 @@ const buildMapHTML = (destinations) => `<!DOCTYPE html>
 </body>
 </html>`;
 
-const WorldMapSection = ({ destinations, onSelectDestination, style }) => {
+const WorldMapSection = ({ destinations, onSelectDestination, style, showHeader = true }) => {
   const { t } = useTranslation();
   const webViewRef = useRef(null);
 
@@ -67,15 +67,19 @@ const WorldMapSection = ({ destinations, onSelectDestination, style }) => {
 
   return (
     <View style={[styles.mapSection, style]}>
-      <View style={styles.sectionHeader}>
-        <View>
-          <Text style={styles.sectionTitle}>{t('home.exploreTheWorld')}</Text>
-          <Text style={styles.sectionSubtitle}>{t('home.destinationsCount', { count: destinations.length })}</Text>
+      {showHeader && (
+        <View style={styles.sectionHeader}>
+          <View>
+            <Text style={styles.sectionTitle}>{t('home.exploreTheWorld')}</Text>
+            <Text style={styles.sectionSubtitle}>{t('home.destinationsCount', { count: destinations.length })}</Text>
+          </View>
         </View>
-      </View>
+      )}
 
       {Platform.OS === 'web' ? (
         /* Expo web: chips fallback since WebView is native-only */
+        <>
+        {!showHeader && <Text style={[styles.sectionSubtitle, styles.chipsLabel]}>{t('home.destinationsCount', { count: destinations.length })}</Text>}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.destChips}>
           {destinations.map((dest, i) => (
             <TouchableOpacity key={i} style={styles.destChip} onPress={() => goToDestination(dest.name)}>
@@ -84,6 +88,7 @@ const WorldMapSection = ({ destinations, onSelectDestination, style }) => {
             </TouchableOpacity>
           ))}
         </ScrollView>
+        </>
       ) : (
         /* Native (APK): full Leaflet map via WebView, free, no API key */
         <View style={styles.mapContainer}>
@@ -108,6 +113,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start', marginBottom: 12,
   },
   sectionTitle: { fontSize: 18, fontWeight: '700', color: '#111827' },
+  chipsLabel: { marginTop: 0, marginBottom: 8 },
   sectionSubtitle: { fontSize: 13, color: '#6b7280', marginTop: 2 },
 
   mapSection: { paddingHorizontal: 16, paddingTop: 20 },

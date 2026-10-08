@@ -30,6 +30,13 @@
     margin: 0;
   }
 
+  &__results-subtitle {
+    width: auto;
+    font-size: 0.9rem;
+    color: var(--text-secondary-color);
+    margin: 0;
+  }
+
   &__results {
     display: flex;
     flex-direction: column;

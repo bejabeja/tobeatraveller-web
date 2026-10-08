@@ -67,6 +67,7 @@ const CommunityScreen = ({ navigation }) => {
           <Text style={styles.headerTitle}>{t('community.title')}</Text>
           <Text style={styles.memberCount}>{t('community.growingCommunity')}</Text>
         </View>
+        <Text style={styles.subtitle}>{t('community.subtitle')}</Text>
 
         {/* Search */}
         <View style={styles.searchRow}>
@@ -308,6 +309,7 @@ const styles = StyleSheet.create({
   backBtn: { padding: 4, marginRight: 4 },
   backText: { fontSize: 20, color: '#374151' },
   headerTitle: { fontSize: 24, fontWeight: '800', color: '#111827' },
+  subtitle: { fontSize: 13, color: '#6b7280', marginTop: -4 },
   memberCount: {
     fontSize: 12, fontWeight: '600', color: '#E8743B',
     backgroundColor: '#FFF0E8', borderRadius: 999,

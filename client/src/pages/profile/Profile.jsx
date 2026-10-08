@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { IoBanOutline, IoChevronForward, IoFlagOutline, IoLinkOutline, IoLocationOutline, IoLockClosedOutline, IoOptionsOutline, IoSettingsOutline, IoShareSocialOutline } from "react-icons/io5";
-import { MdOutlineCalendarMonth, MdOutlineEdit } from "react-icons/md";
+import { MdOutlineEdit } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation, useParams, useSearchParams } from "react-router-dom";
@@ -19,7 +19,7 @@ import { optimizedCloudinaryUrl } from "../../utils/cloudinaryUrl";
 import { generateAvatar } from "../../utils/constants/constants";
 import { returnToState } from "../../utils/returnTo";
 import { buildProfileJsonLd } from "../../utils/jsonLd";
-import { BADGE_EMOJI, countryFlag, filterItineraries, formatDate, profileShareUrl, summarizePassport } from "@tobeatraveller/shared";
+import { BADGE_EMOJI, countryFlag, filterItineraries, profileShareUrl, summarizePassport } from "@tobeatraveller/shared";
 import { getMyReferralInfo } from "../../services/referral";
 import FollowsModal from "../../components/follows/FollowsModal";
 import ReportModal from "../../components/report/ReportModal";
@@ -349,7 +349,6 @@ const HeaderSection = ({
   user, isMyProfile, isFollowing, followsYou, onFollowToggle,
   onCopyLink, onReport, isBlocked, isLoadingBlock, onBlockClick, isAuthenticated, isLoadingFollow, onOpenFollows, tripsCount, onShowTrips, t,
 }) => {
-  const { i18n } = useTranslation();
   const location = useLocation();
   const followBtnRef = useRef(null);
   const wasLoadingRef = useRef(false);
@@ -505,22 +504,12 @@ const HeaderSection = ({
 
         {user?.bio && <p className="profile__bio">{user.bio}</p>}
 
-        {(user?.location || user?.createdAt) && (
+        {user?.location && (
           <div className="profile__meta">
-            {user?.location && (
-              <span className="profile__meta-item">
-                <IoLocationOutline aria-hidden="true" />
-                <span className="profile__meta-text">{user.location}</span>
-              </span>
-            )}
-            {user?.createdAt && (
-              <span className="profile__meta-item">
-                <MdOutlineCalendarMonth aria-hidden="true" />
-                <span className="profile__meta-text">
-                  {t("profile.joinedOn", { date: formatDate(user.createdAt, i18n.language, { year: "numeric", month: "long" }) })}
-                </span>
-              </span>
-            )}
+            <span className="profile__meta-item">
+              <IoLocationOutline aria-hidden="true" />
+              <span className="profile__meta-text">{user.location}</span>
+            </span>
           </div>
         )}
 

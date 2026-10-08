@@ -540,6 +540,7 @@
   },
   "profile": {
     "shareProfile": "Compartir perfil",
+    "shareProfileError": "No se pudo compartir el perfil.",
     "shareText": "Mira el perfil de @{{username}} en ToBeATraveller",
     "metaDescriptionFallback": "Los itinerarios de viaje de {{username}} en ToBeATraveller",
     "followers": "Seguidores",
@@ -553,7 +554,6 @@
     "followsYou": "Te sigue",
     "editProfile": "Editar perfil",
     "copyLink": "Copiar enlace del perfil",
-    "joinedOn": "Se unió {{date}}",
     "about": "Acerca de",
     "aboutReadMore": "Leer más",
     "aboutReadLess": "Leer menos",

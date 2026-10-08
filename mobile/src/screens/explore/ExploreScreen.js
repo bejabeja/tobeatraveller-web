@@ -141,9 +141,6 @@ const ExploreScreen = ({ navigation, route }) => {
       <View style={styles.header}>
         <View style={styles.titleRow}>
           <Text style={styles.title}>{t('explore.title')}</Text>
-          {!loading && totalItems > 0 && (
-            <Text style={styles.count}>{t('community.trips', { count: totalItems })}</Text>
-          )}
           <TouchableOpacity onPress={openFilters} style={styles.filterBtn}>
             <Ionicons name="filter-outline" size={14} color="#374151" />
             <Text style={styles.filterBtnText}>{t('explore.filters')}</Text>
@@ -161,22 +158,33 @@ const ExploreScreen = ({ navigation, route }) => {
         </View>
 
         {/* Search */}
-        <View style={styles.searchRow}>
-          <Ionicons name="search-outline" size={16} color="#9ca3af" />
-          <TextInput
-            style={styles.searchInput}
-            placeholder={t('explore.searchByDestination')}
-            value={search}
-            onChangeText={setSearch}
-            placeholderTextColor="#9ca3af"
-            autoCorrect={false}
-            returnKeyType="search"
-          />
-          {search.length > 0 && (
-            <TouchableOpacity onPress={() => setSearch('')} style={styles.clearSearch}>
-              <Text style={styles.clearSearchText}>✕</Text>
-            </TouchableOpacity>
-          )}
+        <View style={styles.searchLine}>
+          <View style={styles.searchRow}>
+            <Ionicons name="search-outline" size={16} color="#9ca3af" />
+            <TextInput
+              style={styles.searchInput}
+              placeholder={t('explore.searchByDestination')}
+              value={search}
+              onChangeText={setSearch}
+              placeholderTextColor="#9ca3af"
+              autoCorrect={false}
+              returnKeyType="search"
+            />
+            {search.length > 0 && (
+              <TouchableOpacity onPress={() => setSearch('')} style={styles.clearSearch}>
+                <Text style={styles.clearSearchText}>✕</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+          <TouchableOpacity
+            style={[styles.catChip, styles.vanChip, byVan && styles.catChipSelected]}
+            onPress={() => setByVan(prev => !prev)}
+            accessibilityRole="button"
+            accessibilityState={{ selected: byVan }}
+          >
+            <Text style={styles.catEmoji}>🚐</Text>
+            <Text style={[styles.catLabel, byVan && styles.catLabelSelected]}>{t('tripByVan.label')}</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Category chips */}
@@ -185,15 +193,6 @@ const ExploreScreen = ({ navigation, route }) => {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.categoriesRow}
         >
-          <TouchableOpacity
-            style={[styles.catChip, byVan && styles.catChipSelected]}
-            onPress={() => setByVan(prev => !prev)}
-            accessibilityRole="button"
-            accessibilityState={{ selected: byVan }}
-          >
-            <Text style={styles.catEmoji}>🚐</Text>
-            <Text style={[styles.catLabel, byVan && styles.catLabelSelected]}>{t('tripByVan.label')}</Text>
-          </TouchableOpacity>
           {itineraryCategories.filter(c => c.value !== 'other').map(cat => (
             <TouchableOpacity
               key={cat.value}
@@ -209,17 +208,25 @@ const ExploreScreen = ({ navigation, route }) => {
           ))}
         </ScrollView>
 
-        {/* Sort */}
+      </View>
+
+      {/* Count and sort: they describe the results, not the filters above */}
+      <View style={styles.resultsRow}>
+        <Text style={styles.count}>
+          {!loading && totalItems > 0 ? t('community.trips', { count: totalItems }) : ''}
+        </Text>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
+          style={styles.sortScroll}
           contentContainerStyle={styles.sortRow}
         >
           {SORT_OPTIONS.map(opt => (
             <TouchableOpacity
               key={opt.value}
-              style={[styles.sortChip, sortBy === opt.value && styles.sortChipSelected]}
               onPress={() => setSortBy(opt.value)}
+              accessibilityRole="button"
+              accessibilityState={{ selected: sortBy === opt.value }}
             >
               <Text style={[styles.sortLabel, sortBy === opt.value && styles.sortLabelSelected]}>
                 {opt.label}
@@ -250,7 +257,7 @@ const ExploreScreen = ({ navigation, route }) => {
         }
         // The way in by place, for whoever has not searched yet; out of the way once they do.
         ListHeaderComponent={!activeFilters && destinations.length > 0 ? (
-          <WorldMapSection destinations={destinations} onSelectDestination={setSearch} style={styles.mapInList} />
+          <WorldMapSection destinations={destinations} onSelectDestination={setSearch} style={styles.mapInList} showHeader={false} />
         ) : null}
         ListEmptyComponent={
           !loading ? (
@@ -390,13 +397,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingTop: 14, paddingBottom: 10,
   },
   title: { fontSize: 22, fontWeight: '800', color: '#111827' },
-  count: {
-    fontSize: 12, fontWeight: '600', color: COLORS.primary,
-    backgroundColor: COLORS.bgLight, borderRadius: 999,
-    paddingVertical: 2, paddingHorizontal: 8,
-    flex: 1,
-  },
+  count: { flex: 1, fontSize: 12, fontWeight: '600', color: '#6b7280' },
   filterBtn: {
+    marginLeft: 'auto',
     flexDirection: 'row', alignItems: 'center', gap: 4,
     paddingVertical: 5, paddingHorizontal: 10,
     borderRadius: 999, borderWidth: 1, borderColor: '#e5e7eb',
@@ -451,9 +454,12 @@ const styles = StyleSheet.create({
   },
   clearBtnText: { fontSize: 12, color: '#dc2626', fontWeight: '600' },
 
-  searchRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
+  searchLine: {
+    flexDirection: 'row', alignItems: 'stretch', gap: 8,
     marginHorizontal: 16, marginBottom: 10,
+  },
+  searchRow: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8,
     backgroundColor: '#f3f4f6', borderRadius: 12,
     paddingHorizontal: 12,
   },
@@ -472,19 +478,22 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9fafb',
   },
   catChipSelected: { borderColor: COLORS.primary, backgroundColor: COLORS.bgLight },
+  vanChip: { paddingVertical: 0, paddingHorizontal: 12 },
   catEmoji: { fontSize: 13 },
   catLabel: { fontSize: 12, color: '#6b7280', fontWeight: '500' },
   catLabelSelected: { color: COLORS.primary, fontWeight: '600' },
 
-  sortRow: { paddingHorizontal: 16, gap: 8 },
-  sortChip: {
-    paddingVertical: 5, paddingHorizontal: 13,
-    borderRadius: 999, borderWidth: 1, borderColor: '#e5e7eb',
-    backgroundColor: '#f9fafb',
+  resultsRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    paddingHorizontal: 16, paddingTop: 10,
   },
-  sortChipSelected: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
-  sortLabel: { fontSize: 12, color: '#6b7280', fontWeight: '500' },
-  sortLabelSelected: { color: '#fff', fontWeight: '600' },
+  sortScroll: { flexGrow: 0, flexShrink: 1 },
+  sortRow: { gap: 14 },
+  sortLabel: {
+    fontSize: 12, color: '#9ca3af', fontWeight: '500',
+    paddingVertical: 3, borderBottomWidth: 2, borderBottomColor: 'transparent',
+  },
+  sortLabelSelected: { color: '#111827', fontWeight: '700', borderBottomColor: COLORS.primary },
 
   list: { padding: 12 },
   // The list already has its own margin: the map lines up with the cards.

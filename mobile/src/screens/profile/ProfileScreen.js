@@ -1,7 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useRef, useState } from 'react';
 import {
-  Alert, Image, ScrollView,
+  Image, ScrollView,
   Share, StyleSheet, Text, TouchableOpacity, View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -12,7 +12,7 @@ import {
   BADGE_EMOJI, countryFlag, filterItineraries, summarizePassport,
   blockUser, followUser, getBlockStatus, getItinerariesByUserId, getUserById, getUserFavorites, unblockUser,
   selectAuthUser, selectIsAuthenticated, selectMe, selectMyItineraries,
-  PASSPORT_SHARE_SOURCES, RECAP_SOURCES, setUserInfo, unfollowUser, formatDate, selectMyItinerariesLoaded,
+  PASSPORT_SHARE_SOURCES, RECAP_SOURCES, setUserInfo, unfollowUser, selectMyItinerariesLoaded,
   getMyReferralInfo, profileShareUrl, ANALYTICS_EVENTS,
 } from '@tobeatraveller/shared';
 import { cardInnerActions } from '../../utils/accessibility';
@@ -25,6 +25,7 @@ import { useUserPassport } from '../../hooks/useUserPassport';
 import PassportShareModal from '../../components/PassportShareModal';
 import ReportModal from '../../components/ReportModal';
 import AccountMenuButton from '../../components/AccountMenuButton';
+import { showAlert } from '../../utils/alert';
 import RecapBanner from '../../components/RecapBanner';
 
 const MAX_PASSPORT_CARD_FLAGS = 5;
@@ -39,7 +40,7 @@ const COMPLETENESS_FIELDS = [
 const PROFILE_TAB_ROUTE = 'Profile';
 
 const ProfileScreen = ({ route, navigation }) => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(selectIsAuthenticated);
@@ -132,7 +133,9 @@ const ProfileScreen = ({ route, navigation }) => {
       const referralCode = isOwnProfile ? (await getMyReferralInfo().catch(() => null))?.referralCode : null;
       const url = profileShareUrl(WEB_URL, user?.username, referralCode);
       await Share.share({ message: `${t('profile.shareText', { username: user?.username })} ${url}`, url, title: user?.username });
-    } catch {}
+    } catch {
+      showAlert(t('errors.somethingWrong'), t('profile.shareProfileError'));
+    }
   };
 
   useEffect(() => {
@@ -153,7 +156,7 @@ const ProfileScreen = ({ route, navigation }) => {
       if (block) setIsFollowing(false);
       if (me?.id) dispatch(setUserInfo(me.id));
     } catch {
-      Alert.alert(t('errors.somethingWrong'), t('block.error'));
+      showAlert(t('errors.somethingWrong'), t('block.error'));
     } finally {
       setBlockLoading(false);
     }
@@ -165,7 +168,7 @@ const ProfileScreen = ({ route, navigation }) => {
       changeBlock(false);
       return;
     }
-    Alert.alert(t('block.confirmTitle', { username: user?.username }), t('block.confirmDesc'), [
+    showAlert(t('block.confirmTitle', { username: user?.username }), t('block.confirmDesc'), [
       { text: t('common.cancel'), style: 'cancel' },
       { text: t('block.confirmButton'), style: 'destructive', onPress: () => changeBlock(true) },
     ]);
@@ -268,7 +271,7 @@ const ProfileScreen = ({ route, navigation }) => {
               accessibilityRole="button"
               accessibilityLabel={t('profile.shareProfile')}
             >
-              <Text style={styles.iconBtnText}>⤴</Text>
+              <Ionicons name="share-outline" size={18} color="#374151" />
             </TouchableOpacity>
             {isOwnProfile ? (
               <>
@@ -375,14 +378,11 @@ const ProfileScreen = ({ route, navigation }) => {
           {/* Only the next missing thing is suggested, in the completeness card below, not a wall of chips. */}
           {!!user?.bio && <Text style={styles.bio}>{user.bio}</Text>}
 
-          <View style={styles.meta}>
-            {!!user?.location && <Text style={styles.metaItem}>📍 {user.location}</Text>}
-            {user?.createdAt && (
-              <Text style={styles.metaItem}>
-                📅 {t('profile.joinedOn', { date: formatDate(user.createdAt, i18n.language, { year: 'numeric', month: 'long' }) })}
-              </Text>
-            )}
-          </View>
+          {!!user?.location && (
+            <View style={styles.meta}>
+              <Text style={styles.metaItem}>📍 {user.location}</Text>
+            </View>
+          )}
 
           {isReportOpen && user?.id && <ReportModal targetType="user" targetId={user.id} onClose={() => setIsReportOpen(false)} />}
           {isOwnProfile && <RecapBanner onPress={() => navigation.navigate('Recap', { from: RECAP_SOURCES.PROFILE })} />}
@@ -651,7 +651,6 @@ const styles = StyleSheet.create({
     borderWidth: 1.5, borderColor: '#e5e7eb',
     alignItems: 'center', justifyContent: 'center',
   },
-  iconBtnText: { fontSize: 16, color: '#374151' },
   primaryBtn: {
     backgroundColor: '#E8743B', borderRadius: 999,
     paddingVertical: 9, paddingHorizontal: 20,

@@ -531,6 +531,7 @@
   },
   "profile": {
     "shareProfile": "Share profile",
+    "shareProfileError": "Couldn't share the profile.",
     "shareText": "Check out @{{username}} on ToBeATraveller",
     "metaDescriptionFallback": "{{username}}'s travel itineraries on ToBeATraveller",
     "followers": "Followers",
@@ -544,7 +545,6 @@
     "followsYou": "Follows you",
     "editProfile": "Edit profile",
     "copyLink": "Copy profile link",
-    "joinedOn": "Joined {{date}}",
     "about": "About",
     "aboutReadMore": "Read more",
     "aboutReadLess": "Read less",

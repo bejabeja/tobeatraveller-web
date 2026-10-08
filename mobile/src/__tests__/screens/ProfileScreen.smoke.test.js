@@ -136,6 +136,23 @@ it('shares your profile by name, with your invite code', async () => {
   }));
 });
 
+it('tells you when the profile could not be shared', async () => {
+  getUserPassport.mockResolvedValue({ owner: { id: 'user-1', username: 'jane' }, achievements: [], countries: [] });
+  getMyReferralInfo.mockResolvedValue({ referralCode: 'jane' });
+  jest.spyOn(Share, 'share').mockRejectedValue(new Error('no share sheet'));
+  const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+
+  render(
+    <SafeAreaProvider initialMetrics={INITIAL_METRICS}>
+      <ProfileScreen route={{ params: {} }} navigation={{ navigate: jest.fn(), canGoBack: () => false }} />
+    </SafeAreaProvider>
+  );
+  await act(async () => {});
+  await act(async () => { fireEvent.press(screen.getByLabelText('profile.shareProfile')); });
+
+  expect(alertSpy).toHaveBeenCalledWith('errors.somethingWrong', 'profile.shareProfileError', undefined);
+});
+
 // Regression: the counter followed the visibility filter of the trips below,
 // and showed a 0 before the trips had loaded.
 it("counts all of the owner's trips, and shows a dash until they've loaded", async () => {

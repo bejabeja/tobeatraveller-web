@@ -118,6 +118,7 @@ const Community = () => {
         </div>
 
         <h1 className="community__results-title">{t("community.travellers")}</h1>
+        <p className="community__results-subtitle">{t("community.subtitle")}</p>
 
         <div className="community__results">
           {!users?.length && !loading && (

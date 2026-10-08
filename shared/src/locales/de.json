@@ -531,6 +531,7 @@
   },
   "profile": {
     "shareProfile": "Profil teilen",
+    "shareProfileError": "Das Profil konnte nicht geteilt werden.",
     "shareText": "Schau dir @{{username}} auf ToBeATraveller an",
     "metaDescriptionFallback": "Reisepläne von {{username}} auf ToBeATraveller",
     "followers": "Follower",
@@ -544,7 +545,6 @@
     "followsYou": "Folgt dir",
     "editProfile": "Profil bearbeiten",
     "copyLink": "Profil-Link kopieren",
-    "joinedOn": "Dabei seit {{date}}",
     "about": "Über mich",
     "aboutReadMore": "Mehr lesen",
     "aboutReadLess": "Weniger anzeigen",
