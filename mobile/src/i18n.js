@@ -6,6 +6,7 @@ import fr from '../../shared/src/locales/fr.json';
 import it from '../../shared/src/locales/it.json';
 import de from '../../shared/src/locales/de.json';
 import { DEFAULT_APP_LANGUAGE, SUPPORTED_APP_LANGUAGES, setApiErrorTranslator } from '@tobeatraveller/shared';
+import { readLanguagePreference, saveLanguagePreference } from './utils/languagePreference';
 
 // expo-localization is native-only; fall back to navigator.language on web
 let deviceLang = 'en';
@@ -31,5 +32,15 @@ i18n
 
 setApiErrorTranslator((key) => i18n.t(key));
 
-export const changeLanguage = (lang) => i18n.changeLanguage(lang);
+// Opens in the language they chose last, if they did.
+readLanguagePreference().then((stored) => {
+  if (stored && stored !== i18n.language) i18n.changeLanguage(stored);
+});
+
+// Only a choice made in Settings is kept: the phone's own language is not a choice, and saving it would
+// override the phone's language if they change it.
+export const changeLanguage = (lang) => {
+  saveLanguagePreference(lang);
+  return i18n.changeLanguage(lang);
+};
 export default i18n;

@@ -18,7 +18,7 @@ const ToolShortcuts = ({ navigation }) => {
       {TOOLS.map(({ screen, icon, labelKey }) => (
         <TouchableOpacity key={screen} style={styles.tool} onPress={() => navigation.navigate(screen)} accessibilityRole="button">
           <Ionicons name={icon} size={22} color="#E8743B" />
-          <Text style={styles.toolText} numberOfLines={1}>{t(labelKey)}</Text>
+          <Text style={styles.toolText} numberOfLines={2}>{t(labelKey)}</Text>
         </TouchableOpacity>
       ))}
     </View>
@@ -31,7 +31,8 @@ const styles = StyleSheet.create({
     flex: 1, alignItems: 'center', gap: 4, paddingVertical: 10, paddingHorizontal: 2,
     borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 12,
   },
-  toolText: { fontSize: 11, fontWeight: '600', color: '#374151' },
+  // Two lines: "Listas de viaje" and "Lebenstagebuch" do not fit on one at this width.
+  toolText: { fontSize: 11, fontWeight: '600', color: '#374151', textAlign: 'center', minHeight: 28 },
 });
 
 export default ToolShortcuts;

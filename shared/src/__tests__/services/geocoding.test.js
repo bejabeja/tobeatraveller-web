@@ -24,6 +24,17 @@ describe('searchDestinations', () => {
         }]);
     });
 
+    // Regression: typing "Sevilla" listed "Sevilla, AN, Spain" twice, which looks like a mistake and is no choice at all.
+    it('lists a destination once when the service returns it twice', async () => {
+        const feature = (lat) => ({ properties: { city: 'Sevilla', country: 'Spain', formatted: 'Sevilla, AN, Spain', lat, lon: -5.99 } });
+        global.fetch.mockResolvedValue({ ok: true, json: async () => ({ features: [feature(37.38), feature(37.39)] }) });
+
+        const result = await searchDestinations('sevilla', { apiKey: 'key-1' });
+
+        expect(result).toHaveLength(1);
+        expect(result[0].coordinates.lat).toBe(37.38);
+    });
+
     it('sends a proximity bias parameter when bias is provided', async () => {
         global.fetch.mockResolvedValue({ ok: true, json: async () => ({ features: [] }) });
 

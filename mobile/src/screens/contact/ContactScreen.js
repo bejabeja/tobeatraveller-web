@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
 
   btn: {
     backgroundColor: '#E8743B', borderRadius: 999,
-    paddingVertical: 15, alignItems: 'center',
+    paddingVertical: 15, paddingHorizontal: 32, alignItems: 'center',
     ...shadow(4, 0.2, 10, 4),
   },
   btnDisabled: { opacity: 0.6 },

@@ -54,9 +54,19 @@ const mapCityLevel = (feature) => {
     };
 };
 
+const withoutRepeatedLabels = (destinations) => {
+    const seen = new Set();
+    return destinations.filter(({ label }) => {
+        const key = label?.trim().toLowerCase();
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+};
+
 export const searchDestinations = async (query, { apiKey, bias } = {}) => {
     const features = await autocomplete(query, { apiKey, bias });
-    return features.map(mapDestination);
+    return withoutRepeatedLabels(features.map(mapDestination));
 };
 
 export const searchPOIs = async (query, { apiKey, bias } = {}) => {

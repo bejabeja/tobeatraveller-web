@@ -422,7 +422,9 @@ const styles = StyleSheet.create({
   modalClearText: { fontSize: 14, color: '#dc2626', fontWeight: '600' },
   filterLabel: { fontSize: 13, fontWeight: '600', color: '#374151', marginBottom: 8, marginTop: 12 },
   rangeRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  // minWidth 0: on the web an input never shrinks below its own default width and pushed "Max" out of the sheet.
   rangeInput: {
+    minWidth: 0,
     borderWidth: 1.5, borderColor: '#dde3ec', borderRadius: 10,
     backgroundColor: '#f7f9fc', paddingVertical: 10, paddingHorizontal: 12,
     fontSize: 14, color: '#111827',

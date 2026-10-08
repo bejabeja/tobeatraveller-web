@@ -387,6 +387,16 @@ describe('UserRepository.updateUser()', () => {
     it('moves the change date only when the name itself changes', async () => {
         await repo.updateUser('user-1', { username: 'jane', name: null, avatarUrl: null, location: null, bio: null, about: null, updatedAt: new Date() });
 
-        expect(db.query.mock.calls[0][0]).toMatch(/username_changed_at = CASE WHEN LOWER\(users\.username\) <> LOWER\(\$1\) THEN NOW\(\) ELSE users\.username_changed_at END/);
+        expect(db.query.mock.calls[0][0]).toMatch(/username_changed_at = CASE WHEN LOWER\(users\.username\) <> LOWER\(\$1::text\) THEN NOW\(\) ELSE users\.username_changed_at END/);
+    });
+
+    // Regression: saving a profile failed on Postgres 17 with "inconsistent types deduced for parameter $1",
+    // as the name was a varchar in the assignment and a text in LOWER().
+    it('gives the name one type wherever the query uses it', async () => {
+        await repo.updateUser('user-1', { username: 'jane', name: null, avatarUrl: null, location: null, bio: null, about: null, updatedAt: new Date() });
+
+        const usesOfName = db.query.mock.calls[0][0].match(/\$1(?!\d)(::\w+)?/g);
+        expect(usesOfName.length).toBeGreaterThan(1);
+        expect(new Set(usesOfName).size).toBe(1);
     });
 });

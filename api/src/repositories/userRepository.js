@@ -206,8 +206,8 @@ export class UserRepository {
         // The change date moves only when the name really changes: the
         // right-hand side reads the row as it was before this update.
         const result = await db.query(
-            `UPDATE users SET username = $1, name = $2, avatar_url = $3, location = $4, bio = $5, about = $6, updated_at = $7,
-                username_changed_at = CASE WHEN LOWER(users.username) <> LOWER($1) THEN NOW() ELSE users.username_changed_at END
+            `UPDATE users SET username = $1::text, name = $2, avatar_url = $3, location = $4, bio = $5, about = $6, updated_at = $7,
+                username_changed_at = CASE WHEN LOWER(users.username) <> LOWER($1::text) THEN NOW() ELSE users.username_changed_at END
              WHERE id = $8 RETURNING *`,
             [username, name, avatarUrl, location, bio, about, updatedAt, id]
         );

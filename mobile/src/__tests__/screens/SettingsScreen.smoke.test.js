@@ -13,6 +13,7 @@ jest.mock('react-i18next', () => ({
 jest.mock('../../i18n', () => ({
   __esModule: true,
   default: { language: 'es', changeLanguage: jest.fn() },
+  changeLanguage: jest.fn(),
 }));
 
 jest.mock('react-native-safe-area-context', () => ({
@@ -51,7 +52,7 @@ jest.mock('@tobeatraveller/shared', () => ({
 import { Alert } from 'react-native';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { changePassword, changeUnverifiedEmail, fetchNotificationPreferences, updateMyTravelStyle } from '@tobeatraveller/shared';
-import i18n from '../../i18n';
+import { changeLanguage } from '../../i18n';
 import SettingsScreen from '../../screens/settings/SettingsScreen';
 
 const renderScreen = () => render(<SettingsScreen navigation={{ goBack: jest.fn(), navigate: jest.fn() }} />);
@@ -77,7 +78,7 @@ it('unfolds the languages from their row and switches to the one tapped', async 
   fireEvent.press(await screen.findByText('settings.language'));
   fireEvent.press(screen.getByText('🇫🇷 Français'));
 
-  expect(i18n.changeLanguage).toHaveBeenCalledWith('fr');
+  expect(changeLanguage).toHaveBeenCalledWith('fr');
   expect(screen.queryByText('🇩🇪 Deutsch')).toBeNull();
 });
 

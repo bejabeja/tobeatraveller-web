@@ -10,7 +10,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import i18n from '../../i18n';
+import i18n, { changeLanguage } from '../../i18n';
 import {
   APP_LANGUAGES, changePassword, changeUnverifiedEmail, deleteMyAccount, exportMyData, fetchNotificationPreferences,
   logoutUser, PASSWORD_MIN_LENGTH, selectAuthUser, selectMe, setUserInfo, toAppLanguage, TRAVEL_STYLES, updateMyTravelStyle,
@@ -321,7 +321,7 @@ const SettingsScreen = ({ navigation }) => {
                 option
                 label={`${flag} ${name}`}
                 selected={code === currentLang}
-                onPress={() => { i18n.changeLanguage(code); setLanguagesOpen(false); }}
+                onPress={() => { changeLanguage(code); setLanguagesOpen(false); }}
               />
             ))}
             {/* Not before the whole profile has arrived: the basic one does not carry it, and
