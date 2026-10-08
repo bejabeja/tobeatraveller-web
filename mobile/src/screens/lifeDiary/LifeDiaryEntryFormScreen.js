@@ -318,7 +318,7 @@ const LifeDiaryEntryFormScreen = ({ navigation, route }) => {
                 {existingImages.map(img => (
                   <View key={img.id} style={styles.photoWrapper}>
                     <Image source={{ uri: img.photoUrl }} style={styles.photo} resizeMode="cover" />
-                    <TouchableOpacity style={styles.photoRemove} onPress={() => removeExistingImage(img.id)}>
+                    <TouchableOpacity style={styles.photoRemove} accessibilityRole="button" accessibilityLabel={t('common.delete')} onPress={() => removeExistingImage(img.id)}>
                       <Ionicons name="close" size={13} color="#fff" />
                     </TouchableOpacity>
                   </View>
@@ -326,7 +326,7 @@ const LifeDiaryEntryFormScreen = ({ navigation, route }) => {
                 {newPhotos.map(photo => (
                   <View key={photo.uri} style={styles.photoWrapper}>
                     <Image source={{ uri: photo.uri }} style={styles.photo} resizeMode="cover" />
-                    <TouchableOpacity style={styles.photoRemove} onPress={() => removeNewPhoto(photo.uri)}>
+                    <TouchableOpacity style={styles.photoRemove} accessibilityRole="button" accessibilityLabel={t('common.delete')} onPress={() => removeNewPhoto(photo.uri)}>
                       <Ionicons name="close" size={13} color="#fff" />
                     </TouchableOpacity>
                   </View>

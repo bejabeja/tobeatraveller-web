@@ -36,7 +36,7 @@ const CommunityScreen = ({ navigation }) => {
   const totalPages   = useSelector(selectAllUsersTotalPages);
 
   const [search, setSearch] = useState('');
-  const [sortBy, setSortBy] = useState('username');
+  const [sortBy, setSortBy] = useState('itineraries');
   const searchTimer = useRef(null);
   const hasMore = currentPage < totalPages;
 
@@ -92,8 +92,8 @@ const CommunityScreen = ({ navigation }) => {
           {/* Sort toggle */}
           <View style={styles.sortRow}>
             {[
-              { value: 'username', label: t('community.sortAZ') },
               { value: 'itineraries', label: t('community.sortMostTrips') },
+              { value: 'username', label: t('community.sortAZ') },
             ].map(opt => (
               <TouchableOpacity
                 key={opt.value}

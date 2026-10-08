@@ -454,7 +454,7 @@ const PlanExperienceScreen = ({ navigation }) => {
               <View style={[ls.section, { flex: 1 }]}>
                 <Text style={ls.sectionLabel}>{ce('howManyDays')}</Text>
                 <View style={ls.stepperBox}>
-                  <TouchableOpacity
+                  <TouchableOpacity accessibilityRole="button" accessibilityLabel={t('common.decrease')}
                     style={[ls.stepperBtn, days <= 1 && ls.stepperBtnOff]}
                     onPress={() => setDays(d => Math.max(1, d - 1))}
                     disabled={days <= 1}
@@ -465,7 +465,7 @@ const PlanExperienceScreen = ({ navigation }) => {
                     <Text style={ls.stepperNum}>{days}</Text>
                     <Text style={ls.stepperUnit}>{days === 1 ? ce('day') : ce('days')}</Text>
                   </View>
-                  <TouchableOpacity
+                  <TouchableOpacity accessibilityRole="button" accessibilityLabel={t('common.increase')}
                     style={[ls.stepperBtn, days >= 30 && ls.stepperBtnOff]}
                     onPress={() => setDays(d => Math.min(30, d + 1))}
                     disabled={days >= 30}
@@ -478,7 +478,7 @@ const PlanExperienceScreen = ({ navigation }) => {
               <View style={[ls.section, { flex: 1 }]}>
                 <Text style={ls.sectionLabel}>{ce('travelers')}</Text>
                 <View style={ls.stepperBox}>
-                  <TouchableOpacity
+                  <TouchableOpacity accessibilityRole="button" accessibilityLabel={t('common.decrease')}
                     style={[ls.stepperBtn, travelers <= 1 && ls.stepperBtnOff]}
                     onPress={() => setTravelers(t => Math.max(1, t - 1))}
                     disabled={travelers <= 1}
@@ -489,7 +489,7 @@ const PlanExperienceScreen = ({ navigation }) => {
                     <Text style={ls.stepperNum}>{travelers}</Text>
                     <Text style={ls.stepperUnit}>{travelers === 1 ? ce('person') : ce('people')}</Text>
                   </View>
-                  <TouchableOpacity
+                  <TouchableOpacity accessibilityRole="button" accessibilityLabel={t('common.increase')}
                     style={[ls.stepperBtn, travelers >= 20 && ls.stepperBtnOff]}
                     onPress={() => setTravelers(t => Math.min(20, t + 1))}
                     disabled={travelers >= 20}

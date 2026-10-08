@@ -40,7 +40,9 @@
     "showingCachedData": "Es werden gespeicherte Daten von deinem letzten Besuch angezeigt.",
     "datePlaceholder": "JJJJ-MM-TT",
     "pickDate": "Datum wählen",
-    "done": "Fertig"
+    "done": "Fertig",
+    "decrease": "Verringern",
+    "increase": "Erhöhen"
   },
   "auth": {
     "welcomeBack": "Willkommen zurück",

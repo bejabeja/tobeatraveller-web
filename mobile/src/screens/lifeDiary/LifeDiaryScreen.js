@@ -230,10 +230,12 @@ const LifeDiaryScreen = ({ navigation }) => {
                     style={styles.entryActionBtn}
                     hitSlop={ACTION_HIT_SLOP}
                     onPress={() => navigation.navigate('LifeDiaryEntryForm', { entry: item })}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('common.edit')}
                   >
                     <Ionicons name="pencil-outline" size={16} color="#6b7280" />
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.entryActionBtn} hitSlop={ACTION_HIT_SLOP} onPress={() => handleDelete(item)}>
+                  <TouchableOpacity style={styles.entryActionBtn} hitSlop={ACTION_HIT_SLOP} onPress={() => handleDelete(item)} accessibilityRole="button" accessibilityLabel={t('common.delete')}>
                     <Ionicons name="trash-outline" size={16} color="#ef4444" />
                   </TouchableOpacity>
                 </View>

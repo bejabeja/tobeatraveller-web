@@ -131,3 +131,12 @@ it('offers to write the first entry from the empty diary itself', async () => {
 
   expect(navigation.navigate).toHaveBeenCalledWith('LifeDiaryEntryForm');
 });
+
+// Regression-in-waiting: edit and delete were two bare icons, which a screen reader announced as nothing at all.
+it('names the edit and delete icons of an entry', async () => {
+  getLifeDiaryEntries.mockResolvedValueOnce({ entries: [entry('l1', '2026-09-21')], totalCount: 1 });
+  await renderScreen();
+
+  expect(screen.getByLabelText('common.edit')).toBeTruthy();
+  expect(screen.getByLabelText('common.delete')).toBeTruthy();
+});

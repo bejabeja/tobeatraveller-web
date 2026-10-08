@@ -27,7 +27,7 @@ jest.mock('@tobeatraveller/shared', () => ({
 
 import {
   selectAllUsers, selectAllUsersCurrentPage, selectAllUsersLoading, selectAllUsersLoadingMore,
-  selectAllUsersTotalPages, selectAuthUser, selectIsAuthenticated, selectMe,
+  selectAllUsersTotalPages, selectAuthUser, selectIsAuthenticated, selectMe, initAllUsers,
 } from '@tobeatraveller/shared';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -117,4 +117,18 @@ it('does not list the signed-in person among the travellers to follow', async ()
 
   expect(screen.queryByText('@tbat')).toBeNull();
   expect(screen.getByText('@ana')).toBeTruthy();
+});
+
+// Regression: it opened in alphabetical order, so people with no trips came first, while the web opens on the most trips.
+it('opens with the people who have shared the most trips, and goes alphabetical on request', async () => {
+  initAllUsers.mockClear();
+  await renderScreen();
+  await act(async () => { await new Promise((resolve) => setTimeout(resolve, 0)); });
+
+  expect(initAllUsers).toHaveBeenLastCalledWith(expect.objectContaining({ sortBy: 'itineraries' }));
+
+  await act(async () => { fireEvent.press(screen.getByText('community.sortAZ')); });
+  await act(async () => { await new Promise((resolve) => setTimeout(resolve, 0)); });
+
+  expect(initAllUsers).toHaveBeenLastCalledWith(expect.objectContaining({ sortBy: 'username' }));
 });

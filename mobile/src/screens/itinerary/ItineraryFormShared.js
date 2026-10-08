@@ -92,7 +92,7 @@ export const GallerySection = ({ existingImages, newPhotos, onPickPhotos, onRemo
         {existingImages.map(img => (
           <View key={img.id} style={s.photoWrapper}>
             <Image source={{ uri: img.photoUrl }} style={s.photo} resizeMode="cover" />
-            <TouchableOpacity style={s.photoRemove} onPress={() => onRemoveExisting(img.id)}>
+            <TouchableOpacity style={s.photoRemove} accessibilityRole="button" accessibilityLabel={t('common.delete')} onPress={() => onRemoveExisting(img.id)}>
               <Ionicons name="close" size={13} color="#fff" />
             </TouchableOpacity>
           </View>
@@ -100,7 +100,7 @@ export const GallerySection = ({ existingImages, newPhotos, onPickPhotos, onRemo
         {newPhotos.map(photo => (
           <View key={photo.uri} style={s.photoWrapper}>
             <Image source={{ uri: photo.uri }} style={s.photo} resizeMode="cover" />
-            <TouchableOpacity style={s.photoRemove} onPress={() => onRemoveNew(photo.uri)}>
+            <TouchableOpacity style={s.photoRemove} accessibilityRole="button" accessibilityLabel={t('common.delete')} onPress={() => onRemoveNew(photo.uri)}>
               <Ionicons name="close" size={13} color="#fff" />
             </TouchableOpacity>
           </View>
