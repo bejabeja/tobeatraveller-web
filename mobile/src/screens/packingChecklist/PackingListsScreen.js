@@ -9,7 +9,7 @@ import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
   ANALYTICS_EVENTS, createPackingList, getPackingLists, isNetworkError, isPackingListCapReachedError, localCalendarDay,
-  PACKING_TEMPLATES, packingTemplateItems, selectAuthUser, selectMyItineraries, selectMyItinerariesLoaded, suggestedTemplateForTrip, toAppLanguage,
+  PACKING_TEMPLATES, packingTemplateItems, selectAuthUser, selectMe, selectMyItineraries, selectMyItinerariesLoaded, suggestedTemplateForTrip, toAppLanguage, TRAVEL_STYLES,
   tripsToLinkTo,
 } from '@tobeatraveller/shared';
 import FeatureLoadState from '../../components/FeatureLoadState';
@@ -32,6 +32,7 @@ const PackingListsScreen = ({ navigation, route }) => {
   const cacheKey = packingListsCacheKey(authUser?.id);
   const trips = tripsToLinkTo(useSelector(selectMyItineraries), localCalendarDay());
   const tripsLoaded = useSelector(selectMyItinerariesLoaded);
+  const isInAVan = useSelector(selectMe)?.travelStyle === TRAVEL_STYLES.VAN;
   // Opened from a trip (the home card or its page) to start a list for it.
   const forTripId = route?.params?.forTripId ?? null;
   const forTrip = trips.find(trip => trip.id === forTripId);
@@ -111,7 +112,7 @@ const PackingListsScreen = ({ navigation, route }) => {
   // it isn't queued offline like ticking things off is.
   const createList = async ({ name, template, itineraryId }) => {
     try {
-      const list = await createPackingList({ name, items: packingTemplateItems(template, toAppLanguage(i18n.language)), itineraryId });
+      const list = await createPackingList({ name, items: packingTemplateItems(template, toAppLanguage(i18n.language), { isInAVan }), itineraryId });
       trackEvent(ANALYTICS_EVENTS.PACKING_LIST_CREATED, { template, for_trip: Boolean(itineraryId) });
       closeForm();
       openList(list);
@@ -127,28 +128,30 @@ const PackingListsScreen = ({ navigation, route }) => {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backBtn}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          accessibilityRole="button"
-          accessibilityLabel={t('common.back')}
-        >
-          <Text style={styles.backText}>←</Text>
-        </TouchableOpacity>
-        <View style={styles.headerTitles}>
-          <Text style={styles.title}>{p('title')}</Text>
-          {usage?.limited && (
-            <Text style={[styles.usage, atFreeLimit && styles.usageFull]}>
-              {p('freeTierUsage', { used: usage.used, limit: usage.limit })}
-            </Text>
-          )}
-          <Text style={styles.purpose}>{p('purpose')}</Text>
+        <View style={styles.headerRow}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backBtn}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.back')}
+          >
+            <Text style={styles.backText}>←</Text>
+          </TouchableOpacity>
+          <View style={styles.headerTitles}>
+            <Text style={styles.title}>{p('title')}</Text>
+            {usage?.limited && (
+              <Text style={[styles.usage, atFreeLimit && styles.usageFull]}>
+                {p('freeTierUsage', { used: usage.used, limit: usage.limit })}
+              </Text>
+            )}
+          </View>
+          <TouchableOpacity style={styles.newBtn} onPress={openForm} accessibilityRole="button">
+            <Ionicons name={atFreeLimit ? 'sparkles' : 'add'} size={16} color="#fff" />
+            <Text style={styles.newBtnText}>{atFreeLimit ? t('tools.unlockMore') : p('newList')}</Text>
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity style={styles.newBtn} onPress={openForm} accessibilityRole="button">
-          <Ionicons name={atFreeLimit ? 'sparkles' : 'add'} size={16} color="#fff" />
-          <Text style={styles.newBtnText}>{atFreeLimit ? t('tools.unlockMore') : p('newList')}</Text>
-        </TouchableOpacity>
+        <Text style={styles.purpose}>{p('purpose')}</Text>
       </View>
 
       {showingCached && (
@@ -219,17 +222,17 @@ const PackingListsScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8fafc' },
   header: {
-    flexDirection: 'row', alignItems: 'center', gap: 10,
     paddingHorizontal: 16, paddingTop: 14, paddingBottom: 12,
     backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#e5e7eb',
     ...shadow(2, 0.05, 6, 2),
   },
+  headerRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   backBtn: { padding: 4 },
   backText: { fontSize: 20, color: '#374151' },
   headerTitles: { flex: 1 },
   title: { fontSize: 20, fontWeight: '800', color: '#111827' },
   usage: { fontSize: 12, color: '#6b7280', marginTop: 2 },
-  purpose: { fontSize: 12, color: '#6b7280', marginTop: 4 },
+  purpose: { fontSize: 13, color: '#6b7280', marginTop: 8 },
   usageFull: { color: COLORS.primary, fontWeight: '600' },
   newBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 4,

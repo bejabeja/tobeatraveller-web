@@ -7,7 +7,9 @@ import { COLORS, shadow } from '../utils/styles';
 
 // Reports a comment, a trip or a profile. The team reads it; the reported
 // person is never told who sent it.
-const ReportModal = ({ targetType, targetId, onClose }) => {
+const ALREADY_REPORTED_STATUS = 409;
+
+const ReportModal = ({ targetType, targetId, onClose, onSent }) => {
   const { t } = useTranslation();
   const [reason, setReason] = useState('');
   const [details, setDetails] = useState('');
@@ -21,8 +23,15 @@ const ReportModal = ({ targetType, targetId, onClose }) => {
     try {
       await submitReport({ targetType, targetId, reason, details });
       Alert.alert(t('report.button'), t('report.sent'));
+      onSent?.(targetId);
       onClose();
     } catch (error) {
+      if (error.status === ALREADY_REPORTED_STATUS) {
+        Alert.alert(t('report.button'), error.message);
+        onSent?.(targetId);
+        onClose();
+        return;
+      }
       Alert.alert(t('errors.somethingWrong'), error.message || t('report.sendError'));
     } finally {
       setSending(false);

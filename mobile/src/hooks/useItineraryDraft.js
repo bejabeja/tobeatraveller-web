@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { clearItineraryDraft, readItineraryDraft, saveItineraryDraft } from '../utils/itineraryDraftStorage';
 
 // `pendingDraft` is what was left unfinished on this phone. Nothing is saved
@@ -22,15 +22,24 @@ export const useItineraryDraft = (userId, kind) => {
     return () => { cancelled = true; };
   }, [userId, kind]);
 
+  // Once the trip is published the form can stay on screen for a moment and keep
+  // autosaving, which would bring the trip back as "unfinished".
+  const finished = useRef(false);
+
   const save = useCallback((draft) => {
-    if (userId) saveItineraryDraft(userId, draft, kind);
+    if (userId && !finished.current) saveItineraryDraft(userId, draft, kind);
   }, [userId, kind]);
 
   const clear = useCallback(() => {
     if (userId) clearItineraryDraft(userId, kind);
   }, [userId, kind]);
 
+  const finish = useCallback(() => {
+    finished.current = true;
+    if (userId) clearItineraryDraft(userId, kind);
+  }, [userId, kind]);
+
   const resolvePending = useCallback(() => setPendingDraft(null), []);
 
-  return { pendingDraft, loaded, resolvePending, save, clear };
+  return { pendingDraft, loaded, resolvePending, save, clear, finish };
 };

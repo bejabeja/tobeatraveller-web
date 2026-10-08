@@ -12,6 +12,7 @@ jest.mock('../../utils/offlineCache', () => ({
 jest.mock('../../components/PendingChangesNotice', () => ({ PendingChangesNotice: () => null }));
 let mockChanges = [];
 let mockTrips = [];
+let mockTravelStyle = 'van';
 jest.mock('../../offline/useOutbox', () => ({ useOutbox: () => ({ changes: mockChanges }), useRefetchAfterSync: jest.fn() }));
 jest.mock('../../utils/analytics', () => ({ trackEvent: jest.fn() }));
 jest.mock('../../offline/outbox', () => ({ newEntityId: () => 'new-id', runOrQueue: jest.fn() }));
@@ -32,6 +33,8 @@ jest.mock('@tobeatraveller/shared', () => ({
   deletePackingList: jest.fn(),
   ...jest.requireActual('../../../../shared/src/utils/nextTrip.js'),
   selectAuthUser: () => ({ id: 'u1' }),
+  selectMe: () => ({ travelStyle: mockTravelStyle }),
+  TRAVEL_STYLES: { VAN: 'van', OCCASIONAL: 'occasional' },
   selectMyItineraries: () => mockTrips,
 }));
 
@@ -56,7 +59,7 @@ const renderScreen = async (items, navigation = { navigate: jest.fn(), replace: 
   return navigation;
 };
 
-beforeEach(() => { jest.clearAllMocks(); mockChanges = []; mockTrips = []; });
+beforeEach(() => { jest.clearAllMocks(); mockChanges = []; mockTrips = []; mockTravelStyle = 'van'; });
 
 it('shows only the categories that have something', async () => {
   await renderScreen([item('i1', 'Gas cerrado', 'van', true), item('i2', 'Toldo recogido', 'van')]);

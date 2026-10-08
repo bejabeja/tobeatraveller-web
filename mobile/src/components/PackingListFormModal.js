@@ -4,7 +4,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { FREE_PLAN_LIMITS, PACKING_LIST_NAME_MAX_LENGTH, PACKING_TEMPLATES, packingTemplateOptions } from '@tobeatraveller/shared';
+import { useSelector } from 'react-redux';
+import { FREE_PLAN_LIMITS, PACKING_LIST_NAME_MAX_LENGTH, PACKING_TEMPLATES, packingTemplateOptionsFor, selectMe, TRAVEL_STYLES } from '@tobeatraveller/shared';
 import { COLORS, shadow } from '../utils/styles';
 
 // Creating a packing list (a name, what it starts with and, if they like,
@@ -17,6 +18,7 @@ const PackingListFormModal = ({
 }) => {
   const { t } = useTranslation();
   const p = (key, vars) => t(`packingChecklist.${key}`, vars);
+  const isInAVan = useSelector(selectMe)?.travelStyle === TRAVEL_STYLES.VAN;
   const [template, setTemplate] = useState(initialTemplate);
   const [tripId, setTripId] = useState(initialTripId);
   const [name, setName] = useState(initialName);
@@ -71,7 +73,7 @@ const PackingListFormModal = ({
               {withTemplates && (
                 <>
                   <Text style={styles.label}>{p('startWith')}</Text>
-                  {packingTemplateOptions.map(({ id, emoji }) => {
+                  {packingTemplateOptionsFor(isInAVan).map(({ id, emoji }) => {
                     const selected = template === id;
                     return (
                       <TouchableOpacity

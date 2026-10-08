@@ -298,7 +298,7 @@ const HomeScreen = ({ navigation }) => {
                   </View>
                   <Text style={styles.username} numberOfLines={1}>@{user.username}</Text>
                   {user.totalItineraries > 0 && (
-                    <Text style={styles.userTrips}>{user.totalItineraries} {t('home.trips')}</Text>
+                    <Text style={styles.userTrips}>{t('community.trips', { count: user.totalItineraries })}</Text>
                   )}
                 </TouchableOpacity>
               ))

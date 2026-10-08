@@ -60,7 +60,7 @@ const CreateItineraryScreen = ({ navigation }) => {
   const [days, setDays] = useState([1]);
   const [errors, setErrors] = useState({});
 
-  const { pendingDraft, loaded: draftLoaded, resolvePending, save: saveDraft, clear: clearDraft } = useItineraryDraft(me?.id);
+  const { pendingDraft, loaded: draftLoaded, resolvePending, save: saveDraft, clear: clearDraft, finish: finishDraft } = useItineraryDraft(me?.id);
 
   const destTimer = useRef(null);
   const pickGalleryPhotos = useGalleryPicker([], newPhotos, setNewPhotos);
@@ -236,7 +236,7 @@ const CreateItineraryScreen = ({ navigation }) => {
       trackEvent(ANALYTICS_EVENTS.TRIP_CREATED, tripCreatedProperties({
         kind: TRIP_KINDS.ITINERARY, isPublic, places: body.places.length, days: days.length,
       }));
-      clearDraft();
+      finishDraft();
       if (me?.id) {
         dispatch(setUserInfo(me.id));
         dispatch(setUserInfoItineraries());

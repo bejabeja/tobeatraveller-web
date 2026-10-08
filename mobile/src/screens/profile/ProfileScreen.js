@@ -324,15 +324,26 @@ const ProfileScreen = ({ route, navigation }) => {
               </>
             ) : (
               <>
-                <TouchableOpacity
-                  style={[styles.primaryBtn, isFollowing && styles.secondaryBtn, followLoading && styles.btnDisabled]}
-                  onPress={handleFollowToggle}
-                  disabled={followLoading}
-                >
-                  <Text style={[styles.primaryBtnText, isFollowing && styles.secondaryBtnText]}>
-                    {followLoading ? '…' : isFollowing ? t('profile.unfollow') : t('profile.follow')}
-                  </Text>
-                </TouchableOpacity>
+                {isBlocked ? (
+                  <TouchableOpacity
+                    style={[styles.primaryBtn, styles.secondaryBtn, blockLoading && styles.btnDisabled]}
+                    onPress={handleBlockPress}
+                    disabled={blockLoading}
+                    accessibilityRole="button"
+                  >
+                    <Text style={[styles.primaryBtnText, styles.secondaryBtnText]}>{t('block.unblockButton')}</Text>
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity
+                    style={[styles.primaryBtn, isFollowing && styles.secondaryBtn, followLoading && styles.btnDisabled]}
+                    onPress={handleFollowToggle}
+                    disabled={followLoading}
+                  >
+                    <Text style={[styles.primaryBtnText, isFollowing && styles.secondaryBtnText]}>
+                      {followLoading ? '…' : isFollowing ? t('profile.unfollow') : t('profile.follow')}
+                    </Text>
+                  </TouchableOpacity>
+                )}
                 {isAuthenticated && (
                   <TouchableOpacity
                     style={styles.iconBtn}
@@ -343,16 +354,16 @@ const ProfileScreen = ({ route, navigation }) => {
                     <Ionicons name="flag-outline" size={16} color="#374151" />
                   </TouchableOpacity>
                 )}
-                {isAuthenticated && (
+                {isAuthenticated && !isBlocked && (
                   <TouchableOpacity
-                    style={[styles.iconBtn, isBlocked && styles.iconBtnActive]}
+                    style={styles.iconBtn}
                     onPress={handleBlockPress}
                     disabled={blockLoading}
                     accessibilityRole="button"
-                    accessibilityState={{ selected: isBlocked, disabled: blockLoading }}
-                    accessibilityLabel={isBlocked ? t('block.unblockButton') : t('block.button')}
+                    accessibilityState={{ disabled: blockLoading }}
+                    accessibilityLabel={t('block.button')}
                   >
-                    <Ionicons name="ban-outline" size={16} color={isBlocked ? '#dc2626' : '#374151'} />
+                    <Ionicons name="ban-outline" size={16} color="#374151" />
                   </TouchableOpacity>
                 )}
               </>
@@ -715,7 +726,6 @@ const styles = StyleSheet.create({
     borderWidth: 1.5, borderColor: '#e5e7eb',
     alignItems: 'center', justifyContent: 'center',
   },
-  iconBtnActive: { borderColor: '#dc2626' },
   iconBtnText: { fontSize: 16, color: '#374151' },
   primaryBtn: {
     backgroundColor: '#E8743B', borderRadius: 999,

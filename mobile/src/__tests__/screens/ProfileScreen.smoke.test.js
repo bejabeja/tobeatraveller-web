@@ -253,7 +253,7 @@ describe('blocking someone from their profile', () => {
     await act(async () => { await buttons.find((button) => button.style === 'destructive').onPress(); });
 
     expect(blockUser).toHaveBeenCalledWith('user-2');
-    expect(screen.getByLabelText('block.unblockButton')).toBeTruthy();
+    expect(screen.getByText('block.unblockButton')).toBeTruthy();
   });
 
   it('unblocks at once, without asking, someone who is already blocked', async () => {
@@ -261,10 +261,18 @@ describe('blocking someone from their profile', () => {
     const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
     await renderOtherProfile();
 
-    await act(async () => { fireEvent.press(screen.getByLabelText('block.unblockButton')); });
+    await act(async () => { fireEvent.press(screen.getByText('block.unblockButton')); });
 
     expect(alertSpy).not.toHaveBeenCalled();
     expect(unblockUser).toHaveBeenCalledWith('user-2');
+  });
+
+  it('offers to unblock instead of follow for someone who is blocked', async () => {
+    getBlockStatus.mockResolvedValue({ blocked: true });
+    await renderOtherProfile();
+
+    expect(screen.queryByText('profile.follow')).toBeNull();
+    expect(screen.getByText('block.unblockButton')).toBeTruthy();
   });
 
   it('offers no block button on your own profile', async () => {

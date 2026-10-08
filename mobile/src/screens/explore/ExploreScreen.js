@@ -10,7 +10,7 @@ import {
   getDestinations, initExploreItineraries, itineraryCategories,
   loadMoreExploreItineraries, selectExploreItineraries,
   selectExploreItinerariesLoading, selectExploreItinerariesLoadingMore,
-  selectExplorePage, selectExploreTotalItems, selectExploreTotalPages, formatNumber,
+  selectExplorePage, selectExploreTotalItems, selectExploreTotalPages,
 } from '@tobeatraveller/shared';
 import { Ionicons } from '@expo/vector-icons';
 import ItineraryCard from '../../components/ItineraryCard';
@@ -26,7 +26,7 @@ const CATEGORY_EMOJI = {
 };
 
 const ExploreScreen = ({ navigation, route }) => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const insets = useSafeAreaInsets();
 
@@ -142,7 +142,7 @@ const ExploreScreen = ({ navigation, route }) => {
         <View style={styles.titleRow}>
           <Text style={styles.title}>{t('explore.title')}</Text>
           {!loading && totalItems > 0 && (
-            <Text style={styles.count}>{formatNumber(totalItems, i18n.language)} {t('home.trips')}</Text>
+            <Text style={styles.count}>{t('community.trips', { count: totalItems })}</Text>
           )}
           <TouchableOpacity onPress={openFilters} style={styles.filterBtn}>
             <Ionicons name="filter-outline" size={14} color="#374151" />

@@ -62,6 +62,7 @@ const ItineraryScreen = ({ route, navigation }) => {
   const hasMoreComments = comments.length < commentsTotal;
   const [commentText, setCommentText] = useState('');
   const [reportTarget, setReportTarget] = useState(null);
+  const [reportedCommentIds, setReportedCommentIds] = useState(() => new Set());
   const [submitting, setSubmitting] = useState(false);
   const [highlightedCommentId, setHighlightedCommentId] = useState(null);
   const scrollViewRef = useRef(null);
@@ -426,7 +427,7 @@ const ItineraryScreen = ({ route, navigation }) => {
         {/* Stats */}
         <View style={styles.statsGrid}>
           {!!itinerary.location?.name && (
-            <StatCard icon="📍" label={t('itinerary.destination')} value={itinerary.location.name} />
+            <StatCard icon="📍" label={t('itinerary.destination')} value={itinerary.location.label || itinerary.location.name} />
           )}
           <StatCard
             icon="🗓"
@@ -575,20 +576,24 @@ const ItineraryScreen = ({ route, navigation }) => {
                   {(comment.createdAt || comment.postedAgo) && (
                     <Text style={styles.commentTime}>{comment.createdAt ? formatTimeAgo(t, comment.createdAt) : comment.postedAgo}</Text>
                   )}
-                  {me?.id === comment.user?.id && (
+                  {(me?.id === comment.user?.id || me?.id === itinerary.userId) && (
                     <TouchableOpacity onPress={() => handleDeleteComment(comment.id)} style={styles.commentDeleteBtn}>
                       <Text style={styles.commentDeleteText}>✕</Text>
                     </TouchableOpacity>
                   )}
                   {isAuthenticated && me?.id !== comment.user?.id && (
-                    <TouchableOpacity
-                      onPress={() => setReportTarget({ targetType: 'comment', targetId: comment.id })}
-                      style={styles.commentDeleteBtn}
-                      accessibilityRole="button"
-                      accessibilityLabel={t('report.button')}
-                    >
-                      <Ionicons name="flag-outline" size={14} color="#9ca3af" />
-                    </TouchableOpacity>
+                    reportedCommentIds.has(comment.id) ? (
+                      <Text style={styles.commentTime}>{t('report.reported')}</Text>
+                    ) : (
+                      <TouchableOpacity
+                        onPress={() => setReportTarget({ targetType: 'comment', targetId: comment.id })}
+                        style={styles.commentDeleteBtn}
+                        accessibilityRole="button"
+                        accessibilityLabel={t('report.button')}
+                      >
+                        <Ionicons name="flag-outline" size={14} color="#9ca3af" />
+                      </TouchableOpacity>
+                    )
                   )}
                 </View>
                 <Text style={styles.commentContent}>{comment.content}</Text>
@@ -608,7 +613,13 @@ const ItineraryScreen = ({ route, navigation }) => {
           )}
         </View>
       </View>
-      {reportTarget && <ReportModal {...reportTarget} onClose={() => setReportTarget(null)} />}
+      {reportTarget && (
+        <ReportModal
+          {...reportTarget}
+          onClose={() => setReportTarget(null)}
+          onSent={(targetId) => setReportedCommentIds(previous => new Set(previous).add(targetId))}
+        />
+      )}
     </ScrollView>
   );
 };

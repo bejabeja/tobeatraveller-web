@@ -17,6 +17,7 @@ import {
   updateNotificationPreferences,
 } from '@tobeatraveller/shared';
 import { shadow } from '../../utils/styles';
+import BlockedPeopleCard from '../../components/BlockedPeopleCard';
 import { RichText } from '../../components/RichText';
 import { registerForPushNotifications } from '../../utils/pushNotifications';
 import { clearDeviceSessionData } from '../../utils/session';
@@ -423,6 +424,8 @@ const SettingsScreen = ({ navigation }) => {
               </SettingsRow>
             ))}
           </View>
+
+          <BlockedPeopleCard />
 
           <View style={styles.card}>
             <Text style={styles.cardTitle}>{t('settings.yourData')}</Text>

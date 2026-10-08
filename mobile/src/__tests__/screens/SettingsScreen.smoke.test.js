@@ -37,6 +37,8 @@ jest.mock('@tobeatraveller/shared', () => ({
   selectMe: () => mockMe,
   setUserInfo: (id) => ({ type: 'setUserInfo', id }),
   updateMyTravelStyle: jest.fn(),
+  getBlockedUsers: jest.fn().mockResolvedValue([]),
+  unblockUser: jest.fn(),
   fetchNotificationPreferences: jest.fn(),
   updateNotificationPreferences: jest.fn(),
   changePassword: jest.fn(),
