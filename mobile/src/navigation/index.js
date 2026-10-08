@@ -52,6 +52,7 @@ import PendingChangesScreen from '../screens/pendingChanges/PendingChangesScreen
 import PassportScreen from '../screens/passport/PassportScreen';
 import RecapScreen from '../screens/recap/RecapScreen';
 
+const MAX_TAB_BADGE = 99;
 const Stack = createNativeStackNavigator();
 
 // Badges and countries are granted in the background right after saving:
@@ -85,6 +86,7 @@ const TabNavigator = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const [showSheet, setShowSheet] = useState(false);
   const isAuthenticated = useSelector(selectIsAuthenticated);
+  const unreadCount = useSelector(selectUnreadCount);
 
   // Creating needs an account: better to say so now than after filling in a whole trip.
   const openCreateSheet = () => {
@@ -119,7 +121,13 @@ const TabNavigator = ({ navigation }) => {
           ),
         })}
       >
-        <Tab.Screen name="Home"      component={HomeScreen}      options={{ tabBarLabel: t('nav.home') }} />
+        <Tab.Screen name="Home"      component={HomeScreen}      options={{
+            tabBarLabel: t('nav.home'),
+            tabBarBadge: isAuthenticated && unreadCount > 0 ? (unreadCount > MAX_TAB_BADGE ? `${MAX_TAB_BADGE}+` : unreadCount) : undefined,
+            tabBarBadgeStyle: { backgroundColor: COLORS.primary, fontSize: 10 },
+            tabBarAccessibilityLabel: unreadCount > 0 ? t('notifications.newCount', { count: unreadCount }) : undefined,
+          }}
+        />
         <Tab.Screen name="Explore"   component={ExploreScreen}   options={{ tabBarLabel: t('nav.explore') }} />
         <Tab.Screen
           name="Create"

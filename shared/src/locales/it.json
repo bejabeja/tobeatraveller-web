@@ -140,7 +140,8 @@
     "createSheetExperience": "Pianificalo con l'IA",
     "createSheetExperienceDesc": "Di' all'IA dove vai e lei crea il viaggio per te.",
     "createSheetCancel": "Annulla",
-    "settings": "Impostazioni"
+    "settings": "Impostazioni",
+    "menu": "Menu"
   },
   "globalSearch": {
     "trigger": "Cerca",

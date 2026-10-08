@@ -1,5 +1,4 @@
 const mockDispatch = jest.fn();
-let mockUnsyncedChanges = [];
 
 jest.mock('@react-navigation/native', () => {
   const { useEffect } = jest.requireActual('react');
@@ -28,10 +27,6 @@ jest.mock('../../utils/session', () => ({
 }));
 
 jest.mock('../../utils/config', () => ({ WEB_URL: 'https://tobeatraveller.test' }));
-
-jest.mock('../../offline/useOutbox', () => ({
-  useOutbox: () => ({ changes: mockUnsyncedChanges }),
-}));
 
 jest.mock('@tobeatraveller/shared', () => {
   const badges = jest.requireActual('../../../../shared/src/utils/constants/badges.js');
@@ -77,7 +72,6 @@ import {
 import { Alert, Share } from 'react-native';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { clearDeviceSessionData } from '../../utils/session';
 import ProfileScreen from '../../screens/profile/ProfileScreen';
 
 const INITIAL_METRICS = { frame: { x: 0, y: 0, width: 390, height: 844 }, insets: { top: 0, left: 0, right: 0, bottom: 0 } };
@@ -93,7 +87,6 @@ beforeEach(() => {
   selectAuthUser.mockReturnValue(ME);
   selectMyItineraries.mockReturnValue([]);
   selectMyItinerariesLoaded.mockReturnValue(true);
-  mockUnsyncedChanges = [];
 });
 
 // Guards the header markup (moved around more than once), which no other
@@ -187,13 +180,29 @@ it('has a back arrow when opened over another screen', async () => {
   expect(screen.getByLabelText('common.back')).toBeTruthy();
 });
 
-// Regression: Expenses, the shopping list and the diary were marked Premium,
-// when the free plan has them up to a limit; now the packing lists too.
-it('marks no tool as Premium, all of them being free up to a limit', async () => {
-  await renderOwnProfile({ me: { ...ME, isPremium: false } });
+// Regression: the tools, subscription, invite, contact and sign out were piled inside the profile card.
+it('keeps the menu out of the profile, which lives in Home and Settings', async () => {
+  await renderOwnProfile();
 
-  expect(screen.queryByText('admin.premium')).toBeNull();
-  expect(screen.getByText('🎒 packingChecklist.title')).toBeTruthy();
+  expect(screen.queryByText('profile.signOut')).toBeNull();
+  expect(screen.queryByText('profile.contactUs')).toBeNull();
+  expect(screen.queryByText('🎒 packingChecklist.title')).toBeNull();
+});
+
+// Regression: every missing detail was a chip of its own, a wall of "+" before the trips.
+it('suggests only the next missing detail of the profile', async () => {
+  await renderOwnProfile();
+
+  expect(screen.getByText('+ profile.completenessTipAbout')).toBeTruthy();
+  expect(screen.queryByText('+ profile.completenessTipPhoto')).toBeNull();
+});
+
+// Regression: an empty "Saved trips" took room with a grey sentence at the end of the profile.
+it('shows no saved trips section while nothing is saved', async () => {
+  await renderOwnProfile();
+
+  expect(screen.queryByText(/profile\.savedTrips/)).toBeNull();
+  expect(screen.queryByText('profile.noSavedTrips')).toBeNull();
 });
 
 // Regression: the full list of my trips could only be reached by tapping the trips counter, which nothing hints at.
@@ -216,36 +225,6 @@ it('offers a "see all" for my trips, which opens the full list', async () => {
   fireEvent.press(screen.getAllByText('profile.seeAll')[0]);
 
   expect(navigation.navigate).toHaveBeenCalledWith('MyItineraries');
-});
-
-describe('signing out', () => {
-  // Regression: it always asked "Log out?", although with nothing unsent there is nothing to lose.
-  it('signs out at once when there is nothing waiting to be sent', async () => {
-    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
-    await renderOwnProfile();
-
-    await act(async () => { fireEvent.press(screen.getByText('profile.signOut')); });
-
-    expect(alertSpy).not.toHaveBeenCalled();
-    expect(clearDeviceSessionData).toHaveBeenCalled();
-    expect(mockDispatch).toHaveBeenCalledWith('logout-thunk');
-  });
-
-  it('warns how many changes would be lost, and signs out only if it is confirmed', async () => {
-    mockUnsyncedChanges = [{ id: 'c1' }, { id: 'c2' }];
-    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
-    await renderOwnProfile();
-
-    await act(async () => { fireEvent.press(screen.getByText('profile.signOut')); });
-
-    expect(alertSpy).toHaveBeenCalledWith('auth.confirmLogoutTitle', 'offline.logoutLosesChanges', expect.any(Array));
-    expect(mockDispatch).not.toHaveBeenCalledWith('logout-thunk');
-
-    const [, , buttons] = alertSpy.mock.calls[0];
-    await act(async () => { await buttons.find((button) => button.style === 'destructive').onPress(); });
-
-    expect(mockDispatch).toHaveBeenCalledWith('logout-thunk');
-  });
 });
 
 describe('blocking someone from their profile', () => {

@@ -140,7 +140,8 @@
     "createSheetExperience": "Mit KI planen",
     "createSheetExperienceDesc": "Sag der KI, wohin du fährst, und sie plant die Reise für dich.",
     "createSheetCancel": "Abbrechen",
-    "settings": "Einstellungen"
+    "settings": "Einstellungen",
+    "menu": "Menü"
   },
   "globalSearch": {
     "trigger": "Suchen",

@@ -23,6 +23,7 @@ import VanToday from '../../components/VanToday';
 import HomeNews from '../../components/HomeNews';
 import PassportSummary from '../../components/PassportSummary';
 import YourTools from '../../components/YourTools';
+import AccountMenuButton from '../../components/AccountMenuButton';
 import WorldMapSection from '../../components/WorldMapSection';
 import { ItineraryCardSkeleton, UserAvatarSkeleton } from '../../components/Skeleton';
 import { COLORS, shadow } from '../../utils/styles';
@@ -123,18 +124,21 @@ const HomeScreen = ({ navigation }) => {
             </View>
           )}
           {isAuthenticated && (
-            <TouchableOpacity
-              style={styles.bellBtn}
-              onPress={() => navigation.navigate('Notifications')}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="notifications-outline" size={24} color="#fff" />
-              {unreadCount > 0 && (
-                <View style={styles.bellBadge}>
-                  <Text style={styles.bellBadgeText}>{unreadCount > 99 ? '99+' : unreadCount}</Text>
-                </View>
-              )}
-            </TouchableOpacity>
+            <View style={styles.heroActions}>
+              <TouchableOpacity
+                style={styles.bellBtn}
+                onPress={() => navigation.navigate('Notifications')}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="notifications-outline" size={24} color="#fff" />
+                {unreadCount > 0 && (
+                  <View style={styles.bellBadge}>
+                    <Text style={styles.bellBadgeText}>{unreadCount > 99 ? '99+' : unreadCount}</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+              <AccountMenuButton navigation={navigation} color="#fff" />
+            </View>
           )}
         </View>
         {isAuthenticated && <NextTripCard navigation={navigation} />}
@@ -351,6 +355,7 @@ const styles = StyleSheet.create({
   heroGreeting: { flex: 1, marginRight: 12 },
   heroHeading: { flex: 1 },
 
+  heroActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   bellBtn: { padding: 4, position: 'relative' },
   bellBadge: {
     position: 'absolute', top: 0, right: 0,

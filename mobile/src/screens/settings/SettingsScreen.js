@@ -21,6 +21,7 @@ import BlockedPeopleCard from '../../components/BlockedPeopleCard';
 import { RichText } from '../../components/RichText';
 import { registerForPushNotifications } from '../../utils/pushNotifications';
 import { clearDeviceSessionData } from '../../utils/session';
+import { useOutbox } from '../../offline/useOutbox';
 import { useAnalyticsConsent } from '../../hooks/useAnalyticsConsent';
 import { ANALYTICS_CONSENT } from '../../utils/analytics';
 
@@ -88,6 +89,7 @@ const SettingsScreen = ({ navigation }) => {
   const [languagesOpen, setLanguagesOpen] = useState(false);
   const [travelStyleOpen, setTravelStyleOpen] = useState(false);
 
+  const { changes: unsyncedChanges } = useOutbox();
   const [deleting, setDeleting] = useState(false);
   const [deleteInput, setDeleteInput] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -119,6 +121,28 @@ const SettingsScreen = ({ navigation }) => {
       </View>
     );
   }
+
+  const handleSignOut = async () => {
+    await clearDeviceSessionData();
+    dispatch(logoutUser());
+  };
+
+  // Signing out is not undone by asking, so it only asks when it would lose something:
+  // the changes made without a connection that have not reached the server yet.
+  const handleSignOutPress = () => {
+    if (unsyncedChanges.length === 0) {
+      handleSignOut();
+      return;
+    }
+    Alert.alert(
+      t('auth.confirmLogoutTitle'),
+      t('offline.logoutLosesChanges', { count: unsyncedChanges.length }),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        { text: t('auth.logout'), style: 'destructive', onPress: handleSignOut },
+      ]
+    );
+  };
 
   const handleDeleteAccount = async () => {
     if (deleteInput !== user?.username) return;
@@ -451,6 +475,12 @@ const SettingsScreen = ({ navigation }) => {
             <Text style={styles.cardTitle}>{t('settings.legal')}</Text>
             <SettingsRow first label={t('legalTerms.documentTitle')} onPress={() => navigation.navigate('Terms')} />
             <SettingsRow label={t('legalPrivacy.documentTitle')} onPress={() => navigation.navigate('PrivacyPolicy')} />
+          </View>
+
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>{t('settings.help')}</Text>
+            <SettingsRow first label={t('settings.contactUs')} hint={t('settings.contactUsHint')} onPress={() => navigation.navigate('Contact')} />
+            <SettingsRow label={t('profile.signOut')} onPress={handleSignOutPress} />
           </View>
 
           <View style={[styles.card, styles.dangerCard]}>

@@ -10,23 +10,21 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import {
   BADGE_EMOJI, countryFlag, filterItineraries, summarizePassport,
-  blockUser, followUser, getBlockStatus, getItinerariesByUserId, getUserById, getUserFavorites, logoutUser, unblockUser,
+  blockUser, followUser, getBlockStatus, getItinerariesByUserId, getUserById, getUserFavorites, unblockUser,
   selectAuthUser, selectIsAuthenticated, selectMe, selectMyItineraries,
   PASSPORT_SHARE_SOURCES, RECAP_SOURCES, setUserInfo, unfollowUser, formatDate, selectMyItinerariesLoaded,
-  getMyReferralInfo, profileShareUrl, ANALYTICS_EVENTS, PLAN_COMPARISON,
+  getMyReferralInfo, profileShareUrl, ANALYTICS_EVENTS,
 } from '@tobeatraveller/shared';
 import { cardInnerActions } from '../../utils/accessibility';
 import { trackEvent } from '../../utils/analytics';
 import ItineraryCard from '../../components/ItineraryCard';
 import { ItineraryCardSkeleton, ProfileSkeleton } from '../../components/Skeleton';
 import { shadow } from '../../utils/styles';
-import { clearDeviceSessionData } from '../../utils/session';
-import { useOutbox } from '../../offline/useOutbox';
 import { WEB_URL } from '../../utils/config';
 import { useUserPassport } from '../../hooks/useUserPassport';
 import PassportShareModal from '../../components/PassportShareModal';
 import ReportModal from '../../components/ReportModal';
-import { EmailVerificationBanner } from '../../components/EmailVerificationBanner';
+import AccountMenuButton from '../../components/AccountMenuButton';
 import RecapBanner from '../../components/RecapBanner';
 
 const MAX_PASSPORT_CARD_FLAGS = 5;
@@ -40,16 +38,6 @@ const COMPLETENESS_FIELDS = [
 
 const PROFILE_TAB_ROUTE = 'Profile';
 
-const PROFILE_TOOLS = [
-  { id: 'vanLog', screen: 'VanLog', emoji: '🚐', titleKey: 'vanLog.title' },
-  { id: 'supplies', screen: 'Supplies', emoji: '🛒', titleKey: 'supplies.title' },
-  { id: 'packingChecklist', screen: 'PackingChecklist', emoji: '🎒', titleKey: 'packingChecklist.title' },
-  { id: 'lifeDiary', screen: 'LifeDiary', emoji: '📔', titleKey: 'lifeDiary.title' },
-];
-
-// The free plan has the others up to a limit, so only these get the badge.
-const isPremiumOnly = (toolId) => PLAN_COMPARISON.find((row) => row.id === toolId)?.free === false;
-
 const ProfileScreen = ({ route, navigation }) => {
   const { t, i18n } = useTranslation();
   const insets = useSafeAreaInsets();
@@ -60,30 +48,6 @@ const ProfileScreen = ({ route, navigation }) => {
   const me = meDetail ?? authUser;
   const myItineraries = useSelector(selectMyItineraries);
   const myItinerariesLoaded = useSelector(selectMyItinerariesLoaded);
-
-  const { changes: unsyncedChanges } = useOutbox();
-
-  const handleLogout = async () => {
-    await clearDeviceSessionData();
-    dispatch(logoutUser());
-  };
-
-  // Signing out is not undone by asking, so it only asks when it would lose something:
-  // the changes made without a connection that have not reached the server yet.
-  const handleSignOutPress = () => {
-    if (unsyncedChanges.length === 0) {
-      handleLogout();
-      return;
-    }
-    Alert.alert(
-      t('auth.confirmLogoutTitle'),
-      t('offline.logoutLosesChanges', { count: unsyncedChanges.length }),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        { text: t('auth.logout'), style: 'destructive', onPress: handleLogout },
-      ]
-    );
-  };
 
   const profileId = route.params?.id;
   const isOwnProfile = !profileId || (me && String(profileId) === String(me.id));
@@ -248,7 +212,7 @@ const ProfileScreen = ({ route, navigation }) => {
 
   const completenessCount = COMPLETENESS_FIELDS.filter(f => !!user?.[f.key]).length;
   const completenessPct = Math.round((completenessCount / COMPLETENESS_FIELDS.length) * 100);
-  const missingFields = COMPLETENESS_FIELDS.filter(f => !user?.[f.key]);
+  const nextMissingField = COMPLETENESS_FIELDS.find(f => !user?.[f.key]);
   // Your own: every trip of your trips section below, private ones too,
   // whatever its visibility filter shows; a dash until they've loaded.
   const tripsCount = isOwnProfile ? (myItinerariesLoaded ? rawItineraries.length : null) : (user?.totalItineraries ?? 0);
@@ -314,13 +278,7 @@ const ProfileScreen = ({ route, navigation }) => {
                 >
                   <Text style={styles.secondaryBtnText}>✏️  {t('profile.editProfile')}</Text>
                 </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.iconBtn}
-                  onPress={() => navigation.navigate('Settings')}
-                  accessibilityLabel={t('nav.settings') || 'Settings'}
-                >
-                  <Text style={styles.iconBtnText}>⚙️</Text>
-                </TouchableOpacity>
+                <AccountMenuButton navigation={navigation} style={styles.iconBtn} />
               </>
             ) : (
               <>
@@ -414,7 +372,7 @@ const ProfileScreen = ({ route, navigation }) => {
             </TouchableOpacity>
           </View>
 
-          {/* What's missing is listed once, in the completeness card below. */}
+          {/* Only the next missing thing is suggested, in the completeness card below, not a wall of chips. */}
           {!!user?.bio && <Text style={styles.bio}>{user.bio}</Text>}
 
           <View style={styles.meta}>
@@ -426,50 +384,7 @@ const ProfileScreen = ({ route, navigation }) => {
             )}
           </View>
 
-          {showPassportCard && (
-            <TouchableOpacity
-              style={styles.passportCard}
-              onPress={() => navigation.navigate('Passport', { userId: passportUserId })}
-              accessibilityRole="button"
-              accessibilityLabel={t('passport.view')}
-              {...cardInnerActions([isOwnProfile && { name: 'share', label: t('passport.share'), onPress: () => setIsPassportShareOpen(true) }])}
-            >
-              <Text style={styles.passportCardIcon}>🛂</Text>
-              <View style={styles.passportCardBody}>
-                <Text style={styles.passportCardTitle}>{t('passport.title')}</Text>
-                <Text style={styles.passportCardMeta}>
-                  {passportSummary.countryCount > 0
-                    ? `${passportSummary.flagCodes.map(countryFlag).join(' ')}${passportSummary.hiddenCountries > 0 ? `  ${t('passport.moreCountries', { count: passportSummary.hiddenCountries })}` : ''}`
-                    : t('passport.noCountriesYet')}
-                  {'  ·  '}
-                  {t('passport.collected', { earned: passportSummary.earnedCount, total: passportSummary.totalCount })}
-                </Text>
-                {passportSummary.nextGoal && (
-                  <Text style={styles.passportCardGoal}>
-                    {BADGE_EMOJI[passportSummary.nextGoal.badgeId]}{' '}
-                    {t(`badges.nextTip.${passportSummary.nextGoal.family}`, {
-                      count: passportSummary.nextGoal.remaining,
-                      next: t(`badges.${passportSummary.nextGoal.badgeId}.name`),
-                    })}
-                  </Text>
-                )}
-              </View>
-              {isOwnProfile && (
-                <TouchableOpacity
-                  onPress={() => setIsPassportShareOpen(true)}
-                  style={styles.passportCardShare}
-                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                  accessibilityRole="button"
-                  accessibilityLabel={t('passport.share')}
-                >
-                  <Ionicons name="share-outline" size={20} color="#b08a45" />
-                </TouchableOpacity>
-              )}
-              <Ionicons name="chevron-forward" size={16} color="#b08a45" />
-            </TouchableOpacity>
-          )}
           {isReportOpen && user?.id && <ReportModal targetType="user" targetId={user.id} onClose={() => setIsReportOpen(false)} />}
-          {isOwnProfile && <EmailVerificationBanner />}
           {isOwnProfile && <RecapBanner onPress={() => navigation.navigate('Recap', { from: RECAP_SOURCES.PROFILE })} />}
           {isOwnProfile && (
             <PassportShareModal
@@ -491,51 +406,56 @@ const ProfileScreen = ({ route, navigation }) => {
             <View style={styles.completenessTrack}>
               <View style={[styles.completenessFill, { width: `${completenessPct}%` }]} />
             </View>
-            <View style={styles.completenessTips}>
-              {missingFields.map(({ key, tipKey }) => (
-                <TouchableOpacity key={key} style={styles.completenessTipChip} onPress={() => navigation.navigate('EditProfile')}>
-                  <Text style={styles.completenessTip}>+ {t(tipKey)}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+            <TouchableOpacity style={styles.completenessNext} onPress={() => navigation.navigate('EditProfile')} accessibilityRole="button">
+              <Text style={styles.completenessTip}>+ {t(nextMissingField.tipKey)}</Text>
+              <Ionicons name="chevron-forward" size={14} color="#E8743B" />
+            </TouchableOpacity>
           </View>
         )}
-
-        {/* Contact + Logout (own profile) */}
-        {isOwnProfile && (
-          <>
-            {PROFILE_TOOLS.map(({ id, screen, emoji, titleKey }) => (
-              <TouchableOpacity key={id} style={styles.contactBtn} onPress={() => navigation.navigate(screen)}>
-                <View style={styles.premiumToolRow}>
-                  <Text style={styles.contactText}>{emoji} {t(titleKey)}</Text>
-                  {!user?.isPremium && isPremiumOnly(id) && <Text style={styles.premiumBadge}>{t('admin.premium')}</Text>}
-                </View>
-              </TouchableOpacity>
-            ))}
-            <TouchableOpacity
-              style={styles.contactBtn}
-              onPress={() => navigation.navigate('Subscription')}
-            >
-              <Text style={styles.contactText}>✨ {t('nav.subscription')}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.contactBtn}
-              onPress={() => navigation.navigate('Referral')}
-            >
-              <Text style={styles.contactText}>🎁 {t('referral.accountCardTitle')}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.contactBtn}
-              onPress={() => navigation.navigate('Contact')}
-            >
-              <Text style={styles.contactText}>{t('profile.contactUs')}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.logoutBtn} onPress={handleSignOutPress}>
-              <Text style={styles.logoutText}>{t('profile.signOut')}</Text>
-            </TouchableOpacity>
-          </>
-        )}
       </View>
+
+        {showPassportCard && (
+          <TouchableOpacity
+            style={styles.passportCard}
+            onPress={() => navigation.navigate('Passport', { userId: passportUserId })}
+            accessibilityRole="button"
+            accessibilityLabel={t('passport.view')}
+            {...cardInnerActions([isOwnProfile && { name: 'share', label: t('passport.share'), onPress: () => setIsPassportShareOpen(true) }])}
+          >
+            <Text style={styles.passportCardIcon}>🛂</Text>
+            <View style={styles.passportCardBody}>
+              <Text style={styles.passportCardTitle}>{t('passport.title')}</Text>
+              <Text style={styles.passportCardMeta}>
+                {passportSummary.countryCount > 0
+                  ? `${passportSummary.flagCodes.map(countryFlag).join(' ')}${passportSummary.hiddenCountries > 0 ? `  ${t('passport.moreCountries', { count: passportSummary.hiddenCountries })}` : ''}`
+                  : t('passport.noCountriesYet')}
+                {'  ·  '}
+                {t('passport.collected', { earned: passportSummary.earnedCount, total: passportSummary.totalCount })}
+              </Text>
+              {passportSummary.nextGoal && (
+                <Text style={styles.passportCardGoal}>
+                  {BADGE_EMOJI[passportSummary.nextGoal.badgeId]}{' '}
+                  {t(`badges.nextTip.${passportSummary.nextGoal.family}`, {
+                    count: passportSummary.nextGoal.remaining,
+                    next: t(`badges.${passportSummary.nextGoal.badgeId}.name`),
+                  })}
+                </Text>
+              )}
+            </View>
+            {isOwnProfile && (
+              <TouchableOpacity
+                onPress={() => setIsPassportShareOpen(true)}
+                style={styles.passportCardShare}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                accessibilityRole="button"
+                accessibilityLabel={t('passport.share')}
+              >
+                <Ionicons name="share-outline" size={20} color="#b08a45" />
+              </TouchableOpacity>
+            )}
+            <Ionicons name="chevron-forward" size={16} color="#b08a45" />
+          </TouchableOpacity>
+        )}
 
       {/* About */}
       {!!user?.about && (
@@ -596,8 +516,8 @@ const ProfileScreen = ({ route, navigation }) => {
         )}
       </View>
 
-      {/* Saved trips (own profile only) */}
-      {isOwnProfile && isAuthenticated && (
+      {/* Saved trips (own profile only), not shown while there is nothing saved. */}
+      {isOwnProfile && isAuthenticated && (savedLoading || savedTrips.length > 0) && (
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>
@@ -615,8 +535,6 @@ const ProfileScreen = ({ route, navigation }) => {
                 <View key={i} style={styles.gridItem}><ItineraryCardSkeleton /></View>
               ))}
             </View>
-          ) : savedTrips.length === 0 ? (
-            <Text style={styles.emptyTrips}>{t('profile.noSavedTrips')}</Text>
           ) : (
             <View style={styles.grid}>
               {savedTrips.slice(0, 4).map(it => (
@@ -766,7 +684,7 @@ const styles = StyleSheet.create({
 
   passportCard: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
-    marginTop: 12, paddingVertical: 10, paddingHorizontal: 12,
+    marginHorizontal: 16, marginTop: 14, paddingVertical: 10, paddingHorizontal: 12,
     borderRadius: 14, borderWidth: 1, borderStyle: 'dashed', borderColor: '#d9a441',
     backgroundColor: '#fdf6e9',
   },
@@ -803,12 +721,8 @@ const styles = StyleSheet.create({
     height: 6, backgroundColor: '#e5e7eb', borderRadius: 3, overflow: 'hidden',
   },
   completenessFill: { height: '100%', backgroundColor: '#E8743B', borderRadius: 3 },
-  completenessTips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 },
-  completenessTipChip: {
-    paddingVertical: 5, paddingHorizontal: 10, borderRadius: 999,
-    borderWidth: 1, borderStyle: 'dashed', borderColor: '#F3B08E',
-  },
-  completenessTip: { fontSize: 12, color: '#E8743B', fontWeight: '500' },
+  completenessNext: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 10 },
+  completenessTip: { fontSize: 13, color: '#E8743B', fontWeight: '600' },
 
   createBtn: {
     marginHorizontal: 16, marginTop: 14,
@@ -816,24 +730,6 @@ const styles = StyleSheet.create({
     paddingVertical: 11, alignItems: 'center',
   },
   createBtnText: { color: '#fff', fontSize: 14, fontWeight: '700' },
-  contactBtn: {
-    marginHorizontal: 16, marginTop: 14,
-    borderWidth: 1, borderColor: '#e5e7eb',
-    borderRadius: 10, paddingVertical: 10, alignItems: 'center',
-  },
-  contactText: { color: '#374151', fontSize: 14, fontWeight: '600' },
-  premiumToolRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  premiumBadge: {
-    color: '#E8743B', backgroundColor: '#FFF0E8',
-    fontSize: 10, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.4,
-    paddingVertical: 2, paddingHorizontal: 7, borderRadius: 999,
-  },
-  // Quiet on purpose: signing out is not what anyone opens their profile for.
-  logoutBtn: {
-    marginHorizontal: 16, marginTop: 18,
-    paddingVertical: 10, alignItems: 'center',
-  },
-  logoutText: { color: '#6b7280', fontSize: 14, fontWeight: '600' },
 
   section: { marginHorizontal: 16, marginTop: 16 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },

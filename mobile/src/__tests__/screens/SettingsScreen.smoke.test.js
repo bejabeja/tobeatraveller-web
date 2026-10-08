@@ -1,3 +1,4 @@
+let mockUnsyncedChanges = [];
 let mockMe = { id: 'user-1', username: 'jane', email: 'jane@example.com' };
 const mockDispatch = jest.fn();
 
@@ -24,6 +25,9 @@ jest.mock('expo-file-system', () => ({ File: jest.fn(), Paths: {} }));
 jest.mock('expo-sharing', () => ({ shareAsync: jest.fn() }));
 jest.mock('../../utils/pushNotifications', () => ({ registerForPushNotifications: jest.fn() }));
 jest.mock('../../utils/session', () => ({ clearDeviceSessionData: jest.fn() }));
+jest.mock('../../offline/useOutbox', () => ({
+  useOutbox: () => ({ changes: mockUnsyncedChanges }),
+}));
 jest.mock('../../utils/analytics', () => ({ ANALYTICS_CONSENT: { GRANTED: 'granted', DENIED: 'denied' } }));
 jest.mock('../../hooks/useAnalyticsConsent', () => ({
   useAnalyticsConsent: () => ({ consent: 'denied', answer: jest.fn() }),
@@ -53,12 +57,14 @@ import { Alert } from 'react-native';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { changePassword, changeUnverifiedEmail, fetchNotificationPreferences, updateMyTravelStyle } from '@tobeatraveller/shared';
 import { changeLanguage } from '../../i18n';
+import { clearDeviceSessionData } from '../../utils/session';
 import SettingsScreen from '../../screens/settings/SettingsScreen';
 
 const renderScreen = () => render(<SettingsScreen navigation={{ goBack: jest.fn(), navigate: jest.fn() }} />);
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockUnsyncedChanges = [];
   fetchNotificationPreferences.mockResolvedValue({
     pushEnabled: false, notifyOnComment: true, notifyOnLike: true, notifyOnFollow: true, notifyOnFriendStamps: false,
   });
@@ -252,4 +258,43 @@ it('leads to the subscription and to inviting friends', async () => {
   expect(navigation.navigate).toHaveBeenCalledWith('Referral');
   fireEvent.press(screen.getAllByText('settings.plan')[1]);
   expect(navigation.navigate).toHaveBeenCalledWith('Subscription');
+});
+
+it('leads to help and contact', async () => {
+  const navigation = { goBack: jest.fn(), navigate: jest.fn() };
+  render(<SettingsScreen navigation={navigation} />);
+
+  fireEvent.press(await screen.findByText('settings.contactUs'));
+
+  expect(navigation.navigate).toHaveBeenCalledWith('Contact');
+});
+
+describe('signing out', () => {
+  // Regression: it always asked "Log out?", although with nothing unsent there is nothing to lose.
+  it('signs out at once when there is nothing waiting to be sent', async () => {
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    renderScreen();
+
+    await act(async () => { fireEvent.press(await screen.findByText('profile.signOut')); });
+
+    expect(alertSpy).not.toHaveBeenCalled();
+    expect(clearDeviceSessionData).toHaveBeenCalled();
+    expect(mockDispatch).toHaveBeenCalled();
+  });
+
+  it('warns how many changes would be lost, and signs out only if it is confirmed', async () => {
+    mockUnsyncedChanges = [{ id: 'c1' }, { id: 'c2' }];
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    renderScreen();
+
+    await act(async () => { fireEvent.press(await screen.findByText('profile.signOut')); });
+
+    expect(alertSpy).toHaveBeenCalledWith('auth.confirmLogoutTitle', 'offline.logoutLosesChanges', expect.any(Array));
+    expect(clearDeviceSessionData).not.toHaveBeenCalled();
+
+    const [, , buttons] = alertSpy.mock.calls[0];
+    await act(async () => { await buttons.find((button) => button.style === 'destructive').onPress(); });
+
+    expect(clearDeviceSessionData).toHaveBeenCalled();
+  });
 });
