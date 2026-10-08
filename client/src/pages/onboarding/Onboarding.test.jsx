@@ -85,14 +85,14 @@ describe("Onboarding: how do you travel", () => {
     expect(await screen.findByText("van log opens the form")).toBeInTheDocument();
   });
 
-  it("starts someone who travels now and then with a trip, their countries and their profile", async () => {
+  it("starts someone who travels now and then with a trip, a packing list and their countries", async () => {
     renderOnboarding();
 
     await choose("occasional");
 
     expect(await screen.findByRole("link", { name: /onboarding.startTrip/ })).toHaveAttribute("href", "/create-itinerary");
     expect(screen.getByRole("link", { name: /onboarding.startPassport/ })).toHaveAttribute("href", "/profile/u1/passport");
-    expect(screen.getByRole("link", { name: /onboarding.startProfile/ })).toHaveAttribute("href", "/profile/edit/u1");
+    expect(screen.getByRole("link", { name: /onboarding.startPackingList/ })).toHaveAttribute("href", "/packing-checklist");
     expect(screen.queryByRole("link", { name: /onboarding.startExpense/ })).not.toBeInTheDocument();
   });
 

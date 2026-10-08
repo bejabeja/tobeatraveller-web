@@ -33,7 +33,7 @@ const PackingListTripModal = ({ trips, currentTripId = null, onClose, onSubmit }
           {trips.length === 0 ? (
             <Text style={styles.empty}>{p('noTripsToLink')}</Text>
           ) : (
-            <ScrollView contentContainerStyle={styles.body}>
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.body}>
               {[{ id: null, title: p('noTrip') }, ...trips].map((trip) => {
                 const selected = tripId === trip.id;
                 return (

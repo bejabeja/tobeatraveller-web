@@ -28,7 +28,7 @@ const TermsScreen = ({ navigation }) => {
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView contentContainerStyle={[styles.body, { paddingBottom: insets.bottom + 32 }]}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.body, { paddingBottom: insets.bottom + 32 }]}>
         <Text style={styles.meta}>{lt('lastUpdated', { date: '6 October 2026' })}</Text>
 
         <Section title={lt('s1Title')}>

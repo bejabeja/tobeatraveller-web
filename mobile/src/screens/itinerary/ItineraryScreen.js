@@ -160,7 +160,7 @@ const ItineraryScreen = ({ route, navigation }) => {
     );
   }, [targetCommentId, comments]);
 
-  if (loading) return <ScrollView style={styles.container}><ItineraryDetailSkeleton /></ScrollView>;
+  if (loading) return <ScrollView showsVerticalScrollIndicator={false} style={styles.container}><ItineraryDetailSkeleton /></ScrollView>;
   if (!itinerary) return (
     <View style={styles.errorScreen}>
       <TouchableOpacity

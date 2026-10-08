@@ -333,7 +333,7 @@ const PassportScreen = ({ navigation, route }) => {
           </TouchableOpacity>
         </>
       ) : (
-        <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}>
           {isOwner && <RecapBanner onPress={() => navigation.navigate('Recap', { from: RECAP_SOURCES.PASSPORT })} />}
 
           <View style={styles.cover}>

@@ -74,7 +74,7 @@ const PendingChangesScreen = ({ navigation }) => {
         <Text style={styles.desc}>{t('offline.screenDesc')}</Text>
       </View>
 
-      <FlatList
+      <FlatList showsVerticalScrollIndicator={false}
         data={changes}
         keyExtractor={change => change.id}
         renderItem={renderChange}

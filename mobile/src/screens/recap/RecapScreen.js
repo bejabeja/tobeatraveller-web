@@ -313,7 +313,7 @@ const RecapScreen = ({ navigation, route }) => {
       {closeButton}
 
       {isShareSlide ? (
-        <ScrollView contentContainerStyle={styles.shareContent}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.shareContent}>
           <Text style={styles.title}>{t('recap.shareTitle')}</Text>
           <StoryCardPreview cardRef={cardRef} previewWidth={PREVIEW_WIDTH}>
             <RecapShareCard summary={summarizeRecapForSharing(recap, owner?.username, { includePrivate })} t={t} />

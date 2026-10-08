@@ -96,7 +96,7 @@ const CountryPickerModal = ({ visible, onClose, onSaved, initialSelected = [], l
         />
         <Text style={styles.count} accessibilityLiveRegion="polite">{t('passport.pickerSelected', { count: markedCount })}</Text>
 
-        <FlatList
+        <FlatList showsVerticalScrollIndicator={false}
           data={codes}
           keyExtractor={code => code}
           renderItem={renderCountry}

@@ -30,7 +30,7 @@ const START_ACTIONS = {
   startChecklist: { emoji: '✅', screen: 'PackingChecklist' },
   startTrip: { emoji: '🗺️', screen: 'CreateItinerary' },
   startPassport: { emoji: '🛂', screen: 'Passport', params: (userId) => ({ userId }) },
-  startProfile: { emoji: '🙂', screen: 'EditProfile' },
+  startPackingList: { emoji: '🎒', screen: 'PackingChecklist' },
 };
 
 const OnboardingScreen = ({ navigation }) => {

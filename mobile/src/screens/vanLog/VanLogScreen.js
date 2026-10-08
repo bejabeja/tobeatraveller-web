@@ -561,9 +561,8 @@ const VanLogScreen = ({ navigation }) => {
               <TouchableOpacity
                 style={styles.entryBody}
                 activeOpacity={0.7}
-                disabled={!item.notes}
-                onPress={() => toggleExpanded(item.id)}
-                accessibilityState={{ expanded: isExpanded }}
+                onPress={() => navigation.navigate('VanLogEntryForm', { entry: item })}
+                accessibilityHint={t('common.edit')}
               >
                 <Text style={styles.entryTitle}>{item.title || categoryLabel(item.category)}</Text>
                 <Text style={styles.entryDetails}>{detailParts.join(' · ')}</Text>
@@ -587,9 +586,11 @@ const VanLogScreen = ({ navigation }) => {
                   </Text>
                 ) : null}
                 {item.notes && (isExpanded || truncatedNoteIds.has(item.id)) ? (
-                  <Text style={styles.entryNotesToggle}>
-                    {isExpanded ? t('vanLog.notesShowLess') : t('vanLog.notesShowMore')}
-                  </Text>
+                  <TouchableOpacity onPress={() => toggleExpanded(item.id)} accessibilityState={{ expanded: isExpanded }} accessibilityRole="button">
+                    <Text style={styles.entryNotesToggle}>
+                      {isExpanded ? t('vanLog.notesShowLess') : t('vanLog.notesShowMore')}
+                    </Text>
+                  </TouchableOpacity>
                 ) : null}
                 {item.itinerary?.title && !isGroupedByTrip ? (
                   <Text style={styles.entryTrip} numberOfLines={1}>🧭 {item.itinerary.title}</Text>

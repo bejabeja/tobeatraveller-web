@@ -85,12 +85,12 @@ describe('how do you travel', () => {
     expect(navigation.navigate).toHaveBeenLastCalledWith('PackingChecklist', undefined);
   });
 
-  it('starts someone who travels now and then with a trip, their countries and their profile', async () => {
+  it('starts someone who travels now and then with a trip, a packing list and their countries', async () => {
     const navigation = await renderScreen();
     await choose('occasional');
 
     expect(screen.getByText('onboarding.startTrip')).toBeTruthy();
-    expect(screen.getByText('onboarding.startProfile')).toBeTruthy();
+    expect(screen.getByText('onboarding.startPackingList')).toBeTruthy();
     expect(screen.queryByText('onboarding.startExpense')).toBeNull();
 
     fireEvent.press(screen.getByText('onboarding.startPassport'));

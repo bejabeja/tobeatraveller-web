@@ -28,7 +28,7 @@ const START_ACTIONS = {
   startChecklist: { emoji: "✅", path: () => "/packing-checklist" },
   startTrip: { emoji: "🗺️", path: () => "/create-itinerary" },
   startPassport: { emoji: "🛂", path: (userId) => `/profile/${userId}/passport` },
-  startProfile: { emoji: "🙂", path: (userId) => `/profile/edit/${userId}` },
+  startPackingList: { emoji: "🎒", path: () => "/packing-checklist" },
 };
 
 const Onboarding = () => {

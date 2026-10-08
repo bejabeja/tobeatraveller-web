@@ -45,7 +45,7 @@ const PackingItemFormModal = ({ item, categoryLabel, onClose, onSubmit }) => {
             </TouchableOpacity>
           </View>
 
-          <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
             <Text style={styles.label}>{p('itemName')}</Text>
             <TextInput
               style={[styles.input, nameMissing && styles.inputError]}

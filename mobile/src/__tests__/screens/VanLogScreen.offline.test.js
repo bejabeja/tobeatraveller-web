@@ -229,6 +229,17 @@ describe('filters', () => {
   });
 });
 
+// Regression: tapping an expense did nothing unless it had notes, and editing it was only behind the three dots.
+it('opens an expense to edit when it is tapped', async () => {
+  getVanLogEntries.mockResolvedValue([CACHED_ENTRY]);
+  const navigation = { navigate: jest.fn() };
+
+  await renderScreen(<VanLogScreen navigation={navigation} />);
+  fireEvent.press(await screen.findByText('Cached fuel stop'));
+
+  expect(navigation.navigate).toHaveBeenCalledWith('VanLogEntryForm', { entry: expect.objectContaining({ title: 'Cached fuel stop' }) });
+});
+
 describe('long notes', () => {
   const LONG_NOTES = 'Una nota muy larga sobre este gasto. '.repeat(20);
 

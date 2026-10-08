@@ -1512,8 +1512,6 @@
     "startTripHint": "Tes étapes, jour après jour, pour toi ou à partager.",
     "startPassport": "Indique les pays où tu es allé",
     "startPassportHint": "Ton passeport se remplit à chaque voyage.",
-    "startProfile": "Complète ton profil",
-    "startProfileHint": "Une photo et une bio pour qu'on te reconnaisse.",
     "follow": "Suivre",
     "following": "Abonné ✓",
     "continue": "Continuer →",
@@ -1529,7 +1527,9 @@
     "startSupplies": "Commence ta liste de provisions",
     "startSuppliesHint": "Ce que tu as à bord et ce qu'il te reste à acheter.",
     "startChecklist": "Fais ta liste d'avant le départ",
-    "startChecklistHint": "Pour que rien ne reste derrière quand tu pars."
+    "startChecklistHint": "Pour que rien ne reste derrière quand tu pars.",
+    "startPackingList": "Prépare ta liste de bagages",
+    "startPackingListHint": "Tout ce qu'il faut emporter, coché au fur et à mesure."
   },
   "travelStyle": {
     "question": "Comment voyages-tu ?",

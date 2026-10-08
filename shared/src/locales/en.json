@@ -1491,8 +1491,6 @@
     "startTripHint": "Your stops, day by day, for you or to share.",
     "startPassport": "Mark the countries you've been to",
     "startPassportHint": "Your passport fills up with every trip.",
-    "startProfile": "Complete your profile",
-    "startProfileHint": "A photo and a bio so people know you.",
     "follow": "Follow",
     "following": "Following ✓",
     "continue": "Continue →",
@@ -1508,7 +1506,9 @@
     "startSupplies": "Start your supplies list",
     "startSuppliesHint": "What you have on board and what you still need to buy.",
     "startChecklist": "Make your before-you-drive-off list",
-    "startChecklistHint": "So nothing stays behind when you leave."
+    "startChecklistHint": "So nothing stays behind when you leave.",
+    "startPackingList": "Make your packing list",
+    "startPackingListHint": "Everything to bring, ticked off as you pack."
   },
   "travelStyle": {
     "question": "How do you travel?",

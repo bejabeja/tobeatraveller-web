@@ -48,7 +48,7 @@ const ReportModal = ({ targetType, targetId, onClose, onSent }) => {
               <Ionicons name="close" size={22} color="#6b7280" />
             </TouchableOpacity>
           </View>
-          <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
             <Text style={styles.intro}>{t('report.intro')}</Text>
             <Text style={styles.label}>{t('report.reasonLabel')}</Text>
             {Object.values(REPORT_REASONS).map((value) => {

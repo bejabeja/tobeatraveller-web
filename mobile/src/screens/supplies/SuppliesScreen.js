@@ -423,7 +423,7 @@ const SuppliesScreen = ({ navigation }) => {
         </View>
       )}
 
-      <SectionList
+      <SectionList showsHorizontalScrollIndicator={false}
         sections={loading && !items.length
           ? [{ key: 'skeleton', category: null, data: Array.from({ length: 4 }, (_, i) => ({ id: `sk-${i}`, _skeleton: true })) }]
           : sections

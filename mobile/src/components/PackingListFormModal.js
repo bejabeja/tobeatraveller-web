@@ -69,7 +69,7 @@ const PackingListFormModal = ({
               </TouchableOpacity>
             </View>
           ) : (
-            <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
               {withTemplates && (
                 <>
                   <Text style={styles.label}>{p('startWith')}</Text>
