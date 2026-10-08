@@ -81,11 +81,13 @@ const ItineraryCard = ({ itinerary, user: userProp }) => {
         <button
           className={`btn__itinerary-card like-btn ${isLiked ? "active" : ""}`}
           onClick={handleToggleLike}
+          aria-label={t(isLiked ? "itinerary.unlike" : "itinerary.like")}
+          aria-pressed={isLiked}
         >
           {isLiked ? <FaHeart className="icon" /> : <FaRegHeart className="icon" />}
           <span>{likesCount}</span>
         </button>
-        <Link to={`/itinerary/${id}#comments`} className="btn__itinerary-card">
+        <Link to={`/itinerary/${id}#comments`} className="btn__itinerary-card" aria-label={`${t("comments.title")}: ${commentsCount}`}>
           <FaRegComment className="icon" />
           <span>{commentsCount}</span>
         </Link>

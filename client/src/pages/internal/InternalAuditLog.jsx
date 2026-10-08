@@ -93,6 +93,10 @@ const AUDIT_DESCRIPTIONS = {
     actor: entry.actorUsername, type: t(`report.targetType.${entry.metadata?.targetType}`),
     target: entry.targetUsername ?? entry.targetUserId,
   }),
+  content_reinstated_by_moderation: (entry, t) => t("admin.auditContentReinstated", {
+    actor: entry.actorUsername, type: t(`report.targetType.${entry.metadata?.targetType}`),
+    target: entry.targetUsername ?? entry.targetUserId,
+  }),
   reports_purged: (entry, t) => t("admin.auditReportsPurged", {
     months: entry.metadata?.months, deletedCount: entry.metadata?.deletedCount, trigger: entry.metadata?.trigger,
   }),

@@ -17,6 +17,9 @@ const toReport = (row) => ({
     resolvedBy: row.resolved_by,
     resolvedAt: row.resolved_at,
     resolutionNote: row.resolution_note,
+    reinstatedBy: row.reinstated_by,
+    reinstatedAt: row.reinstated_at,
+    reinstatementNote: row.reinstatement_note,
     createdAt: row.created_at,
 });
 
@@ -79,7 +82,29 @@ export class ContentReportsRepository {
     return result.rowCount > 0;
   }
 
+  // Only a removal can be taken back, and only once: two people from the team must not both act on it.
+  async reinstate(reportId, { reinstatedBy, note }) {
+    const result = await client.query(
+      `UPDATE content_reports
+       SET status = $2, reinstated_by = $3, reinstatement_note = $4, reinstated_at = NOW()
+       WHERE id = $1 AND status = $5
+       RETURNING id`,
+      [reportId, REPORT_STATUSES.REINSTATED, reinstatedBy, note ?? null, REPORT_STATUSES.REMOVED]
+    );
+    return result.rowCount > 0;
+  }
+
+  // The comments hidden by the reports being purged go with them: a removal is not kept past its retention.
   async deleteResolvedOlderThan(months) {
+    await client.query(
+      `DELETE FROM itinerary_comments
+       WHERE moderation_hidden_at IS NOT NULL
+         AND id IN (
+           SELECT target_id FROM content_reports
+           WHERE target_type = 'comment' AND status = $1 AND resolved_at < NOW() - make_interval(months => $2)
+         )`,
+      [REPORT_STATUSES.REMOVED, months]
+    );
     const result = await client.query(
       `DELETE FROM content_reports
        WHERE status != $1 AND resolved_at < NOW() - make_interval(months => $2)`,

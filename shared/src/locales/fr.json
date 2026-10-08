@@ -422,7 +422,8 @@
       "open": "Ouvert",
       "removed": "Retiré",
       "dismissed": "Rejeté",
-      "resolved": "Résolu"
+      "resolved": "Résolu",
+      "reinstated": "Rétabli"
     },
     "reportBy": "Signalé par {{name}}",
     "reportAbout": "À propos d'un {{type}} de {{owner}}",
@@ -531,7 +532,10 @@
     "sendNoticePlaceholder": "Écris le message que cet utilisateur recevra...",
     "noticeSent": "Avis envoyé",
     "noticeSendError": "Impossible d'envoyer l'avis. Réessaie.",
-    "auditEmailVerified": "{{actor}} a confirmé son e-mail"
+    "auditEmailVerified": "{{actor}} a confirmé son e-mail",
+    "reportReinstate": "Rétablir",
+    "reportReinstated": "Rétabli, et son auteur prévenu",
+    "auditContentReinstated": "{{actor}} a rétabli un {{type}} de {{target}}"
   },
   "profile": {
     "shareProfile": "Partager le profil",
@@ -1461,7 +1465,8 @@
     "passwordSameAsCurrent": "Le nouveau mot de passe doit être différent de l'actuel",
     "imageTooLarge": "L'image doit faire moins de 5 Mo",
     "termsRequired": "Tu dois accepter les Conditions et la Politique de confidentialité",
-    "ageRequired": "Tu dois confirmer avoir au moins 16 ans"
+    "ageRequired": "Tu dois confirmer avoir au moins 16 ans",
+    "reportNotRemoved": "Seul un retrait peut être rétabli, et une seule fois"
   },
   "errors": {
     "title": "Un problème est survenu",

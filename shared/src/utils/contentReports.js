@@ -19,6 +19,7 @@ export const REPORT_STATUSES = Object.freeze({
     REMOVED: 'removed',
     DISMISSED: 'dismissed',
     RESOLVED: 'resolved',
+    REINSTATED: 'reinstated',
 });
 
 export const REPORT_DECISIONS = Object.freeze({

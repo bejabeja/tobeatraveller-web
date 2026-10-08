@@ -8,6 +8,7 @@ import { accountDeletedTemplate } from '../../emails/templates/accountDeleted.js
 import { contactConfirmationTemplate } from '../../emails/templates/contactConfirmation.js';
 import { contactTemplate } from '../../emails/templates/contact.js';
 import { contactSchema } from '../../utils/schemasValidation.js';
+import { contentReinstatedTemplate } from '../../emails/templates/contentReinstated.js';
 import { contentRemovedTemplate } from '../../emails/templates/contentRemoved.js';
 import { reportDecisionTemplate } from '../../emails/templates/reportDecision.js';
 import { reportReceivedTemplate } from '../../emails/templates/reportReceived.js';
@@ -32,6 +33,7 @@ const USER_EMAILS = {
     reportReceived: (language) => reportReceivedTemplate({ username: 'ana', targetType: 'comment', language }),
     reportDecision: (language) => reportDecisionTemplate({ username: 'ana', targetType: 'comment', outcome: 'removed', language }),
     contentRemoved: (language) => contentRemovedTemplate({ username: 'ana', targetType: 'comment', reason: 'spam', excerpt: 'hola', language }),
+    contentReinstated: (language) => contentReinstatedTemplate({ username: 'ana', targetType: 'itinerary', excerpt: 'hola', language }),
 };
 
 // Every key, nested ones included, as "a.b.c"; arrays by index.

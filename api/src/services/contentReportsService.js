@@ -108,6 +108,38 @@ export class ContentReportsService {
         });
     }
 
+    // What the team takes back: the content returns, and its author is told. A trip only
+    // stops being banned from publishing; it stays private until its owner publishes it.
+    async reinstateReport(reportId, staff, { note } = {}) {
+        const report = await this.contentReportsRepository.findById(reportId);
+        if (!report) throw new NotFoundError('Report not found');
+        if (report.status !== REPORT_STATUSES.REMOVED) {
+            throw new ConflictError('validation.reportNotRemoved');
+        }
+
+        await this._restoreTarget(report);
+
+        const reinstated = await this.contentReportsRepository.reinstate(reportId, { reinstatedBy: staff.id, note });
+        if (!reinstated) {
+            throw new ConflictError('validation.reportNotRemoved');
+        }
+
+        if (report.targetOwnerId) {
+            this._notify(report.targetOwnerId, (user) => this.emailService.sendContentReinstated({
+                username: user.username, email: user.email, targetType: report.targetType, excerpt: report.targetExcerpt, language: user.language,
+            }));
+        }
+
+        this.auditLogService?.log({
+            actorId: staff.id,
+            actorUsername: staff.username,
+            action: AUDIT_EVENTS.CONTENT_REINSTATED_BY_MODERATION,
+            targetUserId: report.targetOwnerId,
+            targetUsername: report.targetOwnerUsername,
+            metadata: { reportId, targetType: report.targetType, targetId: report.targetId },
+        });
+    }
+
     async purgeResolved({ trigger = 'manual', actorUsername = null } = {}) {
         const deletedCount = await this.contentReportsRepository.deleteResolvedOlderThan(REPORT_RETENTION_MONTHS);
         this.auditLogService?.log({
@@ -150,11 +182,19 @@ export class ContentReportsService {
 
     async _removeTarget(report) {
         if (report.targetType === REPORT_TARGET_TYPES.COMMENT) {
-            await this.commentsRepository.deleteComment(report.targetId);
+            await this.commentsRepository.hideForModeration(report.targetId);
         } else if (report.targetType === REPORT_TARGET_TYPES.ITINERARY) {
             await this.itineraryRepository.hideForModeration(report.targetId);
         } else {
             throw new ValidationError('validation.reportCannotRemoveUser');
+        }
+    }
+
+    async _restoreTarget(report) {
+        if (report.targetType === REPORT_TARGET_TYPES.COMMENT) {
+            await this.commentsRepository.restoreAfterModeration(report.targetId);
+        } else if (report.targetType === REPORT_TARGET_TYPES.ITINERARY) {
+            await this.itineraryRepository.restoreAfterModeration(report.targetId);
         }
     }
 }

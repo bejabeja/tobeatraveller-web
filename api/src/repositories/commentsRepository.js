@@ -42,7 +42,7 @@ export class CommentsRepository {
             u.avatar_url
           FROM itinerary_comments ic
           JOIN users u ON ic.user_id = u.id
-          WHERE ic.itinerary_id = $1 ${blockedFilter}
+          WHERE ic.itinerary_id = $1 AND ic.moderation_hidden_at IS NULL ${blockedFilter}
           ORDER BY ic.created_at ASC, ic.id ASC
           LIMIT $2 OFFSET $3;
         `;
@@ -53,7 +53,7 @@ export class CommentsRepository {
   async countByItinerary(itineraryId, viewerId = null) {
     const result = await client.query(
       `SELECT COUNT(*)::int AS count FROM itinerary_comments ic
-       WHERE ic.itinerary_id = $1 ${viewerId ? `AND ${notBlockedWithViewer('$2', 'ic.user_id')}` : ''}`,
+       WHERE ic.itinerary_id = $1 AND ic.moderation_hidden_at IS NULL ${viewerId ? `AND ${notBlockedWithViewer('$2', 'ic.user_id')}` : ''}`,
       viewerId ? [itineraryId, viewerId] : [itineraryId]
     );
     return result.rows[0].count;
@@ -77,10 +77,39 @@ export class CommentsRepository {
           SELECT ic.*, u.username, u.avatar_url
           FROM itinerary_comments ic
           JOIN users u ON ic.user_id = u.id
-          WHERE ic.id = $1;
+          WHERE ic.id = $1 AND ic.moderation_hidden_at IS NULL;
         `;
     const result = await client.query(query, [commentId]);
     return result.rows[0] ? Comment.fromDB(result.rows[0]) : null;
   }
 
+  // A comment taken down after a report stays in the table, out of sight, so it can be put back.
+  async hideForModeration(commentId) {
+    const result = await client.query(
+      `UPDATE itinerary_comments SET moderation_hidden_at = NOW()
+       WHERE id = $1 AND moderation_hidden_at IS NULL RETURNING itinerary_id`,
+      [commentId]
+    );
+    if (result.rows[0]) {
+      await client.query(
+        `UPDATE itineraries SET comments_count = GREATEST(comments_count - 1, 0) WHERE id = $1`,
+        [result.rows[0].itinerary_id]
+      );
+    }
+  }
+
+  async restoreAfterModeration(commentId) {
+    const result = await client.query(
+      `UPDATE itinerary_comments SET moderation_hidden_at = NULL
+       WHERE id = $1 AND moderation_hidden_at IS NOT NULL RETURNING itinerary_id`,
+      [commentId]
+    );
+    if (result.rows[0]) {
+      await client.query(
+        `UPDATE itineraries SET comments_count = comments_count + 1 WHERE id = $1`,
+        [result.rows[0].itinerary_id]
+      );
+    }
+    return result.rowCount > 0;
+  }
 }

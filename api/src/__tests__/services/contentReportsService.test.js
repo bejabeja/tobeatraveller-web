@@ -28,14 +28,18 @@ describe('ContentReportsService', () => {
             findPage: vi.fn(),
             resolve: vi.fn().mockResolvedValue(true),
             deleteResolvedOlderThan: vi.fn().mockResolvedValue(3),
+            reinstate: vi.fn().mockResolvedValue(true),
         };
         commentsRepository = {
             getCommentById: vi.fn().mockResolvedValue({ id: 'comment-1', content: 'spam spam', itineraryId: 'itin-1', user: { id: 'author-1' } }),
             deleteComment: vi.fn().mockResolvedValue(),
+            hideForModeration: vi.fn().mockResolvedValue(),
+            restoreAfterModeration: vi.fn().mockResolvedValue(true),
         };
         itineraryRepository = {
             findById: vi.fn().mockResolvedValue({ id: 'itin-1', userId: 'author-1', title: 'A trip', isPublic: true }),
             hideForModeration: vi.fn().mockResolvedValue(),
+            restoreAfterModeration: vi.fn().mockResolvedValue(true),
         };
         userRepository = {
             getUserById: vi.fn(async (id) => ({ id, username: id, email: `${id}@example.test`, language: 'es' })),
@@ -45,6 +49,7 @@ describe('ContentReportsService', () => {
             sendReportReceived: vi.fn().mockResolvedValue(),
             sendReportDecision: vi.fn().mockResolvedValue(),
             sendContentRemoved: vi.fn().mockResolvedValue(),
+            sendContentReinstated: vi.fn().mockResolvedValue(),
         };
         service = new ContentReportsService(contentReportsRepository, commentsRepository, itineraryRepository, userRepository, auditLogService, emailService);
     });
@@ -201,12 +206,13 @@ describe('ContentReportsService', () => {
     });
 
     describe('decideReport()', () => {
-        it('deletes a reported comment, marks the report as removed and audits who decided', async () => {
+        it('hides a reported comment, marks the report as removed and audits who decided', async () => {
             contentReportsRepository.findById.mockResolvedValue(openReport({ targetOwnerUsername: 'bob' }));
 
             await service.decideReport('report-1', STAFF, { decision: 'remove', note: 'spam' });
 
-            expect(commentsRepository.deleteComment).toHaveBeenCalledWith('comment-1');
+            expect(commentsRepository.hideForModeration).toHaveBeenCalledWith('comment-1');
+            expect(commentsRepository.deleteComment).not.toHaveBeenCalled();
             expect(contentReportsRepository.resolve).toHaveBeenCalledWith('report-1', { status: 'removed', resolvedBy: 'staff-1', resolutionNote: 'spam' });
             expect(auditLogService.log).toHaveBeenCalledWith(expect.objectContaining({
                 action: AUDIT_EVENTS.CONTENT_REMOVED_BY_MODERATION, actorId: 'staff-1', targetUserId: 'author-1', targetUsername: 'bob',
@@ -233,7 +239,7 @@ describe('ContentReportsService', () => {
 
             await service.decideReport('report-1', STAFF, { decision: 'dismiss' });
 
-            expect(commentsRepository.deleteComment).not.toHaveBeenCalled();
+            expect(commentsRepository.hideForModeration).not.toHaveBeenCalled();
             expect(contentReportsRepository.resolve).toHaveBeenCalledWith('report-1', expect.objectContaining({ status: 'dismissed' }));
             expect(auditLogService.log).toHaveBeenCalledWith(expect.objectContaining({ action: AUDIT_EVENTS.REPORT_RESOLVED }));
         });
@@ -248,7 +254,7 @@ describe('ContentReportsService', () => {
             contentReportsRepository.findById.mockResolvedValue(openReport({ status: 'dismissed' }));
 
             await expect(service.decideReport('report-1', STAFF, { decision: 'remove' })).rejects.toBeInstanceOf(ConflictError);
-            expect(commentsRepository.deleteComment).not.toHaveBeenCalled();
+            expect(commentsRepository.hideForModeration).not.toHaveBeenCalled();
         });
 
         it('throws ConflictError and does not audit when someone else decided it first', async () => {
@@ -256,6 +262,66 @@ describe('ContentReportsService', () => {
             contentReportsRepository.resolve.mockResolvedValue(false);
 
             await expect(service.decideReport('report-1', STAFF, { decision: 'dismiss' })).rejects.toBeInstanceOf(ConflictError);
+            expect(auditLogService.log).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('reinstateReport()', () => {
+        const removedReport = (overrides = {}) => openReport({ status: 'removed', targetOwnerId: 'author-1', targetOwnerUsername: 'bob', ...overrides });
+
+        beforeEach(() => contentReportsRepository.findById.mockResolvedValue(removedReport()));
+
+        it('puts a removed comment back, marks the report as reinstated and audits who did it', async () => {
+            await service.reinstateReport('report-1', STAFF, { note: 'Our mistake' });
+
+            expect(commentsRepository.restoreAfterModeration).toHaveBeenCalledWith('comment-1');
+            expect(contentReportsRepository.reinstate).toHaveBeenCalledWith('report-1', { reinstatedBy: 'staff-1', note: 'Our mistake' });
+            expect(auditLogService.log).toHaveBeenCalledWith(expect.objectContaining({
+                action: AUDIT_EVENTS.CONTENT_REINSTATED_BY_MODERATION, actorId: 'staff-1', targetUserId: 'author-1', targetUsername: 'bob',
+            }));
+        });
+
+        it('lifts the ban on a removed trip, which its owner then publishes again if they like', async () => {
+            contentReportsRepository.findById.mockResolvedValue(removedReport({ targetType: 'itinerary', targetId: 'itin-1' }));
+
+            await service.reinstateReport('report-1', STAFF, {});
+
+            expect(itineraryRepository.restoreAfterModeration).toHaveBeenCalledWith('itin-1');
+            expect(commentsRepository.restoreAfterModeration).not.toHaveBeenCalled();
+        });
+
+        it('tells the author, in their language, that it was put back', async () => {
+            await service.reinstateReport('report-1', STAFF, {});
+
+            expect(emailService.sendContentReinstated).toHaveBeenCalledWith(expect.objectContaining({
+                email: 'author-1@example.test', targetType: 'comment', language: 'es',
+            }));
+        });
+
+        it('does not fail when the email cannot be sent', async () => {
+            emailService.sendContentReinstated.mockRejectedValue(new Error('smtp down'));
+
+            await expect(service.reinstateReport('report-1', STAFF, {})).resolves.toBeUndefined();
+        });
+
+        it.each(['open', 'dismissed', 'resolved', 'reinstated'])('cannot reinstate a report that is %s, since nothing was removed', async (status) => {
+            contentReportsRepository.findById.mockResolvedValue(removedReport({ status }));
+
+            await expect(service.reinstateReport('report-1', STAFF, {})).rejects.toBeInstanceOf(ConflictError);
+            expect(commentsRepository.restoreAfterModeration).not.toHaveBeenCalled();
+        });
+
+        it('throws NotFoundError when the report does not exist', async () => {
+            contentReportsRepository.findById.mockResolvedValue(null);
+
+            await expect(service.reinstateReport('missing', STAFF, {})).rejects.toBeInstanceOf(NotFoundError);
+        });
+
+        it('throws ConflictError and tells nobody when someone else reinstated it first', async () => {
+            contentReportsRepository.reinstate.mockResolvedValue(false);
+
+            await expect(service.reinstateReport('report-1', STAFF, {})).rejects.toBeInstanceOf(ConflictError);
+            expect(emailService.sendContentReinstated).not.toHaveBeenCalled();
             expect(auditLogService.log).not.toHaveBeenCalled();
         });
     });

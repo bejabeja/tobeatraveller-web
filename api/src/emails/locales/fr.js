@@ -163,4 +163,16 @@ export const fr = {
         redress: "Si tu penses que nous nous sommes trompés, réponds à cet e-mail et nous le réexaminerons. Tu peux aussi t'adresser à l'autorité compétente ou aux tribunaux.",
         footer: "Tu reçois cet e-mail parce qu'un de tes contenus a été retiré sur ToBeATraveller.",
     },
+    contentReinstated: {
+        subject: "Nous avons rétabli ton contenu",
+        title: "Contenu rétabli",
+        preheader: "Nous l'avons réexaminé et il est de retour.",
+        headline: (name) => `Bonjour ${name}`,
+        intro: (type) => `Nous avons réexaminé le contenu de ta part (${type}) que nous avions retiré, et nous avons décidé qu'il n'enfreint pas nos règles.`,
+        contentLabel: "Le contenu",
+        restorationLabel: "Ce que nous avons fait",
+        restoration: {"comment": "Le commentaire est de nouveau visible sur ToBeATraveller.", "itinerary": "Le voyage n'est plus bloqué. Il reste privé jusqu'à ce que tu décides de le rendre de nouveau public."},
+        sorry: "Nous sommes désolés pour la gêne occasionnée.",
+        footer: "Tu reçois ceci parce qu'un contenu de ta part a été rétabli sur ToBeATraveller.",
+    },
 };

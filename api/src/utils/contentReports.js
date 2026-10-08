@@ -19,6 +19,7 @@ export const REPORT_STATUSES = Object.freeze({
     REMOVED: 'removed',
     DISMISSED: 'dismissed',
     RESOLVED: 'resolved',
+    REINSTATED: 'reinstated',
 });
 
 // What the team decides on a report. "resolve" is for when the action was taken

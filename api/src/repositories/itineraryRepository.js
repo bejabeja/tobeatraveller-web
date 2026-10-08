@@ -48,6 +48,15 @@ export class ItineraryRepository {
     );
   }
 
+  // Lifts the ban on publishing: it stays private until its owner chooses to publish it again.
+  async restoreAfterModeration(itineraryId) {
+    const result = await client.query(
+      `UPDATE itineraries SET moderation_hidden_at = NULL WHERE id = $1 AND moderation_hidden_at IS NOT NULL`,
+      [itineraryId]
+    );
+    return result.rowCount > 0;
+  }
+
   async findPublicSitemapEntries() {
     const result = await client.query(`
       SELECT i.id, i.updated_at

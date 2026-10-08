@@ -6,7 +6,7 @@ import { REPORT_DECISIONS, REPORT_STATUSES, REPORT_TARGET_TYPES } from "@tobeatr
 import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState";
 import LoadingButton from "../../components/LoadingButton";
 import Spinner from "../../components/spinner/Spinner";
-import { decideReport, getReports } from "../../services/contentReports";
+import { decideReport, getReports, reinstateReport } from "../../services/contentReports";
 import "./InternalReports.scss";
 
 const PAGE_SIZE = 20;
@@ -66,6 +66,19 @@ const InternalReports = () => {
     }
   };
 
+  const reinstate = async (report) => {
+    setDeciding(report.id);
+    try {
+      await reinstateReport(report.id, { note: notes[report.id] });
+      toast.success(t("admin.reportReinstated"));
+      load();
+    } catch (reinstateError) {
+      toast.error(reinstateError.message || t("admin.reportDecideError"));
+    } finally {
+      setDeciding(null);
+    }
+  };
+
   const filterButton = (value, label) => (
     <button
       type="button"
@@ -94,6 +107,7 @@ const InternalReports = () => {
         <ul className="internal-reports__list">
           {reports.map((report) => {
             const isOpen = report.status === REPORT_STATUSES.OPEN;
+            const canReinstate = report.status === REPORT_STATUSES.REMOVED && report.targetType !== REPORT_TARGET_TYPES.USER;
             const path = targetPath(report);
             return (
               <li key={report.id} className="internal-reports__item">
@@ -112,6 +126,25 @@ const InternalReports = () => {
                 {report.details && <p className="internal-reports__details">{report.details}</p>}
                 <p className="internal-reports__reporter">{t("admin.reportBy", { name: `@${report.reporterUsername ?? "?"}` })}</p>
                 {report.resolutionNote && <p className="internal-reports__details">{report.resolutionNote}</p>}
+                {report.reinstatementNote && <p className="internal-reports__details">{report.reinstatementNote}</p>}
+
+                {canReinstate && (
+                  <div className="internal-reports__decide">
+                    <label>
+                      <span>{t("admin.reportNoteLabel")}</span>
+                      <input
+                        type="text"
+                        value={notes[report.id] ?? ""}
+                        onChange={(event) => setNotes((current) => ({ ...current, [report.id]: event.target.value }))}
+                      />
+                    </label>
+                    <div className="internal-reports__buttons">
+                      <button type="button" className="btn btn--secondary" disabled={deciding === report.id} onClick={() => reinstate(report)}>
+                        {t("admin.reportReinstate")}
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 {isOpen && (
                   <div className="internal-reports__decide">

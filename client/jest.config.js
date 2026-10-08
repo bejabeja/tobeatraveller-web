@@ -5,6 +5,10 @@ const babelrcPath = path.join(path.dirname(fileURLToPath(import.meta.url)), ".ba
 
 export default {
     testEnvironment: "jest-environment-jsdom",
+    // The default 5 s is not enough for the heavy pages (settings, passport) when the whole suite runs at once.
+    testTimeout: 15000,
+    // Running every file at once starved the heavy pages of CPU: half the cores keep the whole suite steady.
+    maxWorkers: "50%",
     setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
     moduleNameMapper: {
         "\\.(gif|ttf|eot|svg|png)$": "<rootDir>/test/__mocks__/fileMock.js",

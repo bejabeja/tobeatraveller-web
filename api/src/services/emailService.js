@@ -3,6 +3,7 @@ import { accountDeletedTemplate } from '../emails/templates/accountDeleted.js';
 import { auditLogFailureTemplate } from '../emails/templates/auditLogFailure.js';
 import { contactConfirmationTemplate } from '../emails/templates/contactConfirmation.js';
 import { contentRemovedTemplate } from '../emails/templates/contentRemoved.js';
+import { contentReinstatedTemplate } from '../emails/templates/contentReinstated.js';
 import { contactTemplate } from '../emails/templates/contact.js';
 import { passwordChangedTemplate } from '../emails/templates/passwordChanged.js';
 import { passwordResetTemplate } from '../emails/templates/passwordReset.js';
@@ -116,6 +117,11 @@ export class EmailService {
 
     async sendContentRemoved({ username, email, targetType, reason, excerpt, language }) {
         const { subject, html } = contentRemovedTemplate({ username, targetType, reason, excerpt, language });
+        await this._send({ to: email, subject, html, replyTo: this.contactRecipientEmail });
+    }
+
+    async sendContentReinstated({ username, email, targetType, excerpt, language }) {
+        const { subject, html } = contentReinstatedTemplate({ username, targetType, excerpt, language });
         await this._send({ to: email, subject, html, replyTo: this.contactRecipientEmail });
     }
 

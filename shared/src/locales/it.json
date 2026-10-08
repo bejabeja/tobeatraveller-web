@@ -422,7 +422,8 @@
       "open": "Aperta",
       "removed": "Rimosso",
       "dismissed": "Respinta",
-      "resolved": "Risolta"
+      "resolved": "Risolta",
+      "reinstated": "Ripristinato"
     },
     "reportBy": "Segnalato da {{name}}",
     "reportAbout": "Su un {{type}} di {{owner}}",
@@ -531,7 +532,10 @@
     "sendNoticePlaceholder": "Scrivi il messaggio che questo utente riceverà...",
     "noticeSent": "Avviso inviato",
     "noticeSendError": "Impossibile inviare l'avviso. Riprova.",
-    "auditEmailVerified": "{{actor}} ha confermato la sua e-mail"
+    "auditEmailVerified": "{{actor}} ha confermato la sua e-mail",
+    "reportReinstate": "Ripristina",
+    "reportReinstated": "Ripristinato, e l'autore avvisato",
+    "auditContentReinstated": "{{actor}} ha ripristinato un {{type}} di {{target}}"
   },
   "profile": {
     "shareProfile": "Condividi profilo",
@@ -1461,7 +1465,8 @@
     "passwordSameAsCurrent": "La nuova password deve essere diversa da quella attuale",
     "imageTooLarge": "L'immagine deve pesare meno di 5 MB",
     "termsRequired": "Devi accettare i Termini e l'Informativa sulla privacy",
-    "ageRequired": "Devi confermare di avere almeno 16 anni"
+    "ageRequired": "Devi confermare di avere almeno 16 anni",
+    "reportNotRemoved": "Si può ripristinare solo una rimozione, e una sola volta"
   },
   "errors": {
     "title": "Qualcosa è andato storto",

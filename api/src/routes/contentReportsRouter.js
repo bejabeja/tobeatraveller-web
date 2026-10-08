@@ -32,6 +32,7 @@ export const createContentReportsRouter = () => {
     router.post("/", authenticate, perUserReportRateLimit, contentReportsController.submitReport.bind(contentReportsController));
     router.get("/", authenticate, staffOnly, contentReportsController.listReports.bind(contentReportsController));
     router.patch("/:reportId", authenticate, staffOnly, contentReportsController.decideReport.bind(contentReportsController));
+    router.patch("/:reportId/reinstate", authenticate, staffOnly, contentReportsController.reinstateReport.bind(contentReportsController));
 
     return router;
 };

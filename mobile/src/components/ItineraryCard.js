@@ -69,6 +69,9 @@ const ItineraryCard = ({ itinerary, onPress, onRequestLogin, compact = false }) 
         onPress={handleLike}
         activeOpacity={0.75}
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        accessibilityRole="button"
+        accessibilityLabel={t(isLiked ? 'itinerary.unlike' : 'itinerary.like')}
+        accessibilityState={{ selected: isLiked }}
       >
         <Ionicons
           name={isLiked ? 'heart' : 'heart-outline'}
@@ -114,7 +117,7 @@ const ItineraryCard = ({ itinerary, onPress, onRequestLogin, compact = false }) 
               </View>
             )}
             {(itinerary.commentsCount ?? 0) > 0 && (
-              <View style={styles.metaItem}>
+              <View style={styles.metaItem} accessible accessibilityLabel={`${t('comments.title')}: ${itinerary.commentsCount}`}>
                 <Ionicons name="chatbubble-outline" size={10} color="rgba(255,255,255,0.7)" />
                 <Text style={styles.metaText}>{itinerary.commentsCount}</Text>
               </View>

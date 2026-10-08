@@ -38,3 +38,16 @@ export const decideReport = async (reportId, { decision, note }) => {
     }
     return null;
 };
+
+// Team only: gives back what a removal took, when it turns out the person was right.
+export const reinstateReport = async (reportId, { note } = {}) => {
+    const response = await authFetch(`${baseUrl()}/${reportId}/reinstate`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ note: note?.trim() || undefined }),
+    });
+    if (!response.ok) {
+        await parseError(response, 'Failed to reinstate the content');
+    }
+    return null;
+};

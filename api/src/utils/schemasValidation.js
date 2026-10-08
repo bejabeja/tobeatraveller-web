@@ -274,6 +274,10 @@ export const reportDecisionSchema = z.object({
     note: z.string().trim().max(REPORT_DETAILS_MAX_LENGTH, "validation.tooLong").optional(),
 });
 
+export const reportReinstatementSchema = z.object({
+    note: z.string().trim().max(REPORT_DETAILS_MAX_LENGTH, "validation.tooLong").optional(),
+});
+
 export const userIdParamSchema = z.string().uuid("Invalid user id");
 
 const ISO_COUNTRY_CODE_SET = new Set(ISO_COUNTRY_CODES);

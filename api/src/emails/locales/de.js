@@ -163,4 +163,16 @@ export const de = {
         redress: "Wenn du meinst, dass wir uns geirrt haben, antworte auf diese E-Mail und wir sehen es uns erneut an. Du kannst dich auch an die zuständige Behörde oder an die Gerichte wenden.",
         footer: "Du erhältst diese E-Mail, weil Inhalte von dir auf ToBeATraveller entfernt wurden.",
     },
+    contentReinstated: {
+        subject: "Wir haben deinen Inhalt wiederhergestellt",
+        title: "Inhalt wiederhergestellt",
+        preheader: "Wir haben ihn noch einmal geprüft und er ist wieder da.",
+        headline: (name) => `Hallo ${name}`,
+        intro: (type) => `Wir haben deinen Inhalt (${type}), den wir entfernt hatten, noch einmal geprüft und entschieden, dass er nicht gegen unsere Regeln verstößt.`,
+        contentLabel: "Der Inhalt",
+        restorationLabel: "Was wir getan haben",
+        restoration: {"comment": "Der Kommentar ist auf ToBeATraveller wieder sichtbar.", "itinerary": "Die Reise ist nicht mehr gesperrt. Sie bleibt privat, bis du sie wieder öffentlich machen möchtest."},
+        sorry: "Es tut uns leid für die Umstände.",
+        footer: "Du erhältst das, weil ein Inhalt von dir auf ToBeATraveller wiederhergestellt wurde.",
+    },
 };

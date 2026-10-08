@@ -165,4 +165,16 @@ export const en = {
         redress: "If you think we got it wrong, reply to this email and we will look at it again. You can also turn to the competent authority or the courts.",
         footer: "You received this because content of yours was removed on ToBeATraveller.",
     },
+    contentReinstated: {
+        subject: "We put your content back",
+        title: "Content restored",
+        preheader: "We looked at it again and it is back.",
+        headline: (name) => `Hello, ${name}`,
+        intro: (type) => `We looked again at the content of yours (${type}) that we had removed, and we decided it does not break our rules.`,
+        contentLabel: "The content",
+        restorationLabel: "What we did",
+        restoration: {"comment": "The comment is visible again on ToBeATraveller.", "itinerary": "The trip is no longer blocked. It stays private until you decide to make it public again."},
+        sorry: "We are sorry for the trouble.",
+        footer: "You received this because content of yours was put back on ToBeATraveller.",
+    },
 };

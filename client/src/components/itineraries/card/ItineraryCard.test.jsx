@@ -39,3 +39,13 @@ describe("ItineraryCard by van", () => {
     expect(screen.queryByTitle("tripByVan.label")).not.toBeInTheDocument();
   });
 });
+
+// Regression-in-waiting: the heart and the speech bubble were announced as just a number.
+describe("ItineraryCard actions", () => {
+  it("says what the heart and the comments count are for", () => {
+    renderCard({ ...TRIP, commentsCount: 3 });
+
+    expect(screen.getByRole("button", { name: "itinerary.like" })).toHaveAttribute("aria-pressed", "false");
+    expect(screen.getByRole("link", { name: "comments.title: 3" })).toBeInTheDocument();
+  });
+});

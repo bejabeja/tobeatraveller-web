@@ -416,7 +416,8 @@
       "open": "Offen",
       "removed": "Entfernt",
       "dismissed": "Abgelehnt",
-      "resolved": "Erledigt"
+      "resolved": "Erledigt",
+      "reinstated": "Wiederhergestellt"
     },
     "reportBy": "Gemeldet von {{name}}",
     "reportAbout": "Zu einem {{type}} von {{owner}}",
@@ -522,7 +523,10 @@
     "sendNoticePlaceholder": "Schreibe die Nachricht, die dieser Nutzer erhält...",
     "noticeSent": "Mitteilung gesendet",
     "noticeSendError": "Die Mitteilung konnte nicht gesendet werden. Bitte versuche es erneut.",
-    "auditEmailVerified": "{{actor}} hat die E-Mail bestätigt"
+    "auditEmailVerified": "{{actor}} hat die E-Mail bestätigt",
+    "reportReinstate": "Wiederherstellen",
+    "reportReinstated": "Wiederhergestellt, und der Autor informiert",
+    "auditContentReinstated": "{{actor}} hat einen {{type}} von {{target}} wiederhergestellt"
   },
   "profile": {
     "shareProfile": "Profil teilen",
@@ -1440,7 +1444,8 @@
     "passwordSameAsCurrent": "Das neue Passwort muss sich vom aktuellen unterscheiden",
     "imageTooLarge": "Das Bild muss kleiner als 5 MB sein",
     "termsRequired": "Du musst die Nutzungsbedingungen und die Datenschutzerklärung akzeptieren",
-    "ageRequired": "Du musst bestätigen, dass du mindestens 16 Jahre alt bist"
+    "ageRequired": "Du musst bestätigen, dass du mindestens 16 Jahre alt bist",
+    "reportNotRemoved": "Nur eine Entfernung kann wiederhergestellt werden, und nur einmal"
   },
   "errors": {
     "title": "Etwas ist schiefgelaufen",

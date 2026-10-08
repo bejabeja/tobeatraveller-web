@@ -34,5 +34,6 @@ export const AUDIT_EVENTS = Object.freeze({
     CONTENT_REPORTED: 'content_reported',
     REPORT_RESOLVED: 'report_resolved',
     CONTENT_REMOVED_BY_MODERATION: 'content_removed_by_moderation',
+    CONTENT_REINSTATED_BY_MODERATION: 'content_reinstated_by_moderation',
     REPORTS_PURGED: 'reports_purged',
 });

@@ -61,3 +61,11 @@ it('marks nothing on a trip that was not', async () => {
 
   expect(screen.queryByLabelText('tripByVan.label')).toBeNull();
 });
+
+// Regression-in-waiting: the heart and the speech bubble were read out as just a number.
+it('says what the heart and the comments count are for', async () => {
+  await renderCard({ ...TRIP, commentsCount: 3 });
+
+  expect(screen.getByLabelText('itinerary.like')).toBeTruthy();
+  expect(screen.getByLabelText('comments.title: 3')).toBeTruthy();
+});

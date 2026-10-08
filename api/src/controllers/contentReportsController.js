@@ -1,4 +1,4 @@
-import { reportDecisionSchema, reportSchema } from "../utils/schemasValidation.js";
+import { reportDecisionSchema, reportReinstatementSchema, reportSchema } from "../utils/schemasValidation.js";
 import { REPORT_STATUSES } from "../utils/contentReports.js";
 import { ValidationError } from "../errors/ValidationError.js";
 
@@ -53,6 +53,19 @@ export class ContentReportsController {
         }
         try {
             await this.contentReportsService.decideReport(req.params.reportId, req.user, result.data);
+            return res.status(204).end();
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async reinstateReport(req, res, next) {
+        const result = reportReinstatementSchema.safeParse(req.body ?? {});
+        if (!result.success) {
+            return next(new ValidationError(result.error.errors[0]?.message || "Invalid note"));
+        }
+        try {
+            await this.contentReportsService.reinstateReport(req.params.reportId, req.user, result.data);
             return res.status(204).end();
         } catch (error) {
             next(error);

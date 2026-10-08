@@ -416,7 +416,8 @@
       "open": "Open",
       "removed": "Removed",
       "dismissed": "Dismissed",
-      "resolved": "Resolved"
+      "resolved": "Resolved",
+      "reinstated": "Reinstated"
     },
     "reportBy": "Reported by {{name}}",
     "reportAbout": "About a {{type}} by {{owner}}",
@@ -522,7 +523,10 @@
     "sendNoticePlaceholder": "Write the message this user will receive...",
     "noticeSent": "Notice sent",
     "noticeSendError": "Could not send the notice. Please try again.",
-    "auditEmailVerified": "{{actor}} confirmed their email"
+    "auditEmailVerified": "{{actor}} confirmed their email",
+    "reportReinstate": "Reinstate",
+    "reportReinstated": "Reinstated, and its author told",
+    "auditContentReinstated": "{{actor}} reinstated a {{type}} by {{target}}"
   },
   "profile": {
     "shareProfile": "Share profile",
@@ -1440,7 +1444,8 @@
     "passwordSameAsCurrent": "The new password has to be different from the current one",
     "imageTooLarge": "The image has to be under 5 MB",
     "termsRequired": "You must accept the Terms and Privacy Policy",
-    "ageRequired": "You must confirm you are at least 16 years old"
+    "ageRequired": "You must confirm you are at least 16 years old",
+    "reportNotRemoved": "Only a removal can be reinstated, and only once"
   },
   "errors": {
     "title": "Something went wrong",

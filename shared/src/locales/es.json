@@ -422,7 +422,8 @@
       "open": "Abierta",
       "removed": "Retirado",
       "dismissed": "Descartada",
-      "resolved": "Resuelta"
+      "resolved": "Resuelta",
+      "reinstated": "Restituido"
     },
     "reportBy": "Denunciado por {{name}}",
     "reportAbout": "Sobre un {{type}} de {{owner}}",
@@ -531,7 +532,10 @@
     "sendNoticePlaceholder": "Escribe el mensaje que recibirá este usuario...",
     "noticeSent": "Aviso enviado",
     "noticeSendError": "No se pudo enviar el aviso. Inténtalo de nuevo.",
-    "auditEmailVerified": "{{actor}} confirmó su correo"
+    "auditEmailVerified": "{{actor}} confirmó su correo",
+    "reportReinstate": "Restituir",
+    "reportReinstated": "Restituido, y su autor avisado",
+    "auditContentReinstated": "{{actor}} restituyó un {{type}} de {{target}}"
   },
   "profile": {
     "shareProfile": "Compartir perfil",
@@ -1461,7 +1465,8 @@
     "passwordSameAsCurrent": "La nueva contraseña tiene que ser distinta de la actual",
     "imageTooLarge": "La imagen tiene que pesar menos de 5 MB",
     "termsRequired": "Debes aceptar los Términos y la Política de Privacidad",
-    "ageRequired": "Debes confirmar que tienes al menos 16 años"
+    "ageRequired": "Debes confirmar que tienes al menos 16 años",
+    "reportNotRemoved": "Solo se puede restituir una retirada, y solo una vez"
   },
   "errors": {
     "title": "Algo no ha ido bien",

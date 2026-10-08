@@ -163,4 +163,16 @@ export const it = {
         redress: "Se pensi che ci siamo sbagliati, rispondi a questa email e lo riesamineremo. Puoi anche rivolgerti all'autorità competente o ai tribunali.",
         footer: "Ricevi questa email perché un tuo contenuto è stato rimosso su ToBeATraveller.",
     },
+    contentReinstated: {
+        subject: "Abbiamo ripristinato il tuo contenuto",
+        title: "Contenuto ripristinato",
+        preheader: "Lo abbiamo riesaminato ed è di nuovo online.",
+        headline: (name) => `Ciao ${name}`,
+        intro: (type) => `Abbiamo riesaminato il tuo contenuto (${type}) che avevamo rimosso e abbiamo deciso che non viola le nostre regole.`,
+        contentLabel: "Il contenuto",
+        restorationLabel: "Cosa abbiamo fatto",
+        restoration: {"comment": "Il commento è di nuovo visibile su ToBeATraveller.", "itinerary": "Il viaggio non è più bloccato. Resta privato finché non decidi di renderlo di nuovo pubblico."},
+        sorry: "Ci dispiace per il disagio.",
+        footer: "Ricevi questo messaggio perché un tuo contenuto è stato ripristinato su ToBeATraveller.",
+    },
 };

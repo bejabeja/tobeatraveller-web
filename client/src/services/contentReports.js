@@ -1,1 +1,1 @@
-export { submitReport, getReports, decideReport } from "@tobeatraveller/shared";
+export { submitReport, getReports, decideReport, reinstateReport } from "@tobeatraveller/shared";
