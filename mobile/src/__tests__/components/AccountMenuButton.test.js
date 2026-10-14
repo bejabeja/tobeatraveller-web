@@ -62,6 +62,12 @@ describe('without a session', () => {
     return navigation;
   };
 
+  it('says what an account gives before asking for one', () => {
+    renderGuestMenu();
+
+    expect(screen.getByText('guestPrompt.menuValue')).toBeTruthy();
+  });
+
   it('offers no tool, plan or settings, which need an account', () => {
     renderGuestMenu();
 

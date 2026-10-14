@@ -77,6 +77,7 @@ const AccountMenuButton = ({ navigation, color = '#374151', style, isGuest = fal
             </View>
             {isGuest ? (
               <>
+                <Text style={styles.guestValue}>{t('guestPrompt.menuValue')}</Text>
                 {GUEST_SIGN_IN_ITEMS.map(renderItem)}
                 <View style={styles.divider} />
                 <TouchableOpacity style={styles.item} onPress={() => setLanguagesOpen(openNow => !openNow)} accessibilityRole="button" accessibilityState={{ expanded: languagesOpen }}>
@@ -127,6 +128,7 @@ const styles = StyleSheet.create({
   section: { fontSize: 12, fontWeight: '700', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 8, marginBottom: 4 },
   item: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 14 },
   itemText: { flex: 1, fontSize: 16, fontWeight: '600', color: '#111827' },
+  guestValue: { fontSize: 14, color: '#6b7280', lineHeight: 20, marginTop: 4, marginBottom: 6 },
   itemValue: { fontSize: 14, color: '#6b7280' },
   languageOption: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, paddingLeft: 36 },
   languageText: { fontSize: 15, color: '#374151' },
