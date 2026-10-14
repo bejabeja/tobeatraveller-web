@@ -39,7 +39,14 @@ jest.mock('../../components/Skeleton', () => {
   const { Text } = require('react-native');
   return { ItineraryCardSkeleton: () => <Text>skeleton</Text>, UserAvatarSkeleton: () => null };
 });
+jest.mock('../../i18n', () => ({
+  __esModule: true,
+  default: { language: 'en' },
+  changeLanguage: jest.fn(),
+}));
+
 jest.mock('@tobeatraveller/shared', () => ({
+  ...jest.requireActual('../../../../shared/src/utils/constants/languages.js'),
   ...jest.requireActual('../../../../shared/src/utils/travelStyle.js'),
   ...jest.requireActual('../../../../shared/src/utils/greetingName.js'),
   ...jest.requireActual('../../../../shared/src/utils/homeTab.js'),
@@ -192,5 +199,17 @@ describe('Home for a visitor', () => {
     expect(screen.getByText('world-map')).toBeTruthy();
     expect(screen.getByText('home.featuredSubtitle')).toBeTruthy();
     expect(screen.queryByText('home-news')).toBeNull();
+  });
+
+  it('puts the way in at the top, with both signing up and logging in', async () => {
+    mockAuthenticated = false;
+    mockMe = null;
+    await renderHome();
+
+    fireEvent.press(screen.getAllByText('nav.login')[0]);
+    fireEvent.press(screen.getAllByText('nav.createAccountBtn')[0]);
+
+    expect(navigation.navigate).toHaveBeenCalledWith('Login');
+    expect(navigation.navigate).toHaveBeenCalledWith('Register');
   });
 });

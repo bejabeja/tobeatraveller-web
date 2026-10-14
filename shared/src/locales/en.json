@@ -262,6 +262,18 @@
     "large": "🏕️ Large (6+)",
     "all": "All"
   },
+  "guestPrompt": {
+    "title": "Log in to continue",
+    "like": "Create a free account or log in to like this trip.",
+    "save": "Create a free account or log in to save this trip.",
+    "follow": "Create a free account or log in to follow this traveller.",
+    "comment": "Create a free account or log in to join the conversation.",
+    "followList": "Create a free account or log in to see who follows this traveller and who they follow.",
+    "tripCtaTitle": "Plan your own trip like this",
+    "tripCtaText": "Create a free account to save trips, clone them and share your own routes.",
+    "create": "Create a free account or log in to create and share your own trips.",
+    "notNow": "Not now"
+  },
   "community": {
     "title": "Community",
     "subtitle": "Discover travellers from around the world",
@@ -284,7 +296,6 @@
     "inviteButton": "Invite friends",
     "joinCommunity": "Join the community",
     "joinCommunityDesc": "Sign up to see all travellers, follow people you like, and get inspired for your next trip.",
-    "joinCommunitySubtitle": "Sign up to follow travellers and get inspired for your next trip.",
     "createAccount": "Create account",
     "logIn": "Log in",
     "errorMsg": "We couldn't load the community page. Please try again later.",

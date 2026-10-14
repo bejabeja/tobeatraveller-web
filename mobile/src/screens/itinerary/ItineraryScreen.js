@@ -15,6 +15,7 @@ const Marker  = Platform.OS !== 'web' ? require('react-native-maps').Marker  : n
 import { ItineraryDetailSkeleton } from '../../components/Skeleton';
 import PublishedNotice from '../../components/PublishedNotice';
 import TripPhoto from '../../components/TripPhoto';
+import { SIGN_IN_REASONS, useSignInPrompt } from '../../components/SignInPrompt';
 import TripListsSection from '../../components/TripListsSection';
 import ReportModal from '../../components/ReportModal';
 import { COLORS, shadow, textShadow } from '../../utils/styles';
@@ -40,6 +41,7 @@ const ItineraryScreen = ({ route, navigation }) => {
   const { t, i18n } = useTranslation();
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(selectIsAuthenticated);
+  const promptSignIn = useSignInPrompt();
   const me = useSelector(selectMe);
 
   const insets = useSafeAreaInsets();
@@ -203,7 +205,7 @@ const ItineraryScreen = ({ route, navigation }) => {
   };
 
   const handleFavorite = async () => {
-    if (!isAuthenticated) { navigation.navigate('Tabs', { screen: 'Profile' }); return; }
+    if (!isAuthenticated) { promptSignIn(SIGN_IN_REASONS.SAVE); return; }
     const wasFavorite = isFavorite;
     setIsFavorite(!wasFavorite);
     try {
@@ -219,7 +221,7 @@ const ItineraryScreen = ({ route, navigation }) => {
   };
 
   const handleLike = async () => {
-    if (!isAuthenticated) { navigation.navigate('Tabs', { screen: 'Profile' }); return; }
+    if (!isAuthenticated) { promptSignIn(SIGN_IN_REASONS.LIKE); return; }
     if (isLikeToggling) return;
     const prev = isLiked;
     setIsLiked(!prev);
@@ -561,7 +563,7 @@ const ItineraryScreen = ({ route, navigation }) => {
           )}
 
           {!isAuthenticated && (
-            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+            <TouchableOpacity onPress={() => promptSignIn(SIGN_IN_REASONS.COMMENT)}>
               <Text style={styles.loginPrompt}>{t('comments.loginToLeave')}</Text>
             </TouchableOpacity>
           )}
@@ -637,6 +639,18 @@ const ItineraryScreen = ({ route, navigation }) => {
           )}
         </View>
       </View>
+      {!isAuthenticated && (
+        <View style={styles.guestCta}>
+          <Text style={styles.guestCtaTitle}>{t('guestPrompt.tripCtaTitle')}</Text>
+          <Text style={styles.guestCtaText}>{t('guestPrompt.tripCtaText')}</Text>
+          <TouchableOpacity style={styles.guestCtaButton} onPress={() => navigation.navigate('Register')} accessibilityRole="button">
+            <Text style={styles.guestCtaButtonText}>{t('nav.createAccountBtn')}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('Login')} accessibilityRole="button">
+            <Text style={styles.guestCtaLogin}>{t('profile.alreadyHaveAccount')} <Text style={styles.guestCtaLoginAccent}>{t('auth.signInLink')}</Text></Text>
+          </TouchableOpacity>
+        </View>
+      )}
       {reportTarget && (
         <ReportModal
           {...reportTarget}
@@ -801,6 +815,16 @@ const StatCard = ({ icon, label, value, subvalue }) => (
 
 const styles = StyleSheet.create({
   keyboardAvoider: { flex: 1 },
+  guestCta: {
+    margin: 16, marginTop: 8, padding: 20, borderRadius: 16,
+    backgroundColor: '#FFF7F2', alignItems: 'center',
+  },
+  guestCtaTitle: { fontSize: 17, fontWeight: '800', color: '#111827', textAlign: 'center' },
+  guestCtaText: { fontSize: 13, color: '#6b7280', textAlign: 'center', lineHeight: 19, marginTop: 6, marginBottom: 14 },
+  guestCtaButton: { backgroundColor: COLORS.primary, borderRadius: 999, paddingVertical: 11, paddingHorizontal: 26 },
+  guestCtaButtonText: { color: '#fff', fontWeight: '700', fontSize: 14 },
+  guestCtaLogin: { fontSize: 13, color: '#6b7280', marginTop: 12 },
+  guestCtaLoginAccent: { color: COLORS.primary, fontWeight: '700' },
   container: { flex: 1, backgroundColor: '#fff' },
   errorScreen: { flex: 1, backgroundColor: '#fff' },
   errorBackBtn: { position: 'absolute', left: 16, width: 40, padding: 4 },

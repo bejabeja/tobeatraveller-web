@@ -1,4 +1,10 @@
 const mockDispatch = jest.fn();
+let mockIsAuthenticated = true;
+const mockPromptSignIn = jest.fn();
+jest.mock('../../components/SignInPrompt', () => ({
+  SIGN_IN_REASONS: { LIKE: 'like', SAVE: 'save', COMMENT: 'comment' },
+  useSignInPrompt: () => mockPromptSignIn,
+}));
 jest.mock('react-redux', () => ({ useDispatch: () => mockDispatch, useSelector: (selector) => selector() }));
 jest.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key) => key, i18n: { language: 'es' } }) }));
 jest.mock('@expo/vector-icons', () => ({ Ionicons: () => null }));
@@ -13,7 +19,7 @@ jest.mock('@tobeatraveller/shared', () => ({
   cloneItinerary: jest.fn(), deleteItinerary: jest.fn(() => Promise.resolve()), getCommentsPage: jest.fn(() => Promise.resolve({ comments: [], totalCount: 0 })), COMMENTS_PAGE_SIZE: 50,
   getItineraryById: jest.fn(), getUserById: jest.fn(() => Promise.resolve({ id: 'u1', username: 'tbat' })),
   removeFavorite: jest.fn(), toggleLike: jest.fn(),
-  selectIsAuthenticated: () => true, selectMe: () => ({ id: 'u1', username: 'tbat' }),
+  selectIsAuthenticated: () => mockIsAuthenticated, selectMe: () => (mockIsAuthenticated ? { id: 'u1', username: 'tbat' } : null),
   MAX_COMMENT_LENGTH: 500, updateCommentsCount: jest.fn(),
   setUserInfo: (id) => ({ type: 'load-me', id }), setUserInfoItineraries: () => ({ type: 'load-my-trips' }),
   COMMENT_HIGHLIGHT_DURATION_MS: 1000, formatBudgetAmount: () => '500 €', formatTimeAgo: () => '',
@@ -277,4 +283,34 @@ describe('moderating the comments on my own trip', () => {
     expect(screen.getByLabelText('report.button')).toBeTruthy();
     expect(screen.getByText('✕')).toBeTruthy();
   });
+});
+
+describe('for a signed-out visitor', () => {
+  beforeEach(() => { mockIsAuthenticated = false; mockPromptSignIn.mockClear(); });
+  afterEach(() => { mockIsAuthenticated = true; });
+
+  it('invites them to plan their own trip, with the way to sign up and to log in', async () => {
+    const navigation = await renderTrip();
+
+    fireEvent.press(screen.getByText('nav.createAccountBtn'));
+    fireEvent.press(screen.getByText(/profile.alreadyHaveAccount/));
+
+    expect(screen.getByText('guestPrompt.tripCtaTitle')).toBeTruthy();
+    expect(navigation.navigate).toHaveBeenCalledWith('Register');
+    expect(navigation.navigate).toHaveBeenCalledWith('Login');
+  });
+
+  it('asks them to sign in, saying why, when they like or save the trip', async () => {
+    await renderTrip();
+
+    fireEvent.press(screen.getByLabelText('itinerary.saveTrip'));
+
+    expect(mockPromptSignIn).toHaveBeenCalledWith('save');
+  });
+});
+
+it('does not invite someone who is already signed in', async () => {
+  await renderTrip();
+
+  expect(screen.queryByText('guestPrompt.tripCtaTitle')).toBeNull();
 });

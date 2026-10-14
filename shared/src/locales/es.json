@@ -267,6 +267,18 @@
     "large": "🏕️ Grande (6+)",
     "all": "Todos"
   },
+  "guestPrompt": {
+    "title": "Entra para continuar",
+    "like": "Crea una cuenta gratis o inicia sesión para dar like a este viaje.",
+    "save": "Crea una cuenta gratis o inicia sesión para guardar este viaje.",
+    "follow": "Crea una cuenta gratis o inicia sesión para seguir a este viajero.",
+    "comment": "Crea una cuenta gratis o inicia sesión para unirte a la conversación.",
+    "followList": "Crea una cuenta gratis o inicia sesión para ver quién sigue a este viajero y a quién sigue.",
+    "tripCtaTitle": "Planea tu propio viaje como este",
+    "tripCtaText": "Crea una cuenta gratis para guardar viajes, clonarlos y compartir tus propias rutas.",
+    "create": "Crea una cuenta gratis o inicia sesión para crear y compartir tus propios viajes.",
+    "notNow": "Ahora no"
+  },
   "community": {
     "title": "Comunidad",
     "subtitle": "Descubre viajeros de todo el mundo",
@@ -289,7 +301,6 @@
     "inviteButton": "Invitar amigos",
     "joinCommunity": "Únete a la comunidad",
     "joinCommunityDesc": "Regístrate para ver a todos los viajeros, seguir a personas que te inspiren y preparar tu próximo viaje.",
-    "joinCommunitySubtitle": "Regístrate para seguir a viajeros e inspirarte para tu próximo viaje.",
     "createAccount": "Crear cuenta",
     "logIn": "Iniciar sesión",
     "errorMsg": "No pudimos cargar la página de la comunidad. Por favor, inténtalo más tarde.",

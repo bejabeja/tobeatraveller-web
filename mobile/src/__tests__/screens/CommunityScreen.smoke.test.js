@@ -7,6 +7,12 @@ jest.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key) => key }),
 }));
 
+const mockPromptSignIn = jest.fn();
+jest.mock('../../components/SignInPrompt', () => ({
+  SIGN_IN_REASONS: { FOLLOW: 'follow' },
+  useSignInPrompt: () => mockPromptSignIn,
+}));
+
 jest.mock('expo-linear-gradient', () => ({ LinearGradient: () => null }));
 jest.mock('@tobeatraveller/shared', () => ({
   COLORS: jest.requireActual('../../../../shared/src/utils/constants/colors.js').COLORS,
@@ -98,7 +104,7 @@ it('reminds, under a search\'s results, that the person may not be here yet', as
   expect(navigation.navigate).toHaveBeenCalledWith('Referral');
 });
 
-it("shows a person's bio, and a follow button that sends a signed-out visitor to log in", async () => {
+it("shows a person's bio, and a follow button that asks a signed-out visitor to sign in", async () => {
   selectIsAuthenticated.mockReturnValue(false);
   selectAllUsers.mockReturnValue([{ id: 'u2', username: 'ana', bio: 'Furgo y surf', totalItineraries: 1 }]);
   const navigation = await renderScreen();
@@ -106,7 +112,18 @@ it("shows a person's bio, and a follow button that sends a signed-out visitor to
   fireEvent.press(screen.getByText('community.follow'));
 
   expect(screen.getByText('Furgo y surf')).toBeTruthy();
-  expect(navigation.navigate).toHaveBeenCalledWith('Tabs', { screen: 'Profile' });
+  expect(mockPromptSignIn).toHaveBeenCalledWith('follow');
+  expect(navigation.navigate).not.toHaveBeenCalled();
+});
+
+it("opens a person's profile to a signed-out visitor, as on the web", async () => {
+  selectIsAuthenticated.mockReturnValue(false);
+  selectAllUsers.mockReturnValue([{ id: 'u2', username: 'ana', totalItineraries: 1 }]);
+  const navigation = await renderScreen();
+
+  fireEvent.press(screen.getByLabelText('@ana'));
+
+  expect(navigation.navigate).toHaveBeenCalledWith('UserProfile', { id: 'u2' });
 });
 
 // Regression: the list of travellers to follow included the person looking at it.

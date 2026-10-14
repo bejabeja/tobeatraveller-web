@@ -13,6 +13,12 @@ jest.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
 }));
 
+const mockPromptSignIn = jest.fn();
+jest.mock('../../components/SignInPrompt', () => ({
+  SIGN_IN_REASONS: { FOLLOW: 'follow', FOLLOW_LIST: 'followList' },
+  useSignInPrompt: () => mockPromptSignIn,
+}));
+
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key, vars) => (vars?.username ? `${key}:${vars.username}` : key), i18n: { language: 'es' } }),
 }));
@@ -28,7 +34,14 @@ jest.mock('../../utils/session', () => ({
 
 jest.mock('../../utils/config', () => ({ WEB_URL: 'https://tobeatraveller.test' }));
 
+jest.mock('../../i18n', () => ({
+  __esModule: true,
+  default: { language: 'en' },
+  changeLanguage: jest.fn(),
+}));
+
 jest.mock('@tobeatraveller/shared', () => {
+  const languages = jest.requireActual('../../../../shared/src/utils/constants/languages.js');
   const badges = jest.requireActual('../../../../shared/src/utils/constants/badges.js');
   const countries = jest.requireActual('../../../../shared/src/utils/constants/countries.js');
   const recap = jest.requireActual('../../../../shared/src/utils/recap.js');
@@ -39,6 +52,7 @@ jest.mock('@tobeatraveller/shared', () => {
     ...jest.requireActual('../../../../shared/src/utils/formatLocale.js'),
     COLORS,
     ...badges,
+    ...languages,
     ...countries,
     ...recap,
     filterItineraries,
@@ -242,6 +256,43 @@ it('offers a "see all" for my trips, which opens the full list', async () => {
   fireEvent.press(screen.getAllByText('profile.seeAll')[0]);
 
   expect(navigation.navigate).toHaveBeenCalledWith('MyItineraries');
+});
+
+it("shows another person's profile to a signed-out visitor, without the actions that need an account", async () => {
+  selectIsAuthenticated.mockReturnValue(false);
+  getUserById.mockResolvedValue({ id: 'user-2', username: 'ana', name: 'Ana', followers: 0, following: 0, totalItineraries: 0 });
+  getUserPassport.mockResolvedValue({ owner: { id: 'user-2', username: 'ana' }, achievements: [], countries: [] });
+  const navigation = { navigate: jest.fn(), replace: jest.fn(), canGoBack: () => true, goBack: jest.fn() };
+
+  render(
+    <SafeAreaProvider initialMetrics={INITIAL_METRICS}>
+      <ProfileScreen route={{ name: 'UserProfile', params: { id: 'user-2' } }} navigation={navigation} />
+    </SafeAreaProvider>
+  );
+  await act(async () => {});
+
+  expect(screen.getByText('Ana')).toBeTruthy();
+  expect(navigation.replace).not.toHaveBeenCalled();
+  expect(screen.queryByLabelText('block.button')).toBeNull();
+  expect(screen.queryByLabelText('report.button')).toBeNull();
+});
+
+it('asks a signed-out visitor to sign in before showing who follows a person', async () => {
+  selectIsAuthenticated.mockReturnValue(false);
+  getUserById.mockResolvedValue({ id: 'user-2', username: 'ana', name: 'Ana', followers: 4, following: 2, totalItineraries: 0 });
+  getUserPassport.mockResolvedValue({ owner: { id: 'user-2', username: 'ana' }, achievements: [], countries: [] });
+  const navigation = { navigate: jest.fn(), replace: jest.fn(), canGoBack: () => true, goBack: jest.fn() };
+  render(
+    <SafeAreaProvider initialMetrics={INITIAL_METRICS}>
+      <ProfileScreen route={{ name: 'UserProfile', params: { id: 'user-2' } }} navigation={navigation} />
+    </SafeAreaProvider>
+  );
+  await act(async () => {});
+
+  fireEvent.press(screen.getByText('4'));
+
+  expect(mockPromptSignIn).toHaveBeenCalledWith('followList');
+  expect(navigation.navigate).not.toHaveBeenCalledWith('Follows', expect.anything());
 });
 
 describe('blocking someone from their profile', () => {

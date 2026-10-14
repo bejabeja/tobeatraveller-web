@@ -26,6 +26,7 @@ import PassportShareModal from '../../components/PassportShareModal';
 import ReportModal from '../../components/ReportModal';
 import AccountMenuButton from '../../components/AccountMenuButton';
 import { showAlert } from '../../utils/alert';
+import { SIGN_IN_REASONS, useSignInPrompt } from '../../components/SignInPrompt';
 import RecapBanner from '../../components/RecapBanner';
 
 const MAX_PASSPORT_CARD_FLAGS = 5;
@@ -44,6 +45,7 @@ const ProfileScreen = ({ route, navigation }) => {
   const insets = useSafeAreaInsets();
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(selectIsAuthenticated);
+  const promptSignIn = useSignInPrompt();
   const meDetail = useSelector(selectMe);
   const authUser = useSelector(selectAuthUser);
   const me = meDetail ?? authUser;
@@ -100,12 +102,6 @@ const ProfileScreen = ({ route, navigation }) => {
       .catch(() => setSavedTrips([]))
       .finally(() => setSavedLoading(false));
   }, [isOwnProfile, isAuthenticated]);
-
-  useEffect(() => {
-    if (!isAuthenticated && !isOwnProfile) {
-      navigation.replace('Tabs', { screen: 'Profile' });
-    }
-  }, [isAuthenticated, isOwnProfile, navigation]);
 
   useEffect(() => {
     if (isOwnProfile || !profileId) return;
@@ -174,8 +170,14 @@ const ProfileScreen = ({ route, navigation }) => {
     ]);
   };
 
+  // The lists of who follows whom are for members, as on the other social apps.
+  const openFollows = (type) => {
+    if (!isAuthenticated) { promptSignIn(SIGN_IN_REASONS.FOLLOW_LIST); return; }
+    navigation.navigate('Follows', { userId: user?.id, type });
+  };
+
   const handleFollowToggle = async () => {
-    if (!isAuthenticated) { navigation.navigate('Tabs', { screen: 'Profile' }); return; }
+    if (!isAuthenticated) { promptSignIn(SIGN_IN_REASONS.FOLLOW); return; }
     const requestedProfileId = profileId;
     const wasFollowing = isFollowing;
     setIsFollowing(!wasFollowing);
@@ -199,8 +201,6 @@ const ProfileScreen = ({ route, navigation }) => {
   if (!isAuthenticated && isOwnProfile) {
     return <UnauthView navigation={navigation} insets={insets} t={t} />;
   }
-
-  if (!isAuthenticated && !isOwnProfile) return null;
 
   if (loading) {
     return (
@@ -360,7 +360,7 @@ const ProfileScreen = ({ route, navigation }) => {
             <View style={styles.statDivider} />
             <TouchableOpacity
               style={styles.stat}
-              onPress={() => navigation.navigate('Follows', { userId: user?.id, type: 'followers' })}
+              onPress={() => openFollows('followers')}
             >
               <Text style={styles.statNumber}>{user?.followers ?? 0}</Text>
               <Text style={styles.statLabel}>{t('profile.followersStat', { count: user?.followers ?? 0 })}</Text>
@@ -368,7 +368,7 @@ const ProfileScreen = ({ route, navigation }) => {
             <View style={styles.statDivider} />
             <TouchableOpacity
               style={styles.stat}
-              onPress={() => navigation.navigate('Follows', { userId: user?.id, type: 'following' })}
+              onPress={() => openFollows('following')}
             >
               <Text style={styles.statNumber}>{user?.following ?? 0}</Text>
               <Text style={styles.statLabel}>{t('profile.following')}</Text>
@@ -607,6 +607,18 @@ const UnauthView = ({ navigation, insets, t }) => {
             {t('profile.alreadyHaveAccount')} <Text style={styles.unauthSignInAccent}>{t('auth.signInLink')}</Text>
           </Text>
         </TouchableOpacity>
+
+        <View style={styles.unauthLinks}>
+          {[
+            { screen: 'Terms', labelKey: 'legalTerms.documentTitle' },
+            { screen: 'PrivacyPolicy', labelKey: 'legalPrivacy.documentTitle' },
+            { screen: 'Contact', labelKey: 'settings.contactUs' },
+          ].map(({ screen, labelKey }) => (
+            <TouchableOpacity key={screen} onPress={() => navigation.navigate(screen)} accessibilityRole="link">
+              <Text style={styles.unauthLinkText}>{t(labelKey)}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
       </View>
     </View>
   );
@@ -789,6 +801,8 @@ const styles = StyleSheet.create({
   unauthPrimaryBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
   unauthSecondaryBtn: { paddingVertical: 14, alignItems: 'center' },
   unauthSecondaryBtnText: { fontSize: 14, color: '#6b7280' },
+  unauthLinks: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 16, marginTop: 20 },
+  unauthLinkText: { fontSize: 12, color: '#9ca3af', textDecorationLine: 'underline' },
   unauthSignInAccent: { color: '#E8743B', fontWeight: '600' },
 });
 

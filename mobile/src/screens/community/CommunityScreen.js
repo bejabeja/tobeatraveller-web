@@ -17,6 +17,7 @@ import { trackEvent } from '../../utils/analytics';
 import { UserCardSkeleton } from '../../components/Skeleton';
 import TripPhoto from '../../components/TripPhoto';
 import { buildSkeletonItems, FILLER_ITEM_ID, padForTwoColumns } from '../../utils/gridListHelpers';
+import { SIGN_IN_REASONS, useSignInPrompt } from '../../components/SignInPrompt';
 import { COLORS, shadow } from '../../utils/styles';
 
 const CommunityScreen = ({ navigation }) => {
@@ -114,9 +115,6 @@ const CommunityScreen = ({ navigation }) => {
       {!isAuthenticated && !loading && users?.length > 0 && (
         <View style={styles.guestCta}>
           <Text style={styles.guestCtaTitle}>{t('community.joinCommunity')}</Text>
-          <Text style={styles.guestCtaSubtitle}>
-            {t('community.joinCommunitySubtitle')}
-          </Text>
           <View style={styles.guestCtaBtns}>
             <TouchableOpacity style={styles.primaryBtn} onPress={() => navigation.navigate('Register')}>
               <Text style={styles.primaryBtnText}>{t('community.createAccount')}</Text>
@@ -186,10 +184,7 @@ const CommunityScreen = ({ navigation }) => {
               : item.id === FILLER_ITEM_ID ? null
               : <UserCard
                   user={item} me={me} isAuthenticated={isAuthenticated}
-                  onPress={() => isAuthenticated
-                    ? navigation.navigate('UserProfile', { id: item.id })
-                    : navigation.navigate('Tabs', { screen: 'Profile' })
-                  }
+                  onPress={() => navigation.navigate('UserProfile', { id: item.id })}
                 />
             }
           </View>
@@ -214,13 +209,14 @@ const InviteCard = ({ onPress, t }) => (
 const UserCard = ({ user, me, isAuthenticated, onPress }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
+  const promptSignIn = useSignInPrompt();
   const [following, setFollowing] = useState(
     !!me?.followingListIds?.some(f => String(f.id) === String(user.id))
   );
   const [loadingFollow, setLoadingFollow] = useState(false);
 
   const handleFollow = async () => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated) { promptSignIn(SIGN_IN_REASONS.FOLLOW); return; }
     setLoadingFollow(true);
     try {
       if (following) await unfollowUser(user.id);
@@ -248,7 +244,7 @@ const UserCard = ({ user, me, isAuthenticated, onPress }) => {
       accessibilityRole="button"
       accessibilityLabel={`@${user.username}`}
       {...cardInnerActions([{
-        name: 'follow', label: following ? t('followers.unfollow') : t('community.follow'), onPress: isAuthenticated ? handleFollow : onPress,
+        name: 'follow', label: following ? t('followers.unfollow') : t('community.follow'), onPress: handleFollow,
       }])}
     >
       <View style={styles.userCardBanner}>
@@ -280,10 +276,9 @@ const UserCard = ({ user, me, isAuthenticated, onPress }) => {
         <Text style={styles.userCardTagline} numberOfLines={2}>{tagline}</Text>
         <Text style={styles.userCardTrips}>{t('community.trips', { count: user.totalItineraries ?? 0 })}</Text>
 
-        {/* Signed out, following needs an account: the card's own press goes to it. */}
         <TouchableOpacity
           style={[styles.followBtn, following && styles.followBtnFollowing, loadingFollow && styles.followBtnDisabled]}
-          onPress={isAuthenticated ? handleFollow : onPress}
+          onPress={handleFollow}
           disabled={loadingFollow}
           accessibilityRole="button"
           accessibilityState={{ selected: following, disabled: loadingFollow }}
@@ -363,12 +358,11 @@ const styles = StyleSheet.create({
 
   // Guest CTA
   guestCta: {
-    marginHorizontal: 16, marginBottom: 12, padding: 16,
+    marginHorizontal: 16, marginBottom: 8, padding: 12,
     backgroundColor: '#fff', borderRadius: 14, alignItems: 'center',
     ...shadow(2, 0.06, 8, 2),
   },
-  guestCtaTitle: { fontSize: 16, fontWeight: '700', color: '#111827', marginBottom: 4 },
-  guestCtaSubtitle: { fontSize: 13, color: '#6b7280', textAlign: 'center', marginBottom: 14 },
+  guestCtaTitle: { fontSize: 15, fontWeight: '700', color: '#111827', marginBottom: 10 },
   guestCtaBtns: { flexDirection: 'row', gap: 10 },
   primaryBtn: { backgroundColor: '#E8743B', borderRadius: 999, paddingVertical: 9, paddingHorizontal: 20 },
   primaryBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },

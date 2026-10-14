@@ -8,11 +8,13 @@ import { checkIsLiked, formatBudgetAmount, toggleLike, selectIsAuthenticated, AN
 import { cardInnerActions } from '../utils/accessibility';
 import { trackEvent } from '../utils/analytics';
 import TripPhoto from './TripPhoto';
+import { SIGN_IN_REASONS, useSignInPrompt } from './SignInPrompt';
 import { COLORS, shadow } from '../utils/styles';
 
-const ItineraryCard = ({ itinerary, onPress, onRequestLogin, compact = false }) => {
+const ItineraryCard = ({ itinerary, onPress, compact = false }) => {
   const { t, i18n } = useTranslation();
   const isAuthenticated = useSelector(selectIsAuthenticated);
+  const promptSignIn = useSignInPrompt();
   const [isLiked, setIsLiked]       = useState(false);
   const [likesCount, setLikesCount] = useState(itinerary.likesCount ?? 0);
 
@@ -24,7 +26,7 @@ const ItineraryCard = ({ itinerary, onPress, onRequestLogin, compact = false }) 
   }, [itinerary?.id, isAuthenticated]);
 
   const handleLike = async () => {
-    if (!isAuthenticated) { onRequestLogin?.(); return; }
+    if (!isAuthenticated) { promptSignIn(SIGN_IN_REASONS.LIKE); return; }
     const prev = isLiked;
     setIsLiked(!prev);
     setLikesCount(c => prev ? c - 1 : c + 1);

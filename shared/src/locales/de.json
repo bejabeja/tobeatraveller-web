@@ -262,6 +262,18 @@
     "large": "🏕️ Groß (6+)",
     "all": "Alle"
   },
+  "guestPrompt": {
+    "title": "Melde dich an, um fortzufahren",
+    "like": "Erstelle ein kostenloses Konto oder melde dich an, um diese Reise zu liken.",
+    "save": "Erstelle ein kostenloses Konto oder melde dich an, um diese Reise zu speichern.",
+    "follow": "Erstelle ein kostenloses Konto oder melde dich an, um diesem Reisenden zu folgen.",
+    "comment": "Erstelle ein kostenloses Konto oder melde dich an, um mitzudiskutieren.",
+    "followList": "Erstelle ein kostenloses Konto oder melde dich an, um zu sehen, wer diesem Reisenden folgt und wem er folgt.",
+    "tripCtaTitle": "Plane deine eigene Reise wie diese",
+    "tripCtaText": "Erstelle ein kostenloses Konto, um Reisen zu speichern, zu klonen und eigene Routen zu teilen.",
+    "create": "Erstelle ein kostenloses Konto oder melde dich an, um eigene Reisen zu erstellen und zu teilen.",
+    "notNow": "Nicht jetzt"
+  },
   "community": {
     "title": "Community",
     "subtitle": "Entdecke Reisende aus aller Welt",
@@ -284,7 +296,6 @@
     "inviteButton": "Freunde einladen",
     "joinCommunity": "Werde Teil der Community",
     "joinCommunityDesc": "Registriere dich, um alle Reisenden zu sehen, Leuten zu folgen, die dir gefallen, und dich für deine nächste Reise inspirieren zu lassen.",
-    "joinCommunitySubtitle": "Registriere dich, um Reisenden zu folgen und dich für deine nächste Reise inspirieren zu lassen.",
     "createAccount": "Konto erstellen",
     "logIn": "Anmelden",
     "errorMsg": "Die Community-Seite konnte nicht geladen werden. Bitte versuch es später erneut.",

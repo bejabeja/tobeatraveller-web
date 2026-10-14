@@ -15,6 +15,7 @@ import { usePushNotificationNavigation } from '../hooks/usePushNotifications';
 import { useAchievementCelebrations } from '../hooks/useAchievementCelebrations';
 import AchievementCelebration from '../components/AchievementCelebration';
 import AnalyticsConsentBanner from '../components/AnalyticsConsentBanner';
+import { SIGN_IN_REASONS, SignInPromptProvider, useSignInPrompt } from '../components/SignInPrompt';
 
 import HomeScreen from '../screens/home/HomeScreen';
 import ExploreScreen from '../screens/explore/ExploreScreen';
@@ -87,11 +88,12 @@ const TabNavigator = ({ navigation }) => {
   const [showSheet, setShowSheet] = useState(false);
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const unreadCount = useSelector(selectUnreadCount);
+  const promptSignIn = useSignInPrompt();
 
   // Creating needs an account: better to say so now than after filling in a whole trip.
   const openCreateSheet = () => {
     if (isAuthenticated) setShowSheet(true);
-    else navigation.navigate('Login');
+    else promptSignIn(SIGN_IN_REASONS.CREATE);
   };
 
   return (
@@ -140,7 +142,7 @@ const TabNavigator = ({ navigation }) => {
         {/* "Community" everywhere else in the app (page title, web nav); this
             used to say "People" here, the only place that named it differently. */}
         <Tab.Screen name="Community" component={CommunityScreen} options={{ tabBarLabel: t('community.title') }} />
-        <Tab.Screen name="Profile"   component={ProfileScreen}   options={{ tabBarLabel: t('nav.profile') }} />
+        <Tab.Screen name="Profile"   component={ProfileScreen}   options={{ tabBarLabel: isAuthenticated ? t('nav.profile') : t('nav.login') }} />
       </Tab.Navigator>
 
       {/* Create type bottom sheet */}
@@ -282,6 +284,7 @@ const Navigation = () => {
 
   return (
     <NavigationContainer ref={navigationRef} onReady={() => setIsNavigationReady(true)} onStateChange={onNavigationChange}>
+      <SignInPromptProvider navigate={(screen) => navigationRef.navigate(screen)}>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Tabs" component={TabNavigator} />
         <Stack.Screen name="Explore" component={ExploreScreen} />
@@ -324,6 +327,7 @@ const Navigation = () => {
           </>
         )}
       </Stack.Navigator>
+      </SignInPromptProvider>
       <AnalyticsConsentBanner onLearnMore={() => navigationRef.navigate('PrivacyPolicy')} />
       {celebrations.celebration && (
         <AchievementCelebration

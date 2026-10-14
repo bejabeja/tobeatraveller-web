@@ -267,6 +267,18 @@
     "large": "🏕️ Grand groupe (6+)",
     "all": "Tous"
   },
+  "guestPrompt": {
+    "title": "Connecte-toi pour continuer",
+    "like": "Crée un compte gratuit ou connecte-toi pour aimer ce voyage.",
+    "save": "Crée un compte gratuit ou connecte-toi pour enregistrer ce voyage.",
+    "follow": "Crée un compte gratuit ou connecte-toi pour suivre ce voyageur.",
+    "comment": "Crée un compte gratuit ou connecte-toi pour rejoindre la conversation.",
+    "followList": "Crée un compte gratuit ou connecte-toi pour voir qui suit ce voyageur et qui il suit.",
+    "tripCtaTitle": "Prépare ton propre voyage comme celui-ci",
+    "tripCtaText": "Crée un compte gratuit pour enregistrer des voyages, les cloner et partager tes propres itinéraires.",
+    "create": "Crée un compte gratuit ou connecte-toi pour créer et partager tes propres voyages.",
+    "notNow": "Pas maintenant"
+  },
   "community": {
     "title": "Communauté",
     "subtitle": "Découvre des voyageurs du monde entier",
@@ -289,7 +301,6 @@
     "inviteButton": "Inviter des amis",
     "joinCommunity": "Rejoins la communauté",
     "joinCommunityDesc": "Inscris-toi pour voir tous les voyageurs, suivre les personnes qui te plaisent et trouver l'inspiration pour ton prochain voyage.",
-    "joinCommunitySubtitle": "Inscris-toi pour suivre des voyageurs et trouver l'inspiration pour ton prochain voyage.",
     "createAccount": "Créer un compte",
     "logIn": "Se connecter",
     "errorMsg": "Impossible de charger la page de la communauté. Réessaie plus tard.",

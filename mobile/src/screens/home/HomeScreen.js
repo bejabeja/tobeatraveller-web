@@ -121,10 +121,18 @@ const HomeScreen = ({ navigation }) => {
             <View style={styles.heroHeading}>
               <Text style={styles.heroTitle}>{t('home.heroTitle')}</Text>
               <Text style={styles.heroSubtitle}>{t('home.heroSubtitle')}</Text>
+              <View style={styles.heroGuestButtons}>
+                <TouchableOpacity style={styles.heroPrimaryBtn} onPress={() => navigation.navigate('Register')} accessibilityRole="button">
+                  <Text style={styles.heroPrimaryBtnText}>{t('nav.createAccountBtn')}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.heroSecondaryBtn} onPress={() => navigation.navigate('Login')} accessibilityRole="button">
+                  <Text style={styles.heroSecondaryBtnText}>{t('nav.login')}</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           )}
-          {isAuthenticated && (
-            <View style={styles.heroActions}>
+          <View style={styles.heroActions}>
+            {isAuthenticated && (
               <TouchableOpacity
                 style={styles.bellBtn}
                 onPress={() => navigation.navigate('Notifications')}
@@ -137,9 +145,9 @@ const HomeScreen = ({ navigation }) => {
                   </View>
                 )}
               </TouchableOpacity>
-              <AccountMenuButton navigation={navigation} color="#fff" />
-            </View>
-          )}
+            )}
+            <AccountMenuButton navigation={navigation} color="#fff" isGuest={!isAuthenticated} />
+          </View>
         </View>
         {isAuthenticated && <NextTripCard navigation={navigation} />}
       </LinearGradient>
@@ -261,7 +269,6 @@ const HomeScreen = ({ navigation }) => {
                     <ItineraryCard
                       itinerary={item}
                       onPress={() => navigation.navigate('Itinerary', { id: item.id })}
-                      onRequestLogin={() => navigation.navigate('Login')}
                     />
                   </View>
                 ))
@@ -293,10 +300,7 @@ const HomeScreen = ({ navigation }) => {
                 <TouchableOpacity
                   key={user.id}
                   style={styles.userCard}
-                  onPress={() => isAuthenticated
-                    ? navigation.navigate('UserProfile', { id: user.id })
-                    : navigation.navigate('Tabs', { screen: 'Profile' })
-                  }
+                  onPress={() => navigation.navigate('UserProfile', { id: user.id })}
                   activeOpacity={0.8}
                 >
                   <View style={styles.avatarWrapper}>
@@ -352,6 +356,11 @@ const styles = StyleSheet.create({
   heroRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: 20 },
   heroTitle: { fontSize: 26, fontWeight: '800', color: '#fff', letterSpacing: -0.3 },
   heroSubtitle: { fontSize: 14, color: '#A8D5C7', marginTop: 4 },
+  heroGuestButtons: { flexDirection: 'row', gap: 10, marginTop: 14 },
+  heroPrimaryBtn: { backgroundColor: '#fff', borderRadius: 999, paddingVertical: 9, paddingHorizontal: 18 },
+  heroPrimaryBtnText: { color: COLORS.accent, fontWeight: '700', fontSize: 14 },
+  heroSecondaryBtn: { borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.7)', borderRadius: 999, paddingVertical: 9, paddingHorizontal: 18 },
+  heroSecondaryBtnText: { color: '#fff', fontWeight: '600', fontSize: 14 },
   heroGreeting: { flex: 1, marginRight: 12 },
   heroHeading: { flex: 1 },
 
