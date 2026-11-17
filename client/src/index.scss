@@ -1,12 +1,10 @@
-@import url("https://unpkg.com/leaflet@1.9.4/dist/leaflet.css");
-
 :root {
   font-family: "DM Sans", system-ui, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
-  --primary-color: #E8743B;
-  --primary-color-hover: #C45A22;
+  --primary-color: #B5501B;
+  --primary-color-hover: #93400F;
   --accent-color: #1A535C;
   --accent-color-dark: #0C3540;
   --primary-light: #FFF0E8;
@@ -16,14 +14,20 @@
   --secondary-color: #e0e0e0;
   --surface-color: #f8fafc;
   --border-color: #e8ecf0;
-  --error-color: #e63946;
+  --error-color: #d62839;
   --error-color-dark: darkred;
-  --success-color: #2f9e44;
+  --success-color: #237a36;
   --success-light: #eafaf0;
   --toast-bg: #323232;
   --toast-text: #fff;
 
   --container-whitout-navbar: calc(100vh - 80px);
+
+  // svh: the height with the phone browser's bars shown, so nothing sized
+  // to the screen hides under them.
+  @supports (height: 100svh) {
+    --container-whitout-navbar: calc(100svh - 80px);
+  }
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -176,6 +180,24 @@ body {
   }
 }
 
+// A fallback for everything a page did not style its own focus for: the
+// keyboard must always see where it is.
+:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 .error-message {
   color: var(--error-color);
   font-size: 1rem;
@@ -191,6 +213,12 @@ body {
   @media (min-width: 600px) {
     padding: 2rem;
   }
+}
+
+// A section whose content had nothing to show (it rendered null) leaves no
+// gap of padding and margin behind.
+.section__container:empty {
+  display: none;
 }
 
 .section__header {

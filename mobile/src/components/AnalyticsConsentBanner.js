@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.35)',
   },
   declineText: { fontSize: 14, fontWeight: '600', color: '#fff' },
-  accept: { flex: 1, paddingVertical: 11, borderRadius: 10, alignItems: 'center', backgroundColor: '#E8743B' },
+  accept: { flex: 1, paddingVertical: 11, borderRadius: 10, alignItems: 'center', backgroundColor: '#B5501B' },
   acceptText: { fontSize: 14, fontWeight: '700', color: '#fff' },
 });
 

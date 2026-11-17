@@ -265,9 +265,9 @@ const LifeDiaryEntryFormScreen = ({ navigation, route }) => {
                   value={locationQuery}
                   onChangeText={searchLocation}
                   placeholder={d('locationPlaceholder')}
-                  placeholderTextColor="#9ca3af"
+                  placeholderTextColor="#6b7280"
                 />
-                {locationSearching && <ActivityIndicator size="small" color="#E8743B" style={styles.locationSpinner} />}
+                {locationSearching && <ActivityIndicator size="small" color="#B5501B" style={styles.locationSpinner} />}
                 {!locationSearching && locationQuery.length > 0 && (
                   <TouchableOpacity onPress={clearLocation} style={styles.locationClear}>
                     <Text style={styles.locationClearText}>✕</Text>
@@ -297,7 +297,7 @@ const LifeDiaryEntryFormScreen = ({ navigation, route }) => {
                 value={bestMoment}
                 onChangeText={v => { setBestMoment(v); setErrors(e => ({ ...e, bestMoment: null })); setIsDirty(true); }}
                 placeholder={d('bestMomentPlaceholder')}
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#6b7280"
                 maxLength={500}
               />
             </Field>
@@ -308,7 +308,7 @@ const LifeDiaryEntryFormScreen = ({ navigation, route }) => {
                 value={lessonLearned}
                 onChangeText={v => { setLessonLearned(v); setErrors(e => ({ ...e, lessonLearned: null })); setIsDirty(true); }}
                 placeholder={d('lessonLearnedPlaceholder')}
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#6b7280"
                 maxLength={500}
               />
             </Field>
@@ -346,7 +346,7 @@ const LifeDiaryEntryFormScreen = ({ navigation, route }) => {
                 value={memories}
                 onChangeText={v => { setMemories(v); setErrors(e => ({ ...e, memories: null })); setIsDirty(true); }}
                 placeholder={d('memoriesPlaceholder')}
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#6b7280"
                 multiline
                 maxLength={3000}
               />
@@ -358,7 +358,7 @@ const LifeDiaryEntryFormScreen = ({ navigation, route }) => {
                 value={peopleMet}
                 onChangeText={v => { setPeopleMet(v); setErrors(e => ({ ...e, peopleMet: null })); setIsDirty(true); }}
                 placeholder={d('peopleMetPlaceholder')}
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#6b7280"
                 maxLength={500}
               />
             </Field>
@@ -420,7 +420,7 @@ const styles = StyleSheet.create({
   headerBackText: { fontSize: 20, color: '#374151' },
   headerTitle: { flex: 1, fontSize: 17, fontWeight: '700', color: '#111827', textAlign: 'center' },
   headerSave: {
-    backgroundColor: '#E8743B', borderRadius: 999,
+    backgroundColor: '#B5501B', borderRadius: 999,
     paddingVertical: 7, paddingHorizontal: 16,
   },
   headerSaveDisabled: { opacity: 0.5 },
@@ -444,7 +444,7 @@ const styles = StyleSheet.create({
   locationInputRow: { flexDirection: 'row', alignItems: 'center' },
   locationSpinner: { position: 'absolute', right: 12 },
   locationClear: { position: 'absolute', right: 10, padding: 4 },
-  locationClearText: { color: '#9ca3af', fontSize: 13 },
+  locationClearText: { color: '#6b7280', fontSize: 13 },
   locationResults: {
     marginTop: 6, borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 10,
     backgroundColor: '#fff', overflow: 'hidden',
@@ -452,7 +452,7 @@ const styles = StyleSheet.create({
   locationResult: { paddingVertical: 10, paddingHorizontal: 12 },
   locationResultBorder: { borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
   locationResultName: { fontSize: 14, color: '#111827', fontWeight: '600' },
-  locationResultLabel: { fontSize: 12, color: '#9ca3af', marginTop: 1 },
+  locationResultLabel: { fontSize: 12, color: '#6b7280', marginTop: 1 },
 
   gallery: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   photoWrapper: { width: 76, height: 76, borderRadius: 10, overflow: 'visible' },
@@ -467,7 +467,7 @@ const styles = StyleSheet.create({
     borderWidth: 1.5, borderColor: '#dde3ec', borderStyle: 'dashed',
     alignItems: 'center', justifyContent: 'center', backgroundColor: '#f7f9fc',
   },
-  photoAddText: { fontSize: 9, color: '#9ca3af', marginTop: 2, textAlign: 'center' },
+  photoAddText: { fontSize: 11, color: '#6b7280', marginTop: 2, textAlign: 'center' },
 
   wouldReturnRow: { flexDirection: 'row', gap: 8 },
   wouldReturnBtn: {
@@ -475,9 +475,9 @@ const styles = StyleSheet.create({
     borderWidth: 1.5, borderColor: '#e5e7eb', borderRadius: 10,
     paddingVertical: 10, backgroundColor: '#f9fafb',
   },
-  wouldReturnBtnActive: { borderColor: '#E8743B', backgroundColor: '#FFF0E8' },
+  wouldReturnBtnActive: { borderColor: '#B5501B', backgroundColor: '#FFF0E8' },
   wouldReturnText: { fontSize: 14, fontWeight: '600', color: '#6b7280' },
-  wouldReturnTextActive: { color: '#E8743B' },
+  wouldReturnTextActive: { color: '#B5501B' },
 
   errorBanner: {
     backgroundColor: '#fef2f2', borderRadius: 10, padding: 12,
@@ -490,7 +490,7 @@ const fieldStyles = StyleSheet.create({
   wrapper: { marginBottom: 14 },
   labelRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 },
   label: { fontSize: 13, fontWeight: '600', color: '#374151' },
-  hint: { fontSize: 12, color: '#9ca3af' },
+  hint: { fontSize: 12, color: '#6b7280' },
   hintWarn: { color: '#f59e0b' },
   error: { fontSize: 12, color: '#dc2626', marginTop: 4 },
 });

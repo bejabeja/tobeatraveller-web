@@ -53,7 +53,7 @@ const STEP_CONFIG = {
   transport:     { Icon: IoTrainOutline,    color: "#1A535C" },
   flight:        { Icon: IoAirplaneOutline, color: "#1A535C" },
   accommodation: { Icon: IoHomeOutline,     color: "#7C3AED" },
-  activity:      { Icon: IoFlashOutline,    color: "#E8743B" },
+  activity:      { Icon: IoFlashOutline,    color: "#B5501B" },
   local_tip:     { Icon: IoBulbOutline,     color: "#D97706" },
   nature:        { Icon: IoLeafOutline,     color: "#16A34A" },
   beach:         { Icon: IoSunnyOutline,    color: "#0EA5E9" },
@@ -62,7 +62,7 @@ const STEP_CONFIG = {
   park:          { Icon: IoLeafOutline,     color: "#16A34A" },
   camping:       { Icon: IoBonfireOutline,  color: "#B45309" },
   island:        { Icon: IoWaterOutline,    color: "#0EA5E9" },
-  sport:         { Icon: IoFitnessOutline,  color: "#E8743B" },
+  sport:         { Icon: IoFitnessOutline,  color: "#B5501B" },
   vineyard:      { Icon: IoWineOutline,     color: "#7C3AED" },
   other:         { Icon: IoLocationOutline, color: "#94A3B8" },
 };

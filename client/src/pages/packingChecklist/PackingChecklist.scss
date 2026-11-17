@@ -45,6 +45,11 @@
       flex: 0 0 auto;
       max-width: none;
     }
+
+    &:focus-within {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(181, 80, 27, 0.15);
+    }
   }
 
   &__search-icon {
@@ -343,7 +348,7 @@
     width: fit-content;
     display: inline-flex;
     padding: 0.15rem;
-    color: #16a34a;
+    color: #15803d;
     font-size: 1rem;
   }
 

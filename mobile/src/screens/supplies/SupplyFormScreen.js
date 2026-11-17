@@ -133,7 +133,7 @@ const SupplyFormScreen = ({ navigation, route }) => {
                 onChangeText={handleNameChange}
                 onBlur={() => setTimeout(() => setSuggestions([]), 150)}
                 placeholder={s('namePlaceholder')}
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#6b7280"
                 maxLength={255}
               />
               {suggestions.length > 0 && (
@@ -159,7 +159,7 @@ const SupplyFormScreen = ({ navigation, route }) => {
                   value={amount}
                   onChangeText={v => { setAmount(v); setErrors(e => ({ ...e, amount: null })); setIsDirty(true); }}
                   placeholder={allowsDecimals ? '0.00' : '0'}
-                  placeholderTextColor="#9ca3af"
+                  placeholderTextColor="#6b7280"
                   keyboardType={allowsDecimals ? 'decimal-pad' : 'number-pad'}
                 />
               </Field>
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
   headerBackText: { fontSize: 20, color: '#374151' },
   headerTitle: { flex: 1, fontSize: 17, fontWeight: '700', color: '#111827', textAlign: 'center' },
   headerSave: {
-    backgroundColor: '#E8743B', borderRadius: 999,
+    backgroundColor: '#B5501B', borderRadius: 999,
     paddingVertical: 7, paddingHorizontal: 16,
   },
   headerSaveDisabled: { opacity: 0.5 },
@@ -279,22 +279,22 @@ const styles = StyleSheet.create({
   suggestion: { flexDirection: 'row', alignItems: 'baseline', paddingVertical: 10, paddingHorizontal: 12 },
   suggestionBorder: { borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
   suggestionName: { fontSize: 14, color: '#111827', fontWeight: '600' },
-  suggestionUnit: { fontSize: 12, color: '#9ca3af' },
+  suggestionUnit: { fontSize: 12, color: '#6b7280' },
 
   chips: { gap: 8, paddingVertical: 2 },
   categoryChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   notesToggle: { alignSelf: 'flex-start', paddingVertical: 4 },
-  notesToggleText: { fontSize: 14, fontWeight: '600', color: '#E8743B' },
+  notesToggleText: { fontSize: 14, fontWeight: '600', color: '#B5501B' },
   chip: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
     paddingVertical: 6, paddingHorizontal: 12,
     borderRadius: 999, borderWidth: 1.5, borderColor: '#e5e7eb',
     backgroundColor: '#f9fafb',
   },
-  chipActive: { borderColor: '#E8743B', backgroundColor: '#FFF0E8' },
+  chipActive: { borderColor: '#B5501B', backgroundColor: '#FFF0E8' },
   chipEmoji: { fontSize: 13 },
   chipLabel: { fontSize: 13, color: '#6b7280', fontWeight: '500' },
-  chipLabelActive: { color: '#E8743B', fontWeight: '600' },
+  chipLabelActive: { color: '#B5501B', fontWeight: '600' },
 
   errorBanner: {
     backgroundColor: '#fef2f2', borderRadius: 10, padding: 12,
@@ -307,7 +307,7 @@ const fieldStyles = StyleSheet.create({
   wrapper: { marginBottom: 14 },
   labelRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 },
   label: { fontSize: 13, fontWeight: '600', color: '#374151' },
-  hint: { fontSize: 12, color: '#9ca3af' },
+  hint: { fontSize: 12, color: '#6b7280' },
   hintWarn: { color: '#f59e0b' },
   error: { fontSize: 12, color: '#dc2626', marginTop: 4 },
 });

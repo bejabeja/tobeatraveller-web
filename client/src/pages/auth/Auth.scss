@@ -111,40 +111,41 @@
     transition: color 0.15s;
 
     input[type="checkbox"] {
-      width: 15px;
-      min-width: 15px;
-      height: 15px;
-      margin-top: 2px;
+      width: 20px;
+      min-width: 20px;
+      height: 20px;
+      margin-top: 0;
       cursor: pointer;
       accent-color: var(--primary-color);
     }
 
     a {
       color: var(--primary-color);
-      text-decoration: none;
+      text-decoration: underline;
+      text-underline-offset: 2px;
       font-weight: 500;
       width: auto;
-      &:hover { text-decoration: underline; }
+      &:hover { text-decoration-thickness: 2px; }
     }
 
     strong { color: var(--text-color); }
 
     &--error {
-      color: var(--error-color, #e63946);
+      color: var(--error-color, #d62839);
 
-      strong { color: var(--error-color, #e63946); }
+      strong { color: var(--error-color, #d62839); }
 
       input[type="checkbox"] {
-        outline: 2px solid var(--error-color, #e63946);
+        outline: 2px solid var(--error-color, #d62839);
         outline-offset: 1px;
         border-radius: 2px;
-        accent-color: var(--error-color, #e63946);
+        accent-color: var(--error-color, #d62839);
       }
     }
   }
 
   &__required {
-    color: var(--error-color, #e63946);
+    color: var(--error-color, #d62839);
     font-weight: 700;
   }
 
@@ -281,7 +282,7 @@
       margin-top: 0.75rem;
       padding: 0.6rem 0.85rem;
       border-radius: 12px;
-      background: rgba(232, 116, 59, 0.1);
+      background: rgba(181, 80, 27, 0.1);
       color: var(--primary-color);
       font-size: 0.85rem;
       font-weight: 600;
@@ -370,14 +371,12 @@
       font-size: 0.8rem;
       color: var(--text-secondary-color);
       text-decoration: none;
-      opacity: 0.7;
       padding-top: 0.25rem;
       border-top: 1px solid var(--border-color);
       width: 100%;
       text-align: center;
 
       &:hover {
-        opacity: 1;
         color: var(--primary-color);
       }
     }
@@ -411,7 +410,7 @@
     width: fit-content;
 
     &--checking  { color: var(--text-secondary-color); background-color: #f1f5f9; }
-    &--available { color: #16a34a;                     background-color: #f0fdf4; }
+    &--available { color: #15803d;                     background-color: #f0fdf4; }
     &--taken     { color: var(--error-color);           background-color: #fef2f2; }
   }
 }

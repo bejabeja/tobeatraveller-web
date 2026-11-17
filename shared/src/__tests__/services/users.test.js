@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { setApiUrl } from '../../utils/apiConfig.js';
 import { setTokenStorage } from '../../utils/tokenStorage.js';
-import { checkUsernameAvailable, getFeaturedUsers, updateMyLanguage } from '../../services/users.js';
+import { checkUsernameAvailable, getFeaturedUsers, getUserForAuth, updateMyLanguage } from '../../services/users.js';
 import { sendContact } from '../../services/auth.js';
 
 describe('updateMyLanguage', () => {
@@ -76,5 +76,38 @@ describe('checkUsernameAvailable', () => {
 
         await expect(checkUsernameAvailable('jane')).resolves.toBe(true);
         expect(global.fetch.mock.calls[0][1].headers.Authorization).toBe('Bearer token');
+    });
+});
+
+describe('getUserForAuth', () => {
+    let storage;
+
+    beforeEach(() => {
+        setApiUrl('http://api.test');
+        storage = {};
+        setTokenStorage({
+            getItem: async (key) => storage[key] ?? null,
+            setItem: async (key, value) => { storage[key] = value; },
+            removeItem: async (key) => { delete storage[key]; },
+        });
+        global.fetch = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => ({ id: 'u1' }) });
+    });
+
+    // Every signed-out visit asked the API and got a 401 back: a request for
+    // nothing on each page load, and an error in the console.
+    it('answers no session without asking the API when no token is stored', async () => {
+        const user = await getUserForAuth();
+
+        expect(user).toBeNull();
+        expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    it('returns the signed-in user when a token is stored', async () => {
+        storage.access_token = 'access-token';
+
+        const user = await getUserForAuth();
+
+        expect(user).toEqual({ id: 'u1' });
+        expect(global.fetch.mock.calls[0][0]).toBe('http://api.test/users/me');
     });
 });

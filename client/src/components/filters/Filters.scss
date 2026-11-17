@@ -82,13 +82,13 @@
     max-width: 100%;
 
     &::placeholder {
-      color: #9ca3af;
+      color: #6b7280;
     }
 
     &:focus {
       outline: none;
       border-color: var(--primary-color);
-      box-shadow: 0 0 0 3px rgba(0, 119, 182, 0.15);
+      box-shadow: 0 0 0 3px rgba(181, 80, 27, 0.15);
     }
   }
 }
@@ -163,6 +163,7 @@
 
 .btn-toggle-filters {
   width: auto;
+  min-height: 2rem;
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
@@ -261,7 +262,7 @@
   &:hover {
     border-color: var(--primary-color);
     color: var(--primary-color);
-    background: rgba(0, 119, 182, 0.05);
+    background: rgba(181, 80, 27, 0.05);
   }
 
   &--active {

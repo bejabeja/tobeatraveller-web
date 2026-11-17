@@ -427,7 +427,7 @@ const PackingListScreen = ({ navigation, route }) => {
           <TextInput
             style={styles.addInput}
             placeholder={p('addItemPlaceholder')}
-            placeholderTextColor="#9ca3af"
+            placeholderTextColor="#6b7280"
             value={newItemName}
             onChangeText={setNewItemName}
             onSubmitEditing={addItem}
@@ -465,7 +465,7 @@ const PackingListScreen = ({ navigation, route }) => {
                   placeholder={p('searchPlaceholder')}
                   value={search}
                   onChangeText={setSearch}
-                  placeholderTextColor="#9ca3af"
+                  placeholderTextColor="#6b7280"
                   autoCorrect={false}
                   accessibilityLabel={p('searchPlaceholder')}
                 />
@@ -614,7 +614,7 @@ const PackingListScreen = ({ navigation, route }) => {
                           <Ionicons name="pencil-outline" size={16} color="#6b7280" />
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.itemActionBtn} hitSlop={ACTION_HIT_SLOP} onPress={() => removeItem(item)} accessibilityRole="button" accessibilityLabel={t('common.delete')}>
-                          <Ionicons name="trash-outline" size={16} color="#ef4444" />
+                          <Ionicons name="trash-outline" size={16} color="#dc2626" />
                         </TouchableOpacity>
                       </View>
                     )}
@@ -715,7 +715,7 @@ const styles = StyleSheet.create({
   progressBadge: { backgroundColor: '#f3f4f6', borderRadius: 999, paddingVertical: 4, paddingHorizontal: 10 },
   progressBadgeComplete: { backgroundColor: '#dcfce7' },
   progressText: { fontSize: 12, fontWeight: '700', color: '#6b7280' },
-  progressTextComplete: { color: '#16a34a' },
+  progressTextComplete: { color: '#15803d' },
   menuBtn: { padding: 4 },
   tripLink: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 16, paddingBottom: 10, marginTop: -4 },
   tripLinkText: { flexShrink: 1, fontSize: 13, fontWeight: '600', color: COLORS.primary },
@@ -771,7 +771,7 @@ const styles = StyleSheet.create({
   categoryCount: { backgroundColor: '#f3f4f6', borderRadius: 999, paddingVertical: 2, paddingHorizontal: 8 },
   categoryCountComplete: { backgroundColor: '#dcfce7' },
   categoryCountText: { fontSize: 11, fontWeight: '700', color: '#6b7280' },
-  categoryCountTextComplete: { color: '#16a34a' },
+  categoryCountTextComplete: { color: '#15803d' },
 
   item: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
@@ -780,7 +780,7 @@ const styles = StyleSheet.create({
   },
   itemLabel: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 },
   itemName: { fontSize: 14, color: '#111827', flexShrink: 1 },
-  itemNameChecked: { color: '#9ca3af', textDecorationLine: 'line-through' },
+  itemNameChecked: { color: '#6b7280', textDecorationLine: 'line-through' },
   itemActions: { flexDirection: 'row', gap: 12, marginLeft: 8 },
   itemActionBtn: { padding: 2 },
   itemActionBtnDisabled: { opacity: 0.3 },

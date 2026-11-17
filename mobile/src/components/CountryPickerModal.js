@@ -66,7 +66,7 @@ const CountryPickerModal = ({ visible, onClose, onSaved, initialSelected = [], l
         <Text style={styles.name} numberOfLines={1}>{countryName(code, i18n.language)}</Text>
         {isLocked
           ? <Text style={styles.earned}>{t('passport.pickerEarned')}</Text>
-          : <Ionicons name={isChecked ? 'checkbox' : 'square-outline'} size={22} color={isChecked ? '#E8743B' : '#9ca3af'} />}
+          : <Ionicons name={isChecked ? 'checkbox' : 'square-outline'} size={22} color={isChecked ? '#B5501B' : '#9ca3af'} />}
       </TouchableOpacity>
     );
   };
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
   earned: { fontSize: 11, color: '#6b7280' },
   empty: { marginTop: 24, textAlign: 'center', color: '#6b7280' },
   footer: { padding: 16, borderTopWidth: 1, borderTopColor: '#e5e7eb', backgroundColor: '#fff' },
-  saveBtn: { paddingVertical: 14, borderRadius: 12, alignItems: 'center', backgroundColor: '#E8743B' },
+  saveBtn: { paddingVertical: 14, borderRadius: 12, alignItems: 'center', backgroundColor: '#B5501B' },
   saveBtnDisabled: { opacity: 0.6 },
   saveText: { fontSize: 16, fontWeight: '700', color: '#fff' },
 });

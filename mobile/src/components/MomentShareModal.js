@@ -131,11 +131,11 @@ const styles = StyleSheet.create({
   actions: { flexDirection: 'row', gap: 10, marginTop: 16, alignSelf: 'stretch' },
   cancelBtn: { flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center', backgroundColor: '#f3f4f6' },
   cancelText: { fontSize: 15, fontWeight: '600', color: '#374151' },
-  shareBtn: { flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center', backgroundColor: '#E8743B' },
+  shareBtn: { flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center', backgroundColor: '#B5501B' },
   shareBtnDisabled: { opacity: 0.5 },
   shareText: { fontSize: 15, fontWeight: '700', color: '#fff' },
   linkHint: { marginTop: 10, fontSize: 11, textAlign: 'center', color: '#6b7280' },
-  switch: { marginTop: 12, fontSize: 13, fontWeight: '600', color: '#E8743B', textDecorationLine: 'underline' },
+  switch: { marginTop: 12, fontSize: 13, fontWeight: '600', color: '#B5501B', textDecorationLine: 'underline' },
 
   cardKicker: { fontSize: scale(34), fontWeight: '600', letterSpacing: scale(8), color: GOLD },
   cardTitle: { alignSelf: 'stretch', marginTop: scale(170), fontSize: scale(76), fontWeight: '800', color: GOLD, textAlign: 'center' },

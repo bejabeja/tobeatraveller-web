@@ -29,13 +29,13 @@
     transition: all 0.25s;
 
     &::placeholder {
-      color: #9ca3af;
+      color: #6b7280;
     }
 
     &:focus {
       outline: none;
       border-color: var(--primary-color);
-      box-shadow: 0 0 0 3px rgba(0, 119, 182, 0.15);
+      box-shadow: 0 0 0 3px rgba(181, 80, 27, 0.15);
     }
 
     // The clear button below replaces the browser's own.

@@ -17,7 +17,7 @@ const ToolShortcuts = ({ navigation }) => {
     <View style={styles.tools}>
       {TOOLS.map(({ screen, icon, labelKey }) => (
         <TouchableOpacity key={screen} style={styles.tool} onPress={() => navigation.navigate(screen)} accessibilityRole="button">
-          <Ionicons name={icon} size={22} color="#E8743B" />
+          <Ionicons name={icon} size={22} color="#B5501B" />
           <Text style={styles.toolText} numberOfLines={2}>{t(labelKey)}</Text>
         </TouchableOpacity>
       ))}

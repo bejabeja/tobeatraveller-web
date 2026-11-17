@@ -27,7 +27,7 @@ const DateField = ({ value, onChange, style, minimumDate, accessibilityLabel }) 
         value={value}
         onChangeText={onChange}
         placeholder={t('common.datePlaceholder')}
-        placeholderTextColor="#9ca3af"
+        placeholderTextColor="#6b7280"
         keyboardType="numbers-and-punctuation"
         accessibilityLabel={accessibilityLabel}
       />
@@ -81,7 +81,7 @@ const DateField = ({ value, onChange, style, minimumDate, accessibilityLabel }) 
 
 const styles = StyleSheet.create({
   text: { fontSize: 15, color: '#111827' },
-  placeholder: { color: '#9ca3af' },
+  placeholder: { color: '#6b7280' },
   backdrop: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(15,23,42,0.5)' },
   sheet: {
     backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20,

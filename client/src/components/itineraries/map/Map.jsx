@@ -10,8 +10,8 @@ const createNumberedIcon = (number, highlighted = false) =>
   L.divIcon({
     className: "",
     html: highlighted
-      ? `<div style="width:32px;height:32px;background:#fff;color:#E8743B;border:2.5px solid #E8743B;border-radius:50%;box-shadow:0 0 0 4px rgba(232,116,59,0.2),0 2px 8px rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;font-family:inherit;line-height:1;transition:all 0.15s;">${number}</div>`
-      : `<div style="width:26px;height:26px;background:#E8743B;color:#fff;border:2.5px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:inherit;line-height:1;">${number}</div>`,
+      ? `<div style="width:32px;height:32px;background:#fff;color:#B5501B;border:2.5px solid #B5501B;border-radius:50%;box-shadow:0 0 0 4px rgba(181, 80, 27,0.2),0 2px 8px rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;font-family:inherit;line-height:1;transition:all 0.15s;">${number}</div>`
+      : `<div style="width:26px;height:26px;background:#B5501B;color:#fff;border:2.5px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:inherit;line-height:1;">${number}</div>`,
     iconSize: highlighted ? [32, 32] : [26, 26],
     iconAnchor: highlighted ? [16, 16] : [13, 13],
     popupAnchor: [0, -16],

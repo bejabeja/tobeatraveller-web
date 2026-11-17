@@ -350,7 +350,7 @@ const CreateItineraryScreen = ({ navigation }) => {
                 value={title}
                 onChangeText={v => { setTitle(v); setErrors(e => ({ ...e, title: null })); }}
                 placeholder={t('createItinerary.titlePlaceholder')}
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#6b7280"
                 maxLength={50}
               />
             </Field>
@@ -363,10 +363,10 @@ const CreateItineraryScreen = ({ navigation }) => {
                     value={destQuery}
                     onChangeText={searchDestination}
                     placeholder={t('createItinerary.destinationPlaceholder')}
-                    placeholderTextColor="#9ca3af"
+                    placeholderTextColor="#6b7280"
                   />
                   {destSearching && (
-                    <ActivityIndicator size="small" color="#E8743B" style={ls.destSpinner} />
+                    <ActivityIndicator size="small" color="#B5501B" style={ls.destSpinner} />
                   )}
                 </View>
                 {destResults.length > 0 && (
@@ -393,7 +393,7 @@ const CreateItineraryScreen = ({ navigation }) => {
                 value={description}
                 onChangeText={setDescription}
                 placeholder={t('createItinerary.descriptionPlaceholder')}
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#6b7280"
                 multiline
                 maxLength={500}
               />
@@ -480,14 +480,14 @@ const ls = StyleSheet.create({
   headerTitle: { fontSize: 17, fontWeight: '700', color: '#111827' },
   headerSubtitle: { fontSize: 11, color: '#6b7280', marginTop: 1, maxWidth: 160 },
   headerSave: {
-    backgroundColor: '#E8743B', borderRadius: 999,
+    backgroundColor: '#B5501B', borderRadius: 999,
     paddingVertical: 7, paddingHorizontal: 16,
   },
   headerSaveText: { color: '#fff', fontWeight: '700', fontSize: 14 },
   btnDisabled: { opacity: 0.5 },
 
   progressBar: { height: 4, backgroundColor: '#e5e7eb' },
-  progressFill: { height: '100%', backgroundColor: '#E8743B' },
+  progressFill: { height: '100%', backgroundColor: '#B5501B' },
   progressLabel: { fontSize: 11, color: '#6b7280', textAlign: 'right', paddingHorizontal: 16, paddingVertical: 4, backgroundColor: '#fff' },
 
   scroll: { padding: 16, gap: 14 },
@@ -496,11 +496,11 @@ const ls = StyleSheet.create({
     height: 180, borderRadius: 14, overflow: 'hidden',
     backgroundColor: '#e5e7eb', borderWidth: 2, borderStyle: 'dashed', borderColor: '#cbd5e1',
   },
-  photoCardComplete: { borderStyle: 'solid', borderColor: '#E8743B', borderWidth: 2 },
+  photoCardComplete: { borderStyle: 'solid', borderColor: '#B5501B', borderWidth: 2 },
   photo: { width: '100%', height: '100%' },
   photoPlaceholder: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8 },
   photoPlaceholderIcon: { fontSize: 32 },
-  photoPlaceholderText: { fontSize: 14, color: '#9ca3af', fontWeight: '500' },
+  photoPlaceholderText: { fontSize: 14, color: '#6b7280', fontWeight: '500' },
   photoOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.3)', alignItems: 'center', justifyContent: 'center',
@@ -527,7 +527,7 @@ const ls = StyleSheet.create({
   missingHintText: { fontSize: 13, color: '#92400e' },
 
   createBtn: {
-    backgroundColor: '#E8743B', borderRadius: 999,
+    backgroundColor: '#B5501B', borderRadius: 999,
     paddingVertical: 16, alignItems: 'center',
     ...shadow(4, 0.2, 10, 4),
   },

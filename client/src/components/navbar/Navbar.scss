@@ -80,7 +80,7 @@
   position: absolute;
   top: -6px;
   right: -8px;
-  background: var(--error-color, #e63946);
+  background: var(--error-color, #d62839);
   color: #fff;
   font-size: 0.6rem;
   font-weight: 700;
@@ -151,7 +151,7 @@
   transition: background-color 0.2s, color 0.2s;
 
   &:hover {
-    background-color: rgba(0, 119, 182, 0.07);
+    background-color: rgba(181, 80, 27, 0.07);
     color: var(--primary-color);
   }
 
@@ -401,7 +401,7 @@
     line-height: 1;
 
     &:hover {
-      background-color: rgba(0, 119, 182, 0.07);
+      background-color: rgba(181, 80, 27, 0.07);
     }
   }
 
@@ -482,7 +482,7 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    opacity: 0.6;
+    color: var(--text-secondary-color);
     padding: 0.25rem 0.75rem;
     margin-bottom: 0.25rem;
   }
@@ -502,13 +502,13 @@
 
   &:hover {
     color: var(--primary-color);
-    background-color: rgba(0, 119, 182, 0.07);
+    background-color: rgba(181, 80, 27, 0.07);
   }
 
   &.active {
     color: var(--primary-color);
     font-weight: 600;
-    background-color: rgba(0, 119, 182, 0.1);
+    background-color: var(--primary-light);
 
     .nav-icon {
       color: var(--primary-color);
@@ -565,11 +565,17 @@
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.45);
-  z-index: 300;
+  // Above the bars fixed to the window (1500), the cookie notice (1600) and
+  // the maps (1000): its own options must never sit under them.
+  z-index: 1700;
   display: flex;
   align-items: flex-end;
   justify-content: center;
   animation: cs-backdrop 0.2s ease;
+}
+
+html:has(.create-sheet__backdrop) {
+  overflow: hidden;
 }
 
 @keyframes cs-backdrop {
@@ -582,7 +588,7 @@
   max-width: 520px;
   background: var(--white-color);
   border-radius: 24px 24px 0 0;
-  padding: 1rem 1.25rem 2rem;
+  padding: 1rem 1.25rem calc(2rem + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -626,8 +632,8 @@
     }
 
     &--experience {
-      .create-sheet__option-icon { background: rgba(232,116,59,0.12); color: #E8743B; }
-      &:hover { border-color: #E8743B; background: rgba(232,116,59,0.04); }
+      .create-sheet__option-icon { background: rgba(181, 80, 27,0.12); color: #B5501B; }
+      &:hover { border-color: #B5501B; background: rgba(181, 80, 27,0.04); }
     }
   }
 
@@ -708,8 +714,8 @@
     justify-content: center;
     gap: 3px;
     text-decoration: none;
-    color: #aaa;
-    font-size: 0.62rem;
+    color: var(--text-secondary-color);
+    font-size: 0.68rem;
     font-weight: 500;
     font-family: inherit;
     transition: color 0.2s;

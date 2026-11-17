@@ -13,10 +13,10 @@ const buildMapHTML = (destinations) => `<!DOCTYPE html>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     html,body,#map{width:100%;height:100%}
-    .pin{background:#E8743B;color:#fff;border-radius:50%;border:2px solid #fff;
+    .pin{background:#B5501B;color:#fff;border-radius:50%;border:2px solid #fff;
       width:32px;height:32px;display:flex;align-items:center;justify-content:center;
       font-size:11px;font-weight:800;font-family:sans-serif;
-      box-shadow:0 2px 6px rgba(232,116,59,.5);cursor:pointer}
+      box-shadow:0 2px 6px rgba(181, 80, 27,.5);cursor:pointer}
   </style>
 </head>
 <body>

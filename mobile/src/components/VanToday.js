@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
   title: { flex: 1, fontSize: 18, fontWeight: '800', color: '#111827' },
   addBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    backgroundColor: '#E8743B', borderRadius: 999, paddingVertical: 9, paddingHorizontal: 14,
+    backgroundColor: '#B5501B', borderRadius: 999, paddingVertical: 9, paddingHorizontal: 14,
   },
   addBtnText: { color: '#fff', fontWeight: '700', fontSize: 13 },
   cards: { flexDirection: 'row', gap: 10 },

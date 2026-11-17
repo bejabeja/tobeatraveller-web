@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
     ...shadow(2, 0.06, 8, 2),
   },
   cardTitle: {
-    fontSize: 13, fontWeight: '700', color: '#9ca3af',
+    fontSize: 13, fontWeight: '700', color: '#6b7280',
     textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4,
   },
   hint: { fontSize: 14, color: '#6b7280', paddingVertical: 8 },

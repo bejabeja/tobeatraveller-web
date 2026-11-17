@@ -167,7 +167,7 @@ const EditItineraryScreen = ({ route, navigation }) => {
     if (!result.canceled && result.assets?.[0]) setPhotoUri(result.assets[0].uri);
   };
 
-  if (loading) return <ActivityIndicator size="large" color="#E8743B" style={{ flex: 1, marginTop: 60 }} />;
+  if (loading) return <ActivityIndicator size="large" color="#B5501B" style={{ flex: 1, marginTop: 60 }} />;
 
   const currentPhoto = photoUri || itinerary?.photoUrl;
 
@@ -225,7 +225,7 @@ const EditItineraryScreen = ({ route, navigation }) => {
                 value={title}
                 onChangeText={v => { setTitle(v); setErrors(e => ({ ...e, title: null })); }}
                 placeholder={t('createItinerary.titlePlaceholder')}
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#6b7280"
                 maxLength={50}
               />
             </Field>
@@ -241,7 +241,7 @@ const EditItineraryScreen = ({ route, navigation }) => {
                 value={description}
                 onChangeText={setDescription}
                 placeholder={t('createItinerary.descriptionPlaceholder')}
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#6b7280"
                 multiline
                 maxLength={500}
               />
@@ -299,7 +299,7 @@ const ls = StyleSheet.create({
   headerBackText: { fontSize: 20, color: '#374151' },
   headerTitle: { flex: 1, fontSize: 17, fontWeight: '700', color: '#111827', textAlign: 'center' },
   headerSave: {
-    backgroundColor: '#E8743B', borderRadius: 999,
+    backgroundColor: '#B5501B', borderRadius: 999,
     paddingVertical: 7, paddingHorizontal: 16,
   },
   headerSaveText: { color: '#fff', fontWeight: '700', fontSize: 14 },
@@ -308,7 +308,7 @@ const ls = StyleSheet.create({
   photoCard: { height: 180, borderRadius: 14, overflow: 'hidden', backgroundColor: '#e5e7eb', position: 'relative' },
   photo: { width: '100%', height: '100%' },
   photoPlaceholder: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  photoPlaceholderText: { fontSize: 16, color: '#9ca3af' },
+  photoPlaceholderText: { fontSize: 16, color: '#6b7280' },
   photoOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.3)', alignItems: 'center', justifyContent: 'center',
@@ -316,7 +316,7 @@ const ls = StyleSheet.create({
   photoOverlayText: { color: '#fff', fontWeight: '600', fontSize: 14 },
   inputDisabled: { backgroundColor: '#f3f4f6', justifyContent: 'center', paddingVertical: 13 },
   inputDisabledText: { fontSize: 15, color: '#6b7280' },
-  fieldNote: { fontSize: 11, color: '#9ca3af', marginTop: 4 },
+  fieldNote: { fontSize: 11, color: '#6b7280', marginTop: 4 },
 });
 
 export default EditItineraryScreen;

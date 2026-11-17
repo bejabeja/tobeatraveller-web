@@ -2,7 +2,7 @@ jest.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key) => key, i1
 jest.mock('@tobeatraveller/shared', () => ({
   ...jest.requireActual('../../../../shared/src/utils/formatLocale.js'),
   ...jest.requireActual('../../../../shared/src/utils/nextTrip.js'),
-  COLORS: { primary: '#E8743B' },
+  COLORS: { primary: '#B5501B' },
 }));
 let mockPickedDate;
 jest.mock('@react-native-community/datetimepicker', () => {

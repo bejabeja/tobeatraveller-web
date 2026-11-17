@@ -324,7 +324,7 @@ const PassportScreen = ({ navigation, route }) => {
       </View>
 
       {loading ? (
-        <ActivityIndicator style={styles.loading} size="large" color="#E8743B" />
+        <ActivityIndicator style={styles.loading} size="large" color="#B5501B" />
       ) : error || !passport ? (
         <>
           <Text style={styles.errorText}>{t('passport.loadError')}</Text>
@@ -470,7 +470,7 @@ const styles = StyleSheet.create({
   loading: { marginTop: 48 },
   errorText: { margin: 24, marginBottom: 12, textAlign: 'center', color: '#b91c1c' },
   retryBtn: { alignSelf: 'center', paddingVertical: 10, paddingHorizontal: 24 },
-  retryBtnText: { color: '#E8743B', fontWeight: '700', fontSize: 14 },
+  retryBtnText: { color: '#B5501B', fontWeight: '700', fontSize: 14 },
   content: { padding: 16, gap: 16 },
 
   cover: {
@@ -521,12 +521,12 @@ const styles = StyleSheet.create({
   compareTitle: { fontSize: 16, fontWeight: '800', color: PASSPORT_NAVY, textAlign: 'center' },
   compareFlags: { fontSize: 20, lineHeight: 28, textAlign: 'center' },
   compareMissing: { fontSize: 13, color: PASSPORT_INK_MUTED, textAlign: 'center' },
-  leaderboardExplore: { color: '#E8743B', fontWeight: '700' },
+  leaderboardExplore: { color: '#B5501B', fontWeight: '700' },
   leaderboardRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 8, paddingVertical: 8, paddingHorizontal: 10, borderRadius: 12 },
   leaderboardRowMe: { backgroundColor: 'rgba(217, 164, 65, 0.18)' },
   leaderboardRank: { width: 22, textAlign: 'center', fontSize: 15, fontWeight: '800', color: PASSPORT_GOLD },
   leaderboardAvatar: { width: 34, height: 34, borderRadius: 17 },
-  leaderboardAvatarFallback: { alignItems: 'center', justifyContent: 'center', backgroundColor: '#E8743B' },
+  leaderboardAvatarFallback: { alignItems: 'center', justifyContent: 'center', backgroundColor: '#B5501B' },
   leaderboardAvatarInitial: { color: '#fff', fontWeight: '700', fontSize: 14 },
   leaderboardName: { flex: 1, fontSize: 14, color: PASSPORT_NAVY },
   leaderboardNameMe: { fontWeight: '800' },
@@ -554,12 +554,12 @@ const styles = StyleSheet.create({
   seal: {
     width: 76, height: 76, borderRadius: 38,
     alignItems: 'center', justifyContent: 'center',
-    borderWidth: 3, borderColor: '#E8743B', backgroundColor: '#fff',
+    borderWidth: 3, borderColor: '#B5501B', backgroundColor: '#fff',
     transform: [{ rotate: '-6deg' }],
   },
   sealInnerRing: {
     position: 'absolute', top: 4, left: 4, right: 4, bottom: 4,
-    borderRadius: 34, borderWidth: 1.5, borderStyle: 'dashed', borderColor: 'rgba(232, 116, 59, 0.55)',
+    borderRadius: 34, borderWidth: 1.5, borderStyle: 'dashed', borderColor: 'rgba(181, 80, 27, 0.55)',
   },
   sealLocked: {
     borderWidth: 2, borderStyle: 'dashed', borderColor: '#c9bfae',
@@ -580,8 +580,8 @@ const styles = StyleSheet.create({
     marginTop: 'auto', width: '100%', maxWidth: 96, height: 14, borderRadius: 999,
     backgroundColor: '#ebe3d3', overflow: 'hidden', justifyContent: 'center',
   },
-  progressFill: { position: 'absolute', left: 0, top: 0, bottom: 0, backgroundColor: 'rgba(232, 116, 59, 0.75)' },
-  progressLabel: { fontSize: 9, fontWeight: '700', color: PASSPORT_NAVY, textAlign: 'center' },
+  progressFill: { position: 'absolute', left: 0, top: 0, bottom: 0, backgroundColor: 'rgba(181, 80, 27, 0.75)' },
+  progressLabel: { fontSize: 10, fontWeight: '700', color: PASSPORT_NAVY, textAlign: 'center' },
   privateIcon: { position: 'absolute', top: 0, right: 4 },
 
   country: {

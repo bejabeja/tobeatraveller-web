@@ -96,11 +96,11 @@ const styles = StyleSheet.create({
   text: { fontSize: 14, color: '#374151', lineHeight: 19 },
   bold: { fontWeight: '700', color: '#111827' },
   italic: { color: '#6b7280' },
-  time: { fontSize: 12, color: '#9ca3af', marginTop: 2 },
+  time: { fontSize: 12, color: '#6b7280', marginTop: 2 },
 
   dot: {
     width: 8, height: 8, borderRadius: 4,
-    backgroundColor: '#E8743B', flexShrink: 0,
+    backgroundColor: '#B5501B', flexShrink: 0,
   },
 });
 

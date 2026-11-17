@@ -214,28 +214,28 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1, borderBottomColor: '#f3f4f6',
   },
   avatar: { width: 48, height: 48, borderRadius: 24, marginRight: 12 },
-  avatarFallback: { backgroundColor: '#E8743B', alignItems: 'center', justifyContent: 'center' },
+  avatarFallback: { backgroundColor: '#B5501B', alignItems: 'center', justifyContent: 'center' },
   avatarInitial: { color: '#fff', fontSize: 18, fontWeight: '700' },
 
   userInfo: { flex: 1 },
   userName: { fontSize: 14, fontWeight: '700', color: '#111827' },
   userHandle: { fontSize: 13, color: '#6b7280', marginTop: 1 },
-  userTrips: { fontSize: 12, color: '#9ca3af', marginTop: 1 },
+  userTrips: { fontSize: 12, color: '#6b7280', marginTop: 1 },
 
   followBtn: {
-    borderWidth: 1.5, borderColor: '#E8743B', borderRadius: 999,
+    borderWidth: 1.5, borderColor: '#B5501B', borderRadius: 999,
     paddingVertical: 6, paddingHorizontal: 16,
   },
   followBtnActive: { backgroundColor: '#f3f4f6', borderColor: '#e5e7eb' },
   btnDisabled: { opacity: 0.5 },
-  followBtnText: { fontSize: 13, fontWeight: '600', color: '#E8743B' },
+  followBtnText: { fontSize: 13, fontWeight: '600', color: '#B5501B' },
   followBtnTextActive: { color: '#6b7280' },
 
   empty: { alignItems: 'center', paddingTop: 60 },
   emptyEmoji: { fontSize: 40, marginBottom: 12 },
   emptyText: { fontSize: 15, color: '#6b7280' },
   retryBtn: { marginTop: 12, paddingVertical: 10, paddingHorizontal: 24 },
-  retryBtnText: { color: '#E8743B', fontWeight: '700', fontSize: 14 },
+  retryBtnText: { color: '#B5501B', fontWeight: '700', fontSize: 14 },
 });
 
 export default FollowsScreen;

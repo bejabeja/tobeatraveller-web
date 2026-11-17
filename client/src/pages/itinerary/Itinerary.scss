@@ -212,7 +212,7 @@
       width: 36px;
       height: 36px;
       border-radius: 50%;
-      background: rgba(0, 119, 182, 0.08);
+      background: rgba(181, 80, 27, 0.08);
       color: var(--primary-color);
       display: flex;
       align-items: center;
@@ -305,7 +305,7 @@
   cursor: default;
 
   &:hover {
-    background: rgba(0, 119, 182, 0.04);
+    background: rgba(181, 80, 27, 0.04);
     border-left-color: #005f92;
   }
 
@@ -314,7 +314,7 @@
   }
 
   &--selected {
-    background: rgba(0, 119, 182, 0.06);
+    background: rgba(181, 80, 27, 0.06);
     border-left-color: #005f92;
   }
 
@@ -440,7 +440,7 @@
   border-radius: 999px;
 
   &.active {
-    color: #e63946;
+    color: #d62839;
   }
 }
 
@@ -451,7 +451,7 @@
 }
 
 .itinerary__like-btn.active .itinerary__like-count {
-  color: #e63946;
+  color: #d62839;
 }
 
 @media (min-width: 768px) {

@@ -169,7 +169,7 @@ const ContactScreen = ({ navigation }) => {
                   onChangeText={v => set('name', v)}
                   accessibilityLabel={t('contact.yourName')}
                   placeholder={t('contact.namePlaceholder')}
-                  placeholderTextColor="#9ca3af"
+                  placeholderTextColor="#6b7280"
                   autoComplete="name"
                   maxLength={CONTACT_NAME_MAX_LENGTH}
                 />
@@ -182,7 +182,7 @@ const ContactScreen = ({ navigation }) => {
                   onChangeText={v => set('email', v)}
                   accessibilityLabel={t('contact.yourEmail')}
                   placeholder={t('contact.emailPlaceholder')}
-                  placeholderTextColor="#9ca3af"
+                  placeholderTextColor="#6b7280"
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoCorrect={false}
@@ -196,7 +196,7 @@ const ContactScreen = ({ navigation }) => {
                   onChangeText={v => set('subject', v)}
                   accessibilityLabel={t('contact.subject')}
                   placeholder={t('contact.subjectPlaceholder')}
-                  placeholderTextColor="#9ca3af"
+                  placeholderTextColor="#6b7280"
                   maxLength={CONTACT_SUBJECT_MAX_LENGTH}
                 />
               </Field>
@@ -208,7 +208,7 @@ const ContactScreen = ({ navigation }) => {
                   onChangeText={v => set('message', v)}
                   accessibilityLabel={t('contact.message')}
                   placeholder={t('contact.messagePlaceholder')}
-                  placeholderTextColor="#9ca3af"
+                  placeholderTextColor="#6b7280"
                   multiline
                   maxLength={CONTACT_MESSAGE_MAX_LENGTH}
                   textAlignVertical="top"
@@ -280,17 +280,17 @@ const styles = StyleSheet.create({
     borderWidth: 1.5, borderColor: '#dde3ec', borderRadius: 999,
     backgroundColor: '#f7f9fc', paddingVertical: 8, paddingHorizontal: 14,
   },
-  chipSelected: { borderColor: '#E8743B', backgroundColor: '#E8743B' },
+  chipSelected: { borderColor: '#B5501B', backgroundColor: '#B5501B' },
   chipText: { fontSize: 14, fontWeight: '600', color: '#374151' },
   chipTextSelected: { color: '#fff' },
   counter: { fontSize: 12, color: '#6b7280', textAlign: 'right', marginTop: 4 },
   direct: { alignItems: 'center', paddingVertical: 8 },
   directText: { fontSize: 14, color: '#6b7280', textAlign: 'center' },
-  directLink: { color: '#E8743B', fontWeight: '600' },
+  directLink: { color: '#B5501B', fontWeight: '600' },
   errorText: { fontSize: 12, color: '#dc2626', marginTop: 4 },
 
   btn: {
-    backgroundColor: '#E8743B', borderRadius: 999,
+    backgroundColor: '#B5501B', borderRadius: 999,
     paddingVertical: 15, paddingHorizontal: 32, alignItems: 'center',
     ...shadow(4, 0.2, 10, 4),
   },

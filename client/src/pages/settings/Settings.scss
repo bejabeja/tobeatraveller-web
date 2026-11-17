@@ -27,13 +27,19 @@ $settings-row-min-height: 48px;
         background: var(--primary-color);
         &::before { transform: translateX(18px); }
       }
+
+      &:focus-visible + .ep__toggle-slider {
+        outline: 2px solid var(--accent-color);
+        outline-offset: 2px;
+      }
     }
   }
 
   &__toggle-slider {
     position: absolute;
     inset: 0;
-    background: var(--border-color);
+    // Dark enough to tell the switch is there when off (3:1 against white).
+    background: #8a94a0;
     border-radius: 999px;
     transition: background 0.15s;
     pointer-events: none;

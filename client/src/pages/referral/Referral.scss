@@ -29,7 +29,7 @@
     gap: 0.75rem;
     padding: 2.25rem 1.5rem;
     border-radius: 20px;
-    background: linear-gradient(135deg, #1A535C 0%, #E8743B 100%);
+    background: linear-gradient(135deg, #1A535C 0%, #B5501B 100%);
     color: #fff;
     justify-content: center;
     text-align: center;
@@ -140,6 +140,11 @@
     border: 1px solid var(--border-color);
     border-radius: 999px;
     background: #f7f9fc;
+
+    &:focus-within {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(181, 80, 27, 0.15);
+    }
   }
 
   &__link-input {

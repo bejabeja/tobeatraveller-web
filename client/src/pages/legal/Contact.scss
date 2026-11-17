@@ -179,7 +179,7 @@
       resize: vertical;
       transition: border-color 0.15s;
 
-      &::placeholder { color: #9ca3af; }
+      &::placeholder { color: #6b7280; }
 
       &:focus {
         outline: none;
@@ -192,7 +192,7 @@
 
     &--error input,
     &--error textarea {
-      border-color: var(--error-color, #e63946);
+      border-color: var(--error-color, #d62839);
     }
   }
 
@@ -205,18 +205,18 @@
 
   &__field-error {
     font-size: 0.775rem;
-    color: var(--error-color, #e63946);
+    color: var(--error-color, #d62839);
     width: auto;
   }
 
   &__error {
     font-size: 0.85rem;
-    color: var(--error-color, #e63946);
+    color: var(--error-color, #d62839);
     margin: 0;
     width: auto;
 
     a {
-      color: var(--error-color, #e63946);
+      color: var(--error-color, #d62839);
       font-weight: 600;
       width: fit-content;
     }

@@ -62,12 +62,14 @@
         }
       }
 
+      // Underlined: inside a paragraph, colour alone does not say it is a link.
       a {
         color: var(--primary-color);
-        text-decoration: none;
+        text-decoration: underline;
+        text-underline-offset: 2px;
 
         &:hover {
-          text-decoration: underline;
+          text-decoration-thickness: 2px;
         }
       }
 

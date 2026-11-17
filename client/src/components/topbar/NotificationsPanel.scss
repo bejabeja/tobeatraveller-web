@@ -15,13 +15,18 @@
   opacity: 0;
   transform: translateY(-6px);
   pointer-events: none;
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  // Hidden for the keyboard and screen readers too while closed, only once
+  // the fade-out has ended.
+  visibility: hidden;
+  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s linear 0.15s;
   z-index: 100;
 
   &--open {
     opacity: 1;
     transform: translateY(0);
     pointer-events: auto;
+    visibility: visible;
+    transition-delay: 0s;
   }
 
   &__title {

@@ -51,6 +51,7 @@ const withLinkedTrip = (entry, tripTitleById) => {
 };
 
 const NOTES_PREVIEW_LINES = 2;
+const ENTRY_ACTION_HIT_SLOP = { top: 10, bottom: 10, left: 8, right: 8 };
 const SHORT_DAY = { month: 'short', day: 'numeric' };
 // "Today" is a period too short for statistics.
 const STATS_PERIOD_PRESET_KEYS = ['last7', 'last30', 'thisMonth'];
@@ -346,7 +347,7 @@ const VanLogScreen = ({ navigation }) => {
           onPress={() => setFiltersOpen(prev => !prev)}
           accessibilityState={{ expanded: filtersOpen }}
         >
-          <Ionicons name="funnel-outline" size={14} color={panelFilterCount > 0 ? '#E8743B' : '#374151'} />
+          <Ionicons name="funnel-outline" size={14} color={panelFilterCount > 0 ? '#B5501B' : '#374151'} />
           <Text style={[styles.toolbarBtnLabel, panelFilterCount > 0 && styles.toolbarBtnLabelActive]}>
             {t('vanLog.filters')}
           </Text>
@@ -399,7 +400,7 @@ const VanLogScreen = ({ navigation }) => {
               value={filters.dateFrom}
               onChangeText={v => updateFilter('dateFrom', v)}
               placeholder={t('vanLog.dateFromLabel')}
-              placeholderTextColor="#9ca3af"
+              placeholderTextColor="#6b7280"
               keyboardType="numbers-and-punctuation"
             />
             <TextInput
@@ -407,7 +408,7 @@ const VanLogScreen = ({ navigation }) => {
               value={filters.dateTo}
               onChangeText={v => updateFilter('dateTo', v)}
               placeholder={t('vanLog.dateToLabel')}
-              placeholderTextColor="#9ca3af"
+              placeholderTextColor="#6b7280"
               keyboardType="numbers-and-punctuation"
             />
           </View>
@@ -502,7 +503,7 @@ const VanLogScreen = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
         stickySectionHeadersEnabled={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#E8743B" />
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#B5501B" />
         }
         renderSectionHeader={({ section }) => section.title ? (
           <View style={styles.sectionHeader}>
@@ -605,6 +606,8 @@ const VanLogScreen = ({ navigation }) => {
                   <TouchableOpacity
                     style={styles.entryActionBtn}
                     onPress={() => Linking.openURL(item.receiptPhotoUrl)}
+                    hitSlop={ENTRY_ACTION_HIT_SLOP}
+                    accessibilityRole="button"
                     accessibilityLabel={t('vanLog.viewReceipt')}
                   >
                     <Ionicons name="receipt-outline" size={16} color="#6b7280" />
@@ -613,6 +616,8 @@ const VanLogScreen = ({ navigation }) => {
                 <TouchableOpacity
                   style={styles.entryActionBtn}
                   onPress={() => handleEntryMenu(item)}
+                  hitSlop={ENTRY_ACTION_HIT_SLOP}
+                  accessibilityRole="button"
                   accessibilityLabel={t('common.moreOptions')}
                 >
                   <Ionicons name="ellipsis-vertical" size={16} color="#6b7280" />
@@ -650,7 +655,7 @@ const styles = StyleSheet.create({
   title: { flex: 1, fontSize: 20, fontWeight: '800', color: '#111827' },
   purpose: { fontSize: 13, color: '#6b7280', paddingHorizontal: 16, paddingTop: 6 },
   newBtn: {
-    backgroundColor: '#E8743B', borderRadius: 999,
+    backgroundColor: '#B5501B', borderRadius: 999,
     paddingVertical: 7, paddingHorizontal: 14,
   },
   newBtnText: { color: '#fff', fontWeight: '700', fontSize: 13 },
@@ -666,9 +671,9 @@ const styles = StyleSheet.create({
   summaryValue: { fontSize: 26, fontWeight: '800', color: '#111827' },
   tabs: { flexDirection: 'row', gap: 20, borderBottomWidth: 1, borderBottomColor: '#e5e7eb' },
   tab: { paddingVertical: 8, marginBottom: -1, borderBottomWidth: 2, borderBottomColor: 'transparent' },
-  tabActive: { borderBottomColor: '#E8743B' },
+  tabActive: { borderBottomColor: '#B5501B' },
   tabLabel: { fontSize: 14, fontWeight: '600', color: '#6b7280' },
-  tabLabelActive: { color: '#E8743B' },
+  tabLabelActive: { color: '#B5501B' },
   budgetProgress: { gap: 6, paddingTop: 10 },
   budgetProgressHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
   budgetProgressValue: { fontSize: 13, fontWeight: '700', color: '#111827' },
@@ -685,7 +690,7 @@ const styles = StyleSheet.create({
     height: 8, borderRadius: 4,
     backgroundColor: '#e5e7eb', overflow: 'hidden',
   },
-  barRowFill: { height: '100%', minWidth: 3, borderRadius: 4, backgroundColor: '#E8743B' },
+  barRowFill: { height: '100%', minWidth: 3, borderRadius: 4, backgroundColor: '#B5501B' },
 
   toolbar: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   toolbarBtn: {
@@ -693,12 +698,12 @@ const styles = StyleSheet.create({
     paddingVertical: 7, paddingHorizontal: 12,
     borderRadius: 999, borderWidth: 1, borderColor: '#e5e7eb', backgroundColor: '#fff',
   },
-  toolbarBtnActive: { borderColor: '#E8743B' },
+  toolbarBtnActive: { borderColor: '#B5501B' },
   toolbarBtnLabel: { fontSize: 13, fontWeight: '600', color: '#374151' },
-  toolbarBtnLabelActive: { color: '#E8743B' },
+  toolbarBtnLabelActive: { color: '#B5501B' },
   filterCount: {
     minWidth: 18, height: 18, paddingHorizontal: 5, borderRadius: 999,
-    backgroundColor: '#E8743B', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#B5501B', alignItems: 'center', justifyContent: 'center',
   },
   filterCountText: { fontSize: 11, fontWeight: '700', color: '#fff' },
   clearFilters: { fontSize: 12, color: '#dc2626', fontWeight: '600' },
@@ -729,10 +734,10 @@ const styles = StyleSheet.create({
     borderRadius: 999, borderWidth: 1.5, borderColor: '#e5e7eb',
     backgroundColor: '#f9fafb',
   },
-  chipActive: { borderColor: '#E8743B', backgroundColor: '#FFF0E8' },
+  chipActive: { borderColor: '#B5501B', backgroundColor: '#FFF0E8' },
   chipEmoji: { fontSize: 12 },
   chipLabel: { fontSize: 12, color: '#6b7280', fontWeight: '500' },
-  chipLabelActive: { color: '#E8743B', fontWeight: '600' },
+  chipLabelActive: { color: '#B5501B', fontWeight: '600' },
 
   dateRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   dateInput: {
@@ -770,7 +775,7 @@ const styles = StyleSheet.create({
   entryDetails: { fontSize: 12, color: '#6b7280' },
   entryNotes: { fontSize: 12, color: '#6b7280' },
   entryNotesMeasure: { position: 'absolute', left: 0, right: 0, opacity: 0 },
-  entryNotesToggle: { fontSize: 12, fontWeight: '600', color: '#E8743B', marginTop: 2 },
+  entryNotesToggle: { fontSize: 12, fontWeight: '600', color: '#B5501B', marginTop: 2 },
   entryTrip: { fontSize: 12, fontWeight: '600', color: '#1A535C', marginTop: 2 },
   entryAmount: { fontSize: 15, fontWeight: '700', color: '#111827', lineHeight: 24 },
   entryActions: { width: 28, alignItems: 'flex-end' },
@@ -779,8 +784,8 @@ const styles = StyleSheet.create({
   empty: { alignItems: 'center', paddingTop: 56, paddingHorizontal: 32 },
   emptyEmoji: { fontSize: 40, marginBottom: 12 },
   emptyTitle: { fontSize: 15, color: '#6b7280', textAlign: 'center' },
-  emptyLink: { fontSize: 14, color: '#E8743B', fontWeight: '600', marginTop: 10 },
-  emptyBtn: { backgroundColor: '#E8743B', borderRadius: 999, paddingVertical: 10, paddingHorizontal: 20, marginTop: 16 },
+  emptyLink: { fontSize: 14, color: '#B5501B', fontWeight: '600', marginTop: 10 },
+  emptyBtn: { backgroundColor: '#B5501B', borderRadius: 999, paddingVertical: 10, paddingHorizontal: 20, marginTop: 16 },
   emptyBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
 });
 

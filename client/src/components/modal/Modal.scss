@@ -26,6 +26,9 @@ html:has(.modal__backdrop) {
   border-radius: 16px;
   width: 100%;
   max-width: 420px;
+  // Never taller than the window (a phone turned sideways): the body scrolls
+  // instead, with the title and the buttons always in sight.
+  max-height: 100%;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2), 0 4px 16px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
@@ -97,6 +100,7 @@ html:has(.modal__backdrop) {
   &__body {
     padding: 1rem 1.5rem;
     overflow-y: auto;
+    min-height: 0;
   }
 
   // Avoid doubling the gap when a body follows a description.

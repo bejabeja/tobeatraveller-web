@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 20, fontWeight: '800', color: '#111827', textAlign: 'center', marginBottom: 8 },
   desc: { fontSize: 15, color: '#374151', textAlign: 'center', lineHeight: 22, marginBottom: 8 },
   note: { fontSize: 13, color: '#6b7280', textAlign: 'center', lineHeight: 19, marginBottom: 20 },
-  primary: { backgroundColor: '#E8743B', borderRadius: 999, paddingVertical: 14, alignSelf: 'stretch', alignItems: 'center' },
+  primary: { backgroundColor: '#B5501B', borderRadius: 999, paddingVertical: 14, alignSelf: 'stretch', alignItems: 'center' },
   primaryText: { color: '#fff', fontWeight: '700', fontSize: 15 },
   secondary: { paddingVertical: 14, alignSelf: 'stretch', alignItems: 'center' },
   secondaryText: { color: '#374151', fontWeight: '600', fontSize: 15 },

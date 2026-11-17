@@ -148,7 +148,7 @@ export const PlaceCard = ({
           value={place.name}
           onChangeText={v => onUpdate('name', v)}
           placeholder={t('itineraryForm.placeName')}
-          placeholderTextColor="#9ca3af"
+          placeholderTextColor="#6b7280"
         />
         <TouchableOpacity onPress={onRemove} style={s.placeRemoveBtn}>
           <Text style={s.placeRemoveText}>✕</Text>
@@ -180,7 +180,7 @@ export const PlaceCard = ({
           value={place.description}
           onChangeText={v => onUpdate('description', v)}
           placeholder={t(stepNameHintKey(place.category) ?? 'itineraryForm.descriptionOptional')}
-          placeholderTextColor="#9ca3af"
+          placeholderTextColor="#6b7280"
           multiline maxLength={500}
         />
       ) : (
@@ -319,7 +319,7 @@ export const BudgetSection = ({ budget, setBudget, currency, setCurrency, travel
             value={budget}
             onChangeText={setBudget}
             placeholder="0"
-            placeholderTextColor="#9ca3af"
+            placeholderTextColor="#6b7280"
             keyboardType="decimal-pad"
           />
         </Field>
@@ -740,14 +740,14 @@ export const s = StyleSheet.create({
     ...shadow(2, 0.06, 8, 2),
   },
   cardTitleRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 14, gap: 8 },
-  cardTitle: { fontSize: 13, fontWeight: '700', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: 0.5, flex: 1 },
+  cardTitle: { fontSize: 13, fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: 0.5, flex: 1 },
   cardBadge: { width: 18, height: 18, borderRadius: 9, backgroundColor: '#16a34a', alignItems: 'center', justifyContent: 'center' },
   cardBadgeText: { color: '#fff', fontSize: 10, fontWeight: '700' },
 
   field: {},
   fieldLabelRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 },
   fieldLabel: { fontSize: 13, fontWeight: '600', color: '#374151' },
-  fieldHint: { fontSize: 11, color: '#9ca3af' },
+  fieldHint: { fontSize: 11, color: '#6b7280' },
   fieldHintWarn: { color: '#f59e0b' },
   fieldError: { fontSize: 12, color: '#dc2626', marginTop: 4 },
 
@@ -816,12 +816,12 @@ export const s = StyleSheet.create({
   dayHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
   dayToggle: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 4 },
   dayTitle: { fontSize: 15, fontWeight: '700', color: '#111827' },
-  dayCount: { fontSize: 13, color: '#9ca3af' },
+  dayCount: { fontSize: 13, color: '#6b7280' },
   dayPreview: { fontSize: 13, color: '#6b7280', paddingLeft: 22 },
   foldAllBtn: { alignSelf: 'flex-end', paddingVertical: 4, paddingHorizontal: 4, marginBottom: 8 },
   foldAllText: { fontSize: 13, fontWeight: '600', color: COLORS.primary },
   removeDayBtn: { paddingVertical: 4, paddingHorizontal: 8 },
-  removeDayText: { fontSize: 12, color: '#ef4444' },
+  removeDayText: { fontSize: 12, color: '#dc2626' },
   dayWarning: { fontSize: 12, color: '#f59e0b', marginBottom: 8 },
 
   placeCard: {
@@ -834,7 +834,7 @@ export const s = StyleSheet.create({
     borderBottomWidth: 1, borderBottomColor: '#e5e7eb', paddingBottom: 4,
   },
   placeRemoveBtn: { padding: 4 },
-  placeRemoveText: { color: '#9ca3af', fontSize: 14 },
+  placeRemoveText: { color: '#6b7280', fontSize: 14 },
   placeCatRow: { marginBottom: 10 },
   placeCatContent: { gap: 6, paddingVertical: 2 },
   placeCatChip: {
@@ -864,7 +864,7 @@ export const s = StyleSheet.create({
   orderBtnDisabled: { opacity: 0.3 },
   orderBtnText: { fontSize: 11, color: '#374151', lineHeight: 13 },
   moveDayRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6, marginTop: 8 },
-  moveDayLabel: { fontSize: 11, color: '#9ca3af', fontWeight: '500' },
+  moveDayLabel: { fontSize: 11, color: '#6b7280', fontWeight: '500' },
   moveDayBtn: {
     paddingVertical: 3, paddingHorizontal: 8, borderRadius: 999,
     backgroundColor: '#f1f5f9', borderWidth: 1, borderColor: '#e2e8f0',
@@ -881,7 +881,7 @@ export const s = StyleSheet.create({
   },
   aiBtnDisabled: { opacity: 0.45 },
   aiBtnText: { color: '#fff', fontWeight: '600', fontSize: 13 },
-  aiHint: { fontSize: 12, color: '#9ca3af', flex: 1 },
+  aiHint: { fontSize: 12, color: '#6b7280', flex: 1 },
   paceRow: { flexDirection: 'row', gap: 6, marginBottom: 10 },
   paceChip: {
     flex: 1, alignItems: 'center', borderRadius: 12, paddingVertical: 6, paddingHorizontal: 8,
@@ -890,7 +890,7 @@ export const s = StyleSheet.create({
   paceChipOn: { backgroundColor: '#ede9fe', borderColor: '#7c3aed' },
   paceChipText: { fontSize: 12, color: '#6b7280', fontWeight: '500' },
   paceChipTextOn: { color: '#7c3aed', fontWeight: '700' },
-  paceChipDesc: { fontSize: 10, color: '#9ca3af', marginTop: 1 },
+  paceChipDesc: { fontSize: 10, color: '#6b7280', marginTop: 1 },
 
   // Days sync nudge
   syncHint: {
@@ -946,5 +946,5 @@ export const s = StyleSheet.create({
     borderWidth: 1.5, borderColor: '#dde3ec', borderStyle: 'dashed',
     alignItems: 'center', justifyContent: 'center', backgroundColor: '#f7f9fc',
   },
-  photoAddText: { fontSize: 9, color: '#9ca3af', marginTop: 2, textAlign: 'center' },
+  photoAddText: { fontSize: 11, color: '#6b7280', marginTop: 2, textAlign: 'center' },
 });

@@ -4,7 +4,7 @@ const STEP_TYPES = {
   transport:     { icon: 'train-outline',      color: '#1A535C' },
   flight:        { icon: 'airplane-outline',   color: '#1A535C' },
   accommodation: { icon: 'bed-outline',        color: '#7C3AED' },
-  activity:      { icon: 'flash-outline',      color: '#E8743B' },
+  activity:      { icon: 'flash-outline',      color: '#B5501B' },
   local_tip:     { icon: 'bulb-outline',       color: '#F59E0B' },
   nature:        { icon: 'leaf-outline',       color: '#16A34A' },
   beach:         { icon: 'umbrella-outline',   color: '#0EA5E9' },
@@ -13,12 +13,12 @@ const STEP_TYPES = {
   park:          { icon: 'leaf-outline',       color: '#16A34A' },
   camping:       { icon: 'bonfire-outline',    color: '#B45309' },
   island:        { icon: 'water-outline',      color: '#0EA5E9' },
-  sport:         { icon: 'football-outline',   color: '#E8743B' },
+  sport:         { icon: 'football-outline',   color: '#B5501B' },
   vineyard:      { icon: 'wine-outline',       color: '#7C3AED' },
-  restaurant:    { icon: 'restaurant-outline', color: '#E8743B' },
+  restaurant:    { icon: 'restaurant-outline', color: '#B5501B' },
   cafe:          { icon: 'cafe-outline',       color: '#B45309' },
   hotel:         { icon: 'bed-outline',        color: '#7C3AED' },
-  other:         { icon: 'location-outline',   color: '#9CA3AF' },
+  other:         { icon: 'location-outline',   color: '#6b7280' },
 };
 
 export const STEP_CONFIG = Object.fromEntries(

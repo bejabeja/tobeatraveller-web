@@ -75,7 +75,7 @@ const ReportModal = ({ targetType, targetId, onClose, onSent }) => {
                   onChangeText={setDetails}
                   maxLength={REPORT_DETAILS_MAX_LENGTH}
                   placeholder={t('report.detailsPlaceholder')}
-                  placeholderTextColor="#9ca3af"
+                  placeholderTextColor="#6b7280"
                   multiline
                   accessibilityLabel={t(isIllegal ? 'report.detailsLabelIllegal' : 'report.detailsLabel')}
                 />

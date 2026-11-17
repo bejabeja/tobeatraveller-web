@@ -84,7 +84,7 @@ const FaqItem = ({ questionKey, answerKey, t }) => {
         onPress={() => setOpen((current) => !current)}
       >
         <Text style={styles.faqQuestion}>{t(questionKey)}</Text>
-        <Ionicons name={open ? 'remove' : 'add'} size={20} color="#E8743B" />
+        <Ionicons name={open ? 'remove' : 'add'} size={20} color="#B5501B" />
       </TouchableOpacity>
       {open && <Text style={styles.faqAnswer}>{t(answerKey)}</Text>}
     </View>
@@ -278,12 +278,12 @@ const SubscriptionScreen = ({ navigation }) => {
       >
         {showsPremiumState ? (
           <View style={styles.accountHeader}>
-            <Ionicons name="sparkles" size={26} color="#E8743B" />
+            <Ionicons name="sparkles" size={26} color="#B5501B" />
             <Text style={styles.accountTitle}>{t('subscription.yourPremiumTitle')}</Text>
           </View>
         ) : (
           <View style={styles.hero}>
-            <Ionicons name="sparkles" size={40} color="#E8743B" style={styles.heroIcon} />
+            <Ionicons name="sparkles" size={40} color="#B5501B" style={styles.heroIcon} />
             <Text style={styles.title}>{t('subscription.title')}</Text>
             <Text style={styles.subtitle}>{t('subscription.subtitle')}</Text>
 
@@ -301,13 +301,13 @@ const SubscriptionScreen = ({ navigation }) => {
 
         {view.kind === 'activating' ? (
           <View style={styles.activating} accessibilityRole="alert">
-            <Ionicons name="hourglass-outline" size={36} color="#E8743B" style={styles.cardIcon} />
+            <Ionicons name="hourglass-outline" size={36} color="#B5501B" style={styles.cardIcon} />
             <Text style={styles.cardTitle}>{t('subscription.activatingTitle')}</Text>
             <Text style={styles.cardDesc}>{t('subscription.activatingDesc')}</Text>
           </View>
         ) : view.kind === 'activationDelayed' ? (
           <View style={styles.activating}>
-            <Ionicons name="hourglass-outline" size={36} color="#E8743B" style={styles.cardIcon} />
+            <Ionicons name="hourglass-outline" size={36} color="#B5501B" style={styles.cardIcon} />
             <Text style={styles.cardTitle}>{t('subscription.activationDelayedTitle')}</Text>
             <Text style={styles.cardDesc}>{t('subscription.activationDelayedDesc')}</Text>
             <TouchableOpacity style={[styles.manageBtn, styles.activationDelayedCta]} onPress={waitForActivation}>
@@ -323,7 +323,7 @@ const SubscriptionScreen = ({ navigation }) => {
           <View style={styles.stateSkeleton} accessibilityState={{ busy: true }} />
         ) : view.kind === 'trialCanceled' ? (
           <View style={styles.winBack}>
-            <Ionicons name="hourglass-outline" size={36} color="#E8743B" style={styles.winBackIcon} />
+            <Ionicons name="hourglass-outline" size={36} color="#B5501B" style={styles.winBackIcon} />
             <Text style={styles.winBackTitle}>{t('subscription.trialCanceledTitle')}</Text>
             <Text style={styles.winBackDesc}>
               {t('subscription.trialCanceledDesc', { date: formatDate(view.date, i18n.language) })}
@@ -561,7 +561,7 @@ const styles = StyleSheet.create({
     lineHeight: 20, paddingHorizontal: 8,
   },
   trialBtn: {
-    backgroundColor: '#E8743B', borderRadius: 999,
+    backgroundColor: '#B5501B', borderRadius: 999,
     paddingVertical: 13, paddingHorizontal: 24,
     marginTop: 20,
   },
@@ -584,7 +584,7 @@ const styles = StyleSheet.create({
   },
   manageBtnText: { color: '#111827', fontWeight: '700', fontSize: 13.5 },
   resumeBtn: {
-    backgroundColor: '#E8743B', borderRadius: 999,
+    backgroundColor: '#B5501B', borderRadius: 999,
     paddingVertical: 11, paddingHorizontal: 22,
   },
   resumeBtnText: { color: '#fff', fontWeight: '700', fontSize: 13.5 },
@@ -594,7 +594,7 @@ const styles = StyleSheet.create({
   // canceled but nothing has been charged yet, so the CTA is the whole point.
   winBack: {
     alignItems: 'center', backgroundColor: '#FFF0E8',
-    borderWidth: 1.5, borderColor: '#E8743B',
+    borderWidth: 1.5, borderColor: '#B5501B',
     borderRadius: 16, padding: 28, marginTop: 8,
   },
   winBackIcon: { marginBottom: 8 },
@@ -602,7 +602,7 @@ const styles = StyleSheet.create({
   winBackDesc: { fontSize: 13, color: '#6b7280', textAlign: 'center', lineHeight: 19 },
   winBackReminder: { fontSize: 13, color: '#111827', fontWeight: '600', textAlign: 'center', lineHeight: 19, marginTop: 10 },
   winBackCta: {
-    backgroundColor: '#E8743B', borderRadius: 999,
+    backgroundColor: '#B5501B', borderRadius: 999,
     paddingVertical: 13, paddingHorizontal: 28, marginTop: 20,
   },
   winBackCtaText: { color: '#fff', fontWeight: '700', fontSize: 14 },
@@ -634,7 +634,7 @@ const styles = StyleSheet.create({
   compareName: { flex: 1, paddingVertical: 12, paddingHorizontal: 12, gap: 2 },
   compareValue: { width: 76, alignItems: 'center', justifyContent: 'center', paddingVertical: 12, textAlign: 'center' },
   comparePremium: { backgroundColor: '#FFF0E8' },
-  comparePremiumHeader: { color: '#E8743B' },
+  comparePremiumHeader: { color: '#B5501B' },
   compareTitle: { fontSize: 14, fontWeight: '700', color: '#111827' },
   compareDesc: { fontSize: 12, color: '#6b7280', lineHeight: 16 },
   compareCell: { fontSize: 13, fontWeight: '600', color: '#111827', textAlign: 'center' },
@@ -646,12 +646,12 @@ const styles = StyleSheet.create({
     padding: 20, alignItems: 'center',
   },
   planHighlighted: {
-    borderWidth: 2, borderColor: '#E8743B',
+    borderWidth: 2, borderColor: '#B5501B',
     ...shadow(4, 0.1, 10, 4),
   },
   planBadge: {
     position: 'absolute', top: -11,
-    backgroundColor: '#E8743B', borderRadius: 999,
+    backgroundColor: '#B5501B', borderRadius: 999,
     paddingVertical: 4, paddingHorizontal: 12,
   },
   planBadgeText: {
@@ -659,14 +659,14 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase', letterSpacing: 0.4,
   },
   planName: {
-    fontSize: 12, fontWeight: '700', color: '#E8743B',
+    fontSize: 12, fontWeight: '700', color: '#B5501B',
     textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6,
   },
   planPriceRow: { flexDirection: 'row', alignItems: 'baseline', marginBottom: 14 },
   planPrice: { fontSize: 30, fontWeight: '800', color: '#111827' },
   planPeriod: { fontSize: 13, color: '#6b7280', marginLeft: 6 },
   payNow: { fontSize: 13, color: '#6b7280', textDecorationLine: 'underline', textAlign: 'center', marginTop: 12 },
-  planPerMonth: { fontSize: 13, fontWeight: '600', color: '#E8743B', marginTop: -10, marginBottom: 14 },
+  planPerMonth: { fontSize: 13, fontWeight: '600', color: '#B5501B', marginTop: -10, marginBottom: 14 },
 
   welcome: { marginTop: 8, marginBottom: 16 },
   welcomeTitle: { fontSize: 22, fontWeight: '800', color: '#111827', textAlign: 'center' },
@@ -689,10 +689,10 @@ const styles = StyleSheet.create({
   faqQuestion: { flex: 1, fontSize: 15, fontWeight: '600', color: '#111827' },
   helpRow: { alignItems: 'center', paddingVertical: 24, paddingHorizontal: 16 },
   helpText: { fontSize: 14, color: '#6b7280', textAlign: 'center' },
-  helpLink: { color: '#E8743B', fontWeight: '600' },
+  helpLink: { color: '#B5501B', fontWeight: '600' },
   faqAnswer: { fontSize: 14, color: '#6b7280', lineHeight: 20, paddingBottom: 16 },
   planCta: {
-    backgroundColor: '#E8743B', borderRadius: 999,
+    backgroundColor: '#B5501B', borderRadius: 999,
     paddingVertical: 12, paddingHorizontal: 28, width: '100%', alignItems: 'center',
   },
   planCtaText: { color: '#fff', fontWeight: '700', fontSize: 14 },
@@ -701,7 +701,7 @@ const styles = StyleSheet.create({
     fontSize: 13, fontWeight: '600', color: '#6b7280', textAlign: 'center', marginTop: 10,
   },
   disclaimer: {
-    fontSize: 12, color: '#9ca3af', textAlign: 'center',
+    fontSize: 12, color: '#6b7280', textAlign: 'center',
     marginTop: 6, lineHeight: 17,
   },
 });

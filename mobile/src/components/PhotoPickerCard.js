@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
     height: 160, borderRadius: 14, overflow: 'hidden',
     backgroundColor: '#f3f4f6', borderWidth: 1.5, borderColor: '#e5e7eb', borderStyle: 'dashed',
   },
-  cardComplete: { borderStyle: 'solid', borderColor: '#E8743B', borderWidth: 2 },
+  cardComplete: { borderStyle: 'solid', borderColor: '#B5501B', borderWidth: 2 },
   photo: { width: '100%', height: '100%' },
   placeholder: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8 },
   placeholderIcon: { fontSize: 28 },

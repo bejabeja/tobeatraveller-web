@@ -256,7 +256,7 @@ const VanLogEntryFormScreen = ({ navigation, route }) => {
                 value={amount}
                 onChangeText={v => { setAmount(v); setErrors(e => ({ ...e, amount: null })); setIsDirty(true); }}
                 placeholder="0.00"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#6b7280"
                 keyboardType="decimal-pad"
                 autoFocus={!entry}
               />
@@ -272,7 +272,7 @@ const VanLogEntryFormScreen = ({ navigation, route }) => {
                     autoCapitalize="characters"
                     maxLength={3}
                     placeholder="XXX"
-                    placeholderTextColor="#9ca3af"
+                    placeholderTextColor="#6b7280"
                   />
                   <TouchableOpacity
                     onPress={() => {
@@ -329,7 +329,7 @@ const VanLogEntryFormScreen = ({ navigation, route }) => {
                 value={title}
                 onChangeText={v => { setTitle(v); setErrors(e => ({ ...e, title: null })); setIsDirty(true); }}
                 placeholder={t('vanLog.titlePlaceholder')}
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#6b7280"
                 maxLength={255}
               />
             </Field>
@@ -341,7 +341,7 @@ const VanLogEntryFormScreen = ({ navigation, route }) => {
                   value={pricePerLiter}
                   onChangeText={v => { setPricePerLiter(v); setErrors(e => ({ ...e, pricePerLiter: null })); setIsDirty(true); }}
                   placeholder="0.000"
-                  placeholderTextColor="#9ca3af"
+                  placeholderTextColor="#6b7280"
                   keyboardType="decimal-pad"
                 />
               </Field>
@@ -381,9 +381,9 @@ const VanLogEntryFormScreen = ({ navigation, route }) => {
                   value={locationQuery}
                   onChangeText={searchLocation}
                   placeholder={t('vanLog.locationPlaceholder')}
-                  placeholderTextColor="#9ca3af"
+                  placeholderTextColor="#6b7280"
                 />
-                {locationSearching && <ActivityIndicator size="small" color="#E8743B" style={styles.locationSpinner} />}
+                {locationSearching && <ActivityIndicator size="small" color="#B5501B" style={styles.locationSpinner} />}
                 {!locationSearching && locationQuery.length > 0 && (
                   <TouchableOpacity onPress={clearLocation} style={styles.locationClear}>
                     <Text style={styles.locationClearText}>✕</Text>
@@ -476,7 +476,7 @@ const styles = StyleSheet.create({
   headerBackText: { fontSize: 20, color: '#374151' },
   headerTitle: { flex: 1, fontSize: 17, fontWeight: '700', color: '#111827', textAlign: 'center' },
   headerSave: {
-    backgroundColor: '#E8743B', borderRadius: 999,
+    backgroundColor: '#B5501B', borderRadius: 999,
     paddingVertical: 7, paddingHorizontal: 16,
   },
   headerSaveDisabled: { opacity: 0.5 },
@@ -491,7 +491,7 @@ const styles = StyleSheet.create({
 
   currencyCustomRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   currencyCustomInput: { flex: 1 },
-  currencyBackText: { fontSize: 13, fontWeight: '600', color: '#E8743B' },
+  currencyBackText: { fontSize: 13, fontWeight: '600', color: '#B5501B' },
 
   categoryChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chips: { gap: 8, paddingVertical: 2 },
@@ -501,10 +501,10 @@ const styles = StyleSheet.create({
     borderRadius: 999, borderWidth: 1.5, borderColor: '#e5e7eb',
     backgroundColor: '#f9fafb',
   },
-  chipActive: { borderColor: '#E8743B', backgroundColor: '#FFF0E8' },
+  chipActive: { borderColor: '#B5501B', backgroundColor: '#FFF0E8' },
   chipEmoji: { fontSize: 13 },
   chipLabel: { fontSize: 13, color: '#6b7280', fontWeight: '500' },
-  chipLabelActive: { color: '#E8743B', fontWeight: '600' },
+  chipLabelActive: { color: '#B5501B', fontWeight: '600' },
 
   input: {
     borderWidth: 1.5, borderColor: '#dde3ec', borderRadius: 10,
@@ -517,7 +517,7 @@ const styles = StyleSheet.create({
   locationInputRow: { flexDirection: 'row', alignItems: 'center' },
   locationSpinner: { position: 'absolute', right: 12 },
   locationClear: { position: 'absolute', right: 10, padding: 4 },
-  locationClearText: { color: '#9ca3af', fontSize: 13 },
+  locationClearText: { color: '#6b7280', fontSize: 13 },
   locationResults: {
     marginTop: 6, borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 10,
     backgroundColor: '#fff', overflow: 'hidden',
@@ -525,7 +525,7 @@ const styles = StyleSheet.create({
   locationResult: { paddingVertical: 10, paddingHorizontal: 12 },
   locationResultBorder: { borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
   locationResultName: { fontSize: 14, color: '#111827', fontWeight: '600' },
-  locationResultLabel: { fontSize: 12, color: '#9ca3af', marginTop: 1 },
+  locationResultLabel: { fontSize: 12, color: '#6b7280', marginTop: 1 },
 
   receiptAdd: {
     borderWidth: 1.5, borderColor: '#dde3ec', borderStyle: 'dashed', borderRadius: 10,
@@ -551,7 +551,7 @@ const fieldStyles = StyleSheet.create({
   wrapper: { marginBottom: 14 },
   labelRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 },
   label: { fontSize: 13, fontWeight: '600', color: '#374151' },
-  hint: { fontSize: 12, color: '#9ca3af' },
+  hint: { fontSize: 12, color: '#6b7280' },
   hintWarn: { color: '#f59e0b' },
   error: { fontSize: 12, color: '#dc2626', marginTop: 4 },
 });

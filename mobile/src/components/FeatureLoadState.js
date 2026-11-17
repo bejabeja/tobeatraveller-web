@@ -12,7 +12,7 @@ const FeatureLoadState = ({ status, onRetry }) => {
   if (status === 'premium') {
     return (
       <View style={styles.container}>
-        <Ionicons name="lock-closed-outline" size={40} color="#E8743B" />
+        <Ionicons name="lock-closed-outline" size={40} color="#B5501B" />
         <Text style={styles.title}>{t('premium.requiredTitle')}</Text>
         <Text style={styles.desc}>{t('premium.requiredDesc')}</Text>
         <TouchableOpacity style={styles.cta} onPress={() => navigation.navigate('Subscription')}>
@@ -39,9 +39,9 @@ const styles = StyleSheet.create({
   container: { alignItems: 'center', paddingTop: 56, paddingHorizontal: 32 },
   title: { fontSize: 15, color: '#374151', fontWeight: '600', textAlign: 'center', marginTop: 12 },
   desc: { fontSize: 13, color: '#6b7280', textAlign: 'center', marginTop: 4 },
-  retry: { fontSize: 14, color: '#E8743B', fontWeight: '600', marginTop: 10 },
+  retry: { fontSize: 14, color: '#B5501B', fontWeight: '600', marginTop: 10 },
   cta: {
-    backgroundColor: '#E8743B', borderRadius: 999,
+    backgroundColor: '#B5501B', borderRadius: 999,
     paddingVertical: 12, paddingHorizontal: 24, marginTop: 16,
   },
   ctaText: { color: '#fff', fontWeight: '700', fontSize: 14 },

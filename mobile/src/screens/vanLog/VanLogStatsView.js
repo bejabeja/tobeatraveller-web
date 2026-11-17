@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
   chartCol: { flex: 1, maxWidth: 56, alignItems: 'center', gap: 6 },
   chartTrack: { flex: 1, width: '100%', justifyContent: 'flex-end', gap: 3, paddingTop: CHART_VALUE_ROOM },
   chartValue: { fontSize: 10, fontWeight: '700', color: '#111827', textAlign: 'center' },
-  chartBar: { width: '100%', minHeight: 3, backgroundColor: '#E8743B', borderTopLeftRadius: 3, borderTopRightRadius: 3 },
+  chartBar: { width: '100%', minHeight: 3, backgroundColor: '#B5501B', borderTopLeftRadius: 3, borderTopRightRadius: 3 },
   // Wider than the bar so a label like "Aug 31" is not squeezed into it.
   chartLabel: { width: 44, marginHorizontal: -22, fontSize: 10, color: '#6b7280', textAlign: 'center' },
 
@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
   rowShare: { fontSize: 12, color: '#6b7280' },
   rowAmount: { minWidth: 72, fontSize: 14, fontWeight: '700', color: '#111827', textAlign: 'right' },
   rowTrack: { height: 6, borderRadius: 3, backgroundColor: '#e5e7eb', overflow: 'hidden' },
-  rowFill: { height: '100%', minWidth: 3, borderRadius: 3, backgroundColor: '#E8743B' },
+  rowFill: { height: '100%', minWidth: 3, borderRadius: 3, backgroundColor: '#B5501B' },
   rowFillOver: { backgroundColor: '#dc2626' },
   rowNote: { fontSize: 12, fontWeight: '600', color: '#6b7280' },
   rowNoteOver: { color: '#dc2626' },
@@ -258,8 +258,8 @@ const styles = StyleSheet.create({
   fuelCol: { alignItems: 'center', gap: 4 },
   fuelValue: { fontSize: 11, fontWeight: '700', color: '#111827' },
   fuelTrack: { width: 20, height: 64, justifyContent: 'flex-end' },
-  fuelBar: { width: '100%', minHeight: 4, borderRadius: 4, backgroundColor: '#E8743B' },
-  fuelDate: { fontSize: 10, color: '#9ca3af' },
+  fuelBar: { width: '100%', minHeight: 4, borderRadius: 4, backgroundColor: '#B5501B' },
+  fuelDate: { fontSize: 10, color: '#6b7280' },
 
   empty: { alignItems: 'center', paddingTop: 40, paddingHorizontal: 32 },
   emptyText: { fontSize: 15, color: '#6b7280', textAlign: 'center' },

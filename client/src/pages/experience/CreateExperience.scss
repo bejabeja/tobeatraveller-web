@@ -114,7 +114,7 @@
   }
 
   &--ok {
-    border-color: #16a34a;
+    border-color: #15803d;
     box-shadow: 0 0 0 3px rgba(22,163,74,0.08);
   }
 }
@@ -135,7 +135,7 @@
   font-family: inherit;
 
   &:focus { outline: none; }
-  &::placeholder { color: #9ca3af; }
+  &::placeholder { color: #6b7280; }
 }
 
 .cexp__spinner {
@@ -151,7 +151,7 @@
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .cexp__search-check {
-  color: #16a34a;
+  color: #15803d;
   flex-shrink: 0;
 }
 
@@ -187,7 +187,7 @@
   align-items: center;
   gap: 5px;
   font-size: 0.78rem;
-  color: #16a34a;
+  color: #15803d;
   font-weight: 500;
   padding: 0 0.25rem;
 }
@@ -247,7 +247,7 @@
 
   span {
     font-size: 0.7rem;
-    color: #9ca3af;
+    color: #6b7280;
     margin-top: 2px;
   }
 }
@@ -295,7 +295,7 @@
 
 .cexp__cat-card-desc {
   font-size: 0.65rem;
-  color: #9ca3af;
+  color: #6b7280;
   line-height: 1.3;
 
   .cexp__cat-card--active & { color: #1A535C; opacity: 0.75; }
@@ -340,13 +340,13 @@
 
 .cexp__intention-hint {
   font-size: 0.73rem;
-  color: #9ca3af;
+  color: #6b7280;
   padding: 0 0.1rem;
 }
 
 .cexp__intention-counter {
   font-size: 0.73rem;
-  color: #9ca3af;
+  color: #6b7280;
   white-space: nowrap;
 }
 
@@ -388,7 +388,7 @@
 
   &-desc {
     font-size: 0.68rem;
-    color: #9ca3af;
+    color: #6b7280;
     line-height: 1.3;
 
     .cexp__visibility-opt--on & { color: #1A535C; opacity: 0.75; }
@@ -432,7 +432,7 @@
 
   &-desc {
     font-size: 0.68rem;
-    color: #9ca3af;
+    color: #6b7280;
     line-height: 1.3;
 
     .cexp__pace-opt--on & { color: #1A535C; opacity: 0.75; }
@@ -447,14 +447,14 @@
   gap: 0.65rem;
   width: 100%;
   padding: 1.1rem;
-  background: #E8743B;
+  background: #B5501B;
   color: #fff;
   border: none;
   border-radius: 16px;
   font-size: 1.05rem;
   font-weight: 800;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(232,116,59,0.38);
+  box-shadow: 0 4px 16px rgba(181, 80, 27,0.38);
   font-family: inherit;
   transition: opacity 0.15s, transform 0.1s;
   margin-top: 0.25rem;
@@ -487,7 +487,7 @@
 
 .cexp__generate-hint {
   font-size: 0.82rem;
-  color: #9ca3af;
+  color: #6b7280;
   text-align: center;
   margin: 0;
 }
@@ -521,14 +521,14 @@
 .cexp__card-label {
   font-size: 0.7rem;
   font-weight: 700;
-  color: #9ca3af;
+  color: #6b7280;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .cexp__title-counter {
   font-size: 0.7rem;
-  color: #9ca3af;
+  color: #6b7280;
   white-space: nowrap;
 }
 
@@ -543,7 +543,8 @@
   padding: 0;
   background: transparent;
 
-  &::placeholder { color: #9ca3af; font-weight: 400; }
+  &::placeholder { color: #6b7280; font-weight: 400; }
+  &:focus-visible { box-shadow: inset 0 -2px 0 #1A535C; }
 }
 
 // Timeline top bar
@@ -567,16 +568,16 @@
   width: fit-content;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #E8743B;
-  background: rgba(232,116,59,0.08);
-  border: 1px solid rgba(232,116,59,0.3);
+  color: #B5501B;
+  background: rgba(181, 80, 27,0.08);
+  border: 1px solid rgba(181, 80, 27,0.3);
   border-radius: 999px;
   padding: 0.3rem 0.75rem;
   cursor: pointer;
   font-family: inherit;
   transition: background 0.1s;
 
-  &:hover { background: rgba(232,116,59,0.14); }
+  &:hover { background: rgba(181, 80, 27,0.14); }
 }
 
 // Day separator: matching mobile dayHeader
@@ -593,14 +594,14 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #E8743B;
+  background: #B5501B;
   flex-shrink: 0;
 }
 
 .cexp__day-label {
   font-size: 0.7rem;
   font-weight: 800;
-  color: #E8743B;
+  color: #B5501B;
   text-transform: uppercase;
   letter-spacing: 0.8px;
   white-space: nowrap;
@@ -616,7 +617,7 @@
 .cexp__modal-section-label {
   font-size: 0.7rem;
   font-weight: 700;
-  color: #9ca3af;
+  color: #6b7280;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-top: 0.25rem;
@@ -766,7 +767,7 @@
 
 .cexp-step__placeholder {
   font-style: normal;
-  color: #9ca3af;
+  color: #6b7280;
   font-weight: 400;
 }
 
@@ -781,7 +782,7 @@
   align-items: center;
   gap: 3px;
   font-size: 0.72rem;
-  color: #9ca3af;
+  color: #6b7280;
   margin-top: 1px;
   opacity: 0;
   transition: opacity 0.15s;
@@ -796,17 +797,17 @@
   width: 100%;
   padding: 0.7rem;
   margin-top: 0.6rem;
-  border: 1.5px dashed rgba(232,116,59,0.45);
+  border: 1.5px dashed rgba(181, 80, 27,0.45);
   border-radius: 10px;
-  background: rgba(232,116,59,0.04);
-  color: #E8743B;
+  background: rgba(181, 80, 27,0.04);
+  color: #B5501B;
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
   font-family: inherit;
   transition: background 0.1s;
 
-  &:hover { background: rgba(232,116,59,0.09); }
+  &:hover { background: rgba(181, 80, 27,0.09); }
 }
 
 // Save button: teal, matching mobile saveFullBtn

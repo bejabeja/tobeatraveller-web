@@ -40,8 +40,8 @@
     width: 64px;
     height: 64px;
     border-radius: 50%;
-    background: rgba(0, 119, 182, 0.08);
-    border: 1px solid rgba(0, 119, 182, 0.14);
+    background: rgba(181, 80, 27, 0.08);
+    border: 1px solid rgba(181, 80, 27, 0.14);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -146,7 +146,7 @@
     display: grid;
     place-items: center;
     height: 100%;
-    background: linear-gradient(135deg, #1A535C 0%, #E8743B 100%);
+    background: linear-gradient(135deg, #1A535C 0%, #B5501B 100%);
   }
 
   &__image-placeholder-logo {
@@ -319,6 +319,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  min-height: 1.75rem;
   gap: 0.4rem;
   background: none;
   border: none;
@@ -350,7 +351,7 @@
   }
 
   &.like-btn:hover {
-    color: #e63946;
+    color: #d62839;
   }
 
   .icon {
@@ -362,7 +363,7 @@
   }
 
   &.active {
-    color: #e63946;
+    color: #d62839;
   }
 }
 

@@ -421,7 +421,7 @@ const PlanExperienceScreen = ({ navigation }) => {
                   value={destQuery}
                   onChangeText={searchDestination}
                   placeholder={ce('destPlaceholder')}
-                  placeholderTextColor="#9ca3af"
+                  placeholderTextColor="#6b7280"
                   autoFocus
                 />
                 {destSearching && <ActivityIndicator size="small" color={COLORS.accent} />}
@@ -553,7 +553,7 @@ const PlanExperienceScreen = ({ navigation }) => {
                 value={intention}
                 onChangeText={setIntention}
                 placeholder={ce('intentionPlaceholder', { destination: destination?.name ?? '…' })}
-                placeholderTextColor="#b0b8c4"
+                placeholderTextColor="#6b7280"
                 multiline
                 numberOfLines={3}
                 maxLength={400}
@@ -627,7 +627,7 @@ const PlanExperienceScreen = ({ navigation }) => {
               value={title}
               onChangeText={setTitle}
               placeholder={ce('namePlaceholder')}
-              placeholderTextColor="#9ca3af"
+              placeholderTextColor="#6b7280"
               maxLength={50}
             />
           </View>
@@ -725,7 +725,7 @@ const PlanExperienceScreen = ({ navigation }) => {
               value={editDraft?.name ?? ''}
               onChangeText={v => setEditDraft(d => ({ ...d, name: v }))}
               placeholder={t(stepNameHintKey(editDraft?.category) ?? 'createExperience.nameMomentHint')}
-              placeholderTextColor="#9ca3af"
+              placeholderTextColor="#6b7280"
               maxLength={100}
             />
 
@@ -740,7 +740,7 @@ const PlanExperienceScreen = ({ navigation }) => {
                 value={locQuery}
                 onChangeText={searchLocation}
                 placeholder={ce('locationPlaceholder')}
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#6b7280"
               />
               {locSearching
                 ? <ActivityIndicator size="small" color={COLORS.accent} />
@@ -770,7 +770,7 @@ const PlanExperienceScreen = ({ navigation }) => {
               value={editDraft?.description ?? ''}
               onChangeText={v => setEditDraft(d => ({ ...d, description: v }))}
               placeholder={ce('detailsHint')}
-              placeholderTextColor="#9ca3af"
+              placeholderTextColor="#6b7280"
               multiline maxLength={500}
             />
 
@@ -799,7 +799,7 @@ const PlanExperienceScreen = ({ navigation }) => {
               value={editDraft?.personalNote ?? ''}
               onChangeText={v => setEditDraft(d => ({ ...d, personalNote: v }))}
               placeholder={ce('whyPlaceHint')}
-              placeholderTextColor="#b0b8c4"
+              placeholderTextColor="#6b7280"
               multiline maxLength={300}
             />
 
@@ -868,7 +868,7 @@ const etl = StyleSheet.create({
   contentLast: { paddingBottom: 4 },
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4, flexWrap: 'wrap' },
   badge: { alignSelf: 'flex-start', borderRadius: 6, paddingVertical: 2, paddingHorizontal: 7 },
-  badgeText: { fontSize: 9, fontWeight: '800', letterSpacing: 0.6 },
+  badgeText: { fontSize: 10, fontWeight: '800', letterSpacing: 0.6 },
   moodTag: {
     flexDirection: 'row', alignItems: 'center', gap: 3,
     backgroundColor: '#E8F4F2', borderRadius: 999, paddingVertical: 2, paddingHorizontal: 7,
@@ -879,7 +879,7 @@ const etl = StyleSheet.create({
   desc: { fontSize: 13, color: '#6b7280', lineHeight: 18, marginBottom: 2 },
   personalNote: { fontSize: 12, color: '#92613a', fontStyle: 'italic', lineHeight: 17, marginBottom: 2 },
   editHint: { flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 2 },
-  editHintText: { fontSize: 11, color: '#9CA3AF' },
+  editHintText: { fontSize: 11, color: '#6b7280' },
 });
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
@@ -921,7 +921,7 @@ const ls = StyleSheet.create({
   destResultName: { fontSize: 14, fontWeight: '600', color: '#111827' },
   destResultLabel: { fontSize: 12, color: '#6b7280', marginTop: 1 },
   destConfirmed: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 4, paddingTop: 3 },
-  destConfirmedText: { fontSize: 12, color: '#16a34a', fontWeight: '500', flex: 1 },
+  destConfirmedText: { fontSize: 12, color: '#15803d', fontWeight: '500', flex: 1 },
 
   stepperBox: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
@@ -936,7 +936,7 @@ const ls = StyleSheet.create({
   stepperBtnOff: { opacity: 0.35 },
   stepperMid: { flex: 1, alignItems: 'center' },
   stepperNum: { fontSize: 22, fontWeight: '800', color: COLORS.text },
-  stepperUnit: { fontSize: 11, color: '#9CA3AF', marginTop: -2 },
+  stepperUnit: { fontSize: 11, color: '#6b7280', marginTop: -2 },
 
   // Visibility toggle
   visibilityRow: { flexDirection: 'row', gap: 10 },
@@ -949,7 +949,7 @@ const ls = StyleSheet.create({
   visibilityEmoji: { fontSize: 18 },
   visibilityOptName: { fontSize: 13, fontWeight: '700', color: '#111827', textAlign: 'center' },
   visibilityOptNameOn: { color: COLORS.accent },
-  visibilityOptDesc: { fontSize: 10, color: '#9ca3af', textAlign: 'center', lineHeight: 14 },
+  visibilityOptDesc: { fontSize: 10, color: '#6b7280', textAlign: 'center', lineHeight: 14 },
 
   // Category grid
   catGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
@@ -963,7 +963,7 @@ const ls = StyleSheet.create({
   catCardEmoji: { fontSize: 20 },
   catCardName: { fontSize: 11, fontWeight: '700', color: '#111827', textAlign: 'center' },
   catCardNameOn: { color: COLORS.accent },
-  catCardDesc: { fontSize: 9.5, color: '#9ca3af', textAlign: 'center', lineHeight: 13 },
+  catCardDesc: { fontSize: 11, color: '#6b7280', textAlign: 'center', lineHeight: 15 },
 
   // Intention
   intentionInput: {
@@ -972,7 +972,7 @@ const ls = StyleSheet.create({
     fontSize: 14, color: '#111827', lineHeight: 21,
     minHeight: 80, fontStyle: 'italic',
   },
-  intentionHint: { fontSize: 11, color: '#9ca3af' },
+  intentionHint: { fontSize: 11, color: '#6b7280' },
 
   genBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
@@ -981,13 +981,13 @@ const ls = StyleSheet.create({
     ...shadow(4, 0.2, 12, 4),
   },
   genBtnText: { color: '#fff', fontSize: 17, fontWeight: '800' },
-  genHint: { fontSize: 13, color: '#9CA3AF', textAlign: 'center', marginTop: 6 },
+  genHint: { fontSize: 13, color: '#6b7280', textAlign: 'center', marginTop: 6 },
 
   card: {
     backgroundColor: '#fff', borderRadius: 14, padding: 16,
     borderWidth: 1, borderColor: '#E5E7EB', ...shadow(1, 0.04, 4, 1),
   },
-  cardLabel: { fontSize: 11, fontWeight: '700', color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 },
+  cardLabel: { fontSize: 11, fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 },
   titleInput: { fontSize: 19, fontWeight: '700', color: COLORS.text },
 
   timelineTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
@@ -1030,7 +1030,7 @@ const ls = StyleSheet.create({
   modalHandle: { width: 36, height: 4, borderRadius: 2, backgroundColor: '#E5E7EB', alignSelf: 'center', marginBottom: 16 },
   modalTitle: { fontSize: 16, fontWeight: '700', color: COLORS.text, marginBottom: 12 },
   modalSectionLabel: {
-    fontSize: 10, fontWeight: '700', color: '#9CA3AF',
+    fontSize: 10, fontWeight: '700', color: '#6b7280',
     textTransform: 'uppercase', letterSpacing: 0.5,
     marginBottom: 8, marginTop: 4,
   },

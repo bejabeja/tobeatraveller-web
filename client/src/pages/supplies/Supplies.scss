@@ -18,6 +18,11 @@
     border-radius: 10px;
     padding: 0.55rem 0.75rem;
     margin-bottom: 1.25rem;
+
+    &:focus-within {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(181, 80, 27, 0.15);
+    }
   }
 
   &__search-icon {
@@ -385,7 +390,7 @@
 
     &:hover {
       border-color: var(--primary-color);
-      background: rgba(232, 116, 59, 0.08);
+      background: rgba(181, 80, 27, 0.08);
     }
   }
 

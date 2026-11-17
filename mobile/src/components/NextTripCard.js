@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
 
   none: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingBottom: 16 },
   noneText: { flex: 1, fontSize: 14, color: 'rgba(255,255,255,0.92)' },
-  planBtn: { backgroundColor: '#E8743B', borderRadius: 999, paddingVertical: 9, paddingHorizontal: 16 },
+  planBtn: { backgroundColor: '#B5501B', borderRadius: 999, paddingVertical: 9, paddingHorizontal: 16 },
   planBtnText: { color: '#fff', fontWeight: '700', fontSize: 13 },
 });
 
