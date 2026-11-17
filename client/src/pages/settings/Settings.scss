@@ -159,14 +159,12 @@ $settings-row-min-height: 48px;
     flex-direction: column;
     gap: 0.15rem;
     min-width: 0;
-    width: auto;
   }
 
   &__row-label {
     font-size: 0.9rem;
     font-weight: 500;
     color: var(--text-color);
-    width: auto;
     transition: color 0.15s;
   }
 
@@ -174,12 +172,10 @@ $settings-row-min-height: 48px;
     font-size: 0.8rem;
     line-height: 1.45;
     color: var(--text-secondary-color);
-    width: auto;
   }
 
   &__row-value {
     min-width: 0;
-    width: auto;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

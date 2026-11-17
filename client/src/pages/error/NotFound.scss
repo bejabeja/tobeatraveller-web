@@ -1,13 +1,13 @@
 .not-found {
   padding: 3rem 1rem;
   margin: 2rem auto;
+  width: 100%;
   max-width: 500px;
   text-align: center;
 
   &__icon {
     color: var(--primary-color);
     margin-bottom: 1rem;
-    width: auto;
   }
 
   h1 {

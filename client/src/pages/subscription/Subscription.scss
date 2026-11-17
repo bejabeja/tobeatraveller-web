@@ -41,6 +41,7 @@
   &__hero-content {
     position: relative;
     z-index: 1;
+    width: 100%;
     max-width: 700px;
     padding: 0 1.5rem;
   }
@@ -310,6 +311,7 @@
   // Deliberately compact (small type, tight spacing): it's a supporting
   // aside before the pricing content, not a section of its own weight.
   &__preview {
+    width: 100%;
     max-width: 480px;
     margin: 0 auto;
     // Own top/bottom breathing room now that it sits directly in
@@ -459,6 +461,11 @@
       vertical-align: middle;
     }
 
+    // The feature column takes the room; the plan columns, only their tick.
+    th:first-child {
+      width: 100%;
+    }
+
     thead th {
       font-size: 12px;
       font-weight: 700;
@@ -554,6 +561,7 @@
     background: var(--success-light);
     border-radius: 16px;
     padding: 40px 24px;
+    width: 100%;
     max-width: 520px;
     margin: 0 auto;
 
@@ -595,7 +603,6 @@
   }
 
   &__account-title {
-    width: auto;
     display: flex;
     align-items: center;
     gap: 0.6rem;
@@ -628,6 +635,7 @@
     border: 1px solid var(--border-color);
     border-radius: 16px;
     padding: 40px 24px;
+    width: 100%;
     max-width: 520px;
     margin: 0 auto;
 
@@ -657,6 +665,7 @@
     background: var(--primary-light);
     border-radius: 16px;
     padding: 40px 24px;
+    width: 100%;
     max-width: 520px;
     margin: 0 auto;
 
@@ -698,6 +707,7 @@
     border: 1.5px solid var(--primary-color);
     border-radius: 16px;
     padding: 40px 24px;
+    width: 100%;
     max-width: 520px;
     margin: 0 auto;
 
@@ -741,6 +751,7 @@
     border: 1.5px solid var(--error-color);
     border-radius: 16px;
     padding: 40px 24px;
+    width: 100%;
     max-width: 520px;
     margin: 0 auto;
 
@@ -777,6 +788,7 @@
   }
 
   &__welcome {
+    width: 100%;
     max-width: 520px;
     margin: 0 auto 24px;
     text-align: center;
@@ -845,6 +857,7 @@
   }
 
   &__faq {
+    width: 100%;
     max-width: 720px;
     padding-top: 0;
     padding-bottom: 32px;
@@ -855,6 +868,7 @@
   }
 
   &__help {
+    width: 100%;
     max-width: 720px;
     padding-bottom: 88px;
     text-align: center;

@@ -1,6 +1,5 @@
 .supplies {
   &__tabs {
-    width: auto;
     display: flex;
     gap: 0.5rem;
     margin-bottom: 1.5rem;
@@ -8,7 +7,6 @@
   }
 
   &__search {
-    width: auto;
     max-width: 420px;
     display: flex;
     align-items: center;
@@ -99,7 +97,6 @@
   // Field, category and suggestions belong together, so one block carries the gap
   // to the list.
   &__add {
-    width: auto;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
@@ -107,7 +104,6 @@
   }
 
   &__add-row {
-    width: auto;
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -133,7 +129,6 @@
   }
 
   &__cat-chips {
-    width: auto;
     display: flex;
     flex-wrap: wrap;
     gap: 0.4rem;
@@ -195,7 +190,6 @@
 
   // Straight under the field, in the flow, so it never covers the list it adds to.
   &__suggestions {
-    width: auto;
     display: flex;
     flex-direction: column;
     padding: 0.25rem;
@@ -244,21 +238,18 @@
   }
 
   &__groups {
-    width: auto;
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
   }
 
   &__group {
-    width: auto;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
   }
 
   &__group-title {
-    width: auto;
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -282,14 +273,12 @@
   // No overflow: hidden on the card to round the corners: it would clip the
   // row menu's dropdown when a group has few rows.
   &__rows {
-    width: auto;
     background: var(--white-color);
     border: 1px solid var(--border-color);
     border-radius: 14px;
   }
 
   &__row {
-    width: auto;
     display: flex;
     align-items: center;
     gap: 0.75rem;
@@ -341,7 +330,6 @@
   }
 
   &__row-text {
-    width: auto;
     min-width: 0;
     display: flex;
     flex-direction: column;
@@ -349,7 +337,6 @@
   }
 
   &__row-name {
-    width: auto;
     font-size: 0.95rem;
     font-weight: 600;
     color: var(--text-color);
@@ -357,14 +344,12 @@
   }
 
   &__row-notes {
-    width: auto;
     font-size: 0.8rem;
     color: var(--text-secondary-color);
     overflow-wrap: anywhere;
   }
 
   &__row-amount {
-    width: auto;
     flex-shrink: 0;
     font-size: 0.85rem;
     color: var(--text-secondary-color);
@@ -447,7 +432,6 @@
   }
 
   &__empty {
-    width: auto;
     text-align: center;
     padding: 3rem 1rem;
     color: var(--text-secondary-color);
@@ -484,14 +468,12 @@
   }
 
   &__purchase-hint {
-    width: auto;
     font-size: 0.85rem;
     color: var(--text-secondary-color);
     margin-bottom: 0.5rem;
   }
 
   &__purchase-actions {
-    width: auto;
     display: flex;
     justify-content: flex-end;
     gap: 0.75rem;

@@ -62,7 +62,10 @@
   }
 }
 
-.home__users,
+.home__users {
+  width: 100%;
+}
+
 .home__map-placeholder {
   // The height of the map, so the page does not jump when it arrives.
   width: 100%;
@@ -166,6 +169,7 @@
     background-color: white;
     color: var(--primary-color);
     font-weight: 700;
+    width: 100%;
     max-width: 280px;
 
     &:hover {

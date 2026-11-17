@@ -19,12 +19,10 @@
 
   &__text {
     margin: 0;
-    width: auto;
     text-align: center;
   }
 
   &__send {
-    width: auto;
     padding: 0.25rem 0.9rem;
     border: 1.5px solid currentColor;
     border-radius: 999px;
@@ -41,12 +39,10 @@
   }
 
   &__sent {
-    width: auto;
     font-weight: 700;
   }
 
   &__change {
-    width: auto;
     display: inline-flex;
     align-items: center;
     min-height: 1.75rem;

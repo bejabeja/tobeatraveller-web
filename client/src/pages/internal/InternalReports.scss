@@ -6,7 +6,6 @@
   }
 
   &__filter {
-    width: auto;
     padding: 0.35rem 0.9rem;
     border: 1px solid var(--border-color);
     border-radius: 999px;
@@ -45,7 +44,6 @@
     flex-wrap: wrap;
     align-items: center;
     gap: 0.6rem;
-    width: auto;
 
     time {
       margin-left: auto;
@@ -83,13 +81,11 @@
     flex-direction: column;
     gap: 0.6rem;
     margin-top: 0.8rem;
-    width: auto;
 
     label {
       display: flex;
       flex-direction: column;
       gap: 0.25rem;
-      width: auto;
       font-size: 0.85rem;
     }
   }
@@ -98,7 +94,6 @@
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
-    width: auto;
   }
 
   &__more {

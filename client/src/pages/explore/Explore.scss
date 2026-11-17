@@ -54,7 +54,6 @@
   }
 
   &__results-title {
-    width: auto;
     font-size: 1.1rem;
     font-weight: 700;
     color: var(--text-color);
@@ -64,7 +63,6 @@
     font-size: 0.8rem;
     color: var(--text-secondary-color);
     font-weight: 400;
-    width: auto;
   }
 
   &__sort {
@@ -90,7 +88,6 @@
   }
 
   &__sort-chip {
-    width: auto;
     display: inline-flex;
     align-items: center;
     padding: 0.3rem 0.8rem;
@@ -131,7 +128,6 @@
   }
 
   &__clear-all {
-    width: auto;
     background: none;
     border: none;
     font-size: 0.78rem;
@@ -170,7 +166,6 @@
   &__filter-tag-remove {
     display: inline-flex;
     align-items: center;
-    width: auto;
     margin-left: 0.3rem;
     padding: 0;
     border: 0;

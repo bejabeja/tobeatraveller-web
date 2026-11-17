@@ -1,5 +1,4 @@
 .ai-generation-upsell {
-  width: auto;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -11,14 +10,12 @@
   margin: 0.75rem 0;
 
   &__icon {
-    width: auto;
     flex-shrink: 0;
     font-size: 1.4rem;
     color: var(--primary-color);
   }
 
   &__text {
-    width: auto;
     flex: 1 1 180px;
   }
 

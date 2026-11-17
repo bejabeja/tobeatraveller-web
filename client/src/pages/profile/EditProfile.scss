@@ -46,7 +46,6 @@ $ep-column-width: 600px;
     font-weight: 700;
     color: var(--text-color);
     margin: 0;
-    width: auto;
   }
 
   & &__save {
@@ -196,7 +195,6 @@ $ep-column-width: 600px;
     letter-spacing: 0.06em;
     color: var(--text-secondary-color);
     margin: 0;
-    width: auto;
   }
 
   &__section-desc {
@@ -204,7 +202,6 @@ $ep-column-width: 600px;
     color: var(--text-secondary-color);
     line-height: 1.5;
     margin: 0;
-    width: auto;
   }
 
   &__field-hint {
@@ -264,6 +261,5 @@ $ep-column-width: 600px;
     color: var(--error-color);
     padding: 0 1.5rem;
     margin: 0;
-    width: auto;
   }
 }

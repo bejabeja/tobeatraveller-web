@@ -245,47 +245,23 @@
   text-align: left;
 }
 
-// Leaflet's own control-positioning wrappers (and the zoom control itself)
-// don't set their own width, so the app-wide `* { width: 100% }` reset (see
-// index.scss) stretches them to the full map width instead of hugging the
-// button cluster's actual size.
-.leaflet-top,
-.leaflet-bottom {
-  width: fit-content;
-}
-
 .leaflet-control-zoom {
-  width: fit-content;
   border: none !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !important;
   border-radius: 8px !important;
   overflow: hidden;
 }
 
-// Same global `* { width: 100% }` issue as `.leaflet-top`/`.leaflet-control-zoom`
-// above, but for Popup: Leaflet sets an inline `width` on `.leaflet-popup-content`
-// itself via JS (measuring content, clamped to `maxWidth`), which already wins
-// over the plain reset without any help. Its wrapper and outer positioning div
-// don't get any JS-computed width though, so left alone they stretch to 100% of
-// the map instead of shrink-wrapping around that computed content width.
-.leaflet-popup,
-.leaflet-popup-content-wrapper {
-  width: fit-content !important;
-}
-
 .leaflet-tooltip {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  width: fit-content !important;
   border-radius: 8px !important;
   border: none !important;
   box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15) !important;
   padding: 0.4rem 0.65rem !important;
   pointer-events: none;
   white-space: nowrap;
-
-  strong, span { width: auto !important; }
 
   strong {
     font-size: 0.85rem;

@@ -1,6 +1,5 @@
 .life-diary {
   &__entries {
-    width: auto;
     max-width: 640px;
     margin: 0 auto;
     display: flex;
@@ -9,7 +8,6 @@
   }
 
   &__entry {
-    width: auto;
     background: var(--white-color);
     border: 1px solid var(--border-color);
     border-radius: 14px;
@@ -18,7 +16,6 @@
   }
 
   &__entry-top {
-    width: auto;
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
@@ -27,7 +24,6 @@
   }
 
   &__entry-place {
-    width: auto;
     flex: 1;
     min-width: 0;
     display: flex;
@@ -36,7 +32,6 @@
   }
 
   &__entry-location {
-    width: auto;
     display: flex;
     align-items: center;
     gap: 0.3rem;
@@ -53,7 +48,6 @@
   }
 
   &__entry-date {
-    width: auto;
     font-family: "Caveat", "DM Sans", system-ui, sans-serif;
     font-size: 1.15rem;
     font-weight: 600;
@@ -87,7 +81,6 @@
   }
 
   &__entry-photos {
-    width: auto;
     display: flex;
     gap: 0.5rem;
     overflow-x: auto;
@@ -104,7 +97,6 @@
   }
 
   &__entry-excerpt {
-    width: auto;
     font-family: "Caveat", "DM Sans", system-ui, sans-serif;
     font-size: 1.35rem;
     font-weight: 600;
@@ -137,7 +129,6 @@
   }
 
   &__entry-details {
-    width: auto;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
@@ -149,7 +140,6 @@
   }
 
   &__entry-memories {
-    width: auto;
     white-space: pre-wrap;
     line-height: 1.5;
   }
@@ -168,7 +158,6 @@
   }
 
   &__empty {
-    width: auto;
     text-align: center;
     padding: 3rem 1rem;
     color: var(--text-secondary-color);

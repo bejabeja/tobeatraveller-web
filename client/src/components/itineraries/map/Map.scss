@@ -94,12 +94,7 @@
   line-height: 28px !important;
 }
 
-.leaflet-touch .leaflet-bar {
-  width: fit-content;
-}
-
 .leaflet-popup-content-wrapper {
-  width: fit-content !important;
   min-width: 0 !important;
   border-radius: 8px !important;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15) !important;
@@ -110,8 +105,6 @@
   width: fit-content !important;
   white-space: nowrap;
   margin: 0.35rem 0.6rem !important;
-
-  strong, span, p, div { width: auto !important; }
 }
 
 .leaflet-popup-tip {

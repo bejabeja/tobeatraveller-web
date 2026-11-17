@@ -154,7 +154,6 @@
     color: var(--error-color);
     margin: 0;
     padding-left: 1.3rem;
-    width: auto;
   }
 
   &__tagline {
@@ -215,6 +214,7 @@
 
     @media (min-width: 480px) {
       border-radius: 20px;
+      width: 100%;
       max-width: 400px;
       padding: 2rem 1.75rem;
       box-shadow: 0 24px 64px rgba(0, 0, 0, 0.28);
@@ -229,6 +229,7 @@
       box-shadow: none;
       border-radius: 0;
       padding: 0;
+      width: 100%;
       max-width: 380px;
       gap: 1.25rem;
     }
@@ -275,7 +276,6 @@
       margin-top: 0.35rem;
       font-size: 0.875rem;
       color: var(--text-secondary-color);
-      width: auto;
     }
 
     &-referral-banner {

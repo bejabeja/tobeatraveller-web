@@ -7,13 +7,11 @@
 
 .logo__mark {
   display: none;
-  width: auto;
   flex-shrink: 0;
 }
 
 .logo__full {
   display: block;
-  width: auto;
   flex-shrink: 0;
 }
 
@@ -73,7 +71,6 @@
 
 .mobile-header__create-icon {
   font-size: 1.6rem;
-  width: auto;
 }
 
 .nav-badge {
@@ -389,7 +386,6 @@
   &__trigger {
     display: flex;
     align-items: center;
-    width: auto;
     gap: 0.3rem;
     background: none;
     border: none;
@@ -595,8 +591,7 @@ html:has(.create-sheet__backdrop) {
   box-shadow: 0 -8px 30px rgba(0,0,0,0.12);
   animation: cs-up 0.25s cubic-bezier(0.32, 0.72, 0, 1);
 
-  // Override global * { width: 100% } that breaks SVG icons
-  svg { width: auto; height: auto; flex-shrink: 0; }
+  svg { flex-shrink: 0; }
 
   &__handle {
     width: 36px;
@@ -726,7 +721,6 @@ html:has(.create-sheet__backdrop) {
     padding: 0;
 
     span {
-      width: auto;
       line-height: 1;
     }
 
@@ -738,7 +732,6 @@ html:has(.create-sheet__backdrop) {
   &__icon {
     font-size: 1.35rem;
     flex-shrink: 0;
-    width: auto;
   }
 
   // Ring lights up the same way the other tabs' icons recolor on .active,
@@ -792,7 +785,6 @@ html:has(.create-sheet__backdrop) {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  width: auto;
 }
 
 .mobile-header__register {

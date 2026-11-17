@@ -6,9 +6,6 @@
   max-width: 640px;
   // No padding override, section__container handles it (1rem mobile, 2rem 600px+)
 
-  // Global CSS reset sets * { width: 100% } which breaks icons, chips, and pill buttons.
-  // Restore natural sizing for inline/interactive elements; specific rules override below.
-  svg, span, em, strong, i { width: auto; height: auto; }
   svg { flex-shrink: 0; }
 }
 

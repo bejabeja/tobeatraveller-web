@@ -27,7 +27,6 @@ $recap-gold: #d9a441;
   }
 
   &__off-season-icon {
-    width: auto;
     font-size: 3rem;
   }
 
@@ -45,7 +44,6 @@ $recap-gold: #d9a441;
     top: 1rem;
     left: 1rem;
     right: 3.5rem;
-    width: auto;
     display: flex;
     gap: 0.3rem;
   }
@@ -110,7 +108,6 @@ $recap-gold: #d9a441;
   }
 
   &__emoji {
-    width: auto;
     font-size: 4rem;
   }
 
@@ -188,7 +185,6 @@ $recap-gold: #d9a441;
     cursor: pointer;
 
     input {
-      width: auto;
       margin: 0;
     }
   }
@@ -254,7 +250,6 @@ $recap-gold: #d9a441;
 
   &__back {
     margin-top: 1rem;
-    width: auto;
     border: none;
     background: none;
     color: rgba(255, 255, 255, 0.85);

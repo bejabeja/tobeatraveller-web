@@ -51,7 +51,6 @@ $seal-size: 11rem;
   }
 
   &__symbol {
-    width: auto;
     font-size: 5rem;
     line-height: 1;
   }
@@ -73,7 +72,6 @@ $seal-size: 11rem;
   }
 
   &__title {
-    width: auto;
     margin: 0;
     font-size: 1.5rem;
     font-weight: 800;
@@ -82,7 +80,6 @@ $seal-size: 11rem;
   }
 
   &__name {
-    width: auto;
     margin: 0.4rem 0 0;
     font-size: 1.25rem;
     font-weight: 700;
@@ -91,7 +88,6 @@ $seal-size: 11rem;
   }
 
   &__where {
-    width: auto;
     margin: 0.6rem 0 0;
     font-size: 0.85rem;
     color: rgba(#fff, 0.7);
@@ -99,7 +95,6 @@ $seal-size: 11rem;
   }
 
   &__progress {
-    width: auto;
     margin: 0.75rem 0 0;
     font-size: 0.85rem;
     color: rgba(#fff, 0.7);

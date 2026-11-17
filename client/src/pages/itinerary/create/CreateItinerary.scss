@@ -36,7 +36,6 @@
   font-size: 0.78rem;
   color: var(--text-secondary-color);
   margin-left: 0.25rem;
-  width: auto;
 }
 
 .ci-wizard__header {
@@ -53,7 +52,6 @@
   font-size: 2.2rem;
   line-height: 1;
   flex-shrink: 0;
-  width: auto;
 }
 
 .ci-wizard__title {
@@ -127,6 +125,7 @@
   &__cta {
     button,
     a {
+      width: 100%;
       max-width: 240px;
     }
   }
@@ -383,7 +382,6 @@
 }
 
 .form__section-check {
-  width: auto;
   color: #22c55e;
   font-size: 0.95rem;
   font-weight: 700;
@@ -822,7 +820,6 @@
 .form__travellers-label {
   font-size: 0.9rem;
   color: var(--text-secondary-color);
-  width: auto;
 }
 
 // Date quick-duration presets
@@ -876,6 +873,7 @@
     flex-direction: row;
   }
   .form__row-group > div {
+    width: 100%;
     max-width: 50%;
   }
 

@@ -1,4 +1,5 @@
 .account {
+  width: 100%;
   max-width: 560px;
   margin: 0 auto;
   padding: 32px 20px 64px;
@@ -164,7 +165,6 @@
   }
 
   &__link-label {
-    width: auto;
     font-size: 15px;
     font-weight: 500;
   }

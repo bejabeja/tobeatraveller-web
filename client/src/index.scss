@@ -42,13 +42,6 @@
   /* outline: 1px solid rgba(255, 0, 0, 0.2); */
 }
 
-// Everything but the shapes inside an SVG: there `width` is the shape's own
-// geometry (a <rect>'s width), so 100% stretched every icon's rectangles to
-// the whole icon. :where() keeps this as weak as the `*` rule it came from.
-:where(:not(svg *)) {
-  width: 100%;
-}
-
 // `clip`, not `hidden`: both stop sideways scrolling, but `hidden` makes the
 // element a scroll container that never scrolls, and then nothing inside the
 // page can stick (position: sticky) to the window as it scrolls.
@@ -93,6 +86,11 @@ body {
   overflow-x: clip;
   background-color: var(--white-color);
   color: var(--text-color);
+}
+
+#root {
+  width: 100%;
+  min-width: 0;
 }
 
 .btn {
@@ -205,6 +203,7 @@ body {
 }
 
 .section__container {
+  width: 100%;
   max-width: 1200px;
   padding: 1rem;
   margin: 0 auto;
