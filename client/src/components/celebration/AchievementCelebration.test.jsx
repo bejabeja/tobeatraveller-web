@@ -47,7 +47,7 @@ describe("AchievementCelebration", () => {
     const { onDismiss } = renderCelebration();
 
     fireEvent.click(screen.getByRole("button", { name: "passport.celebrationContinue" }));
-    fireEvent.keyDown(document, { key: "Escape" });
+    fireEvent(screen.getByRole("dialog"), new Event("cancel", { cancelable: true }));
 
     expect(onDismiss).toHaveBeenCalledTimes(2);
   });

@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
@@ -21,6 +21,7 @@ import {
 import { vanLogEntrySchema } from "../../utils/schemasValidation";
 import CurrencyField from "./CurrencyField";
 import ReceiptPhotoInput from "./ReceiptPhotoInput";
+import Dialog from "../../components/dialog/Dialog";
 import "./VanLogEntryModal.scss";
 
 // One modal for creating and editing an expense, so both look and behave the
@@ -29,6 +30,7 @@ import "./VanLogEntryModal.scss";
 // and the details already showing.
 const VanLogEntryModal = ({ entry = null, onClose, onSaved, initialCapReached = false, defaultItineraryId = "" }) => {
   const { t } = useTranslation();
+  const titleId = useId();
   const isEditing = Boolean(entry);
   const [expanded, setExpanded] = useState(isEditing);
   const initialReceiptPhotoUrl = entry?.receiptPhotoUrl ?? null;
@@ -82,144 +84,142 @@ const VanLogEntryModal = ({ entry = null, onClose, onSaved, initialCapReached = 
   };
 
   return (
-    <div className="van-log-form__backdrop" onClick={onClose}>
-      <div className="van-log-form__panel" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
-        <div className="van-log-form__header">
-          <h2>{t(isEditing ? "vanLog.editEntry" : "vanLog.quickAdd")}</h2>
-          <button type="button" className="van-log-form__close" onClick={onClose} aria-label={t("common.close")}>✕</button>
+    <Dialog onClose={onClose} labelledBy={titleId} backdropClassName="van-log-form__backdrop" className="van-log-form__panel">
+      <div className="van-log-form__header">
+        <h2 id={titleId}>{t(isEditing ? "vanLog.editEntry" : "vanLog.quickAdd")}</h2>
+        <button type="button" className="van-log-form__close" onClick={onClose} aria-label={t("common.close")}>✕</button>
+      </div>
+
+      {capReached ? (
+        <div className="van-log-form__cap-reached">
+          <IoLockClosedOutline className="van-log-form__cap-reached-icon" aria-hidden="true" />
+          <p className="van-log-form__cap-reached-title">{t("vanLog.capReachedTitle")}</p>
+          <p className="van-log-form__cap-reached-desc">{t("vanLog.capReachedDesc")}</p>
+          <Link to="/subscription" className="btn btn--primary">{t("premium.requiredCta")}</Link>
+        </div>
+      ) : (
+      <form className="van-log-form__body" onSubmit={handleSubmit(onSubmit)}>
+        <label className="van-log-entry-modal__amount-label" htmlFor="van-log-entry-amount">
+          {t("vanLog.amountLabel")}
+        </label>
+        <div className="van-log-entry-modal__amount-row">
+          <input
+            id="van-log-entry-amount"
+            className="van-log-entry-modal__amount-input"
+            type="number"
+            step="0.01"
+            min="0"
+            inputMode="decimal"
+            placeholder="0.00"
+            {...register("amount")}
+            autoFocus={!isEditing}
+          />
+          <CurrencyField
+            label={t("vanLog.currencyLabel")}
+            name="currency"
+            control={control}
+            error={errors.currency}
+            compact
+          />
         </div>
 
-        {capReached ? (
-          <div className="van-log-form__cap-reached">
-            <IoLockClosedOutline className="van-log-form__cap-reached-icon" aria-hidden="true" />
-            <p className="van-log-form__cap-reached-title">{t("vanLog.capReachedTitle")}</p>
-            <p className="van-log-form__cap-reached-desc">{t("vanLog.capReachedDesc")}</p>
-            <Link to="/subscription" className="btn btn--primary">{t("premium.requiredCta")}</Link>
-          </div>
-        ) : (
-        <form className="van-log-form__body" onSubmit={handleSubmit(onSubmit)}>
-          <label className="van-log-entry-modal__amount-label" htmlFor="van-log-entry-amount">
-            {t("vanLog.amountLabel")}
-          </label>
-          <div className="van-log-entry-modal__amount-row">
-            <input
-              id="van-log-entry-amount"
-              className="van-log-entry-modal__amount-input"
-              type="number"
-              step="0.01"
-              min="0"
-              inputMode="decimal"
-              placeholder="0.00"
-              {...register("amount")}
-              autoFocus={!isEditing}
-            />
-            <CurrencyField
-              label={t("vanLog.currencyLabel")}
-              name="currency"
-              control={control}
-              error={errors.currency}
-              compact
-            />
-          </div>
-
-          <span className="van-log-entry-modal__amount-label">{t("vanLog.categoryLabel")}</span>
-          <div className="van-log-entry-modal__grid" role="group" aria-label={t("vanLog.categoryLabel")}>
-            {vanLogCategories.map(({ value }) => (
-              <button
-                key={value}
-                type="button"
-                className={`van-log-entry-modal__category${category === value ? " van-log-entry-modal__category--active" : ""}`}
-                aria-pressed={category === value}
-                onClick={() => setValue("category", value, { shouldValidate: true })}
-              >
-                <span className="van-log-entry-modal__category-emoji">{vanLogCategoryEmoji[value] ?? "📍"}</span>
-                <span className="van-log-entry-modal__category-label">{categoryLabel(value)}</span>
-              </button>
-            ))}
-          </div>
-          {errors.category && <div className="input__error">{translateValidationMessage(t, errors.category.message)}</div>}
-
-          {trips.length > 0 && (
-            <SelectMenu
-              Icon={IoMapOutline}
-              ariaLabel={t("vanLog.tripLabel")}
-              placeholder={t("vanLog.tripLabel")}
-              options={[{ value: "", label: t("vanLog.noTrip") }, ...trips.map((trip) => ({ value: trip.id, label: trip.title }))]}
-              value={itineraryId}
-              onChange={setItineraryId}
-            />
-          )}
-
-          <ReceiptPhotoInput value={receiptPhoto} onChange={setReceiptPhoto} />
-
-          <button
-            type="button"
-            className="van-log-entry-modal__expand-toggle"
-            onClick={() => setExpanded((prev) => !prev)}
-            aria-expanded={expanded}
-          >
-            {expanded ? t("vanLog.lessDetails") : t("vanLog.moreDetails")}
-            <IoChevronDown className={`van-log-entry-modal__expand-icon${expanded ? " van-log-entry-modal__expand-icon--open" : ""}`} />
-          </button>
-
-          {expanded && (
-            <div className="van-log-entry-modal__expanded">
-              <InputForm
-                label={t("vanLog.titleLabel")}
-                name="title"
-                control={control}
-                error={errors.title}
-                placeholder={t("vanLog.titlePlaceholder")}
-              />
-
-              <InputForm
-                label={t("vanLog.dateLabel")}
-                name="entryDate"
-                control={control}
-                error={errors.entryDate}
-                type="date"
-                required
-              />
-
-              {category === "fuel" && (
-                <InputForm
-                  label={t("vanLog.pricePerLiterLabel")}
-                  name="pricePerLiter"
-                  control={control}
-                  error={errors.pricePerLiter}
-                  type="number"
-                  inputProps={{ step: "0.001", min: "0" }}
-                />
-              )}
-
-              <AutocompleteObjectInput
-                label={t("vanLog.locationLabel")}
-                name="location"
-                control={control}
-                error={errors.location}
-                placeholder={t("vanLog.locationPlaceholder")}
-              />
-
-              <TextAreaForm
-                label={t("vanLog.notesLabel")}
-                name="notes"
-                control={control}
-                error={errors.notes}
-                maxLength={1000}
-              />
-            </div>
-          )}
-
-          <div className="van-log-form__actions">
-            <button type="button" className="btn btn--ghost" onClick={onClose}>
-              {t("common.cancel")}
+        <span className="van-log-entry-modal__amount-label">{t("vanLog.categoryLabel")}</span>
+        <div className="van-log-entry-modal__grid" role="group" aria-label={t("vanLog.categoryLabel")}>
+          {vanLogCategories.map(({ value }) => (
+            <button
+              key={value}
+              type="button"
+              className={`van-log-entry-modal__category${category === value ? " van-log-entry-modal__category--active" : ""}`}
+              aria-pressed={category === value}
+              onClick={() => setValue("category", value, { shouldValidate: true })}
+            >
+              <span className="van-log-entry-modal__category-emoji">{vanLogCategoryEmoji[value] ?? "📍"}</span>
+              <span className="van-log-entry-modal__category-label">{categoryLabel(value)}</span>
             </button>
-            <SubmitButton loading={isSubmitting} disabled={!category} label={t(isEditing ? "common.save" : "vanLog.quickAdd")} />
-          </div>
-        </form>
+          ))}
+        </div>
+        {errors.category && <div className="input__error">{translateValidationMessage(t, errors.category.message)}</div>}
+
+        {trips.length > 0 && (
+          <SelectMenu
+            Icon={IoMapOutline}
+            ariaLabel={t("vanLog.tripLabel")}
+            placeholder={t("vanLog.tripLabel")}
+            options={[{ value: "", label: t("vanLog.noTrip") }, ...trips.map((trip) => ({ value: trip.id, label: trip.title }))]}
+            value={itineraryId}
+            onChange={setItineraryId}
+          />
         )}
-      </div>
-    </div>
+
+        <ReceiptPhotoInput value={receiptPhoto} onChange={setReceiptPhoto} />
+
+        <button
+          type="button"
+          className="van-log-entry-modal__expand-toggle"
+          onClick={() => setExpanded((prev) => !prev)}
+          aria-expanded={expanded}
+        >
+          {expanded ? t("vanLog.lessDetails") : t("vanLog.moreDetails")}
+          <IoChevronDown className={`van-log-entry-modal__expand-icon${expanded ? " van-log-entry-modal__expand-icon--open" : ""}`} />
+        </button>
+
+        {expanded && (
+          <div className="van-log-entry-modal__expanded">
+            <InputForm
+              label={t("vanLog.titleLabel")}
+              name="title"
+              control={control}
+              error={errors.title}
+              placeholder={t("vanLog.titlePlaceholder")}
+            />
+
+            <InputForm
+              label={t("vanLog.dateLabel")}
+              name="entryDate"
+              control={control}
+              error={errors.entryDate}
+              type="date"
+              required
+            />
+
+            {category === "fuel" && (
+              <InputForm
+                label={t("vanLog.pricePerLiterLabel")}
+                name="pricePerLiter"
+                control={control}
+                error={errors.pricePerLiter}
+                type="number"
+                inputProps={{ step: "0.001", min: "0" }}
+              />
+            )}
+
+            <AutocompleteObjectInput
+              label={t("vanLog.locationLabel")}
+              name="location"
+              control={control}
+              error={errors.location}
+              placeholder={t("vanLog.locationPlaceholder")}
+            />
+
+            <TextAreaForm
+              label={t("vanLog.notesLabel")}
+              name="notes"
+              control={control}
+              error={errors.notes}
+              maxLength={1000}
+            />
+          </div>
+        )}
+
+        <div className="van-log-form__actions">
+          <button type="button" className="btn btn--ghost" onClick={onClose}>
+            {t("common.cancel")}
+          </button>
+          <SubmitButton loading={isSubmitting} disabled={!category} label={t(isEditing ? "common.save" : "vanLog.quickAdd")} />
+        </div>
+      </form>
+      )}
+    </Dialog>
   );
 };
 

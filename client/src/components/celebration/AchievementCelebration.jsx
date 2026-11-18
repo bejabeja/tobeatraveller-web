@@ -1,9 +1,10 @@
-import { useEffect, useRef } from "react";
+import { Fragment, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { describePassportMoment, MOMENT_KINDS, passportSharePath } from "@tobeatraveller/shared";
 import { trackEvent } from "../../utils/analytics";
 import { ANALYTICS_EVENTS } from "../../utils/analyticsEvents";
+import Dialog from "../dialog/Dialog";
 import "./AchievementCelebration.scss";
 
 const CONFETTI_PIECES = 12;
@@ -25,21 +26,15 @@ const AchievementCelebration = ({ celebration, userId, position, total, onDismis
     trackEvent(ANALYTICS_EVENTS.ACHIEVEMENT_CELEBRATED, { moment: moment.kind });
   }, [notificationId]);
 
-  useEffect(() => {
-    const onKey = (event) => { if (event.key === "Escape") onDismiss(); };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [onDismiss]);
-
   const share = () => {
     onShare();
     navigate(passportSharePath(userId, { moment: isCountry ? { countryCode: moment.code } : { badgeId: moment.code } }));
   };
 
   return (
-    <div className="celebration" role="dialog" aria-modal="true" aria-labelledby="celebration-title">
+    <Dialog onClose={onDismiss} closeOnBackdrop={false} labelledBy="celebration-title" backdropClassName="celebration" className="celebration__content">
       {/* Keyed so each new celebration replays the stamp animation. */}
-      <div className="celebration__content" key={notificationId}>
+      <Fragment key={notificationId}>
         <div className="celebration__stage" aria-hidden="true">
           {Array.from({ length: CONFETTI_PIECES }, (_, index) => (
             <span
@@ -62,8 +57,8 @@ const AchievementCelebration = ({ celebration, userId, position, total, onDismis
             {t("passport.celebrationContinue")}
           </button>
         </div>
-      </div>
-    </div>
+      </Fragment>
+    </Dialog>
   );
 };
 

@@ -570,10 +570,6 @@
   animation: cs-backdrop 0.2s ease;
 }
 
-html:has(.create-sheet__backdrop) {
-  overflow: hidden;
-}
-
 @keyframes cs-backdrop {
   from { background: transparent; }
   to   { background: rgba(0,0,0,0.45); }

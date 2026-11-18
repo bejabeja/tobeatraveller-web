@@ -5,6 +5,7 @@ import { usePassportShareImage } from "../../hooks/usePassportShareImage";
 import ShareImageActions from "../share/ShareImageActions";
 import { trackEvent } from "../../utils/analytics";
 import { ANALYTICS_EVENTS, PASSPORT_SHARE_SOURCES } from "../../utils/analyticsEvents";
+import Dialog from "../dialog/Dialog";
 import "../modal/Modal.scss";
 import "./PassportShareDialog.scss";
 
@@ -37,13 +38,6 @@ const PassportShareDialog = ({
     if (isOpen) trackEvent(ANALYTICS_EVENTS.PASSPORT_SHARE_OPENED, { source });
   }, [isOpen, source]);
 
-  useEffect(() => {
-    if (!isOpen) return undefined;
-    const onKey = (event) => { if (event.key === "Escape") onClose(); };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [isOpen, onClose]);
-
   if (!isOpen) return null;
 
   // Counts only, never who or which countries.
@@ -57,76 +51,74 @@ const PassportShareDialog = ({
   });
 
   return (
-    <div className="modal__backdrop" onClick={onClose} role="dialog" aria-modal="true" aria-labelledby="passport-share-title">
-      <div className="modal passport-share" onClick={(event) => event.stopPropagation()}>
-        <div className="modal__header">
-          <h2 id="passport-share-title" className="modal__title">{t("passport.shareTitle")}</h2>
-          <button className="modal__close" onClick={onClose} aria-label={t("common.cancel")}>✕</button>
-        </div>
+    <Dialog onClose={onClose} labelledBy="passport-share-title" backdropClassName="modal__backdrop" className="modal passport-share">
+      <div className="modal__header">
+        <h2 id="passport-share-title" className="modal__title">{t("passport.shareTitle")}</h2>
+        <button className="modal__close" onClick={onClose} aria-label={t("common.cancel")}>✕</button>
+      </div>
 
-        <div className="passport-share__layout">
-          <div className="passport-share__media" aria-busy={updating}>
-            {loading && !previewUrl && <div className="passport-share__skeleton" />}
-            {error && <p className="error-message">{t("passport.shareError")}</p>}
-            {previewUrl && (
-              <img
-                className={`passport-share__preview${updating ? " passport-share__preview--updating" : ""}`}
-                src={previewUrl}
-                alt={t("passport.shareTitle")}
-              />
-            )}
-          </div>
-          <div className="passport-share__side">
-            <section className="passport-share__section" aria-labelledby="passport-share-contents">
-              <h3 id="passport-share-contents" className="passport-share__section-title">{t("passport.shareContentsTitle")}</h3>
-              {/* Without any achievement it would only add an empty panel. */}
-              {summary?.earnedCount > 0 && (
-                <label className="passport-share__toggle">
-                  <input
-                    type="checkbox"
-                    checked={includeAchievements || summary.achievementsForced}
-                    disabled={summary.achievementsForced}
-                    onChange={(event) => setIncludeAchievements(event.target.checked)}
-                  />
-                  {t("passport.shareIncludeAchievements")}
-                </label>
-              )}
+      <div className="passport-share__layout">
+        <div className="passport-share__media" aria-busy={updating}>
+          {loading && !previewUrl && <div className="passport-share__skeleton" />}
+          {error && <p className="error-message">{t("passport.shareError")}</p>}
+          {previewUrl && (
+            <img
+              className={`passport-share__preview${updating ? " passport-share__preview--updating" : ""}`}
+              src={previewUrl}
+              alt={t("passport.shareTitle")}
+            />
+          )}
+        </div>
+        <div className="passport-share__side">
+          <section className="passport-share__section" aria-labelledby="passport-share-contents">
+            <h3 id="passport-share-contents" className="passport-share__section-title">{t("passport.shareContentsTitle")}</h3>
+            {/* Without any achievement it would only add an empty panel. */}
+            {summary?.earnedCount > 0 && (
               <label className="passport-share__toggle">
                 <input
                   type="checkbox"
-                  checked={includePrivate}
-                  onChange={(event) => setIncludePrivate(event.target.checked)}
+                  checked={includeAchievements || summary.achievementsForced}
+                  disabled={summary.achievementsForced}
+                  onChange={(event) => setIncludeAchievements(event.target.checked)}
                 />
-                {t("passport.shareIncludePrivate")}
+                {t("passport.shareIncludeAchievements")}
               </label>
-              {includePrivate ? (
-                <p className="passport-share__private" role="status">
-                  <span aria-hidden="true">🔒</span>
-                  {t("passport.shareIncludesPrivate")}
-                </p>
-              ) : (
-                <p className="passport-share__hint">{t("passport.sharePublicOnly")}</p>
-              )}
-            </section>
-            <section className="passport-share__section passport-share__sharing" aria-labelledby="passport-share-how">
-              <h3 id="passport-share-how" className="passport-share__section-title">{t("passport.shareHowTitle")}</h3>
-              {/* Only when the link really carries their code: otherwise the promise would be false. */}
-              {referralCode && <p className="passport-share__reward">{t("passport.shareReward")}</p>}
-            </section>
-            <ShareImageActions
-              blob={blob}
-              previewUrl={previewUrl}
-              url={url}
-              fileName={SHARE_FILE_NAME}
-              shareText={t("passport.shareText")}
-              loading={loading}
-              onShared={trackShared}
-              phoneUrl={`${window.location.origin}${passportSharePath(userId, { onPhone: true })}`}
-            />
-          </div>
+            )}
+            <label className="passport-share__toggle">
+              <input
+                type="checkbox"
+                checked={includePrivate}
+                onChange={(event) => setIncludePrivate(event.target.checked)}
+              />
+              {t("passport.shareIncludePrivate")}
+            </label>
+            {includePrivate ? (
+              <p className="passport-share__private" role="status">
+                <span aria-hidden="true">🔒</span>
+                {t("passport.shareIncludesPrivate")}
+              </p>
+            ) : (
+              <p className="passport-share__hint">{t("passport.sharePublicOnly")}</p>
+            )}
+          </section>
+          <section className="passport-share__section passport-share__sharing" aria-labelledby="passport-share-how">
+            <h3 id="passport-share-how" className="passport-share__section-title">{t("passport.shareHowTitle")}</h3>
+            {/* Only when the link really carries their code: otherwise the promise would be false. */}
+            {referralCode && <p className="passport-share__reward">{t("passport.shareReward")}</p>}
+          </section>
+          <ShareImageActions
+            blob={blob}
+            previewUrl={previewUrl}
+            url={url}
+            fileName={SHARE_FILE_NAME}
+            shareText={t("passport.shareText")}
+            loading={loading}
+            onShared={trackShared}
+            phoneUrl={`${window.location.origin}${passportSharePath(userId, { onPhone: true })}`}
+          />
         </div>
       </div>
-    </div>
+    </Dialog>
   );
 };
 

@@ -7,17 +7,18 @@ import Modal from "./Modal";
 const renderModal = (props = {}) => render(<Modal isOpen title="Delete entry" onClose={jest.fn()} onConfirm={jest.fn()} {...props} />);
 
 describe("Modal", () => {
+  // The browser fires cancel on Escape or the back gesture.
   it("closes with Escape when nothing is in flight", () => {
     const onClose = jest.fn();
     renderModal({ onClose });
-    fireEvent.keyDown(document, { key: "Escape" });
+    fireEvent(screen.getByRole("dialog"), new Event("cancel", { cancelable: true }));
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
   it("does not close with Escape or a backdrop click while loading", () => {
     const onClose = jest.fn();
     renderModal({ onClose, loading: true });
-    fireEvent.keyDown(document, { key: "Escape" });
+    fireEvent(screen.getByRole("dialog"), new Event("cancel", { cancelable: true }));
     fireEvent.click(screen.getByRole("dialog"));
     expect(onClose).not.toHaveBeenCalled();
   });
@@ -84,11 +85,5 @@ describe("Modal", () => {
     );
 
     expect(screen.getByLabelText("username")).toHaveFocus();
-  });
-
-  it("takes the focus itself when nothing inside asks for it", () => {
-    render(<Modal isOpen title="Delete entry" onClose={jest.fn()} onConfirm={jest.fn()} />);
-
-    expect(screen.getByRole("dialog", { name: "Delete entry" }).querySelector("form")).toHaveFocus();
   });
 });

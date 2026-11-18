@@ -32,8 +32,11 @@ const TripActionsMenu = ({ items, toggleClassName = "action-icon-btn" }) => {
     };
   }, [open]);
 
+  // Before the action: the item goes away with the menu, and a dialog the action opens gives the
+  // focus back, when it closes, to whatever had it.
   const choose = (onSelect) => () => {
     setOpen(false);
+    toggleRef.current?.focus();
     onSelect?.();
   };
 

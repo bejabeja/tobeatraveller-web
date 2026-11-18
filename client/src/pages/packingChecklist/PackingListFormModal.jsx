@@ -7,6 +7,7 @@ import { FREE_PLAN_LIMITS, PACKING_LIST_NAME_MAX_LENGTH, PACKING_TEMPLATES, pack
 import SelectMenu from "../../components/form/SelectMenu";
 import SubmitButton from "../../components/form/SubmitButton";
 import { selectMe } from "../../store/user/userInfoSelectors";
+import Dialog from "../../components/dialog/Dialog";
 import "../../components/form/InputForm.scss";
 import "./PackingListFormModal.scss";
 
@@ -56,74 +57,72 @@ const PackingListFormModal = ({
   };
 
   return (
-    <div className="packing-list-form__backdrop" onClick={onClose}>
-      <div className="packing-list-form__panel" onClick={(event) => event.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="packing-list-form-title">
-        <div className="packing-list-form__header">
-          <h2 id="packing-list-form-title">{title}</h2>
-          <button type="button" className="packing-list-form__close" onClick={onClose} aria-label={t("common.close")}>✕</button>
-        </div>
-
-        {capReached ? (
-          <div className="packing-list-form__cap">
-            <IoLockClosedOutline className="packing-list-form__cap-icon" aria-hidden="true" />
-            <p className="packing-list-form__cap-title">{p("listCapTitle", { limit: FREE_PLAN_LIMITS.packingLists })}</p>
-            <p className="packing-list-form__cap-desc">{p("listCapDesc")}</p>
-            <Link to="/subscription#subscription-plans" className="btn btn--primary">{t("premium.requiredCta")}</Link>
-          </div>
-        ) : (
-          <form className="packing-list-form__body" onSubmit={submit} noValidate>
-            {withTemplates && (
-              <fieldset className="packing-list-form__templates">
-                <legend className="input__label">{p("startWith")}</legend>
-                {packingTemplateOptionsFor(isInAVan).map(({ id, emoji }) => (
-                  <label key={id} className={`packing-list-form__template${template === id ? " packing-list-form__template--selected" : ""}`}>
-                    <input type="radio" name="template" value={id} checked={template === id} onChange={() => chooseTemplate(id)} />
-                    <span className="packing-list-form__template-emoji" aria-hidden="true">{emoji}</span>
-                    <span className="packing-list-form__template-text">
-                      <strong>{templateName(id)}</strong>
-                      <span>{p(`templates.${id}.desc`)}</span>
-                    </span>
-                  </label>
-                ))}
-              </fieldset>
-            )}
-
-            {withTemplates && trips.length > 0 && (
-              <div className="input">
-                <label htmlFor="packing-list-trip" className="input__label">{p("tripLabel")}</label>
-                <SelectMenu
-                  id="packing-list-trip"
-                  ariaLabel={p("tripLabel")}
-                  options={[{ value: "", label: p("noTrip") }, ...trips.map((trip) => ({ value: trip.id, label: trip.title }))]}
-                  value={tripId}
-                  onChange={setTripId}
-                />
-              </div>
-            )}
-
-            <div className="input">
-              <label htmlFor="packing-list-name" className="input__label">{p("listName")}</label>
-              <input
-                id="packing-list-name"
-                type="text"
-                className={`input__field${nameMissing ? " input__field--invalid" : ""}`}
-                value={shownName}
-                maxLength={PACKING_LIST_NAME_MAX_LENGTH}
-                onChange={(event) => { setName(event.target.value); setNameTouched(true); setNameMissing(false); }}
-                aria-invalid={nameMissing}
-                aria-describedby={nameMissing ? "packing-list-name-error" : undefined}
-                autoFocus={!withTemplates}
-              />
-              {nameMissing && (
-                <div className="input__error" id="packing-list-name-error" role="alert">{t("validation.nameRequired")}</div>
-              )}
-            </div>
-
-            <SubmitButton label={submitLabel} loading={saving} />
-          </form>
-        )}
+    <Dialog onClose={onClose} labelledBy="packing-list-form-title" backdropClassName="packing-list-form__backdrop" className="packing-list-form__panel">
+      <div className="packing-list-form__header">
+        <h2 id="packing-list-form-title">{title}</h2>
+        <button type="button" className="packing-list-form__close" onClick={onClose} aria-label={t("common.close")}>✕</button>
       </div>
-    </div>
+
+      {capReached ? (
+        <div className="packing-list-form__cap">
+          <IoLockClosedOutline className="packing-list-form__cap-icon" aria-hidden="true" />
+          <p className="packing-list-form__cap-title">{p("listCapTitle", { limit: FREE_PLAN_LIMITS.packingLists })}</p>
+          <p className="packing-list-form__cap-desc">{p("listCapDesc")}</p>
+          <Link to="/subscription#subscription-plans" className="btn btn--primary">{t("premium.requiredCta")}</Link>
+        </div>
+      ) : (
+        <form className="packing-list-form__body" onSubmit={submit} noValidate>
+          {withTemplates && (
+            <fieldset className="packing-list-form__templates">
+              <legend className="input__label">{p("startWith")}</legend>
+              {packingTemplateOptionsFor(isInAVan).map(({ id, emoji }) => (
+                <label key={id} className={`packing-list-form__template${template === id ? " packing-list-form__template--selected" : ""}`}>
+                  <input type="radio" name="template" value={id} checked={template === id} onChange={() => chooseTemplate(id)} />
+                  <span className="packing-list-form__template-emoji" aria-hidden="true">{emoji}</span>
+                  <span className="packing-list-form__template-text">
+                    <strong>{templateName(id)}</strong>
+                    <span>{p(`templates.${id}.desc`)}</span>
+                  </span>
+                </label>
+              ))}
+            </fieldset>
+          )}
+
+          {withTemplates && trips.length > 0 && (
+            <div className="input">
+              <label htmlFor="packing-list-trip" className="input__label">{p("tripLabel")}</label>
+              <SelectMenu
+                id="packing-list-trip"
+                ariaLabel={p("tripLabel")}
+                options={[{ value: "", label: p("noTrip") }, ...trips.map((trip) => ({ value: trip.id, label: trip.title }))]}
+                value={tripId}
+                onChange={setTripId}
+              />
+            </div>
+          )}
+
+          <div className="input">
+            <label htmlFor="packing-list-name" className="input__label">{p("listName")}</label>
+            <input
+              id="packing-list-name"
+              type="text"
+              className={`input__field${nameMissing ? " input__field--invalid" : ""}`}
+              value={shownName}
+              maxLength={PACKING_LIST_NAME_MAX_LENGTH}
+              onChange={(event) => { setName(event.target.value); setNameTouched(true); setNameMissing(false); }}
+              aria-invalid={nameMissing}
+              aria-describedby={nameMissing ? "packing-list-name-error" : undefined}
+              autoFocus={!withTemplates}
+            />
+            {nameMissing && (
+              <div className="input__error" id="packing-list-name-error" role="alert">{t("validation.nameRequired")}</div>
+            )}
+          </div>
+
+          <SubmitButton label={submitLabel} loading={saving} />
+        </form>
+      )}
+    </Dialog>
   );
 };
 

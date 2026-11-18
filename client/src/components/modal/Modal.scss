@@ -10,12 +10,6 @@
   animation: backdropIn 0.15s ease;
 }
 
-// The page behind an open modal stays put, so a scroll moves the modal
-// instead (on mobile it otherwise scrolls the page under it).
-html:has(.modal__backdrop) {
-  overflow: hidden;
-}
-
 @keyframes backdropIn {
   from { opacity: 0; }
   to   { opacity: 1; }
@@ -35,12 +29,6 @@ html:has(.modal__backdrop) {
   gap: 0;
   animation: modalIn 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
   overflow: hidden;
-
-  // Focused by the code when it opens, so the keyboard starts inside it; it is
-  // not a control, so it has nothing to outline (its buttons do).
-  &:focus {
-    outline: none;
-  }
 
   @keyframes modalIn {
     from { opacity: 0; transform: scale(0.92) translateY(8px); }

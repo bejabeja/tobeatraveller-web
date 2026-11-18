@@ -49,7 +49,7 @@ describe("LifeDiaryFormModal: leaving", () => {
     const onClose = renderForm();
     fireEvent.change(screen.getByLabelText("lifeDiary.bestMomentLabel"), { target: { value: "Atardecer en Sagres" } });
 
-    fireEvent.keyDown(document, { key: "Escape" });
+    fireEvent(screen.getByRole("dialog"), new Event("cancel", { cancelable: true }));
     expect(onClose).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole("button", { name: "common.discard" }));
 

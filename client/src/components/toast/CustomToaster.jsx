@@ -1,8 +1,16 @@
+import { useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import { Toaster } from "react-hot-toast";
+import { getTopDialog, subscribeToOpenDialogs } from "../dialog/openDialogs";
 import "./CustomToaster.scss";
 
+const noDialogOnTheServer = () => null;
+
 const CustomToaster = () => {
-  return (
+  // While a modal dialog is open, the browser leaves the rest of the page inert and
+  // behind it: the toasts go inside the top dialog, to be seen and read out.
+  const topDialog = useSyncExternalStore(subscribeToOpenDialogs, getTopDialog, noDialogOnTheServer);
+  const toaster = (
     <Toaster
       position="bottom-right"
       containerClassName="app-toaster" // gives extra bottom clearance on mobile, where the fixed bottom-nav bar would otherwise cover it (see CustomToaster.scss)
@@ -37,6 +45,7 @@ const CustomToaster = () => {
       }}
     />
   );
+  return topDialog ? createPortal(toaster, topDialog) : toaster;
 };
 
 export default CustomToaster;

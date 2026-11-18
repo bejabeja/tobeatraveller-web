@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import {
@@ -19,6 +19,7 @@ import SupplyFormModal from "./SupplyFormModal";
 import ToolHeader from "../../components/toolPage/ToolHeader";
 import ToolEmptyState from "../../components/toolPage/ToolEmptyState";
 import { usePageMeta } from "../../hooks/usePageMeta.js";
+import Dialog from "../../components/dialog/Dialog";
 import "./Supplies.scss";
 
 // Buying is not final for this long: the check is shown at once and the
@@ -31,6 +32,7 @@ const DEFAULT_QUICK_ADD_CATEGORY = "food";
 
 const Supplies = () => {
   const { t, i18n } = useTranslation();
+  const quantityPromptTitleId = useId();
   usePageMeta({ title: t("nav.supplies") });
   const s = (key, vars) => t(`supplies.${key}`, vars);
   // Agrees with the amount: "1 unidad", "2 unidades".
@@ -526,37 +528,35 @@ const Supplies = () => {
       />
 
       {quantityPrompt && (
-        <div className="supplies__purchase-backdrop" onClick={() => setQuantityPrompt(null)}>
-          <div className="supplies__purchase-panel" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
-            <h2>
-              {s(quantityPrompt.type === "purchase" ? "purchaseTitle" : "consumeTitle", { name: quantityPrompt.item.name })}
-            </h2>
-            <p className="supplies__purchase-hint">
-              {s(quantityPrompt.type === "purchase" ? "purchaseHint" : "consumeHint", {
-                amount: formatNumber(quantityPrompt.item.amount, i18n.language), unit: unitLabel(quantityPrompt.item.unit, quantityPrompt.item.amount),
-              })}
-            </p>
-            <label htmlFor="quantity-prompt-amount" className="input__label">{s("amountLabel")}</label>
-            <input
-              id="quantity-prompt-amount"
-              type="number"
-              className="input__field"
-              value={quantityValue}
-              onChange={(e) => setQuantityValue(e.target.value)}
-              step={quantityStep}
-              min={quantityStep}
-              autoFocus
-            />
-            <div className="supplies__purchase-actions">
-              <button type="button" className="btn btn--ghost" onClick={() => setQuantityPrompt(null)}>
-                {t("common.cancel")}
-              </button>
-              <button type="button" className="btn btn--primary" onClick={confirmQuantityPrompt} disabled={confirmingQuantity}>
-                {confirmingQuantity ? t("common.loading") : s(quantityPrompt.type === "purchase" ? "confirmPurchase" : "confirmConsume")}
-              </button>
-            </div>
+        <Dialog onClose={() => setQuantityPrompt(null)} labelledBy={quantityPromptTitleId} backdropClassName="supplies__purchase-backdrop" className="supplies__purchase-panel">
+          <h2 id={quantityPromptTitleId}>
+            {s(quantityPrompt.type === "purchase" ? "purchaseTitle" : "consumeTitle", { name: quantityPrompt.item.name })}
+          </h2>
+          <p className="supplies__purchase-hint">
+            {s(quantityPrompt.type === "purchase" ? "purchaseHint" : "consumeHint", {
+              amount: formatNumber(quantityPrompt.item.amount, i18n.language), unit: unitLabel(quantityPrompt.item.unit, quantityPrompt.item.amount),
+            })}
+          </p>
+          <label htmlFor="quantity-prompt-amount" className="input__label">{s("amountLabel")}</label>
+          <input
+            id="quantity-prompt-amount"
+            type="number"
+            className="input__field"
+            value={quantityValue}
+            onChange={(e) => setQuantityValue(e.target.value)}
+            step={quantityStep}
+            min={quantityStep}
+            autoFocus
+          />
+          <div className="supplies__purchase-actions">
+            <button type="button" className="btn btn--ghost" onClick={() => setQuantityPrompt(null)}>
+              {t("common.cancel")}
+            </button>
+            <button type="button" className="btn btn--primary" onClick={confirmQuantityPrompt} disabled={confirmingQuantity}>
+              {confirmingQuantity ? t("common.loading") : s(quantityPrompt.type === "purchase" ? "confirmPurchase" : "confirmConsume")}
+            </button>
           </div>
-        </div>
+        </Dialog>
       )}
     </section>
   );

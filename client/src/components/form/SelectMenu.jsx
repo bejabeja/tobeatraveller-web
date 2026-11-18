@@ -37,8 +37,8 @@ const computeMenuPosition = (button) => {
 
 // Replaces the browser's own <select>: its list is drawn by the operating
 // system, out of reach of the app's look, and on a phone it takes the whole
-// screen. The list is drawn on the page body, not inside the field, so a modal
-// or a panel that clips what overflows it cannot cut the list off.
+// screen. The list is drawn on the page body (or on the modal dialog's layer),
+// not inside the field, so a panel that clips what overflows it cannot cut the list off.
 const SelectMenu = ({
   options, value, onChange, placeholder = "", ariaLabel, ariaDescribedBy, id, Icon, variant = "field", className = "", invalid = false, disabled = false, onBlur, fieldRef,
 }) => {
@@ -256,7 +256,9 @@ const SelectMenu = ({
             </li>
           ))}
         </ul>,
-        document.body
+        // Inside the modal dialog the field is in, if any: the browser leaves anything
+        // outside it inert and behind it.
+        buttonRef.current?.closest("dialog") ?? document.body
       )}
     </>
   );

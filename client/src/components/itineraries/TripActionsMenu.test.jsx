@@ -38,6 +38,18 @@ describe("TripActionsMenu", () => {
     expect(screen.queryByRole("menu")).not.toBeInTheDocument();
   });
 
+  // Regression: the item disappears with the menu, so the dialog an action opens had no control to
+  // give the focus back to when it closed, and the keyboard was left at the start of the page.
+  it("puts the focus back on its button before running the chosen action", () => {
+    let focusedWhenRunning = null;
+    const toggle = renderMenu(() => { focusedWhenRunning = document.activeElement; });
+    fireEvent.click(toggle);
+
+    fireEvent.click(screen.getByRole("menuitem", { name: "Eliminar" }));
+
+    expect(focusedWhenRunning).toBe(toggle);
+  });
+
   it("closes with Escape, back on the button that opened it", () => {
     const toggle = renderMenu();
     fireEvent.click(toggle);

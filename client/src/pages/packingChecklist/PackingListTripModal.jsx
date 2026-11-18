@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import SelectMenu from "../../components/form/SelectMenu";
 import SubmitButton from "../../components/form/SubmitButton";
+import Dialog from "../../components/dialog/Dialog";
 import "../../components/form/InputForm.scss";
 import "./PackingListFormModal.scss";
 
@@ -23,31 +24,29 @@ const PackingListTripModal = ({ trips, currentTripId, onClose, onSubmit }) => {
   };
 
   return (
-    <div className="packing-list-form__backdrop" onClick={onClose}>
-      <div className="packing-list-form__panel" onClick={(event) => event.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="packing-list-trip-title">
-        <div className="packing-list-form__header">
-          <h2 id="packing-list-trip-title">{p("tripLabel")}</h2>
-          <button type="button" className="packing-list-form__close" onClick={onClose} aria-label={t("common.close")}>✕</button>
-        </div>
-        {trips.length === 0 ? (
-          <p className="packing-list-form__body packing-list-form__cap-desc">{p("noTripsToLink")}</p>
-        ) : (
-          <form className="packing-list-form__body" onSubmit={submit}>
-            <div className="input">
-              <label htmlFor="packing-list-trip-choice" className="input__label">{p("tripLabel")}</label>
-              <SelectMenu
-                id="packing-list-trip-choice"
-                ariaLabel={p("tripLabel")}
-                options={[{ value: "", label: p("noTrip") }, ...trips.map((trip) => ({ value: trip.id, label: trip.title }))]}
-                value={tripId}
-                onChange={setTripId}
-              />
-            </div>
-            <SubmitButton label={t("common.save")} loading={saving} />
-          </form>
-        )}
+    <Dialog onClose={onClose} labelledBy="packing-list-trip-title" backdropClassName="packing-list-form__backdrop" className="packing-list-form__panel">
+      <div className="packing-list-form__header">
+        <h2 id="packing-list-trip-title">{p("tripLabel")}</h2>
+        <button type="button" className="packing-list-form__close" onClick={onClose} aria-label={t("common.close")}>✕</button>
       </div>
-    </div>
+      {trips.length === 0 ? (
+        <p className="packing-list-form__body packing-list-form__cap-desc">{p("noTripsToLink")}</p>
+      ) : (
+        <form className="packing-list-form__body" onSubmit={submit}>
+          <div className="input">
+            <label htmlFor="packing-list-trip-choice" className="input__label">{p("tripLabel")}</label>
+            <SelectMenu
+              id="packing-list-trip-choice"
+              ariaLabel={p("tripLabel")}
+              options={[{ value: "", label: p("noTrip") }, ...trips.map((trip) => ({ value: trip.id, label: trip.title }))]}
+              value={tripId}
+              onChange={setTripId}
+            />
+          </div>
+          <SubmitButton label={t("common.save")} loading={saving} />
+        </form>
+      )}
+    </Dialog>
   );
 };
 

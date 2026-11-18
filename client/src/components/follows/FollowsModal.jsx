@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { getAllFollowers, getAllFollowing } from "@tobeatraveller/shared";
 import { useFollow } from "../../hooks/useFollow";
 import { generateAvatar } from "../../utils/constants/constants";
+import Dialog from "../dialog/Dialog";
 import "./FollowsModal.scss";
 
 const FollowsModal = ({ userId, initialTab, followersCount, followingCount, onClose }) => {
@@ -37,49 +38,41 @@ const FollowsModal = ({ userId, initialTab, followersCount, followingCount, onCl
     else fetchFollowing();
   }, [tab]);
 
-  useEffect(() => {
-    const onKey = (e) => { if (e.key === "Escape") onClose(); };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [onClose]);
-
   const users = tab === "followers" ? followers : following;
   const loading = tab === "followers" ? loadingFollowers : loadingFollowing;
 
   return (
-    <div className="follows-modal__backdrop" onClick={onClose}>
-      <div className="follows-modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
-        <div className="follows-modal__tabs">
-          <button
-            className={`follows-modal__tab${tab === "followers" ? " follows-modal__tab--active" : ""}`}
-            onClick={() => setTab("followers")}
-          >
-            {t("profile.followers")} <span className="follows-modal__count">{followersCount ?? 0}</span>
-          </button>
-          <button
-            className={`follows-modal__tab${tab === "following" ? " follows-modal__tab--active" : ""}`}
-            onClick={() => setTab("following")}
-          >
-            {t("profile.following")} <span className="follows-modal__count">{followingCount ?? 0}</span>
-          </button>
-          <button className="follows-modal__close" onClick={onClose} aria-label={t("common.close")}>✕</button>
-        </div>
-
-        <div className="follows-modal__list">
-          {(loading || users === null) ? (
-            Array.from({ length: 5 }, (_, i) => <UserRowSkeleton key={i} />)
-          ) : users.length === 0 ? (
-            <p className="follows-modal__empty">
-              {tab === "followers" ? t("followers.noFollowers", "No followers yet") : t("followers.notFollowingAnyone")}
-            </p>
-          ) : (
-            users.map((user) => (
-              <UserRow key={user.id} user={user} onNavigate={onClose} t={t} />
-            ))
-          )}
-        </div>
+    <Dialog onClose={onClose} label={t(tab === "followers" ? "profile.followers" : "profile.following")} backdropClassName="follows-modal__backdrop" className="follows-modal">
+      <div className="follows-modal__tabs">
+        <button
+          className={`follows-modal__tab${tab === "followers" ? " follows-modal__tab--active" : ""}`}
+          onClick={() => setTab("followers")}
+        >
+          {t("profile.followers")} <span className="follows-modal__count">{followersCount ?? 0}</span>
+        </button>
+        <button
+          className={`follows-modal__tab${tab === "following" ? " follows-modal__tab--active" : ""}`}
+          onClick={() => setTab("following")}
+        >
+          {t("profile.following")} <span className="follows-modal__count">{followingCount ?? 0}</span>
+        </button>
+        <button className="follows-modal__close" onClick={onClose} aria-label={t("common.close")}>✕</button>
       </div>
-    </div>
+
+      <div className="follows-modal__list">
+        {(loading || users === null) ? (
+          Array.from({ length: 5 }, (_, i) => <UserRowSkeleton key={i} />)
+        ) : users.length === 0 ? (
+          <p className="follows-modal__empty">
+            {tab === "followers" ? t("followers.noFollowers", "No followers yet") : t("followers.notFollowingAnyone")}
+          </p>
+        ) : (
+          users.map((user) => (
+            <UserRow key={user.id} user={user} onNavigate={onClose} t={t} />
+          ))
+        )}
+      </div>
+    </Dialog>
   );
 };
 

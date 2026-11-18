@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { packingCategories } from "@tobeatraveller/shared";
 import SelectMenu from "../../components/form/SelectMenu";
 import SubmitButton from "../../components/form/SubmitButton";
+import Dialog from "../../components/dialog/Dialog";
 import "../../components/form/InputForm.scss";
 import "./PackingListFormModal.scss";
 
@@ -36,63 +37,61 @@ const PackingItemFormModal = ({ item, categoryLabel, onClose, onSubmit }) => {
   };
 
   return (
-    <div className="packing-list-form__backdrop" onClick={onClose}>
-      <div className="packing-list-form__panel" onClick={(event) => event.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="packing-item-form-title">
-        <div className="packing-list-form__header">
-          <h2 id="packing-item-form-title">{p("editItem")}</h2>
-          <button type="button" className="packing-list-form__close" onClick={onClose} aria-label={t("common.close")}>✕</button>
+    <Dialog onClose={onClose} labelledBy="packing-item-form-title" backdropClassName="packing-list-form__backdrop" className="packing-list-form__panel">
+      <div className="packing-list-form__header">
+        <h2 id="packing-item-form-title">{p("editItem")}</h2>
+        <button type="button" className="packing-list-form__close" onClick={onClose} aria-label={t("common.close")}>✕</button>
+      </div>
+
+      <form className="packing-list-form__body" onSubmit={submit} noValidate>
+        <div className="input">
+          <label htmlFor="packing-item-name" className="input__label">{p("itemName")}</label>
+          <input
+            id="packing-item-name"
+            type="text"
+            className={`input__field${nameMissing ? " input__field--invalid" : ""}`}
+            value={name}
+            maxLength={NAME_MAX_LENGTH}
+            onChange={(event) => { setName(event.target.value); setNameMissing(false); }}
+            aria-invalid={nameMissing}
+            aria-describedby={nameMissing ? "packing-item-name-error" : undefined}
+            autoFocus
+          />
+          {nameMissing && (
+            <div className="input__error" id="packing-item-name-error" role="alert">{t("validation.nameRequired")}</div>
+          )}
         </div>
 
-        <form className="packing-list-form__body" onSubmit={submit} noValidate>
-          <div className="input">
-            <label htmlFor="packing-item-name" className="input__label">{p("itemName")}</label>
-            <input
-              id="packing-item-name"
-              type="text"
-              className={`input__field${nameMissing ? " input__field--invalid" : ""}`}
-              value={name}
-              maxLength={NAME_MAX_LENGTH}
-              onChange={(event) => { setName(event.target.value); setNameMissing(false); }}
-              aria-invalid={nameMissing}
-              aria-describedby={nameMissing ? "packing-item-name-error" : undefined}
-              autoFocus
-            />
-            {nameMissing && (
-              <div className="input__error" id="packing-item-name-error" role="alert">{t("validation.nameRequired")}</div>
-            )}
-          </div>
+        <div className="input">
+          <label htmlFor="packing-item-category" className="input__label">{p("categoryLabel")}</label>
+          <SelectMenu
+            id="packing-item-category"
+            ariaLabel={p("categoryLabel")}
+            options={packingCategories.map(({ value }) => ({ value, label: categoryLabel(value) }))}
+            value={category}
+            onChange={setCategory}
+          />
+        </div>
 
-          <div className="input">
-            <label htmlFor="packing-item-category" className="input__label">{p("categoryLabel")}</label>
-            <SelectMenu
-              id="packing-item-category"
-              ariaLabel={p("categoryLabel")}
-              options={packingCategories.map(({ value }) => ({ value, label: categoryLabel(value) }))}
-              value={category}
-              onChange={setCategory}
-            />
-          </div>
+        <div className="input">
+          <label htmlFor="packing-item-quantity" className="input__label">{p("quantity")}</label>
+          <input
+            id="packing-item-quantity"
+            type="number"
+            inputMode="numeric"
+            min={1}
+            max={MAX_QUANTITY}
+            className="input__field"
+            value={quantity}
+            onChange={(event) => setQuantity(event.target.value)}
+            aria-describedby="packing-item-quantity-hint"
+          />
+          <span className="packing-list-form__hint" id="packing-item-quantity-hint">{p("quantityHint")}</span>
+        </div>
 
-          <div className="input">
-            <label htmlFor="packing-item-quantity" className="input__label">{p("quantity")}</label>
-            <input
-              id="packing-item-quantity"
-              type="number"
-              inputMode="numeric"
-              min={1}
-              max={MAX_QUANTITY}
-              className="input__field"
-              value={quantity}
-              onChange={(event) => setQuantity(event.target.value)}
-              aria-describedby="packing-item-quantity-hint"
-            />
-            <span className="packing-list-form__hint" id="packing-item-quantity-hint">{p("quantityHint")}</span>
-          </div>
-
-          <SubmitButton label={t("common.save")} loading={saving} />
-        </form>
-      </div>
-    </div>
+        <SubmitButton label={t("common.save")} loading={saving} />
+      </form>
+    </Dialog>
   );
 };
 

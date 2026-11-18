@@ -1,0 +1,37 @@
+// The <dialog> is the full-window layer under the panel, styled by the backdrop
+// class passed to it. This only undoes the browser's own box for a dialog
+// (centred, bordered, padded, sized to its content), at no specificity, so any
+// backdrop class still decides its own padding, background and layout.
+:where(dialog.dialog) {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+}
+
+// Without these, scrolling over the backdrop or inside the dialog scrolls the
+// page behind it. Where the browser does not apply them to a box that does not
+// overflow (Safari for now), only scrolling inside a long dialog is held back.
+dialog.dialog:modal {
+  overscroll-behavior: contain;
+}
+
+dialog.dialog::backdrop {
+  // ::backdrop is not a scroll container by default, so it would ignore overscroll-behavior.
+  overflow: hidden;
+  overscroll-behavior: contain;
+  background: transparent;
+}
+
+// When it scrolls, the keyboard can stop on the dialog to scroll it: it fills the
+// window, so its outline is drawn inside the edge, where it can be seen.
+dialog.dialog:focus-visible {
+  outline-offset: -4px;
+}
