@@ -31,35 +31,54 @@ export class AuthController {
         if (!result.success) {
             return next(new ValidationError(result.error.errors[0]?.message || "Login validation failed"));
         }
+        let user;
         try {
             const { email, password } = result.data;
-            const user = await this.authService.login({ email, password }, getRequestContext(req));
-            const accessToken = this.authService.generateAccessToken(user);
-            const refreshToken = this.authService.generateRefreshToken(user);
+            user = await this.authService.login({ email, password }, getRequestContext(req));
+        } catch (error) {
+            logger.error("Login error:", error);
+            return next(new AuthError("Invalid credentials"));
+        }
+        // Apart: the session not being saved is a failure on our side, not a wrong password.
+        try {
+            const { accessToken, refreshToken } = await this.authService.openSession(user);
             this.authService.setAuthCookies(res, accessToken, refreshToken);
             return res.status(200).json({ user, accessToken, refreshToken });
         } catch (error) {
-            logger.error("Login error:", error);
-            next(new AuthError("Invalid credentials"));
+            next(error);
         }
     }
 
+    // The app sends its refresh token in the body; the web's is in a cookie it cannot read,
+    // and its new one goes back the same way, never in the answer a script could read.
     async refresh(req, res, next) {
-        const { refreshToken } = req.body;
+        const bodyRefreshToken = req.body?.refreshToken;
+        const refreshToken = bodyRefreshToken ?? req.cookies.refresh_token;
+        // No session to renew is what a 401 says: the web asks on any 401, signed in or not,
+        // and anything else would be taken for a renewal that failed and could be tried again.
         if (!refreshToken) {
-            return next(new ValidationError("Refresh token is required"));
+            return next(new AuthError("Unauthorized: No session"));
         }
+        const fromCookie = !bodyRefreshToken;
         try {
-            const accessToken = await this.authService.refreshAccessTokenFromToken(refreshToken);
-            return res.status(200).json({ accessToken });
+            const session = await this.authService.refreshSession(refreshToken, { rotate: fromCookie });
+            if (!fromCookie) return res.status(200).json({ accessToken: session.accessToken });
+            // The web does not need it, and a script on the page that asked for a renewal
+            // could take it away: it only goes in the cookie.
+            this.authService.setAuthCookies(res, session.accessToken, session.refreshToken);
+            return res.status(200).json({});
         } catch (error) {
+            // Only a session that is over: a failure on our side (the database for a moment)
+            // must not take the cookies of a session that is still good.
+            if (fromCookie && error instanceof AuthError) this.authService.clearAuthCookies(res);
             next(error);
         }
     }
 
     async logout(req, res, next) {
         try {
-            this.authService.clearAuthCookies(res)
+            await this.authService.closeSession(req.body?.refreshToken ?? req.cookies.refresh_token);
+            this.authService.clearAuthCookies(res);
             return res.status(200).json({ message: "Logged out successfully" });
         } catch (error) {
             next(error);
@@ -119,6 +138,15 @@ export class AuthController {
                 req.user.id, result.data.currentPassword, result.data.email, getRequestContext(req)
             );
             return res.status(200).json({ message: "Email updated" });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async purgeExpiredSessions(req, res, next) {
+        try {
+            const deletedCount = await this.authService.purgeExpiredSessions();
+            return res.status(200).json({ deletedCount });
         } catch (error) {
             next(error);
         }

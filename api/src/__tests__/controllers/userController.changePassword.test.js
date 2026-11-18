@@ -18,8 +18,7 @@ describe('UserController.changePassword()', () => {
     beforeEach(() => {
         userService = { changePassword: vi.fn().mockResolvedValue({ id: 'user-1', username: 'jane', role: 'user' }) };
         authService = {
-            generateAccessToken: vi.fn().mockReturnValue('new-access'),
-            generateRefreshToken: vi.fn().mockReturnValue('new-refresh'),
+            openSession: vi.fn().mockResolvedValue({ accessToken: 'new-access', refreshToken: 'new-refresh' }),
             setAuthCookies: vi.fn(),
         };
         controller = new UserController(userService, {}, authService);
@@ -31,8 +30,7 @@ describe('UserController.changePassword()', () => {
 
         await controller.changePassword(req, res, vi.fn());
 
-        expect(authService.generateAccessToken).toHaveBeenCalledWith({ id: 'user-1', username: 'jane', role: 'user' });
-        expect(authService.generateRefreshToken).toHaveBeenCalledWith({ id: 'user-1', username: 'jane', role: 'user' });
+        expect(authService.openSession).toHaveBeenCalledWith({ id: 'user-1', username: 'jane', role: 'user' });
         expect(authService.setAuthCookies).toHaveBeenCalledWith(res, 'new-access', 'new-refresh');
         expect(res.status).toHaveBeenCalledWith(200);
         expect(res.json).toHaveBeenCalledWith({ message: 'Password updated successfully', accessToken: 'new-access', refreshToken: 'new-refresh' });
@@ -46,7 +44,7 @@ describe('UserController.changePassword()', () => {
         await controller.changePassword(req, res, next);
 
         expect(next).toHaveBeenCalledWith(expect.any(AuthError));
-        expect(authService.generateAccessToken).not.toHaveBeenCalled();
+        expect(authService.openSession).not.toHaveBeenCalled();
         expect(authService.setAuthCookies).not.toHaveBeenCalled();
         expect(res.json).not.toHaveBeenCalled();
     });

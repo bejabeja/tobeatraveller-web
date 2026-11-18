@@ -157,18 +157,22 @@ describe('AuthService', () => {
         });
     });
 
-    describe('generateRefreshToken()', () => {
-        it('calls jwt.sign with refresh secret and 7d expiry', () => {
-            jwt.sign.mockReturnValue('refresh-token-xyz');
+    describe('openSession()', () => {
+        it('saves a session that lasts seven days and gives a refresh token that names it', async () => {
+            const authSessionRepository = { create: vi.fn() };
+            authService = new AuthService(mockUserRepository, null, null, null, authSessionRepository);
+            jwt.sign.mockImplementation((payload, secret) => (secret === 'test-refresh-secret' ? payload : 'access-token'));
+            const before = Date.now();
 
-            const token = authService.generateRefreshToken({ id: 'user-1', username: 'johndoe', role: 'user' });
+            const { accessToken, refreshToken } = await authService.openSession({ id: 'user-1', username: 'johndoe', role: 'user' });
 
-            expect(jwt.sign).toHaveBeenCalledWith(
-                { id: 'user-1', username: 'johndoe', role: 'user' },
-                'test-refresh-secret',
-                { expiresIn: '7d' }
-            );
-            expect(token).toBe('refresh-token-xyz');
+            const [session] = authSessionRepository.create.mock.calls[0];
+            expect(session.userId).toBe('user-1');
+            expect(session.expiresAt.getTime() - before).toBeGreaterThanOrEqual(7 * 24 * 60 * 60 * 1000 - 1000);
+            expect(refreshToken).toEqual({
+                id: 'user-1', sid: session.id, tid: session.tokenId, exp: Math.floor(session.expiresAt.getTime() / 1000),
+            });
+            expect(accessToken).toBe('access-token');
         });
     });
 
@@ -215,11 +219,11 @@ describe('AuthService', () => {
             jwt.sign.mockReturnValue('new-access-token');
         });
 
-        describe('refreshAccessTokenFromToken()', () => {
+        describe('refreshSession()', () => {
             it('mints a new access token from a valid refresh token', async () => {
                 jwt.verify.mockReturnValue(payload());
 
-                const token = await authService.refreshAccessTokenFromToken('valid-refresh-token');
+                const { accessToken: token } = await authService.refreshSession('valid-refresh-token');
 
                 expect(jwt.verify).toHaveBeenCalledWith('valid-refresh-token', 'test-refresh-secret');
                 expect(jwt.sign).toHaveBeenCalledWith(
@@ -234,7 +238,7 @@ describe('AuthService', () => {
                 jwt.verify.mockReturnValue(payload({ role: 'admin' }));
                 mockUserRepository.getUserById.mockResolvedValue(accountWith(null, { role: 'admin' }));
 
-                await authService.refreshAccessTokenFromToken('valid-refresh-token');
+                await authService.refreshSession('valid-refresh-token');
 
                 expect(jwt.sign).toHaveBeenCalledWith(
                     expect.objectContaining({ role: 'admin' }),
@@ -249,7 +253,7 @@ describe('AuthService', () => {
                 jwt.verify.mockReturnValue(payload({ role: 'admin', username: 'oldname' }));
                 mockUserRepository.getUserById.mockResolvedValue(accountWith(null, { role: 'user', username: 'newname' }));
 
-                await authService.refreshAccessTokenFromToken('valid-refresh-token');
+                await authService.refreshSession('valid-refresh-token');
 
                 expect(jwt.sign).toHaveBeenCalledWith(
                     { id: 'user-1', username: 'newname', role: 'user' },
@@ -258,20 +262,10 @@ describe('AuthService', () => {
                 );
             });
 
-            it('says who the cookie session is for with the role the account has now', async () => {
-                jwt.verify.mockReturnValue(payload({ role: 'admin' }));
-                mockUserRepository.getUserById.mockResolvedValue(accountWith(null, { role: 'user' }));
-                const req = {};
-
-                await authService.refreshAccessToken('valid-refresh-token', { cookie: vi.fn() }, req);
-
-                expect(req.user).toEqual({ id: 'user-1', username: 'johndoe', role: 'user' });
-            });
-
             it('throws AuthError when the refresh token is invalid or expired', async () => {
                 jwt.verify.mockImplementation(() => { throw new Error('jwt expired'); });
 
-                await expect(authService.refreshAccessTokenFromToken('bad-refresh-token')).rejects.toThrow(AuthError);
+                await expect(authService.refreshSession('bad-refresh-token')).rejects.toThrow(AuthError);
             });
 
             // Regression: a session opened with the old password went on renewing itself for a week after it was changed.
@@ -279,7 +273,7 @@ describe('AuthService', () => {
                 jwt.verify.mockReturnValue(payload());
                 mockUserRepository.getUserById.mockResolvedValue(accountWith(new Date((OPENED_AT + 60) * 1000)));
 
-                await expect(authService.refreshAccessTokenFromToken('old-session')).rejects.toThrow('Unauthorized: Session ended');
+                await expect(authService.refreshSession('old-session')).rejects.toThrow('Unauthorized: Session ended');
                 expect(jwt.sign).not.toHaveBeenCalled();
             });
 
@@ -287,60 +281,129 @@ describe('AuthService', () => {
                 jwt.verify.mockReturnValue(payload());
                 mockUserRepository.getUserById.mockResolvedValue(accountWith(new Date(OPENED_AT * 1000)));
 
-                await expect(authService.refreshAccessTokenFromToken('new-session')).resolves.toBe('new-access-token');
+                await expect(authService.refreshSession('new-session')).resolves.toMatchObject({ accessToken: 'new-access-token' });
             });
 
             it('keeps a session opened after the change', async () => {
                 jwt.verify.mockReturnValue(payload());
                 mockUserRepository.getUserById.mockResolvedValue(accountWith(new Date((OPENED_AT - 3600) * 1000)));
 
-                await expect(authService.refreshAccessTokenFromToken('later-session')).resolves.toBe('new-access-token');
+                await expect(authService.refreshSession('later-session')).resolves.toMatchObject({ accessToken: 'new-access-token' });
             });
 
             it('keeps every session of an account whose password was never changed', async () => {
                 jwt.verify.mockReturnValue(payload({ iat: 1 }));
 
-                await expect(authService.refreshAccessTokenFromToken('any-session')).resolves.toBe('new-access-token');
+                await expect(authService.refreshSession('any-session')).resolves.toMatchObject({ accessToken: 'new-access-token' });
             });
 
             it('refuses a session of an account that no longer exists', async () => {
                 jwt.verify.mockReturnValue(payload());
                 mockUserRepository.getUserById.mockResolvedValue(null);
 
-                await expect(authService.refreshAccessTokenFromToken('ghost')).rejects.toThrow(AuthError);
+                await expect(authService.refreshSession('ghost')).rejects.toThrow(AuthError);
                 expect(jwt.sign).not.toHaveBeenCalled();
             });
         });
 
-        describe('refreshAccessToken(), the cookie one', () => {
-            const makeRes = () => ({ cookie: vi.fn() });
+        // Regression: signing out only forgot the tokens on that device, so a copy of the
+        // refresh token went on opening the account for the seven days it lasts.
+        describe('a session that is kept', () => {
+            const SESSION = {
+                id: 'session-1', userId: 'user-1', tokenId: 'token-2', previousTokenId: 'token-1',
+                rotatedAt: new Date(), expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+            };
+            let authSessionRepository;
 
-            it('opens a new access token in a cookie, and says who it is for', async () => {
-                jwt.verify.mockReturnValue(payload());
-                const res = makeRes();
-                const req = {};
-
-                await authService.refreshAccessToken('valid-refresh-token', res, req);
-
-                expect(res.cookie).toHaveBeenCalledWith('access_token', 'new-access-token', expect.objectContaining({ httpOnly: true }));
-                expect(req.user).toEqual({ id: 'user-1', username: 'johndoe', role: 'user' });
+            beforeEach(() => {
+                authSessionRepository = {
+                    findById: vi.fn().mockResolvedValue(SESSION),
+                    rotate: vi.fn().mockResolvedValue(true),
+                    delete: vi.fn(),
+                };
+                authService = new AuthService(mockUserRepository, null, null, null, authSessionRepository);
+                jwt.sign.mockImplementation((signed, secret) => (secret === 'test-refresh-secret' ? `refresh:${signed.tid}` : 'new-access-token'));
             });
 
-            it('refuses a session opened before the password was changed, and sets nothing', async () => {
-                jwt.verify.mockReturnValue(payload());
-                mockUserRepository.getUserById.mockResolvedValue(accountWith(new Date((OPENED_AT + 60) * 1000)));
-                const res = makeRes();
-                const req = {};
+            const withToken = (tokenId) => jwt.verify.mockReturnValue(payload({ sid: 'session-1', tid: tokenId }));
 
-                await expect(authService.refreshAccessToken('old-session', res, req)).rejects.toThrow(AuthError);
-                expect(res.cookie).not.toHaveBeenCalled();
-                expect(req.user).toBeUndefined();
+            it('renews with the current refresh token and leaves it as it is when not asked to rotate', async () => {
+                withToken('token-2');
+
+                await expect(authService.refreshSession('current')).resolves.toEqual({ accessToken: 'new-access-token', refreshToken: null });
+                expect(authSessionRepository.rotate).not.toHaveBeenCalled();
             });
 
-            it('refuses a token that is not valid', async () => {
+            it('swaps the refresh token for a new one when asked to', async () => {
+                withToken('token-2');
+
+                const { refreshToken } = await authService.refreshSession('current', { rotate: true });
+
+                const [, replaced, newTokenId] = authSessionRepository.rotate.mock.calls[0];
+                expect(replaced).toBe('token-2');
+                expect(refreshToken).toBe(`refresh:${newTokenId}`);
+            });
+
+            it('gives the current one to a renewal that crossed with another and lost', async () => {
+                withToken('token-2');
+                authSessionRepository.rotate.mockResolvedValue(false);
+                authSessionRepository.findById
+                    .mockResolvedValueOnce(SESSION)
+                    .mockResolvedValueOnce({ ...SESSION, tokenId: 'token-3', previousTokenId: 'token-2' });
+
+                await expect(authService.refreshSession('current', { rotate: true })).resolves.toMatchObject({ refreshToken: 'refresh:token-3' });
+            });
+
+            it('gives the current one to the token it just replaced, for a renewal that crossed', async () => {
+                withToken('token-1');
+
+                await expect(authService.refreshSession('just-replaced')).resolves.toMatchObject({ refreshToken: 'refresh:token-2' });
+                expect(authSessionRepository.delete).not.toHaveBeenCalled();
+            });
+
+            it('ends the session when a replaced refresh token comes back later, since someone has a copy', async () => {
+                withToken('token-1');
+                authSessionRepository.findById.mockResolvedValue({ ...SESSION, rotatedAt: new Date(Date.now() - 60 * 1000) });
+
+                await expect(authService.refreshSession('copied')).rejects.toThrow('Unauthorized: Session ended');
+                expect(authSessionRepository.delete).toHaveBeenCalledWith('session-1');
+            });
+
+            it('refuses a session that was closed', async () => {
+                withToken('token-2');
+                authSessionRepository.findById.mockResolvedValue(null);
+
+                await expect(authService.refreshSession('closed')).rejects.toThrow('Unauthorized: Session ended');
+                expect(jwt.sign).not.toHaveBeenCalled();
+            });
+
+            it('refuses a session that ran out', async () => {
+                withToken('token-2');
+                authSessionRepository.findById.mockResolvedValue({ ...SESSION, expiresAt: new Date(Date.now() - 1000) });
+
+                await expect(authService.refreshSession('expired')).rejects.toThrow('Unauthorized: Session ended');
+            });
+
+            it('refuses a session of another account', async () => {
+                withToken('token-2');
+                authSessionRepository.findById.mockResolvedValue({ ...SESSION, userId: 'someone-else' });
+
+                await expect(authService.refreshSession('mismatched')).rejects.toThrow('Unauthorized: Session ended');
+            });
+
+            it('closes the session of the refresh token it is given', async () => {
+                jwt.verify.mockReturnValue(payload({ sid: 'session-1', tid: 'token-2' }));
+
+                await authService.closeSession('current');
+
+                expect(authSessionRepository.delete).toHaveBeenCalledWith('session-1');
+            });
+
+            it('closes nothing, and does not fail, with a refresh token that is not valid', async () => {
                 jwt.verify.mockImplementation(() => { throw new Error('jwt malformed'); });
 
-                await expect(authService.refreshAccessToken('garbage', makeRes(), {})).rejects.toThrow(AuthError);
+                await expect(authService.closeSession('garbage')).resolves.toBeUndefined();
+                expect(authSessionRepository.delete).not.toHaveBeenCalled();
             });
         });
     });

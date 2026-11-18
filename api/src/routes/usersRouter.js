@@ -19,6 +19,7 @@ import { SubscriptionRepository } from "../repositories/subscriptionRepository.j
 import { PushTokensRepository } from "../repositories/pushTokensRepository.js";
 import { ReferralRepository } from "../repositories/referralRepository.js";
 import { UserRepository } from "../repositories/userRepository.js";
+import { AuthSessionRepository } from "../repositories/authSessionRepository.js";
 import { VanLogRepository } from "../repositories/vanLogRepository.js";
 import { auditLogService } from "../services/sharedAuditLogService.js";
 import { BadgeService } from "../services/badgeService.js";
@@ -61,7 +62,7 @@ export const createUsersRouter = () => {
         new SubscriptionService(subscriptionRepository, userRepository, auditLogService, stripeClient)
     );
     const cloudinaryService = new CloudinaryService();
-    const userController = new UserController(userService, cloudinaryService, new AuthService(userRepository));
+    const userController = new UserController(userService, cloudinaryService, new AuthService(userRepository, null, null, null, new AuthSessionRepository()));
     const staffOnly = requireRole(...STAFF_ROLES);
 
     router.get("/", authenticate, userController.getAllUsers.bind(userController));

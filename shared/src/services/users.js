@@ -1,6 +1,6 @@
 import { parseError } from "../utils/parseError";
 import { getApiUrl } from "../utils/apiConfig";
-import { authFetch } from "../utils/authFetch";
+import { authFetch, isCookieSession } from "../utils/authFetch";
 import { tokenStorage } from "../utils/tokenStorage";
 
 const baseUrl = () => `${getApiUrl()}/users`;
@@ -20,8 +20,8 @@ export const checkUsernameAvailable = async (username) => {
 // out" need different handling (see initAuthUser).
 export const getUserForAuth = async () => {
     // Without an access token authFetch would not even try to renew the
-    // session, so the API could only answer 401.
-    if (!(await tokenStorage.getItem('access_token'))) return null;
+    // session, so the API could only answer 401. The web's is in a cookie it cannot see.
+    if (!isCookieSession() && !(await tokenStorage.getItem('access_token'))) return null;
     const response = await authFetch(`${baseUrl()}/me`, {
         headers: { 'Content-Type': 'application/json' },
     });

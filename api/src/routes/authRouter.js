@@ -1,12 +1,14 @@
 import { Router } from "express";
 import { AuthController } from "../controllers/authController.js";
 import { authenticate } from "../middlewares/authenticate.js";
+import { requireCronSecret } from "../middlewares/requireCronSecret.js";
 import {
     failedLoginPerAccountRateLimit, failedLoginPerIpRateLimit,
     passwordResetPerAccountRateLimit, passwordResetPerIpRateLimit, signupPerIpRateLimit,
     wrongPasswordPerAccountRateLimit,
 } from "../middlewares/authRateLimit.js";
 import { perIpResendVerificationRateLimit, perUserResendVerificationRateLimit } from "../middlewares/emailVerificationRateLimit.js";
+import { AuthSessionRepository } from "../repositories/authSessionRepository.js";
 import { EmailVerificationRepository } from "../repositories/emailVerificationRepository.js";
 import { FollowRepository } from "../repositories/followRepository.js";
 import { ItineraryRepository } from "../repositories/itineraryRepository.js";
@@ -45,12 +47,13 @@ export const createAuthRouter = () => {
         null, null, null, null, null, null, null, referralService,
         null, null, null, null, null, emailVerificationService
     );
-    const authService = new AuthService(userRepository, emailService, passwordResetRepository, auditLogService);
+    const authService = new AuthService(userRepository, emailService, passwordResetRepository, auditLogService, new AuthSessionRepository());
     const authController = new AuthController(userService, authService, emailVerificationService);
 
     router.post("/create", signupPerIpRateLimit, authController.create.bind(authController));
     router.post("/login", failedLoginPerIpRateLimit, failedLoginPerAccountRateLimit, authController.login.bind(authController));
     router.post("/refresh", authController.refresh.bind(authController));
+    router.get("/scheduled-purge", requireCronSecret, authController.purgeExpiredSessions.bind(authController));
     router.post("/logout", authController.logout.bind(authController));
     router.post("/forgot-password", passwordResetPerIpRateLimit, passwordResetPerAccountRateLimit, authController.forgotPassword.bind(authController));
     router.post("/reset-password", authController.resetPassword.bind(authController));

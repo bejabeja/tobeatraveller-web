@@ -127,8 +127,7 @@ export class UserController {
             );
             // The new password closed every session, this device's too: it gets a new one,
             // so changing the password does not sign out the person who is changing it.
-            const accessToken = this.authService.generateAccessToken(user);
-            const refreshToken = this.authService.generateRefreshToken(user);
+            const { accessToken, refreshToken } = await this.authService.openSession(user);
             this.authService.setAuthCookies(res, accessToken, refreshToken);
             res.status(200).json({ message: "Password updated successfully", accessToken, refreshToken });
         } catch (error) {

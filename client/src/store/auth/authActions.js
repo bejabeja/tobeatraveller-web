@@ -65,6 +65,14 @@ export const logoutUser = () => {
 
 export const initAuthUser = () => {
     return async (dispatch) => {
+        // The session is in a cookie the page cannot see, so only the hint says whether there
+        // may be one: with none, asking would only cost each visitor a 401 and a renewal.
+        const lastUser = getUserHint();
+        if (!lastUser) {
+            dispatch({ type: "@auth/init", payload: null });
+            dispatch(resetUserInfo());
+            return;
+        }
         try {
             const user = await getUserForAuth();
             saveUserHint(user);
@@ -73,9 +81,7 @@ export const initAuthUser = () => {
             // The session couldn't be checked (no connection, the server
             // down), which doesn't mean it's over: whoever was signed in
             // stays signed in, as the hint of their last sign-in says.
-            const lastUser = getUserHint();
             dispatch({ type: "@auth/init", payload: lastUser });
-            if (!lastUser) dispatch(resetUserInfo());
         }
     };
 };

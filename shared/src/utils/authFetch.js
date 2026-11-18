@@ -6,6 +6,17 @@ import { getApiUrl } from './apiConfig';
 // rest await its result instead of each minting their own.
 let refreshPromise = null;
 
+// The web keeps its session in cookies the page cannot read (httpOnly), so a script that got
+// into it cannot take the session away: it sends no token of its own, and renewing it is the
+// API's business. The app keeps its tokens in the phone's secure storage and sends them.
+let cookieSession = false;
+
+export const enableCookieSession = () => {
+  cookieSession = true;
+};
+
+export const isCookieSession = () => cookieSession;
+
 // On a weak connection that still counts as "connected" a request can hang
 // for minutes before the OS gives up. Past these limits it fails as a
 // network error instead, so callers fall back to cached data or the offline
@@ -17,33 +28,37 @@ const UPLOAD_TIMEOUT_MS = 120_000;
 // token is missing, expired or revoked); anything else just failed this time.
 const SESSION_OVER_STATUSES = [401, 403];
 
-// Null when the session is over. When the refresh couldn't be done (no
+// False when the session is over. When the refresh couldn't be done (no
 // connection, a timeout, the server down) it throws instead: answering the
 // request with its 401 would sign the user out over a passing failure.
-const refreshAccessToken = async () => {
-  const refreshToken = await tokenStorage.getItem('refresh_token');
-  if (!refreshToken) return null;
+const refreshSession = async () => {
+  const refreshToken = cookieSession ? null : await tokenStorage.getItem('refresh_token');
+  if (!cookieSession && !refreshToken) return false;
 
   const response = await fetchWithTimeout(`${getApiUrl()}/auth/refresh`, {
     method: 'POST',
-    credentials: 'omit',
+    credentials: cookieSession ? 'include' : 'omit',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ refreshToken }),
+    body: JSON.stringify(cookieSession ? {} : { refreshToken }),
   });
-  if (SESSION_OVER_STATUSES.includes(response.status)) return null;
+  if (SESSION_OVER_STATUSES.includes(response.status)) return false;
   if (!response.ok) {
     const error = new Error('Could not refresh the session');
     error.status = response.status;
     throw error;
   }
-  const data = await response.json();
-  await tokenStorage.setItem('access_token', data.accessToken);
-  return data.accessToken;
+  if (!cookieSession) {
+    const data = await response.json();
+    await tokenStorage.setItem('access_token', data.accessToken);
+  }
+  return true;
 };
+
+const storedAccessToken = () => (cookieSession ? null : tokenStorage.getItem('access_token'));
 
 const withAuthHeader = (options, token) => ({
   ...options,
-  credentials: 'omit',
+  credentials: cookieSession ? 'include' : 'omit',
   headers: {
     ...options.headers,
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -98,15 +113,15 @@ const fetchWithTimeout = async (url, { timeoutMs, ...options }) => {
 };
 
 export const authFetch = async (url, options = {}) => {
-  const token = await tokenStorage.getItem('access_token');
+  const token = await storedAccessToken();
   const response = await fetchWithTimeout(url, withAuthHeader(options, token));
 
-  // No token, or the failure isn't auth-related: nothing a refresh would fix.
-  if (!token || response.status !== 401) return response;
+  // Signed out, or the failure isn't auth-related: nothing a refresh would fix.
+  const signedIn = cookieSession || token;
+  if (!signedIn || response.status !== 401) return response;
 
-  refreshPromise ??= refreshAccessToken().finally(() => { refreshPromise = null; });
-  const newToken = await refreshPromise;
-  if (!newToken) return response;
+  refreshPromise ??= refreshSession().finally(() => { refreshPromise = null; });
+  if (!(await refreshPromise)) return response;
 
-  return fetchWithTimeout(url, withAuthHeader(options, newToken));
+  return fetchWithTimeout(url, withAuthHeader(options, await storedAccessToken()));
 };

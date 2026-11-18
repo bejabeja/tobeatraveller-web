@@ -95,8 +95,10 @@ export const sendContact = async ({ name, email, reason, subject, message, langu
     return response.json();
 };
 
+// The refresh token goes with it so the API ends that session, and a copy of it opens nothing.
 export const logout = async () => {
     const token = await tokenStorage.getItem('access_token');
+    const refreshToken = await tokenStorage.getItem('refresh_token');
     try {
         await fetch(`${baseUrl()}/auth/logout`, {
             method: 'POST',
@@ -105,6 +107,7 @@ export const logout = async () => {
                 'Content-Type': 'application/json',
                 ...(token ? { Authorization: `Bearer ${token}` } : {}),
             },
+            body: JSON.stringify({ refreshToken }),
         });
     } catch {}
     await tokenStorage.removeItem('access_token');

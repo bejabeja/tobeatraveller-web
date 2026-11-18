@@ -14,7 +14,10 @@ const run = async () => {
   return dispatched;
 };
 
-beforeEach(() => localStorage.clear());
+beforeEach(() => {
+  localStorage.clear();
+  jest.clearAllMocks();
+});
 
 describe("initAuthUser", () => {
   // Regression: a failed session check (the API down for a moment, a bad
@@ -39,11 +42,10 @@ describe("initAuthUser", () => {
     expect(localStorage.getItem("user_hint")).toBeNull();
   });
 
-  it("stays signed out when the check fails and nobody was signed in", async () => {
-    getUserForAuth.mockRejectedValue(new TypeError("Failed to fetch"));
-
+  it("does not ask the API when nobody has signed in on this browser", async () => {
     const dispatched = await run();
 
+    expect(getUserForAuth).not.toHaveBeenCalled();
     expect(dispatched[0]).toEqual({ type: "@auth/init", payload: null });
   });
 });

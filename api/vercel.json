@@ -18,6 +18,10 @@
             "schedule": "0 3 1 * *"
         },
         {
+            "path": "/auth/scheduled-purge",
+            "schedule": "30 4 * * *"
+        },
+        {
             "path": "/push-tokens/scheduled-purge",
             "schedule": "0 4 * * *"
         },

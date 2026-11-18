@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { setApiUrl } from '../../utils/apiConfig.js';
 import { setTokenStorage } from '../../utils/tokenStorage.js';
 import { checkUsernameAvailable, deleteMyAccount, exportMyData, getFeaturedUsers, getUserForAuth, updateMyLanguage } from '../../services/users.js';
-import { sendContact } from '../../services/auth.js';
+import { logout, sendContact } from '../../services/auth.js';
 
 describe('updateMyLanguage', () => {
     beforeEach(() => {
@@ -137,5 +137,23 @@ describe('the requests that need the password again', () => {
         expect(url).toBe('http://api.test/users/me/export');
         expect(options.method).toBe('POST');
         expect(JSON.parse(options.body)).toEqual({ currentPassword: 'my-password' });
+    });
+});
+
+// Regression: signing out only forgot the tokens on the phone, so a copy of the refresh
+// token went on opening the account for the week it lasts.
+describe('logout', () => {
+    it('sends the refresh token, so the API ends that session', async () => {
+        setApiUrl('http://api.test');
+        const stored = { access_token: 'access', refresh_token: 'refresh' };
+        setTokenStorage({ getItem: async (key) => stored[key] ?? null, setItem: async () => {}, removeItem: async (key) => { delete stored[key]; } });
+        global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => ({}) });
+
+        await logout();
+
+        const [url, options] = global.fetch.mock.calls[0];
+        expect(url).toBe('http://api.test/auth/logout');
+        expect(JSON.parse(options.body)).toEqual({ refreshToken: 'refresh' });
+        expect(stored.refresh_token).toBeUndefined();
     });
 });
