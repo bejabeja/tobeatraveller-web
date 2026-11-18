@@ -15,7 +15,7 @@ import {
   itineraryCategories, placeCategories,
   reverseGeocode, searchDestinations, selectAuthUser, selectMe,
   setUserInfo, setUserInfoItineraries,
-  stepNameHintKey, ANALYTICS_EVENTS, TRIP_KINDS, experienceDates, isCalendarDay,
+  stepNameHintKey, ANALYTICS_EVENTS, TRIP_KINDS, experienceDates, isCalendarDay, joinStepNote, splitStepNote,
 } from '@tobeatraveller/shared';
 import { ByVanSection } from './ItineraryFormShared';
 import { trackEvent } from '../../utils/analytics';
@@ -41,13 +41,6 @@ const MOODS = [
   { key: 'grounding', emoji: '🌿' },
   { key: 'indulgent', emoji: '🍷' },
 ];
-
-const splitDescription = (raw = '') => {
-  const sep = '\n\n✍️ ';
-  const idx = raw.indexOf(sep);
-  if (idx === -1) return { description: raw, personalNote: '' };
-  return { description: raw.slice(0, idx), personalNote: raw.slice(idx + sep.length) };
-};
 
 const EditExperienceScreen = ({ navigation, route }) => {
   const { id } = route.params;
@@ -108,7 +101,7 @@ const EditExperienceScreen = ({ navigation, route }) => {
         const loadedSteps = (data.places ?? [])
           .sort((a, b) => (a.dayNumber ?? 1) - (b.dayNumber ?? 1) || (a.orderIndex ?? 0) - (b.orderIndex ?? 0))
           .map((p) => {
-            const { description, personalNote } = splitDescription(p.description ?? '');
+            const { description, personalNote } = splitStepNote(p.description);
             return {
               _key: `loaded-${p.id}`,
               _id: p.id,
@@ -241,7 +234,7 @@ const EditExperienceScreen = ({ navigation, route }) => {
         budget: 0, currency: 'EUR', numberOfPeople: travelers, category, isPublic, byVan,
         places: steps.filter(s => s.name.trim()).map((s, i) => ({
           id: s._id,
-          description: s.personalNote?.trim() ? `${s.description}\n\n✍️ ${s.personalNote.trim()}` : s.description,
+          description: joinStepNote(s.description, s.personalNote),
           category: s.category || 'other', orderIndex: i, dayNumber: s.dayNumber,
           infoPlace: { name: s.name, label: s.name, lat: s.lat || 0, lon: s.lon || 0 },
         })),

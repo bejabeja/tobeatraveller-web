@@ -83,3 +83,61 @@ describe("EditExperience: trips by van", () => {
     expect(savedBody().byVan).toBe(false);
   });
 });
+
+describe("EditExperience: the moments of the plan", () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  const PLACE_WITH_NOTE = { ...TRIP.places[0], description: "Una playa\n\n✍️ Fuimos al amanecer" };
+
+  it("says it is loading while the trip arrives", () => {
+    getItineraryById.mockReturnValue(new Promise(() => {}));
+    render(
+      <MemoryRouter initialEntries={["/experience/edit/t1"]}>
+        <Routes><Route path="/experience/edit/:id" element={<EditExperience />} /></Routes>
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole("status")).toHaveTextContent("common.loading");
+  });
+
+  it("shows the personal note apart from the description it was saved in", async () => {
+    await renderPage({ ...TRIP, places: [PLACE_WITH_NOTE] });
+
+    expect(screen.getByText("Una playa")).toBeInTheDocument();
+    expect(screen.getByText("✍️ Fuimos al amanecer")).toBeInTheDocument();
+  });
+
+  // Regression-in-waiting: losing the id would make the API replace each moment with a new one.
+  it("saves each moment with its id and its note back in its description", async () => {
+    await renderPage({ ...TRIP, places: [PLACE_WITH_NOTE] });
+
+    await save();
+
+    expect(savedBody().places).toEqual([expect.objectContaining({
+      id: "p1",
+      description: "Una playa\n\n✍️ Fuimos al amanecer",
+      infoPlace: { name: "Praia da Bordeira", label: "Praia da Bordeira", lat: 1, lon: 2 },
+    })]);
+  });
+
+  // Regression: editing a moment had no place to set, unlike creating one.
+  it("lets a moment's place be searched when editing it", async () => {
+    await renderPage(TRIP);
+
+    fireEvent.click(screen.getByRole("button", { name: /Praia da Bordeira/ }));
+
+    expect(screen.getByPlaceholderText("createExperience.locationPlaceholder")).toHaveValue("Praia da Bordeira");
+  });
+
+  it("offers no save to whoever does not own the trip", async () => {
+    getItineraryById.mockResolvedValue({ ...TRIP, userId: "someone-else" });
+    render(
+      <MemoryRouter initialEntries={["/experience/edit/t1"]}>
+        <Routes><Route path="/experience/edit/:id" element={<EditExperience />} /></Routes>
+      </MemoryRouter>
+    );
+
+    await screen.findByText("createExperience.heroReview");
+    expect(screen.queryByRole("button", { name: "createExperience.saveExperience" })).not.toBeInTheDocument();
+  });
+});

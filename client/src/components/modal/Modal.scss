@@ -36,6 +36,12 @@ html:has(.modal__backdrop) {
   animation: modalIn 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
   overflow: hidden;
 
+  // Focused by the code when it opens, so the keyboard starts inside it; it is
+  // not a control, so it has nothing to outline (its buttons do).
+  &:focus {
+    outline: none;
+  }
+
   @keyframes modalIn {
     from { opacity: 0; transform: scale(0.92) translateY(8px); }
     to   { opacity: 1; transform: scale(1) translateY(0); }

@@ -14,7 +14,7 @@ import {
   isPremiumRequiredError, ITINERARY_DRAFT_KINDS, itineraryCategories, NEW_ITINERARY_DEFAULT_VISIBILITY, placeCategories,
   reverseGeocode, searchDestinations, selectAuthUser, selectMe,
   setUserInfo, setUserInfoItineraries,
-  stepNameHintKey, ANALYTICS_EVENTS, TRIP_KINDS, TRAVEL_STYLES, experienceDates, isCalendarDay, tripCreatedProperties,
+  stepNameHintKey, ANALYTICS_EVENTS, TRIP_KINDS, TRAVEL_STYLES, experienceDates, isCalendarDay, joinStepNote, tripCreatedProperties,
 } from '@tobeatraveller/shared';
 import { ByVanSection } from './ItineraryFormShared';
 import { trackEvent } from '../../utils/analytics';
@@ -323,9 +323,7 @@ const PlanExperienceScreen = ({ navigation }) => {
         numberOfPeople: travelers,
         category, isPublic, byVan, source: 'experience',
         places: steps.filter(s => s.name.trim()).map((s, i) => ({
-          description: s.personalNote?.trim()
-            ? `${s.description}\n\n✍️ ${s.personalNote.trim()}`
-            : s.description,
+          description: joinStepNote(s.description, s.personalNote),
           category: s.category || 'other',
           orderIndex: i,
           dayNumber: s.dayNumber,

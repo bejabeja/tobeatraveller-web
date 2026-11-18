@@ -21,6 +21,7 @@ jest.mock('@tobeatraveller/shared', () => ({
   ...jest.requireActual('../../../../shared/src/utils/formatLocale.js'),
   ...jest.requireActual('../../../../shared/src/utils/analyticsEvents.js'),
   ...jest.requireActual('../../../../shared/src/utils/experienceDates.js'),
+  ...jest.requireActual('../../../../shared/src/utils/experienceStepNote.js'),
   ...jest.requireActual('../../../../shared/src/utils/schemasValidation.js'),
   ...jest.requireActual('../../../../shared/src/utils/constants/constants.js'),
   ...jest.requireActual('../../../../shared/src/utils/constants/colors.js'),
