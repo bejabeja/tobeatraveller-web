@@ -14,7 +14,6 @@
   }
 
   &__tab {
-    width: auto;
     display: inline-block;
     padding-bottom: 0.75rem;
     color: var(--text-secondary-color, #666);
@@ -30,6 +29,7 @@
   }
 
   &__content {
+    width: 100%;
     max-width: 1200px;
     margin: 0 auto;
     padding: 1.5rem;

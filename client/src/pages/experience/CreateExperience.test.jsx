@@ -31,6 +31,7 @@ jest.mock("../../components/form/UseCurrentLocationButton", () => () => null);
 jest.mock("../itinerary/sectionsForm/ImageUpload", () => () => null);
 jest.mock("./ExperienceStartDate", () => () => null);
 
+import { createItinerary } from "../../services/itinerary";
 import CreateExperience from "./CreateExperience";
 
 const SAVED_AT = new Date("2026-09-20T10:00:00Z");
@@ -208,5 +209,33 @@ describe("CreateExperience: trips by van", () => {
     act(() => { jest.advanceTimersByTime(SAVE_PAUSE_MS); });
 
     expect(storedDraftOf("user-1", AI_PLAN).values.byVan).toBe(true);
+  });
+});
+
+describe("CreateExperience: saving", () => {
+  beforeEach(() => {
+    jest.useFakeTimers().setSystemTime(new Date("2026-10-01T10:00:00Z"));
+    localStorage.clear();
+    mockMe = { id: "user-1", isPremium: true };
+    createItinerary.mockReset().mockResolvedValue({ id: "new-trip" });
+  });
+  afterEach(() => jest.useRealTimers());
+
+  it("creates the experience with its owner, its source and each moment with its note", async () => {
+    storeDraft("user-1", AI_PLAN, { places: [{ ...STEP, personalNote: "Fuimos al amanecer" }] });
+    renderPage();
+    fireEvent.click(screen.getByRole("button", { name: "createItinerary.draftContinue" }));
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "createExperience.saveExperience" }));
+    });
+
+    const body = JSON.parse(createItinerary.mock.calls[0][0].get("itinerary"));
+    expect(body).toEqual(expect.objectContaining({ userId: "user-1", source: "experience", title: "Ruta por Portugal", byVan: false }));
+    expect(body.places).toEqual([expect.objectContaining({
+      description: "Una playa\n\n✍️ Fuimos al amanecer",
+      dayNumber: 1,
+      infoPlace: { name: "Praia da Bordeira", label: "Praia da Bordeira", lat: 1, lon: 2 },
+    })]);
   });
 });

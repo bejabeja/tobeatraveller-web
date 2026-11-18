@@ -25,7 +25,6 @@ export default defineConfig({
           'vendor-redux': ['redux', 'react-redux', '@reduxjs/toolkit', 'redux-thunk'],
           'vendor-map': ['leaflet', 'react-leaflet', 'maplibre-gl', '@maplibre/maplibre-gl-leaflet'],
           'vendor-ui': ['react-icons', 'react-hot-toast'],
-          'vendor-forms': ['react-hook-form', '@hookform/resolvers', 'zod'],
           'vendor-utils': ['lodash'],
         }
       }

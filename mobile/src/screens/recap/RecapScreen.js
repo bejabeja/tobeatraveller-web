@@ -325,7 +325,7 @@ const RecapScreen = ({ navigation, route }) => {
                 value={includePrivate}
                 onValueChange={setIncludePrivate}
                 accessibilityLabel={t('passport.shareIncludePrivate')}
-                trackColor={{ true: '#E8743B' }}
+                trackColor={{ true: '#B5501B' }}
               />
             </View>
           )}
@@ -390,7 +390,7 @@ const styles = StyleSheet.create({
   offSeason: { gap: 12, paddingHorizontal: 32 },
   offSeasonIcon: { fontSize: 48 },
   offSeasonTitle: { fontSize: 22, fontWeight: '800', color: '#fff', textAlign: 'center' },
-  offSeasonButton: { marginTop: 8, paddingVertical: 12, paddingHorizontal: 22, borderRadius: 999, backgroundColor: '#E8743B' },
+  offSeasonButton: { marginTop: 8, paddingVertical: 12, paddingHorizontal: 22, borderRadius: 999, backgroundColor: '#B5501B' },
   offSeasonButtonText: { fontSize: 15, fontWeight: '700', color: '#fff' },
   progress: { flexDirection: 'row', gap: 4, marginHorizontal: 16, marginTop: 10, marginRight: 56 },
   progressBar: { flex: 1, height: 4, borderRadius: 2, backgroundColor: 'rgba(255, 255, 255, 0.25)', overflow: 'hidden' },
@@ -420,7 +420,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10, paddingHorizontal: 12, borderRadius: 10, backgroundColor: 'rgba(255, 255, 255, 0.12)',
   },
   privateNoteText: { flex: 1, fontSize: 12, lineHeight: 17, color: '#fff' },
-  shareBtn: { alignSelf: 'stretch', paddingVertical: 14, borderRadius: 12, alignItems: 'center', backgroundColor: '#E8743B' },
+  shareBtn: { alignSelf: 'stretch', paddingVertical: 14, borderRadius: 12, alignItems: 'center', backgroundColor: '#B5501B' },
   shareBtnDisabled: { opacity: 0.6 },
   shareText: { fontSize: 16, fontWeight: '700', color: '#fff' },
   back: { fontSize: 14, color: 'rgba(255, 255, 255, 0.85)' },

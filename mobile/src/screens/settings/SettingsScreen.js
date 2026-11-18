@@ -45,7 +45,7 @@ const SettingsRow = ({
   const trailing = children ?? (
     <View style={styles.rowTrailing}>
       {!!value && <Text style={styles.rowValue} numberOfLines={2}>{value}</Text>}
-      {option && selected && <Ionicons name="checkmark" size={18} color="#E8743B" />}
+      {option && selected && <Ionicons name="checkmark" size={18} color="#B5501B" />}
       {onPress && !option && (
         <Ionicons name={expanded ? 'chevron-up' : expanded === false ? 'chevron-down' : 'chevron-forward'} size={16} color="#9ca3af" />
       )}
@@ -117,7 +117,7 @@ const SettingsScreen = ({ navigation }) => {
   if (!user) {
     return (
       <View style={[styles.container, styles.loadingContainer, { paddingTop: insets.top }]}>
-        <ActivityIndicator size="large" color="#E8743B" />
+        <ActivityIndicator size="large" color="#B5501B" />
       </View>
     );
   }
@@ -299,7 +299,7 @@ const SettingsScreen = ({ navigation }) => {
                       value={newEmail}
                       onChangeText={setNewEmail}
                       placeholder={t('emailVerification.newEmailLabel')}
-                      placeholderTextColor="#9ca3af"
+                      placeholderTextColor="#6b7280"
                       keyboardType="email-address"
                       autoCapitalize="none"
                       autoCorrect={false}
@@ -310,7 +310,7 @@ const SettingsScreen = ({ navigation }) => {
                       value={emailFormPassword}
                       onChangeText={setEmailFormPassword}
                       placeholder={t('emailVerification.passwordLabel')}
-                      placeholderTextColor="#9ca3af"
+                      placeholderTextColor="#6b7280"
                       secureTextEntry
                     />
                     {!!emailError && <Text style={styles.errorText}>{emailError}</Text>}
@@ -381,7 +381,7 @@ const SettingsScreen = ({ navigation }) => {
                     value={currentPassword}
                     onChangeText={setCurrentPassword}
                     placeholder={t('editProfile.currentPasswordLabel')}
-                    placeholderTextColor="#9ca3af"
+                    placeholderTextColor="#6b7280"
                     secureTextEntry
                   />
                   <TextInput
@@ -389,7 +389,7 @@ const SettingsScreen = ({ navigation }) => {
                     value={newPassword}
                     onChangeText={setNewPassword}
                     placeholder={t('editProfile.newPasswordLabel')}
-                    placeholderTextColor="#9ca3af"
+                    placeholderTextColor="#6b7280"
                     secureTextEntry
                   />
                   <TextInput
@@ -397,7 +397,7 @@ const SettingsScreen = ({ navigation }) => {
                     value={confirmNewPassword}
                     onChangeText={setConfirmNewPassword}
                     placeholder={t('editProfile.confirmNewPasswordLabel')}
-                    placeholderTextColor="#9ca3af"
+                    placeholderTextColor="#6b7280"
                     secureTextEntry
                   />
                   {!!passwordError && <Text style={styles.errorText}>{passwordError}</Text>}
@@ -442,7 +442,7 @@ const SettingsScreen = ({ navigation }) => {
                   onValueChange={() => handleTogglePreference(key)}
                   disabled={updatingPreferenceKey === key}
                   accessibilityLabel={t(labelKey)}
-                  trackColor={{ false: '#e5e7eb', true: '#E8743B' }}
+                  trackColor={{ false: '#e5e7eb', true: '#B5501B' }}
                   thumbColor="#fff"
                 />
               </SettingsRow>
@@ -459,7 +459,7 @@ const SettingsScreen = ({ navigation }) => {
                 value={analyticsConsent === ANALYTICS_CONSENT.GRANTED}
                 onValueChange={answerAnalytics}
                 accessibilityLabel={t('analyticsConsent.setting')}
-                trackColor={{ false: '#e5e7eb', true: '#E8743B' }}
+                trackColor={{ false: '#e5e7eb', true: '#B5501B' }}
                 thumbColor="#fff"
               />
             </SettingsRow>
@@ -505,7 +505,7 @@ const SettingsScreen = ({ navigation }) => {
                     value={deleteInput}
                     onChangeText={setDeleteInput}
                     placeholder={user?.username}
-                    placeholderTextColor="#9ca3af"
+                    placeholderTextColor="#6b7280"
                     autoCapitalize="none"
                     autoCorrect={false}
                   />
@@ -565,7 +565,7 @@ const styles = StyleSheet.create({
     ...shadow(2, 0.06, 8, 2),
   },
   cardTitle: {
-    fontSize: 13, fontWeight: '700', color: '#9ca3af',
+    fontSize: 13, fontWeight: '700', color: '#6b7280',
     textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4,
   },
 
@@ -580,7 +580,7 @@ const styles = StyleSheet.create({
   rowText: { flex: 1, gap: 2 },
   rowLabel: { fontSize: 15, color: '#111827' },
   rowLabelDanger: { color: '#dc2626', fontWeight: '600' },
-  rowLabelSelected: { color: '#E8743B', fontWeight: '600' },
+  rowLabelSelected: { color: '#B5501B', fontWeight: '600' },
   rowHint: { fontSize: 13, color: '#6b7280', lineHeight: 18 },
   rowTrailing: { flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 1, maxWidth: '55%' },
   // Two lines, right-aligned: an email or "Ich lebe oder reise im Van" must not be cut short on a narrow screen.
@@ -589,7 +589,7 @@ const styles = StyleSheet.create({
   passwordForm: { gap: 0, paddingBottom: 12 },
   errorText: { fontSize: 13, color: '#dc2626', marginTop: 8 },
   primaryBtn: {
-    backgroundColor: '#E8743B', borderRadius: 10,
+    backgroundColor: '#B5501B', borderRadius: 10,
     paddingVertical: 11, alignItems: 'center',
   },
   primaryBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },

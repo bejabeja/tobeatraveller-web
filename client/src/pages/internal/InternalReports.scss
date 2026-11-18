@@ -6,7 +6,6 @@
   }
 
   &__filter {
-    width: auto;
     padding: 0.35rem 0.9rem;
     border: 1px solid var(--border-color);
     border-radius: 999px;
@@ -45,7 +44,6 @@
     flex-wrap: wrap;
     align-items: center;
     gap: 0.6rem;
-    width: auto;
 
     time {
       margin-left: auto;
@@ -58,7 +56,7 @@
     width: fit-content;
     padding: 0.1rem 0.6rem;
     border-radius: 999px;
-    background: var(--primary-light, rgba(232, 116, 59, 0.1));
+    background: var(--primary-light, rgba(181, 80, 27, 0.1));
     font-size: 0.8rem;
   }
 
@@ -83,13 +81,11 @@
     flex-direction: column;
     gap: 0.6rem;
     margin-top: 0.8rem;
-    width: auto;
 
     label {
       display: flex;
       flex-direction: column;
       gap: 0.25rem;
-      width: auto;
       font-size: 0.85rem;
     }
   }
@@ -98,7 +94,6 @@
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
-    width: auto;
   }
 
   &__more {

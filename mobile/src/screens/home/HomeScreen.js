@@ -103,7 +103,7 @@ const HomeScreen = ({ navigation }) => {
       style={styles.container}
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ paddingBottom: 24 }}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#E8743B" />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#B5501B" />}
     >
       {/* Hero */}
       <LinearGradient
@@ -370,11 +370,11 @@ const styles = StyleSheet.create({
     position: 'absolute', top: 0, right: 0,
     minWidth: 16, height: 16, borderRadius: 8,
     paddingHorizontal: 3,
-    backgroundColor: '#E8743B',
+    backgroundColor: '#B5501B',
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 1.5, borderColor: COLORS.accentDark,
   },
-  bellBadgeText: { color: '#fff', fontSize: 9, fontWeight: '700' },
+  bellBadgeText: { color: '#fff', fontSize: 10, fontWeight: '700' },
 
   tabs: {
     flexDirection: 'row', gap: 4, marginHorizontal: 16, marginTop: 20, padding: 4,
@@ -408,7 +408,7 @@ const styles = StyleSheet.create({
   sectionSubtitle: { fontSize: 13, color: '#6b7280', marginTop: 2 },
   seeAll: { fontSize: 13, color: COLORS.primary, fontWeight: '600', paddingTop: 2 },
   loader: { marginVertical: 20 },
-  empty: { color: '#9ca3af', fontSize: 14, marginTop: 8 },
+  empty: { color: '#6b7280', fontSize: 14, marginTop: 8 },
 
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   gridItem: { width: '47.5%' },
@@ -420,7 +420,7 @@ const styles = StyleSheet.create({
   avatarFallback: { backgroundColor: COLORS.accent, alignItems: 'center', justifyContent: 'center' },
   avatarInitial: { color: '#fff', fontSize: 22, fontWeight: '700' },
   username: { fontSize: 12, color: '#374151', marginTop: 6, textAlign: 'center', width: 88 },
-  userTrips: { fontSize: 11, color: '#9ca3af', marginTop: 1 },
+  userTrips: { fontSize: 11, color: '#6b7280', marginTop: 1 },
 
   cta: {
     margin: 16, marginTop: 20,

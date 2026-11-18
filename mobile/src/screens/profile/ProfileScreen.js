@@ -228,7 +228,7 @@ const ProfileScreen = ({ route, navigation }) => {
     >
       {/* Banner */}
       <LinearGradient
-        colors={['#E8743B', '#C45A22']}
+        colors={['#B5501B', '#93400F']}
         start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
         style={[styles.banner, canGoBack && { paddingTop: insets.top + 8 }]}
       >
@@ -408,7 +408,7 @@ const ProfileScreen = ({ route, navigation }) => {
             </View>
             <TouchableOpacity style={styles.completenessNext} onPress={() => navigation.navigate('EditProfile')} accessibilityRole="button">
               <Text style={styles.completenessTip}>+ {t(nextMissingField.tipKey)}</Text>
-              <Ionicons name="chevron-forward" size={14} color="#E8743B" />
+              <Ionicons name="chevron-forward" size={14} color="#B5501B" />
             </TouchableOpacity>
           </View>
         )}
@@ -565,7 +565,7 @@ const UnauthView = ({ navigation, insets, t }) => {
     <View style={styles.unauthRoot}>
       {/* Hero */}
       <LinearGradient
-        colors={['#E8743B', '#C45A22']}
+        colors={['#B5501B', '#93400F']}
         start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
         style={[styles.unauthHero, { paddingTop: insets.top + 24 }]}
       >
@@ -652,7 +652,7 @@ const styles = StyleSheet.create({
   avatar: { width: 80, height: 80, borderRadius: 40 },
   avatarFallback: {
     width: 80, height: 80, borderRadius: 40,
-    backgroundColor: '#E8743B', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#B5501B', alignItems: 'center', justifyContent: 'center',
   },
   avatarInitial: { color: '#fff', fontSize: 32, fontWeight: '700' },
 
@@ -664,7 +664,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   primaryBtn: {
-    backgroundColor: '#E8743B', borderRadius: 999,
+    backgroundColor: '#B5501B', borderRadius: 999,
     paddingVertical: 9, paddingHorizontal: 20,
   },
   primaryBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
@@ -688,7 +688,7 @@ const styles = StyleSheet.create({
   followsYouText: { fontSize: 11, color: '#6b7280', fontWeight: '500' },
   officialBadge: {
     width: 18, height: 18, borderRadius: 9,
-    backgroundColor: '#E8743B', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#B5501B', alignItems: 'center', justifyContent: 'center',
   },
   officialText: { color: '#fff', fontSize: 10, fontWeight: '700' },
   bio: { fontSize: 14, color: '#374151', marginTop: 8, lineHeight: 20 },
@@ -703,7 +703,7 @@ const styles = StyleSheet.create({
   passportCardBody: { flex: 1, gap: 2 },
   passportCardTitle: { fontSize: 14, fontWeight: '800', color: '#1b2a41' },
   passportCardMeta: { fontSize: 12, color: '#6b5d45' },
-  passportCardGoal: { fontSize: 12, fontWeight: '600', color: '#E8743B' },
+  passportCardGoal: { fontSize: 12, fontWeight: '600', color: '#B5501B' },
   passportCardShare: { padding: 4 },
 
   meta: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginTop: 10 },
@@ -727,17 +727,17 @@ const styles = StyleSheet.create({
   },
   completenessHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
   completenessLabel: { fontSize: 13, color: '#374151', fontWeight: '600' },
-  completenessPct: { fontSize: 13, color: '#E8743B', fontWeight: '700' },
+  completenessPct: { fontSize: 13, color: '#B5501B', fontWeight: '700' },
   completenessTrack: {
     height: 6, backgroundColor: '#e5e7eb', borderRadius: 3, overflow: 'hidden',
   },
-  completenessFill: { height: '100%', backgroundColor: '#E8743B', borderRadius: 3 },
+  completenessFill: { height: '100%', backgroundColor: '#B5501B', borderRadius: 3 },
   completenessNext: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 10 },
-  completenessTip: { fontSize: 13, color: '#E8743B', fontWeight: '600' },
+  completenessTip: { fontSize: 13, color: '#B5501B', fontWeight: '600' },
 
   createBtn: {
     marginHorizontal: 16, marginTop: 14,
-    backgroundColor: '#E8743B', borderRadius: 10,
+    backgroundColor: '#B5501B', borderRadius: 10,
     paddingVertical: 11, alignItems: 'center',
   },
   createBtnText: { color: '#fff', fontSize: 14, fontWeight: '700' },
@@ -745,9 +745,9 @@ const styles = StyleSheet.create({
   section: { marginHorizontal: 16, marginTop: 16 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   sectionTitle: { fontSize: 16, fontWeight: '700', color: '#111827' },
-  seeAll: { fontSize: 13, color: '#E8743B', fontWeight: '600' },
+  seeAll: { fontSize: 13, color: '#B5501B', fontWeight: '600' },
   aboutText: { fontSize: 14, color: '#374151', lineHeight: 22 },
-  emptyTrips: { color: '#9ca3af', fontSize: 14 },
+  emptyTrips: { color: '#6b7280', fontSize: 14 },
 
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   gridItem: { width: '47.5%' },
@@ -759,9 +759,9 @@ const styles = StyleSheet.create({
     borderWidth: 1.5, borderColor: '#e5e7eb', borderRadius: 999,
     paddingVertical: 5, paddingHorizontal: 14,
   },
-  visBtnActive: { borderColor: '#E8743B', backgroundColor: '#FFF0E8' },
+  visBtnActive: { borderColor: '#B5501B', backgroundColor: '#FFF0E8' },
   visBtnText: { fontSize: 13, fontWeight: '500', color: '#6b7280' },
-  visBtnTextActive: { color: '#E8743B', fontWeight: '600' },
+  visBtnTextActive: { color: '#B5501B', fontWeight: '600' },
 
   // Unauth
   unauthRoot: { flex: 1, backgroundColor: '#fff' },
@@ -794,7 +794,7 @@ const styles = StyleSheet.create({
   unauthBenefitTitle: { fontSize: 15, fontWeight: '700', color: '#111827', marginBottom: 2 },
   unauthBenefitDesc: { fontSize: 13, color: '#6b7280', lineHeight: 19 },
   unauthPrimaryBtn: {
-    backgroundColor: '#E8743B', borderRadius: 999,
+    backgroundColor: '#B5501B', borderRadius: 999,
     paddingVertical: 15, alignItems: 'center',
     marginTop: 12,
   },
@@ -802,8 +802,8 @@ const styles = StyleSheet.create({
   unauthSecondaryBtn: { paddingVertical: 14, alignItems: 'center' },
   unauthSecondaryBtnText: { fontSize: 14, color: '#6b7280' },
   unauthLinks: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 16, marginTop: 20 },
-  unauthLinkText: { fontSize: 12, color: '#9ca3af', textDecorationLine: 'underline' },
-  unauthSignInAccent: { color: '#E8743B', fontWeight: '600' },
+  unauthLinkText: { fontSize: 12, color: '#6b7280', textDecorationLine: 'underline' },
+  unauthSignInAccent: { color: '#B5501B', fontWeight: '600' },
 });
 
 export default ProfileScreen;

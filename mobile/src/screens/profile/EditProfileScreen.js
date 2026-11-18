@@ -291,7 +291,7 @@ const EditProfileScreen = ({ navigation }) => {
                 value={fields.name}
                 onChangeText={v => setField('name', v)}
                 placeholder={t('editProfile.namePlaceholder')}
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#6b7280"
                 maxLength={50}
               />
             </Field>
@@ -303,7 +303,7 @@ const EditProfileScreen = ({ navigation }) => {
                 value={fields.username}
                 onChangeText={v => setField('username', v)}
                 placeholder={t('editProfile.usernamePlaceholder')}
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#6b7280"
                 autoCapitalize="none"
                 autoCorrect={false}
                 maxLength={50}
@@ -326,7 +326,7 @@ const EditProfileScreen = ({ navigation }) => {
                 value={fields.location}
                 onChangeText={v => setField('location', v)}
                 placeholder={t('editProfile.locationPlaceholder')}
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#6b7280"
                 maxLength={50}
               />
               <UseCurrentLocationButton onPress={handleUseCurrentLocation} loading={locating} />
@@ -342,7 +342,7 @@ const EditProfileScreen = ({ navigation }) => {
                 value={fields.bio}
                 onChangeText={v => setField('bio', v)}
                 placeholder={t('editProfile.bioPlaceholder')}
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#6b7280"
                 multiline
                 maxLength={160}
               />
@@ -355,7 +355,7 @@ const EditProfileScreen = ({ navigation }) => {
                 value={fields.about}
                 onChangeText={v => setField('about', v)}
                 placeholder={t('editProfile.aboutPlaceholder')}
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#6b7280"
                 multiline
                 maxLength={1000}
               />
@@ -403,7 +403,7 @@ const styles = StyleSheet.create({
   headerBackText: { fontSize: 20, color: '#374151' },
   headerTitle: { flex: 1, fontSize: 17, fontWeight: '700', color: '#111827', textAlign: 'center' },
   headerSave: {
-    backgroundColor: '#E8743B', borderRadius: 999,
+    backgroundColor: '#B5501B', borderRadius: 999,
     paddingVertical: 7, paddingHorizontal: 16,
   },
   headerSaveDisabled: { opacity: 0.5 },
@@ -417,23 +417,23 @@ const styles = StyleSheet.create({
   avatar: { width: '100%', height: '100%', borderRadius: 44 },
   avatarFallback: {
     width: '100%', height: '100%', borderRadius: 44,
-    backgroundColor: '#E8743B', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#B5501B', alignItems: 'center', justifyContent: 'center',
   },
   avatarInitial: { color: '#fff', fontSize: 36, fontWeight: '700' },
   // Always visible, not only on press: it says the photo can change.
   avatarBadge: {
     position: 'absolute', right: -2, bottom: -2,
     width: 30, height: 30, borderRadius: 15, borderWidth: 2, borderColor: '#fff',
-    backgroundColor: '#E8743B', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#B5501B', alignItems: 'center', justifyContent: 'center',
   },
-  avatarBadgeRemove: { backgroundColor: '#ef4444' },
+  avatarBadgeRemove: { backgroundColor: '#dc2626' },
   avatarActions: { alignItems: 'flex-start', gap: 8 },
   avatarButton: {
     paddingVertical: 8, paddingHorizontal: 14, borderRadius: 999,
     borderWidth: 1.5, borderColor: '#e5e7eb', backgroundColor: '#fff',
   },
   avatarButtonText: { fontSize: 13, fontWeight: '700', color: '#374151' },
-  avatarRemoveText: { fontSize: 13, fontWeight: '600', color: '#ef4444' },
+  avatarRemoveText: { fontSize: 13, fontWeight: '600', color: '#dc2626' },
 
   card: {
     backgroundColor: '#fff', borderRadius: 14, padding: 16,
@@ -459,7 +459,7 @@ const styles = StyleSheet.create({
   pill_taken:     { backgroundColor: '#fef2f2' },
   usernameText: { fontSize: 12, fontWeight: '600' },
   pillText_checking:  { color: '#6b7280' },
-  pillText_available: { color: '#16a34a' },
+  pillText_available: { color: '#15803d' },
   pillText_taken:     { color: '#dc2626' },
 
   errorBanner: {
@@ -474,7 +474,7 @@ const fieldStyles = StyleSheet.create({
   wrapper: { marginBottom: 14 },
   labelRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 },
   label: { fontSize: 13, fontWeight: '600', color: '#374151' },
-  hint: { fontSize: 12, color: '#9ca3af' },
+  hint: { fontSize: 12, color: '#6b7280' },
   hintWarn: { color: '#f59e0b' },
   error: { fontSize: 12, color: '#dc2626', marginTop: 4 },
   note: { fontSize: 12, lineHeight: 17, color: '#6b7280', marginTop: 5 },

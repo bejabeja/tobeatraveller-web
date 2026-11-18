@@ -166,7 +166,7 @@ const ExploreScreen = ({ navigation, route }) => {
               placeholder={t('explore.searchByDestination')}
               value={search}
               onChangeText={setSearch}
-              placeholderTextColor="#9ca3af"
+              placeholderTextColor="#6b7280"
               autoCorrect={false}
               returnKeyType="search"
             />
@@ -319,7 +319,7 @@ const ExploreScreen = ({ navigation, route }) => {
                   value={draft.budgetMin ?? ''}
                   onChangeText={v => setDraft(d => ({ ...d, budgetMin: v }))}
                   placeholder={t('common.min')}
-                  placeholderTextColor="#9ca3af"
+                  placeholderTextColor="#6b7280"
                   keyboardType="decimal-pad"
                 />
                 <Text style={styles.rangeSep}>–</Text>
@@ -328,7 +328,7 @@ const ExploreScreen = ({ navigation, route }) => {
                   value={draft.budgetMax ?? ''}
                   onChangeText={v => setDraft(d => ({ ...d, budgetMax: v }))}
                   placeholder={t('common.max')}
-                  placeholderTextColor="#9ca3af"
+                  placeholderTextColor="#6b7280"
                   keyboardType="decimal-pad"
                 />
               </View>
@@ -341,7 +341,7 @@ const ExploreScreen = ({ navigation, route }) => {
                   value={draft.durationMin ?? ''}
                   onChangeText={v => setDraft(d => ({ ...d, durationMin: v }))}
                   placeholder={t('common.min')}
-                  placeholderTextColor="#9ca3af"
+                  placeholderTextColor="#6b7280"
                   keyboardType="number-pad"
                 />
                 <Text style={styles.rangeSep}>–</Text>
@@ -350,7 +350,7 @@ const ExploreScreen = ({ navigation, route }) => {
                   value={draft.durationMax ?? ''}
                   onChangeText={v => setDraft(d => ({ ...d, durationMax: v }))}
                   placeholder={t('common.max')}
-                  placeholderTextColor="#9ca3af"
+                  placeholderTextColor="#6b7280"
                   keyboardType="number-pad"
                 />
               </View>
@@ -431,7 +431,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f7f9fc', paddingVertical: 10, paddingHorizontal: 12,
     fontSize: 14, color: '#111827',
   },
-  rangeSep: { fontSize: 16, color: '#9ca3af' },
+  rangeSep: { fontSize: 16, color: '#6b7280' },
   travelersRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   travelerChip: {
     paddingVertical: 7, paddingHorizontal: 14, borderRadius: 999,
@@ -467,7 +467,7 @@ const styles = StyleSheet.create({
     fontSize: 14, color: '#111827',
   },
   clearSearch: { padding: 4 },
-  clearSearchText: { color: '#9ca3af', fontSize: 13 },
+  clearSearchText: { color: '#6b7280', fontSize: 13 },
 
   categoriesRow: { paddingHorizontal: 16, gap: 8, paddingBottom: 8 },
   catChip: {
@@ -489,7 +489,7 @@ const styles = StyleSheet.create({
   sortScroll: { flexGrow: 0, flexShrink: 1 },
   sortRow: { gap: 14 },
   sortLabel: {
-    fontSize: 12, color: '#9ca3af', fontWeight: '500',
+    fontSize: 12, color: '#6b7280', fontWeight: '500',
     paddingVertical: 3, borderBottomWidth: 2, borderBottomColor: 'transparent',
   },
   sortLabelSelected: { color: '#111827', fontWeight: '700', borderBottomColor: COLORS.primary },

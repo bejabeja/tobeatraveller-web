@@ -16,6 +16,7 @@
   }
 
   &__field {
+    width: 100%;
     padding: 0.75em 1em;
     border: 1px solid var(--border-color);
     border-radius: 10px;
@@ -28,7 +29,7 @@
     &:focus {
       border-color: var(--primary-color);
       outline: none;
-      box-shadow: 0 0 0 3px rgba(0, 119, 182, 0.2);
+      box-shadow: 0 0 0 3px rgba(181, 80, 27, 0.2);
     }
 
     &--invalid {
@@ -81,7 +82,6 @@
       width: 100%;
     }
 
-    // Higher specificity to beat the global * { width: 100% }
     .input__right {
       position: absolute;
       top: 50%;
@@ -177,7 +177,7 @@
 }
 .no-results {
   padding: 0.5rem;
-  color: #999;
+  color: #6b7280;
   font-style: italic;
 }
 
@@ -194,6 +194,7 @@
   // instead of adding more space on top of it.
   margin-top: 0.35rem;
   padding: 0;
+  min-height: 1.75rem;
   border: none;
   background: none;
   font-size: 0.8rem;
@@ -232,12 +233,19 @@
     position: relative;
     display: flex;
     align-items: center;
+
+    // What is typed never runs under the show/hide button.
+    input {
+      padding-right: 2.75rem;
+    }
   }
 
   &__toggle {
-    width: fit-content;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 8px;
     position: absolute;
-    right: 0.75rem;
+    right: 0.4rem;
     background: none;
     border: none;
     cursor: pointer;

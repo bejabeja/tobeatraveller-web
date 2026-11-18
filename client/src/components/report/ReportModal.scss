@@ -18,12 +18,8 @@
     display: flex;
     align-items: center;
     gap: 0.6rem;
-    width: auto;
     cursor: pointer;
 
-    input {
-      width: auto;
-    }
   }
 
   &__details {
@@ -48,7 +44,7 @@
       resize: vertical;
       transition: border-color 0.15s;
 
-      &::placeholder { color: #9ca3af; }
+      &::placeholder { color: #6b7280; }
 
       &:focus {
         outline: none;

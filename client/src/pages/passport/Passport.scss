@@ -25,10 +25,10 @@ $stamp-min-width: 120px;
   }
 
   &__share {
+    width: auto;
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    width: auto;
   }
 
   &__back {
@@ -149,7 +149,6 @@ $stamp-min-width: 120px;
     margin-top: 0.4rem;
 
     a {
-      width: auto;
       padding: 0.35rem 0.75rem;
       border-radius: 999px;
       background: $passport-navy;
@@ -319,7 +318,6 @@ $stamp-min-width: 120px;
   }
 
   &__leaderboard-count {
-    width: auto;
     font-size: 0.85rem;
     color: $passport-ink-muted;
   }
@@ -402,7 +400,6 @@ $stamp-min-width: 120px;
 
   &__more {
     display: block;
-    width: auto;
     margin: 1rem auto 0;
     padding: 0.4rem 1rem;
     border: 1.5px solid $passport-gold;
@@ -450,7 +447,7 @@ $stamp-min-width: 120px;
       content: "";
       position: absolute;
       inset: 5px;
-      border: 1.5px dashed rgba(232, 116, 59, 0.55);
+      border: 1.5px dashed rgba(181, 80, 27, 0.55);
       border-radius: 50%;
     }
   }
@@ -459,7 +456,6 @@ $stamp-min-width: 120px;
     position: relative;
     display: grid;
     place-items: center;
-    width: auto;
     font-size: 2.3rem;
     line-height: 1;
     // Undo the seal's tilt so the icon stays upright inside it.
@@ -537,7 +533,6 @@ $stamp-min-width: 120px;
     top: 0.4rem;
     right: 0.4rem;
     display: flex;
-    width: auto;
     font-size: 0.8rem;
     filter: grayscale(1);
     opacity: 0.6;

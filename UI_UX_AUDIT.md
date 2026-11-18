@@ -32,4 +32,4 @@ Solo recoge lo que queda por hacer; lo ya resuelto o verificado como correcto se
 
 ## Limpieza
 
-- Borrar el usuario de prueba `uiaudit<timestamp>@example.com` de la DB de dev (Neon), desde el panel interno.
+- Borrar los usuarios de prueba `uiaudit<timestamp>@example.com` y `uiaudit20261117@example.com` (2026-11-17) de la DB de dev (Neon), desde el panel interno.

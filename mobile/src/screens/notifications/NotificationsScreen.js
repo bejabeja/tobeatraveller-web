@@ -94,11 +94,11 @@ const NotificationsScreen = ({ navigation }) => {
           keyExtractor={item => item.id}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#E8743B" />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#B5501B" />}
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.4}
           ListFooterComponent={loadingMore ? (
-            <ActivityIndicator style={{ marginVertical: 16 }} color="#E8743B" />
+            <ActivityIndicator style={{ marginVertical: 16 }} color="#B5501B" />
           ) : null}
           renderItem={({ item: n }) => n.heading ? (
             <Text style={styles.groupTitle} accessibilityRole="header">{n.heading}</Text>
@@ -138,9 +138,9 @@ const styles = StyleSheet.create({
 
   retryBtn: {
     marginTop: 8, paddingVertical: 10, paddingHorizontal: 20,
-    borderRadius: 999, borderWidth: 1, borderColor: '#E8743B',
+    borderRadius: 999, borderWidth: 1, borderColor: '#B5501B',
   },
-  retryBtnText: { color: '#E8743B', fontWeight: '700', fontSize: 14 },
+  retryBtnText: { color: '#B5501B', fontWeight: '700', fontSize: 14 },
 });
 
 export default NotificationsScreen;

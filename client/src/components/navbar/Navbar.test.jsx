@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 
 let mockAuthenticated;
@@ -43,5 +43,21 @@ describe("Navbar signed in", () => {
 
     expect(screen.queryByRole("link", { name: "nav.signUpShort" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "nav.createAccountBtn" })).not.toBeInTheDocument();
+  });
+
+  // Regression: the sheet was a plain box under the bars fixed to the window,
+  // with no way out from the keyboard.
+  it("opens what to create as a dialog with the focus inside, and Escape closes it", () => {
+    const { container } = renderNavbar();
+    const opener = within(container.querySelector(".mobile-header")).getByRole("button", { name: "nav.createTrip" });
+    opener.focus();
+
+    fireEvent.click(opener);
+    const dialog = screen.getByRole("dialog", { name: "nav.createSheetTitle" });
+    expect(dialog).toContainElement(document.activeElement);
+
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(opener).toHaveFocus();
   });
 });

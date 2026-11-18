@@ -1,6 +1,5 @@
 .packing-checklist {
   &__toolbar {
-    width: auto;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -30,7 +29,6 @@
   }
 
   &__search {
-    width: auto;
     flex: 1 1 280px;
     max-width: 420px;
     display: flex;
@@ -44,6 +42,11 @@
     @media (max-width: 640px) {
       flex: 0 0 auto;
       max-width: none;
+    }
+
+    &:focus-within {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(181, 80, 27, 0.15);
     }
   }
 
@@ -78,21 +81,18 @@
   }
 
   &__empty {
-    width: auto;
     text-align: center;
     padding: 3rem 1rem;
     color: var(--text-secondary-color);
   }
 
   &__categories {
-    width: auto;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 1rem;
   }
 
   &__category {
-    width: auto;
     background: var(--white-color);
     border: 1px solid var(--border-color);
     border-radius: 14px;
@@ -103,7 +103,6 @@
   }
 
   &__category-title {
-    width: auto;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -130,13 +129,11 @@
   }
 
   &__items {
-    width: auto;
     display: flex;
     flex-direction: column;
   }
 
   &__item {
-    width: auto;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -266,7 +263,6 @@
   }
 
   &__add-row {
-    width: auto;
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -343,7 +339,7 @@
     width: fit-content;
     display: inline-flex;
     padding: 0.15rem;
-    color: #16a34a;
+    color: #15803d;
     font-size: 1rem;
   }
 

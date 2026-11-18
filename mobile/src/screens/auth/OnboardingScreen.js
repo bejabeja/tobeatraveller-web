@@ -120,7 +120,7 @@ const OnboardingScreen = ({ navigation }) => {
     <View style={[styles.root, { paddingTop: insets.top }]}>
       {/* Hero */}
       <LinearGradient
-        colors={['#E8743B', '#1A535C']}
+        colors={['#B5501B', '#1A535C']}
         start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
         style={styles.hero}
       >
@@ -231,7 +231,7 @@ const UserCard = ({ user, isFollowing, onToggle, t }) => {
           <AvatarBadge user={user} avatarError={avatarError} setAvatarError={setAvatarError} initial={initial} />
         </ImageBackground>
       ) : (
-        <LinearGradient colors={['#E8743B', '#1A535C']} style={styles.cardPhoto}>
+        <LinearGradient colors={['#B5501B', '#1A535C']} style={styles.cardPhoto}>
           <AvatarBadge user={user} avatarError={avatarError} setAvatarError={setAvatarError} initial={initial} />
         </LinearGradient>
       )}
@@ -300,9 +300,9 @@ const styles = StyleSheet.create({
   dots: { flexDirection: 'row', gap: 8 },
   dot: {
     width: 10, height: 10, borderRadius: 5,
-    borderWidth: 2, borderColor: '#E8743B', backgroundColor: 'transparent',
+    borderWidth: 2, borderColor: '#B5501B', backgroundColor: 'transparent',
   },
-  dotFilled: { backgroundColor: '#E8743B' },
+  dotFilled: { backgroundColor: '#B5501B' },
   progressLabel: { fontSize: 13, color: '#6b7280', fontWeight: '500' },
 
   loader: { marginTop: 40 },
@@ -331,7 +331,7 @@ const styles = StyleSheet.create({
     ...shadow(2, 0.06, 8, 3),
   },
   cardFollowing: {
-    borderColor: '#E8743B',
+    borderColor: '#B5501B',
     ...shadow(0, 0.12, 0, 4),
   },
 
@@ -357,7 +357,7 @@ const styles = StyleSheet.create({
   avatar: { width: 44, height: 44, borderRadius: 22 },
   avatarFallback: {
     width: 44, height: 44, borderRadius: 22,
-    backgroundColor: '#E8743B', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#B5501B', alignItems: 'center', justifyContent: 'center',
   },
   avatarInitial: { color: '#fff', fontSize: 18, fontWeight: '700' },
 
@@ -367,18 +367,18 @@ const styles = StyleSheet.create({
   },
   username: { fontSize: 13, fontWeight: '700', color: '#111827', maxWidth: '100%' },
   destination: { fontSize: 11, color: '#6b7280', maxWidth: '100%' },
-  trips: { fontSize: 11, color: '#9ca3af' },
+  trips: { fontSize: 11, color: '#6b7280' },
 
   followBtn: {
     marginTop: 6,
     width: '100%',
     paddingVertical: 6,
     borderRadius: 999,
-    borderWidth: 1.5, borderColor: '#E8743B',
+    borderWidth: 1.5, borderColor: '#B5501B',
     alignItems: 'center',
   },
-  followBtnActive: { backgroundColor: '#E8743B' },
-  followBtnText: { fontSize: 12, fontWeight: '700', color: '#E8743B' },
+  followBtnActive: { backgroundColor: '#B5501B' },
+  followBtnText: { fontSize: 12, fontWeight: '700', color: '#B5501B' },
   followBtnTextActive: { color: '#fff' },
 
   footer: {
@@ -389,7 +389,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', gap: 8,
   },
   ctaBtn: {
-    width: '100%', backgroundColor: '#E8743B',
+    width: '100%', backgroundColor: '#B5501B',
     borderRadius: 999, paddingVertical: 14, alignItems: 'center',
   },
   ctaBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },

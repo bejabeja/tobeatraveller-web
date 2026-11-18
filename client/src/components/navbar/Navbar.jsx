@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { GoHome, GoSignIn } from "react-icons/go";
 import {
   IoAddOutline,
@@ -122,6 +122,25 @@ const Navbar = ({ onOpenSearch }) => {
     setCreateOpen(false);
   }, [location]);
 
+  const createSheetTitleId = useId();
+  const createSheetRef = useRef(null);
+
+  // A dialog: the focus moves into it, Escape closes it and the focus goes
+  // back to the button that opened it.
+  useEffect(() => {
+    if (!createOpen) return undefined;
+    const previouslyFocused = document.activeElement;
+    createSheetRef.current?.querySelector("button")?.focus();
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") setCreateOpen(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      previouslyFocused?.focus?.();
+    };
+  }, [createOpen]);
+
   // Home's hero photo runs full-bleed behind the marketing nav (see
   // .marketing-navbar--overlay); the nav starts transparent over it and
   // becomes a solid bar once the hero is scrolled past.
@@ -175,7 +194,7 @@ const Navbar = ({ onOpenSearch }) => {
     <>
       {/* Mobile: fixed top header */}
       {!isAuthRoute && (
-        <div className={`mobile-header${isAuthenticated ? "" : " mobile-header--guest"}`}>
+        <header className={`mobile-header${isAuthenticated ? "" : " mobile-header--guest"}`}>
           {/* Was the bottom-nav's "+"; on Van Log/Supplies/Packing checklist/
               Life diary that row also shows the page's own "+ Add x" button,
               so the same icon in the same bar opened two unrelated things.
@@ -214,7 +233,7 @@ const Navbar = ({ onOpenSearch }) => {
               <Link to="/register" className="btn btn--primary mobile-header__register">{t("nav.signUpShort")}</Link>
             </div>
           )}
-        </div>
+        </header>
       )}
 
       {/* Desktop: fixed left sidebar for the logged-in app experience */}
@@ -352,33 +371,40 @@ const Navbar = ({ onOpenSearch }) => {
       {/* Create sheet */}
       {createOpen && (
         <div className="create-sheet__backdrop" onClick={() => setCreateOpen(false)}>
-          <div className="create-sheet" onClick={e => e.stopPropagation()}>
-            <div className="create-sheet__handle" />
-            <p className="create-sheet__title">{t("nav.createSheetTitle")}</p>
+          <div
+            ref={createSheetRef}
+            className="create-sheet"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={createSheetTitleId}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="create-sheet__handle" aria-hidden="true" />
+            <h2 id={createSheetTitleId} className="create-sheet__title">{t("nav.createSheetTitle")}</h2>
 
-            <button className="create-sheet__option create-sheet__option--itinerary" onClick={() => handleCreate("/create-itinerary")}>
+            <button type="button" className="create-sheet__option create-sheet__option--itinerary" onClick={() => handleCreate("/create-itinerary")}>
               <div className="create-sheet__option-icon">
-                <IoListOutline size={24} />
+                <IoListOutline size={24} aria-hidden="true" />
               </div>
               <div className="create-sheet__option-text">
                 <strong>{t("nav.createSheetItinerary")}</strong>
                 <span>{t("nav.createSheetItineraryDesc")}</span>
               </div>
-              <IoChevronForwardOutline size={16} className="create-sheet__option-arrow" />
+              <IoChevronForwardOutline size={16} className="create-sheet__option-arrow" aria-hidden="true" />
             </button>
 
-            <button className="create-sheet__option create-sheet__option--experience" onClick={() => handleCreate("/create-experience")}>
+            <button type="button" className="create-sheet__option create-sheet__option--experience" onClick={() => handleCreate("/create-experience")}>
               <div className="create-sheet__option-icon">
-                <IoFlashOutline size={24} />
+                <IoFlashOutline size={24} aria-hidden="true" />
               </div>
               <div className="create-sheet__option-text">
                 <strong>{t("nav.createSheetExperience")}</strong>
                 <span>{t("nav.createSheetExperienceDesc")}</span>
               </div>
-              <IoChevronForwardOutline size={16} className="create-sheet__option-arrow" />
+              <IoChevronForwardOutline size={16} className="create-sheet__option-arrow" aria-hidden="true" />
             </button>
 
-            <button className="create-sheet__cancel" onClick={() => setCreateOpen(false)}>
+            <button type="button" className="create-sheet__cancel" onClick={() => setCreateOpen(false)}>
               {t("nav.createSheetCancel")}
             </button>
           </div>

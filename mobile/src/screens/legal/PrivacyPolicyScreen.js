@@ -128,20 +128,20 @@ const styles = StyleSheet.create({
   headerTitle: { flex: 1, textAlign: 'center', fontSize: 16, fontWeight: '800', color: '#111827' },
 
   body: { padding: 20 },
-  meta: { fontSize: 12, color: '#9ca3af', marginBottom: 20 },
+  meta: { fontSize: 12, color: '#6b7280', marginBottom: 20 },
 
   section: { marginBottom: 22 },
   sectionTitle: { fontSize: 15, fontWeight: '700', color: '#111827', marginBottom: 8 },
   p: { fontSize: 13.5, color: '#374151', lineHeight: 20, marginBottom: 8 },
   bold: { fontWeight: '700', color: '#111827' },
-  link: { color: '#E8743B', fontWeight: '600' },
+  link: { color: '#B5501B', fontWeight: '600' },
 
   bulletRow: { flexDirection: 'row', gap: 8, marginBottom: 6 },
-  bulletDot: { fontSize: 13.5, color: '#9ca3af' },
+  bulletDot: { fontSize: 13.5, color: '#6b7280' },
   bulletText: { fontSize: 13.5, color: '#374151', lineHeight: 20 },
 
   footerLink: { alignItems: 'center', marginTop: 12, paddingVertical: 10 },
-  footerLinkText: { color: '#E8743B', fontWeight: '600', fontSize: 14 },
+  footerLinkText: { color: '#B5501B', fontWeight: '600', fontSize: 14 },
 });
 
 export default PrivacyPolicyScreen;

@@ -38,8 +38,7 @@ import {
 import { initFilters } from "./store/filters/filterActions";
 import { loadMyUserInfo } from "./store/user/userInfoActions";
 
-// Code-split per route so the initial bundle isn't the whole app; Home stays eager
-// since it's the most common cold-landing page and shouldn't wait on a chunk fetch.
+// Code-split per route so the initial bundle isn't the whole app.
 const Home = lazy(() => import("./pages/home/Home"));
 const Login = lazy(() => import("./pages/auth/Login"));
 const Signup = lazy(() => import("./pages/auth/Signup"));

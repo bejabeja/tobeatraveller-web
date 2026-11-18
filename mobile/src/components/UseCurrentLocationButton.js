@@ -2,7 +2,7 @@ import { ActivityIndicator, StyleSheet, Text, TouchableOpacity } from 'react-nat
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 
-export const UseCurrentLocationButton = ({ onPress, loading, color = '#E8743B' }) => {
+export const UseCurrentLocationButton = ({ onPress, loading, color = '#B5501B' }) => {
   const { t } = useTranslation();
 
   return (

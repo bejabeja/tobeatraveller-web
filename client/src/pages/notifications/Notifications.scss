@@ -1,4 +1,5 @@
 .notifications {
+  width: 100%;
   max-width: 640px;
   padding-top: 2rem;
   padding-bottom: 3rem;
@@ -15,7 +16,6 @@
     font-weight: 800;
     color: var(--text-color);
     margin: 0;
-    width: auto;
   }
 
   &__count {
@@ -63,7 +63,6 @@
   &__empty-icon {
     font-size: 3rem;
     color: var(--border-color);
-    width: auto;
     margin-bottom: 0.5rem;
   }
 
@@ -78,7 +77,6 @@
     .error-message {
       color: var(--text-secondary-color);
       margin: 0;
-      width: auto;
     }
   }
 

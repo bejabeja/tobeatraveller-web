@@ -194,7 +194,7 @@ const Field = ({ label, error, right, ...inputProps }) => (
   <View style={fieldStyles.wrapper}>
     <Text style={fieldStyles.label}>{label}</Text>
     <View style={[fieldStyles.row, error && fieldStyles.rowError]}>
-      <TextInput style={fieldStyles.input} placeholderTextColor="#9ca3af" accessibilityLabel={label} {...inputProps} />
+      <TextInput style={fieldStyles.input} placeholderTextColor="#6b7280" accessibilityLabel={label} {...inputProps} />
       {right}
     </View>
     {error ? <Text style={fieldStyles.error}>{error}</Text> : null}
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
   authError: { color: '#dc2626', fontSize: 13, textAlign: 'center', marginBottom: 4 },
 
   btn: {
-    backgroundColor: '#E8743B', borderRadius: 999,
+    backgroundColor: '#B5501B', borderRadius: 999,
     paddingVertical: 15, alignItems: 'center', marginTop: 8, marginBottom: 10,
   },
   btnDisabled: { opacity: 0.6 },
@@ -260,8 +260,8 @@ const styles = StyleSheet.create({
   divider: { height: 1, backgroundColor: '#e5e7eb', marginVertical: 16 },
 
   link: { textAlign: 'center', color: '#6b7280', fontSize: 14, marginBottom: 10 },
-  linkAccent: { color: '#E8743B', fontWeight: '600' },
-  browse: { textAlign: 'center', color: '#9ca3af', fontSize: 13 },
+  linkAccent: { color: '#B5501B', fontWeight: '600' },
+  browse: { textAlign: 'center', color: '#6b7280', fontSize: 13 },
 
   eyeBtn: { paddingHorizontal: 12 },
   eyeIcon: { fontSize: 16 },

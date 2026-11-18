@@ -1,18 +1,15 @@
 .van-log-stats {
-  width: auto;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 
   &__section {
-    width: auto;
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
   }
 
   &__currency {
-    width: auto;
     font-size: 0.85rem;
     font-weight: 700;
     letter-spacing: 0.04em;
@@ -20,14 +17,12 @@
   }
 
   &__kpis {
-    width: auto;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0.75rem;
   }
 
   &__kpi {
-    width: auto;
     display: flex;
     flex-direction: column;
     gap: 0.2rem;
@@ -40,7 +35,6 @@
 
   &__kpi-label,
   &__block-title {
-    width: auto;
     font-size: 0.7rem;
     font-weight: 700;
     text-transform: uppercase;
@@ -49,7 +43,6 @@
   }
 
   &__kpi-value {
-    width: auto;
     font-size: 1.25rem;
     font-weight: 800;
     color: var(--text-color);
@@ -58,7 +51,6 @@
   }
 
   &__block {
-    width: auto;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
@@ -70,7 +62,6 @@
 
   // Spending over time
   &__chart {
-    width: auto;
     display: flex;
     align-items: flex-end;
     justify-content: center;
@@ -79,7 +70,6 @@
   }
 
   &__chart-col {
-    width: auto;
     flex: 1;
     min-width: 0;
     max-width: 64px;
@@ -90,7 +80,6 @@
   }
 
   &__chart-track {
-    width: auto;
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -102,7 +91,6 @@
   }
 
   &__chart-value {
-    width: auto;
     font-size: 0.65rem;
     font-weight: 700;
     text-align: center;
@@ -119,7 +107,6 @@
   }
 
   &__chart-label {
-    width: auto;
     height: 1em;
     font-size: 0.65rem;
     line-height: 1;
@@ -131,7 +118,6 @@
 
   // Ranked lists
   &__rows {
-    width: auto;
     display: flex;
     flex-direction: column;
     gap: 0.85rem;
@@ -141,21 +127,18 @@
   }
 
   &__row {
-    width: auto;
     display: flex;
     flex-direction: column;
     gap: 0.35rem;
   }
 
   &__row-line {
-    width: auto;
     display: flex;
     align-items: baseline;
     gap: 0.6rem;
   }
 
   &__row-label {
-    width: auto;
     flex: 1;
     min-width: 0;
     font-size: 0.9rem;
@@ -165,14 +148,12 @@
   }
 
   &__row-share {
-    width: auto;
     font-size: 0.8rem;
     color: var(--text-secondary-color);
     font-variant-numeric: tabular-nums;
   }
 
   &__row-amount {
-    width: auto;
     min-width: 5rem;
     font-size: 0.9rem;
     text-align: right;
@@ -181,7 +162,6 @@
   }
 
   &__row-track {
-    width: auto;
     height: 6px;
     background: var(--border-color);
     border-radius: 3px;
@@ -200,7 +180,6 @@
   }
 
   &__row-note {
-    width: auto;
     font-size: 0.75rem;
     font-weight: 600;
     color: var(--text-secondary-color);
@@ -212,18 +191,15 @@
 
   // Fuel price
   &__fuel-summary {
-    width: auto;
     font-size: 0.85rem;
     color: var(--text-secondary-color);
 
     strong {
-      width: auto;
       color: var(--text-color);
     }
   }
 
   &__fuel-chart {
-    width: auto;
     display: flex;
     align-items: flex-end;
     gap: 0.75rem;
@@ -232,7 +208,6 @@
   }
 
   &__fuel-col {
-    width: auto;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
@@ -241,7 +216,6 @@
   }
 
   &__fuel-value {
-    width: auto;
     font-size: 0.7rem;
     font-weight: 700;
     color: var(--text-color);
@@ -263,7 +237,6 @@
   }
 
   &__fuel-date {
-    width: auto;
     font-size: 0.65rem;
     color: var(--text-secondary-color);
     white-space: nowrap;

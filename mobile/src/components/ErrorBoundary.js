@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
   icon: { fontSize: 44, marginBottom: 12 },
   title: { fontSize: 20, fontWeight: '800', color: '#111827', marginBottom: 8, textAlign: 'center' },
   message: { fontSize: 15, color: '#6b7280', textAlign: 'center', marginBottom: 24 },
-  btn: { backgroundColor: '#E8743B', borderRadius: 999, paddingVertical: 12, paddingHorizontal: 28 },
+  btn: { backgroundColor: '#B5501B', borderRadius: 999, paddingVertical: 12, paddingHorizontal: 28 },
   btnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
 });
 

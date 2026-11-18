@@ -6,7 +6,6 @@ const CustomToaster = () => {
     <Toaster
       position="bottom-right"
       containerClassName="app-toaster" // gives extra bottom clearance on mobile, where the fixed bottom-nav bar would otherwise cover it (see CustomToaster.scss)
-      containerStyle={{ width: "auto" }} // works around the global `* { width: 100% }` reset (see index.scss), which otherwise stretches this fixed container past the viewport edge
       toastOptions={{
         style: {
           display: "flex",

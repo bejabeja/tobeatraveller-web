@@ -326,7 +326,7 @@ const SuppliesScreen = ({ navigation }) => {
             style={[styles.tabBtn, tab === 'shopping' && styles.tabBtnActive]}
             onPress={() => setTab('shopping')}
           >
-            <Ionicons name="cart-outline" size={15} color={tab === 'shopping' ? '#E8743B' : '#6b7280'} />
+            <Ionicons name="cart-outline" size={15} color={tab === 'shopping' ? '#B5501B' : '#6b7280'} />
             <Text style={[styles.tabText, tab === 'shopping' && styles.tabTextActive]}>{s('shoppingListTab')}</Text>
             {shoppingList.length > 0 && (
               <View style={styles.tabCount}><Text style={styles.tabCountText}>{shoppingList.length}</Text></View>
@@ -336,7 +336,7 @@ const SuppliesScreen = ({ navigation }) => {
             style={[styles.tabBtn, tab === 'inventory' && styles.tabBtnActive]}
             onPress={() => setTab('inventory')}
           >
-            <Ionicons name="file-tray-stacked-outline" size={15} color={tab === 'inventory' ? '#E8743B' : '#6b7280'} />
+            <Ionicons name="file-tray-stacked-outline" size={15} color={tab === 'inventory' ? '#B5501B' : '#6b7280'} />
             <Text style={[styles.tabText, tab === 'inventory' && styles.tabTextActive]}>{s('inventoryTab')}</Text>
             {inventory.length > 0 && (
               <View style={styles.tabCount}><Text style={styles.tabCountText}>{inventory.length}</Text></View>
@@ -352,7 +352,7 @@ const SuppliesScreen = ({ navigation }) => {
               placeholder={s('searchPlaceholder')}
               value={search}
               onChangeText={setSearch}
-              placeholderTextColor="#9ca3af"
+              placeholderTextColor="#6b7280"
               autoCorrect={false}
             />
             {search.length > 0 && (
@@ -367,7 +367,7 @@ const SuppliesScreen = ({ navigation }) => {
           <TextInput
             style={styles.addInput}
             placeholder={quickAddPlaceholder}
-            placeholderTextColor="#9ca3af"
+            placeholderTextColor="#6b7280"
             value={newItemName}
             onChangeText={setNewItemName}
             onSubmitEditing={() => addQuickItem(newItemName)}
@@ -391,7 +391,7 @@ const SuppliesScreen = ({ navigation }) => {
                 <Text style={styles.suggestionMeta} numberOfLines={1}>
                   {categoryLabel(suggestion.category)} · {unitLabel(suggestion.unit, 1)}
                 </Text>
-                <Ionicons name="add" size={18} color="#E8743B" />
+                <Ionicons name="add" size={18} color="#B5501B" />
               </TouchableOpacity>
             ))}
           </View>
@@ -434,7 +434,7 @@ const SuppliesScreen = ({ navigation }) => {
         stickySectionHeadersEnabled={false}
         keyboardShouldPersistTaps="handled"
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#E8743B" />
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#B5501B" />
         }
         renderSectionHeader={({ section }) => section.category ? (
           <View style={styles.sectionHeader}>
@@ -485,7 +485,7 @@ const SuppliesScreen = ({ navigation }) => {
                   accessibilityState={{ checked: isPending }}
                   accessibilityLabel={`${s('markPurchased')}: ${item.name}`}
                 >
-                  <Ionicons name={isPending ? 'checkbox' : 'square-outline'} size={22} color={isPending ? '#E8743B' : '#9ca3af'} />
+                  <Ionicons name={isPending ? 'checkbox' : 'square-outline'} size={22} color={isPending ? '#B5501B' : '#9ca3af'} />
                   {text}
                 </TouchableOpacity>
               ) : (
@@ -611,7 +611,7 @@ const styles = StyleSheet.create({
   title: { flex: 1, fontSize: 20, fontWeight: '800', color: '#111827' },
   purpose: { fontSize: 13, color: '#6b7280', paddingHorizontal: 16, paddingBottom: 12 },
   newBtn: {
-    backgroundColor: '#E8743B', borderRadius: 999,
+    backgroundColor: '#B5501B', borderRadius: 999,
     paddingVertical: 7, paddingHorizontal: 14,
   },
   newBtnText: { color: '#fff', fontWeight: '700', fontSize: 13 },
@@ -623,11 +623,11 @@ const styles = StyleSheet.create({
     borderRadius: 999, borderWidth: 1.5, borderColor: '#e5e7eb',
     backgroundColor: '#f9fafb',
   },
-  tabBtnActive: { borderColor: '#E8743B', backgroundColor: '#FFF0E8' },
+  tabBtnActive: { borderColor: '#B5501B', backgroundColor: '#FFF0E8' },
   tabText: { fontSize: 13, color: '#6b7280', fontWeight: '600' },
-  tabTextActive: { color: '#E8743B' },
+  tabTextActive: { color: '#B5501B' },
   tabCount: {
-    backgroundColor: '#E8743B', borderRadius: 999,
+    backgroundColor: '#B5501B', borderRadius: 999,
     paddingVertical: 1, paddingHorizontal: 6, minWidth: 18, alignItems: 'center',
   },
   tabCountText: { color: '#fff', fontSize: 11, fontWeight: '700' },
@@ -640,7 +640,7 @@ const styles = StyleSheet.create({
   },
   searchIcon: { fontSize: 14 },
   searchInput: { flex: 1, paddingVertical: 10, fontSize: 14, color: '#111827' },
-  clearText: { color: '#9ca3af', fontSize: 13, padding: 4 },
+  clearText: { color: '#6b7280', fontSize: 13, padding: 4 },
 
   addRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingBottom: 4 },
   addInput: {
@@ -650,16 +650,16 @@ const styles = StyleSheet.create({
   },
   addBtn: {
     width: 42, height: 42, borderRadius: 10,
-    backgroundColor: '#E8743B', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#B5501B', alignItems: 'center', justifyContent: 'center',
   },
   categoryChips: { gap: 6, paddingHorizontal: 16, paddingTop: 6 },
   chip: {
     paddingVertical: 6, paddingHorizontal: 12, borderRadius: 999,
     borderWidth: 1.5, borderColor: '#e5e7eb', backgroundColor: '#f9fafb',
   },
-  chipSelected: { borderColor: '#E8743B', backgroundColor: '#fff5ef' },
+  chipSelected: { borderColor: '#B5501B', backgroundColor: '#fff5ef' },
   chipText: { fontSize: 12, color: '#6b7280', fontWeight: '600' },
-  chipTextSelected: { color: '#E8743B' },
+  chipTextSelected: { color: '#B5501B' },
 
   suggestions: {
     marginHorizontal: 16, marginTop: 6,
@@ -693,12 +693,12 @@ const styles = StyleSheet.create({
   rowName: { fontSize: 15, fontWeight: '600', color: '#111827' },
   rowNotes: { fontSize: 12, color: '#6b7280' },
   rowAmount: { fontSize: 13, color: '#6b7280' },
-  rowChecked: { color: '#9ca3af', textDecorationLine: 'line-through' },
+  rowChecked: { color: '#6b7280', textDecorationLine: 'line-through' },
   useBtn: {
     borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 999,
     paddingVertical: 4, paddingHorizontal: 12,
   },
-  useBtnText: { fontSize: 12, fontWeight: '600', color: '#E8743B' },
+  useBtnText: { fontSize: 12, fontWeight: '600', color: '#B5501B' },
   menuBtn: { padding: 2 },
 
   undoStack: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 16, gap: 8 },
@@ -709,7 +709,7 @@ const styles = StyleSheet.create({
     ...shadow(4, 0.2, 10, 6),
   },
   undoText: { flex: 1, color: '#fff', fontSize: 13, marginRight: 12 },
-  undoBtnText: { color: '#E8743B', fontSize: 13, fontWeight: '700' },
+  undoBtnText: { color: '#B5501B', fontSize: 13, fontWeight: '700' },
 
   empty: { alignItems: 'center', paddingTop: 56, paddingHorizontal: 32 },
   emptyEmoji: { fontSize: 40, marginBottom: 12 },
@@ -736,7 +736,7 @@ const styles = StyleSheet.create({
   promptCancelBtn: { paddingVertical: 10, paddingHorizontal: 14 },
   promptCancelText: { fontSize: 14, color: '#6b7280', fontWeight: '600' },
   promptConfirmBtn: {
-    backgroundColor: '#E8743B', borderRadius: 999,
+    backgroundColor: '#B5501B', borderRadius: 999,
     paddingVertical: 10, paddingHorizontal: 20,
     minWidth: 84, alignItems: 'center',
   },

@@ -79,7 +79,7 @@ const CommunityScreen = ({ navigation }) => {
               value={search}
               onChangeText={setSearch}
               placeholder={t('community.searchPlaceholder')}
-              placeholderTextColor="#9ca3af"
+              placeholderTextColor="#6b7280"
               autoCapitalize="none"
               autoCorrect={false}
               returnKeyType="search"
@@ -136,7 +136,7 @@ const CommunityScreen = ({ navigation }) => {
         contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 24 }]}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={loading && !loadingMore} onRefresh={handleRefresh} tintColor="#E8743B" />
+          <RefreshControl refreshing={loading && !loadingMore} onRefresh={handleRefresh} tintColor="#B5501B" />
         }
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.4}
@@ -164,7 +164,7 @@ const CommunityScreen = ({ navigation }) => {
         }
         ListFooterComponent={
           loadingMore
-            ? <ActivityIndicator color="#E8743B" style={{ marginVertical: 16 }} />
+            ? <ActivityIndicator color="#B5501B" style={{ marginVertical: 16 }} />
             // The end of the list, however short: a way to bring more people in.
             : isAuthenticated && !hasMore && !loading && (users ?? []).length > 0
               ? search
@@ -306,7 +306,7 @@ const styles = StyleSheet.create({
   headerTitle: { fontSize: 24, fontWeight: '800', color: '#111827' },
   subtitle: { fontSize: 13, color: '#6b7280', marginTop: -4 },
   memberCount: {
-    fontSize: 12, fontWeight: '600', color: '#E8743B',
+    fontSize: 12, fontWeight: '600', color: '#B5501B',
     backgroundColor: '#FFF0E8', borderRadius: 999,
     paddingVertical: 2, paddingHorizontal: 8,
   },
@@ -321,14 +321,14 @@ const styles = StyleSheet.create({
   searchIcon: { fontSize: 14 },
   searchField: { flex: 1, paddingVertical: 10, fontSize: 14, color: '#111827' },
   clearBtn: { padding: 4 },
-  clearBtnText: { color: '#9ca3af', fontSize: 13 },
+  clearBtnText: { color: '#6b7280', fontSize: 13 },
 
   sortRow: { flexDirection: 'row', gap: 8 },
   sortChip: {
     paddingVertical: 5, paddingHorizontal: 14, borderRadius: 999,
     borderWidth: 1, borderColor: '#e5e7eb', backgroundColor: '#fff',
   },
-  sortChipSelected: { backgroundColor: '#E8743B', borderColor: '#E8743B' },
+  sortChipSelected: { backgroundColor: '#B5501B', borderColor: '#B5501B' },
   sortChipText: { fontSize: 13, color: '#6b7280', fontWeight: '500' },
   sortChipTextSelected: { color: '#fff', fontWeight: '600' },
 
@@ -345,15 +345,15 @@ const styles = StyleSheet.create({
   emptyTitle: { fontSize: 16, fontWeight: '700', color: '#1f2937', textAlign: 'center', marginBottom: 6 },
   emptyHint: { fontSize: 13, lineHeight: 19, color: '#6b7280', textAlign: 'center', marginBottom: 14 },
   searchInvite: { alignItems: 'center', marginTop: 12 },
-  searchInviteLink: { fontSize: 14, fontWeight: '700', color: '#E8743B', marginTop: -8 },
+  searchInviteLink: { fontSize: 14, fontWeight: '700', color: '#B5501B', marginTop: -8 },
   invite: {
     alignItems: 'center', gap: 8, marginTop: 8, padding: 20,
-    borderWidth: 1.5, borderStyle: 'dashed', borderColor: '#E8743B', borderRadius: 16,
+    borderWidth: 1.5, borderStyle: 'dashed', borderColor: '#B5501B', borderRadius: 16,
     backgroundColor: '#fff7f2',
   },
   inviteTitle: { fontSize: 16, fontWeight: '700', color: '#1f2937', textAlign: 'center' },
   inviteText: { fontSize: 13, lineHeight: 19, color: '#6b7280', textAlign: 'center' },
-  inviteButton: { marginTop: 4, paddingVertical: 10, paddingHorizontal: 20, borderRadius: 999, backgroundColor: '#E8743B' },
+  inviteButton: { marginTop: 4, paddingVertical: 10, paddingHorizontal: 20, borderRadius: 999, backgroundColor: '#B5501B' },
   inviteButtonText: { fontSize: 14, fontWeight: '700', color: '#fff' },
 
   // Guest CTA
@@ -364,7 +364,7 @@ const styles = StyleSheet.create({
   },
   guestCtaTitle: { fontSize: 15, fontWeight: '700', color: '#111827', marginBottom: 10 },
   guestCtaBtns: { flexDirection: 'row', gap: 10 },
-  primaryBtn: { backgroundColor: '#E8743B', borderRadius: 999, paddingVertical: 9, paddingHorizontal: 20 },
+  primaryBtn: { backgroundColor: '#B5501B', borderRadius: 999, paddingVertical: 9, paddingHorizontal: 20 },
   primaryBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
   secondaryBtn: { borderWidth: 1.5, borderColor: '#e5e7eb', borderRadius: 999, paddingVertical: 9, paddingHorizontal: 20 },
   secondaryBtnText: { color: '#374151', fontWeight: '600', fontSize: 14 },
@@ -383,18 +383,18 @@ const styles = StyleSheet.create({
   userCardAvatar: { width: 56, height: 56, borderRadius: 28 },
   userCardAvatarFallback: {
     width: 56, height: 56, borderRadius: 28,
-    backgroundColor: '#E8743B', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#B5501B', alignItems: 'center', justifyContent: 'center',
   },
   userCardAvatarInitial: { color: '#fff', fontWeight: '700', fontSize: 20 },
   userCardBody: { flex: 1, alignItems: 'center', paddingTop: 6, paddingHorizontal: 10, paddingBottom: 10, gap: 3 },
   userCardNameRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, maxWidth: '100%' },
   userCardUsername: { fontSize: 13, fontWeight: '700', color: '#111827', flexShrink: 1 },
   officialBadge: {
-    width: 14, height: 14, borderRadius: 7,
-    backgroundColor: '#E8743B', alignItems: 'center', justifyContent: 'center',
+    width: 16, height: 16, borderRadius: 8,
+    backgroundColor: '#B5501B', alignItems: 'center', justifyContent: 'center',
   },
-  officialText: { color: '#fff', fontSize: 8, fontWeight: '700' },
-  userCardLocation: { fontSize: 11, color: '#9ca3af', maxWidth: '100%' },
+  officialText: { color: '#fff', fontSize: 10, fontWeight: '700' },
+  userCardLocation: { fontSize: 11, color: '#6b7280', maxWidth: '100%' },
   userCardTagline: { fontSize: 12, lineHeight: 16, color: '#374151', textAlign: 'center' },
   userCardTrips: { marginTop: 'auto', fontSize: 11, fontWeight: '600', color: '#6b7280' },
   followBtn: {

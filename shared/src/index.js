@@ -87,6 +87,7 @@ export * from './utils/homeTab.js';
 export * from './utils/constants/packingTemplates.js';
 export * from './utils/packingLists.js';
 export * from './utils/experienceDates.js';
+export * from './utils/experienceStepNote.js';
 export * from './utils/celebrations.js';
 export * from './utils/analyticsEvents.js';
 export * from './utils/passportMap.js';

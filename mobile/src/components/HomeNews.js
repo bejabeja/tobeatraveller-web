@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
   },
   header: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', paddingBottom: 4 },
   title: { fontSize: 17, fontWeight: '800', color: '#111827' },
-  seeAll: { fontSize: 13, fontWeight: '600', color: '#E8743B' },
+  seeAll: { fontSize: 13, fontWeight: '600', color: '#B5501B' },
 });
 
 export default HomeNews;

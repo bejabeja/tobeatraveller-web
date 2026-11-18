@@ -49,7 +49,6 @@
   }
 
   span {
-    width: auto;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -67,16 +66,11 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  width: auto;
   flex-shrink: 0;
 }
 
-// The global reset (index.scss `* { width: 100%; }`) means anything meant to
-// shrink to its content, rather than fill its flex/block parent, has to opt
-// out with an explicit width here (also applies to .topbar__account below).
 .topbar__notif-wrap {
   position: relative;
-  width: auto;
 }
 
 .topbar__notif {
@@ -98,14 +92,12 @@
 
 .topbar__account {
   position: relative;
-  width: auto;
 }
 
 .topbar__trigger {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  width: auto;
   background: none;
   border: none;
   cursor: pointer;
@@ -114,9 +106,6 @@
   color: var(--text-color);
   padding: 0;
 
-  span {
-    width: auto;
-  }
 }
 
 // Same chevron as LanguageSwitcher, the app's existing "this opens a
@@ -151,13 +140,18 @@
   opacity: 0;
   transform: translateY(-6px);
   pointer-events: none;
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  // Hidden for the keyboard and screen readers too while closed, only once
+  // the fade-out has ended.
+  visibility: hidden;
+  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s linear 0.15s;
   z-index: 100;
 
   &--open {
     opacity: 1;
     transform: translateY(0);
     pointer-events: auto;
+    visibility: visible;
+    transition-delay: 0s;
   }
 }
 

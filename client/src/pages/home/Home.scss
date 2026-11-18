@@ -62,7 +62,10 @@
   }
 }
 
-.home__users,
+.home__users {
+  width: 100%;
+}
+
 .home__map-placeholder {
   // The height of the map, so the page does not jump when it arrives.
   width: 100%;
@@ -119,6 +122,9 @@
 }
 
 .home__see-all {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--primary-color);

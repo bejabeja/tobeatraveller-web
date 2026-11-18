@@ -19,6 +19,7 @@ jest.mock('../../screens/itinerary/ItineraryFormShared', () => ({
 }));
 jest.mock('@tobeatraveller/shared', () => ({
   ...jest.requireActual('../../../../shared/src/utils/experienceDates.js'),
+  ...jest.requireActual('../../../../shared/src/utils/experienceStepNote.js'),
   ...jest.requireActual('../../../../shared/src/utils/constants/constants.js'),
   ...jest.requireActual('../../../../shared/src/utils/constants/colors.js'),
   EXISTING_ITINERARY_VISIBILITY_FALLBACK: true,

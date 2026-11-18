@@ -19,6 +19,9 @@ export const checkUsernameAvailable = async (username) => {
 // down, rate limited, no connection) throws: "couldn't check" and "logged
 // out" need different handling (see initAuthUser).
 export const getUserForAuth = async () => {
+    // Without an access token authFetch would not even try to renew the
+    // session, so the API could only answer 401.
+    if (!(await tokenStorage.getItem('access_token'))) return null;
     const response = await authFetch(`${baseUrl()}/me`, {
         headers: { 'Content-Type': 'application/json' },
     });

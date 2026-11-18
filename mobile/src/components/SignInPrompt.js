@@ -73,10 +73,10 @@ const styles = StyleSheet.create({
   title: { fontSize: 18, fontWeight: '800', color: '#111827', marginBottom: 6 },
   message: { fontSize: 14, color: '#6b7280', lineHeight: 20, marginBottom: 18 },
   button: { borderRadius: 999, paddingVertical: 13, alignItems: 'center', marginBottom: 10 },
-  primaryButton: { backgroundColor: '#E8743B' },
+  primaryButton: { backgroundColor: '#B5501B' },
   secondaryButton: { borderWidth: 1.5, borderColor: '#e5e7eb', backgroundColor: '#fff' },
   primaryText: { color: '#fff', fontWeight: '700', fontSize: 15 },
   secondaryText: { color: '#374151', fontWeight: '600', fontSize: 15 },
   notNow: { alignItems: 'center', paddingVertical: 8 },
-  notNowText: { color: '#9ca3af', fontWeight: '600', fontSize: 14 },
+  notNowText: { color: '#6b7280', fontWeight: '600', fontSize: 14 },
 });

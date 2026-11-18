@@ -184,11 +184,11 @@ const LifeDiaryScreen = ({ navigation }) => {
         keyExtractor={item => item.id}
         onEndReached={loadMore}
         onEndReachedThreshold={0.5}
-        ListFooterComponent={loadingMore ? <ActivityIndicator color="#E8743B" style={styles.loadingMore} /> : null}
+        ListFooterComponent={loadingMore ? <ActivityIndicator color="#B5501B" style={styles.loadingMore} /> : null}
         contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 24 }]}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#E8743B" />
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#B5501B" />
         }
         ListEmptyComponent={
           !loading ? (
@@ -236,7 +236,7 @@ const LifeDiaryScreen = ({ navigation }) => {
                     <Ionicons name="pencil-outline" size={16} color="#6b7280" />
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.entryActionBtn} hitSlop={ACTION_HIT_SLOP} onPress={() => handleDelete(item)} accessibilityRole="button" accessibilityLabel={t('common.delete')}>
-                    <Ionicons name="trash-outline" size={16} color="#ef4444" />
+                    <Ionicons name="trash-outline" size={16} color="#dc2626" />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
   title: { flex: 1, fontSize: 20, fontWeight: '800', color: '#111827' },
   purpose: { fontSize: 13, color: '#6b7280', paddingHorizontal: 16, paddingVertical: 8, backgroundColor: '#fff' },
   newBtn: {
-    backgroundColor: '#E8743B', borderRadius: 999,
+    backgroundColor: '#B5501B', borderRadius: 999,
     paddingVertical: 7, paddingHorizontal: 14,
   },
   newBtnText: { color: '#fff', fontWeight: '700', fontSize: 13 },
@@ -329,7 +329,7 @@ const styles = StyleSheet.create({
   entryPlace: { flex: 1 },
   entryLocationRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   entryLocation: { fontSize: 13, color: '#374151', fontWeight: '600' },
-  entryDate: { fontSize: 12, color: '#9ca3af', marginTop: 2 },
+  entryDate: { fontSize: 12, color: '#6b7280', marginTop: 2 },
   entryActions: { flexDirection: 'row', gap: 12 },
   entryActionBtn: { padding: 2 },
 
@@ -345,7 +345,7 @@ const styles = StyleSheet.create({
   badgeYes: { backgroundColor: '#dcfce7' },
   badgeNo: { backgroundColor: '#fef2f2' },
   badgeText: { fontSize: 11, fontWeight: '700' },
-  badgeTextYes: { color: '#16a34a' },
+  badgeTextYes: { color: '#15803d' },
   badgeTextNo: { color: '#dc2626' },
 
   details: { marginTop: 10, gap: 6 },
@@ -353,12 +353,12 @@ const styles = StyleSheet.create({
   detailLabel: { fontWeight: '700', color: '#111827' },
   memories: { fontSize: 13, color: '#374151', lineHeight: 20 },
 
-  readMore: { fontSize: 13, color: '#E8743B', fontWeight: '600', marginTop: 10 },
+  readMore: { fontSize: 13, color: '#B5501B', fontWeight: '600', marginTop: 10 },
 
   empty: { alignItems: 'center', paddingTop: 56, paddingHorizontal: 32 },
   emptyEmoji: { fontSize: 40, marginBottom: 12 },
   emptyTitle: { fontSize: 15, color: '#6b7280', textAlign: 'center' },
-  emptyBtn: { backgroundColor: '#E8743B', borderRadius: 999, paddingVertical: 10, paddingHorizontal: 20, marginTop: 16 },
+  emptyBtn: { backgroundColor: '#B5501B', borderRadius: 999, paddingVertical: 10, paddingHorizontal: 20, marginTop: 16 },
   emptyBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
 });
 

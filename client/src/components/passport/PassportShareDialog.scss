@@ -1,4 +1,5 @@
 .passport-share {
+  width: 100%;
   max-width: 380px;
   // Taller than a phone or a laptop screen with every option on: it scrolls
   // itself instead of being cut off.
@@ -71,13 +72,11 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    width: auto;
     font-size: 0.9rem;
     color: var(--text-color);
     cursor: pointer;
 
     input {
-      width: auto;
       margin: 0;
     }
 
@@ -109,7 +108,6 @@
   }
 
   &__switch {
-    width: auto;
     padding: 0;
     border: none;
     background: none;
@@ -141,7 +139,6 @@
     color: #1b2a41;
 
     span {
-      width: auto;
       flex-shrink: 0;
     }
   }
@@ -149,17 +146,11 @@
   // Side by side on a wide screen, where one column is too tall to fit.
   // Last, so it overrides the rules above.
   @media (min-width: 768px) {
+    width: 100%;
     max-width: 760px;
 
     &__layout {
       display: flex;
-    }
-
-    // Sized by their content, not by the global `width: 100%`, which would
-    // give each column the whole dialog.
-    &__media,
-    &__side {
-      width: auto;
     }
 
     &__media {

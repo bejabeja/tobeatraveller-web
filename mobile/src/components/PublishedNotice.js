@@ -27,13 +27,13 @@ const PublishedNotice = ({ isPublic, onShare, onEdit, onDismiss }) => {
 const styles = StyleSheet.create({
   card: {
     marginBottom: 16, padding: 16, gap: 6,
-    backgroundColor: '#fff', borderRadius: 14, borderLeftWidth: 4, borderLeftColor: '#E8743B',
+    backgroundColor: '#fff', borderRadius: 14, borderLeftWidth: 4, borderLeftColor: '#B5501B',
     borderWidth: 1, borderColor: '#e5e7eb',
   },
   title: { fontSize: 16, fontWeight: '800', color: '#111827' },
   text: { fontSize: 13, color: '#6b7280', lineHeight: 18 },
   actions: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 8 },
-  primary: { backgroundColor: '#E8743B', borderRadius: 999, paddingVertical: 10, paddingHorizontal: 18 },
+  primary: { backgroundColor: '#B5501B', borderRadius: 999, paddingVertical: 10, paddingHorizontal: 18 },
   primaryText: { color: '#fff', fontWeight: '700', fontSize: 14 },
   secondary: { paddingVertical: 10, paddingHorizontal: 8 },
   secondaryText: { color: '#6b7280', fontWeight: '600', fontSize: 14 },

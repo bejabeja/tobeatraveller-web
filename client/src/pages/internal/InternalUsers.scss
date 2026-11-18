@@ -21,6 +21,7 @@
 
   &__search {
     min-width: 240px;
+    width: 100%;
     max-width: 100%;
   }
 
@@ -53,7 +54,6 @@
   }
 
   &__info {
-    width: auto;
     display: flex;
     flex-direction: column;
     flex: 1 1 200px;
@@ -94,7 +94,6 @@
   &__detail,
   &__notice,
   &__delete {
-    width: auto;
     flex-shrink: 0;
     background: none;
     border: none;
@@ -124,8 +123,5 @@
     gap: 1rem;
     margin-top: 1.5rem;
 
-    button {
-      width: auto;
-    }
   }
 }

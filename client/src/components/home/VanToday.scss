@@ -18,14 +18,13 @@
   &__title {
     font-size: 1.25rem;
     margin: 0;
-    width: auto;
   }
 
   &__add {
+    width: auto;
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
-    width: auto;
   }
 
   &__cards {
@@ -56,13 +55,11 @@
   }
 
   &__card-label {
-    width: auto;
     font-size: 0.8rem;
     color: var(--text-secondary-color);
   }
 
   &__card-value {
-    width: auto;
     font-size: 1.15rem;
     color: var(--text-color);
   }

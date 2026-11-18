@@ -57,6 +57,7 @@
   }
 
   &__active-info {
+    width: 100%;
     max-width: 420px;
     margin: 0 auto 20px;
   }
@@ -74,6 +75,7 @@
   // page from their own phone too, so a portrait device frame reads at
   // its natural size instead of needing to zoom into a wide desktop shot.
   &__frame {
+    width: 100%;
     max-width: 300px;
     margin: 0 auto;
     padding: 16px 12px;

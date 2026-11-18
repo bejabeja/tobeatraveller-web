@@ -9,7 +9,6 @@
     left: 0.875rem;
     top: 50%;
     transform: translateY(-50%);
-    width: auto;
     font-size: 1rem;
     color: var(--text-secondary-color);
     pointer-events: none;
@@ -29,13 +28,13 @@
     transition: all 0.25s;
 
     &::placeholder {
-      color: #9ca3af;
+      color: #6b7280;
     }
 
     &:focus {
       outline: none;
       border-color: var(--primary-color);
-      box-shadow: 0 0 0 3px rgba(0, 119, 182, 0.15);
+      box-shadow: 0 0 0 3px rgba(181, 80, 27, 0.15);
     }
 
     // The clear button below replaces the browser's own.

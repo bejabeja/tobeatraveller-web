@@ -35,6 +35,7 @@ import { trackEvent } from '../../utils/analytics';
 const OTHER_CATEGORY_KEY = 'tripCategories.other';
 // What the API says when the trip does not exist or is private, as opposed to a failed request.
 const ITINERARY_NOT_FOUND_MESSAGE = 'Itinerary not found';
+const COMMENT_ACTION_HIT_SLOP = { top: 10, bottom: 10, left: 10, right: 10 };
 
 const ItineraryScreen = ({ route, navigation }) => {
   const { id, commentId: targetCommentId } = route.params;
@@ -538,7 +539,7 @@ const ItineraryScreen = ({ route, navigation }) => {
                 <TextInput
                   style={styles.commentInput}
                   placeholder={t('comments.addComment')}
-                  placeholderTextColor="#9ca3af"
+                  placeholderTextColor="#6b7280"
                   value={commentText}
                   onChangeText={setCommentText}
                   multiline
@@ -603,7 +604,13 @@ const ItineraryScreen = ({ route, navigation }) => {
                     <Text style={styles.commentTime}>{comment.createdAt ? formatTimeAgo(t, comment.createdAt) : comment.postedAgo}</Text>
                   )}
                   {(me?.id === comment.user?.id || me?.id === itinerary.userId) && (
-                    <TouchableOpacity onPress={() => handleDeleteComment(comment.id)} style={styles.commentDeleteBtn}>
+                    <TouchableOpacity
+                      onPress={() => handleDeleteComment(comment.id)}
+                      style={styles.commentDeleteBtn}
+                      hitSlop={COMMENT_ACTION_HIT_SLOP}
+                      accessibilityRole="button"
+                      accessibilityLabel={t('common.delete')}
+                    >
                       <Text style={styles.commentDeleteText}>✕</Text>
                     </TouchableOpacity>
                   )}
@@ -614,6 +621,7 @@ const ItineraryScreen = ({ route, navigation }) => {
                       <TouchableOpacity
                         onPress={() => setReportTarget({ targetType: 'comment', targetId: comment.id })}
                         style={styles.commentDeleteBtn}
+                        hitSlop={COMMENT_ACTION_HIT_SLOP}
                         accessibilityRole="button"
                         accessibilityLabel={t('report.button')}
                       >
@@ -718,11 +726,11 @@ const tl = StyleSheet.create({
     alignSelf: 'flex-start', borderRadius: 6,
     paddingVertical: 2, paddingHorizontal: 7, marginBottom: 5,
   },
-  badgeText: { fontSize: 9, fontWeight: '800', letterSpacing: 0.6 },
+  badgeText: { fontSize: 10, fontWeight: '800', letterSpacing: 0.6 },
   name: { fontSize: 14, fontWeight: '700', color: '#111827', marginBottom: 4, lineHeight: 20 },
   desc: { fontSize: 13, color: '#6b7280', lineHeight: 19, marginBottom: 2 },
   addressRow: { flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 3 },
-  address: { fontSize: 12, color: '#9CA3AF' },
+  address: { fontSize: 12, color: '#6b7280' },
   directions: {
     position: 'absolute', top: 0, right: 0, width: 36, height: 36,
     alignItems: 'center', justifyContent: 'center',
@@ -829,7 +837,7 @@ const styles = StyleSheet.create({
   errorScreen: { flex: 1, backgroundColor: '#fff' },
   errorBackBtn: { position: 'absolute', left: 16, width: 40, padding: 4 },
   errorBackBtnText: { fontSize: 20, color: '#374151' },
-  errorRetryBtn: { marginTop: 16, paddingVertical: 10, paddingHorizontal: 24, borderRadius: 999, backgroundColor: '#E8743B' },
+  errorRetryBtn: { marginTop: 16, paddingVertical: 10, paddingHorizontal: 24, borderRadius: 999, backgroundColor: '#B5501B' },
   errorRetryBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
   errorText: { textAlign: 'center', marginTop: 60, color: '#6b7280', fontSize: 15 },
 
@@ -876,7 +884,7 @@ const styles = StyleSheet.create({
   },
   badge: {
     alignSelf: 'flex-start',
-    backgroundColor: 'rgba(232,116,59,0.85)',
+    backgroundColor: 'rgba(181, 80, 27,0.85)',
     borderWidth: 1, borderColor: 'rgba(250,200,170,0.35)',
     borderRadius: 14,
     paddingVertical: 4, paddingHorizontal: 12, marginBottom: 10,
@@ -926,7 +934,7 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: '#e5e7eb',
   },
   statIcon: { fontSize: 18, marginBottom: 4 },
-  statLabel: { fontSize: 11, color: '#9ca3af', fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5 },
+  statLabel: { fontSize: 11, color: '#6b7280', fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5 },
   statValue: { fontSize: 14, color: '#111827', fontWeight: '600', marginTop: 2 },
   statSubvalue: { fontSize: 12, color: '#6b7280', marginTop: 1 },
 
@@ -950,8 +958,8 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
   },
   commentsMore: { alignItems: 'center', marginTop: 8 },
-  commentsRetry: { color: '#E8743B', fontSize: 14, fontWeight: '700', marginBottom: 8 },
-  noComments: { color: '#9ca3af', fontSize: 14, marginBottom: 8 },
+  commentsRetry: { color: '#B5501B', fontSize: 14, fontWeight: '700', marginBottom: 8 },
+  noComments: { color: '#6b7280', fontSize: 14, marginBottom: 8 },
   commentForm: { flexDirection: 'row', gap: 10, marginBottom: 16 },
   commentFormAvatar: {
     width: 34, height: 34, borderRadius: 17,
@@ -992,9 +1000,9 @@ const styles = StyleSheet.create({
   commentBody: { flex: 1 },
   commentHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 },
   commentAuthor: { fontSize: 13, fontWeight: '600', color: '#111827' },
-  commentTime: { fontSize: 12, color: '#9ca3af', flex: 1 },
+  commentTime: { fontSize: 12, color: '#6b7280', flex: 1 },
   commentDeleteBtn: { padding: 4 },
-  commentDeleteText: { color: '#9ca3af', fontSize: 12 },
+  commentDeleteText: { color: '#6b7280', fontSize: 12 },
   commentContent: { fontSize: 14, color: '#374151', lineHeight: 20 },
 });
 

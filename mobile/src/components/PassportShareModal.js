@@ -214,7 +214,7 @@ const PassportShareModal = ({
           <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.panelContent} bounces={false}>
             <Text style={styles.title}>{t('passport.shareTitle')}</Text>
 
-            {loading && !summary && <ActivityIndicator style={styles.loading} size="large" color="#E8743B" />}
+            {loading && !summary && <ActivityIndicator style={styles.loading} size="large" color="#B5501B" />}
             {error && <Text style={styles.errorText}>{t('passport.shareError')}</Text>}
             {summary && (
               <StoryCardPreview cardRef={cardRef} previewWidth={PREVIEW_WIDTH}>
@@ -231,7 +231,7 @@ const PassportShareModal = ({
                 onValueChange={setIncludeAchievements}
                 disabled={Boolean(summary?.achievementsForced)}
                 accessibilityLabel={t('passport.shareIncludeAchievements')}
-                trackColor={{ true: '#E8743B' }}
+                trackColor={{ true: '#B5501B' }}
               />
             </View>
             <View style={styles.toggle}>
@@ -240,7 +240,7 @@ const PassportShareModal = ({
                 value={includePrivate}
                 onValueChange={setIncludePrivate}
                 accessibilityLabel={t('passport.shareIncludePrivate')}
-                trackColor={{ true: '#E8743B' }}
+                trackColor={{ true: '#B5501B' }}
               />
             </View>
             {includePrivate ? (
@@ -297,7 +297,7 @@ const styles = StyleSheet.create({
   },
   cancelBtn: { flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center', backgroundColor: '#f3f4f6' },
   cancelText: { fontSize: 15, fontWeight: '600', color: '#374151' },
-  shareBtn: { flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center', backgroundColor: '#E8743B' },
+  shareBtn: { flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center', backgroundColor: '#B5501B' },
   shareBtnDisabled: { opacity: 0.5 },
   shareText: { fontSize: 15, fontWeight: '700', color: '#fff' },
 

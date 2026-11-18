@@ -79,16 +79,17 @@
     background-color: var(--white-color, #fff);
     color: var(--text-color);
     transition: all 0.25s;
+    width: 100%;
     max-width: 100%;
 
     &::placeholder {
-      color: #9ca3af;
+      color: #6b7280;
     }
 
     &:focus {
       outline: none;
       border-color: var(--primary-color);
-      box-shadow: 0 0 0 3px rgba(0, 119, 182, 0.15);
+      box-shadow: 0 0 0 3px rgba(181, 80, 27, 0.15);
     }
   }
 }
@@ -132,7 +133,6 @@
     font-weight: 300;
     font-size: 1rem;
     flex-shrink: 0;
-    width: auto;
   }
 }
 
@@ -157,12 +157,12 @@
   font-size: 0.9rem;
   color: var(--text-secondary-color);
   white-space: nowrap;
-  width: auto;
   flex-shrink: 0;
 }
 
 .btn-toggle-filters {
   width: auto;
+  min-height: 2rem;
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
@@ -230,7 +230,6 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: auto;
   min-width: 1.25rem;
   height: 1.25rem;
   padding: 0 0.3rem;
@@ -243,7 +242,6 @@
 }
 
 .filter-chip {
-  width: auto;
   display: inline-flex;
   align-items: center;
   padding: 0.35rem 0.85rem;
@@ -261,7 +259,7 @@
   &:hover {
     border-color: var(--primary-color);
     color: var(--primary-color);
-    background: rgba(0, 119, 182, 0.05);
+    background: rgba(181, 80, 27, 0.05);
   }
 
   &--active {
@@ -331,6 +329,7 @@
   }
 
   .filter-group {
+    width: 100%;
     max-width: 300px;
   }
 }

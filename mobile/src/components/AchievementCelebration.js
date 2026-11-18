@@ -16,7 +16,7 @@ const BURST_DURATION_MS = 900;
 const RISE_DELAY_MS = 550;
 const RISE_DURATION_MS = 400;
 const RISE_DISTANCE = 12;
-const CONFETTI_COLORS = [STORY_COLORS.GOLD, '#E8743B', STORY_COLORS.PAPER];
+const CONFETTI_COLORS = [STORY_COLORS.GOLD, '#B5501B', STORY_COLORS.PAPER];
 
 // A new country or badge, stamped on screen the moment it's earned, with a
 // shortcut to share its card from the passport. Motion is skipped when the
@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
   where: { marginTop: 10, fontSize: 13, color: 'rgba(255, 255, 255, 0.7)', textAlign: 'center', paddingHorizontal: 24 },
   progress: { marginTop: 12, fontSize: 13, color: 'rgba(255, 255, 255, 0.7)' },
   actions: { flexDirection: 'row', gap: 12, width: '100%', maxWidth: 360, marginTop: 32 },
-  shareBtn: { flex: 1, paddingVertical: 14, borderRadius: 10, alignItems: 'center', backgroundColor: '#E8743B' },
+  shareBtn: { flex: 1, paddingVertical: 14, borderRadius: 10, alignItems: 'center', backgroundColor: '#B5501B' },
   continueBtn: {
     flex: 1, paddingVertical: 14, borderRadius: 10, alignItems: 'center',
     backgroundColor: NAVY_LIGHT, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.25)',

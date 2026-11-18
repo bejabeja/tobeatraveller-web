@@ -49,7 +49,7 @@ const AccountMenuButton = ({ navigation, color = '#374151', style, isGuest = fal
 
   const renderItem = ({ screen, icon, labelKey }) => (
     <TouchableOpacity key={screen} style={styles.item} onPress={() => go(screen)} accessibilityRole="button">
-      <Ionicons name={icon} size={22} color="#E8743B" />
+      <Ionicons name={icon} size={22} color="#B5501B" />
       <Text style={styles.itemText}>{t(labelKey)}</Text>
       <Ionicons name="chevron-forward" size={18} color="#D1D5DB" />
     </TouchableOpacity>
@@ -81,7 +81,7 @@ const AccountMenuButton = ({ navigation, color = '#374151', style, isGuest = fal
                 {GUEST_SIGN_IN_ITEMS.map(renderItem)}
                 <View style={styles.divider} />
                 <TouchableOpacity style={styles.item} onPress={() => setLanguagesOpen(openNow => !openNow)} accessibilityRole="button" accessibilityState={{ expanded: languagesOpen }}>
-                  <Ionicons name="language-outline" size={22} color="#E8743B" />
+                  <Ionicons name="language-outline" size={22} color="#B5501B" />
                   <Text style={styles.itemText}>{t('settings.language')}</Text>
                   <Text style={styles.itemValue}>{currentLanguage?.flag} {currentLanguage?.name}</Text>
                   <Ionicons name={languagesOpen ? 'chevron-up' : 'chevron-down'} size={18} color="#D1D5DB" />
@@ -95,7 +95,7 @@ const AccountMenuButton = ({ navigation, color = '#374151', style, isGuest = fal
                     accessibilityState={{ selected: code === currentLanguageCode }}
                   >
                     <Text style={[styles.languageText, code === currentLanguageCode && styles.languageTextSelected]}>{flag} {name}</Text>
-                    {code === currentLanguageCode && <Ionicons name="checkmark" size={18} color="#E8743B" />}
+                    {code === currentLanguageCode && <Ionicons name="checkmark" size={18} color="#B5501B" />}
                   </TouchableOpacity>
                 ))}
                 {GUEST_INFO_ITEMS.map(renderItem)}
@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
   },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   title: { fontSize: 18, fontWeight: '800', color: '#111827' },
-  section: { fontSize: 12, fontWeight: '700', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 8, marginBottom: 4 },
+  section: { fontSize: 12, fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 8, marginBottom: 4 },
   item: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 14 },
   itemText: { flex: 1, fontSize: 16, fontWeight: '600', color: '#111827' },
   guestValue: { fontSize: 14, color: '#6b7280', lineHeight: 20, marginTop: 4, marginBottom: 6 },

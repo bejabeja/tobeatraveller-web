@@ -1,11 +1,11 @@
 .feature-load-state {
   padding: 2rem;
   margin: 2rem auto;
+  width: 100%;
   max-width: 500px;
   text-align: center;
 
   &__icon {
-    width: auto;
     font-size: 2.5rem;
     color: var(--text-secondary-color, #666);
     margin-bottom: 0.75rem;
@@ -16,7 +16,7 @@
     font-weight: 700;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: var(--primary-color, #E8743B);
+    color: var(--primary-color, #B5501B);
     margin-bottom: 0.5rem;
   }
 
@@ -33,7 +33,7 @@
   &__trial {
     font-size: 0.85rem;
     font-weight: 600;
-    color: var(--primary-color, #E8743B);
+    color: var(--primary-color, #B5501B);
     margin-top: -1rem;
     margin-bottom: 1.5rem;
   }

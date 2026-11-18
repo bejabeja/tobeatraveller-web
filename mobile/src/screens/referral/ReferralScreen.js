@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
   limitNote: { fontSize: 12, color: '#6b7280', lineHeight: 17, marginTop: 4 },
   loadError: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 10 },
   loadErrorText: { flex: 1, fontSize: 13, color: '#b91c1c' },
-  loadErrorRetry: { fontSize: 13, fontWeight: '700', color: '#E8743B' },
+  loadErrorRetry: { fontSize: 13, fontWeight: '700', color: '#B5501B' },
 
   shareBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
   inviteStatus: { paddingVertical: 4, paddingHorizontal: 10, borderRadius: 999, backgroundColor: '#e5e7eb' },
   inviteStatusRewarded: { backgroundColor: '#dcfce7' },
   inviteStatusText: { fontSize: 11, fontWeight: '700', color: '#6b7280' },
-  inviteStatusTextRewarded: { color: '#16a34a' },
+  inviteStatusTextRewarded: { color: '#15803d' },
 
   firstHint: {
     padding: 14, borderWidth: 1.5, borderStyle: 'dashed', borderColor: COLORS.primary, borderRadius: 12,

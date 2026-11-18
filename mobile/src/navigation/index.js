@@ -101,8 +101,8 @@ const TabNavigator = ({ navigation }) => {
       <Tab.Navigator
         screenOptions={({ route }) => ({
           headerShown: false,
-          tabBarActiveTintColor: '#E8743B',
-          tabBarInactiveTintColor: '#9ca3af',
+          tabBarActiveTintColor: '#B5501B',
+          tabBarInactiveTintColor: '#6b7280',
           tabBarStyle: {
             borderTopColor: '#e5e7eb',
             borderTopWidth: 1,
@@ -111,7 +111,7 @@ const TabNavigator = ({ navigation }) => {
             paddingTop: 6,
             backgroundColor: '#fff',
           },
-          tabBarLabelStyle: { fontSize: 10, fontWeight: '500' },
+          tabBarLabelStyle: { fontSize: 11, fontWeight: '500' },
           tabBarIcon: ({ focused, color, size }) => (
             <Ionicons
               name={TAB_ICONS[route.name]
@@ -226,20 +226,20 @@ const tb = StyleSheet.create({
   optionTitle: { fontSize: 16, fontWeight: '800', marginBottom: 2 },
   optionDesc: { fontSize: 13, color: '#6b7280', lineHeight: 17 },
   cancelBtn: { alignItems: 'center', paddingVertical: 10 },
-  cancelText: { fontSize: 15, color: '#9CA3AF', fontWeight: '500' },
+  cancelText: { fontSize: 15, color: '#6b7280', fontWeight: '500' },
   createCircle: {
     width: 54,
     height: 54,
     borderRadius: 27,
-    backgroundColor: '#E8743B',
+    backgroundColor: '#B5501B',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 3,
     borderColor: '#fff',
     ...Platform.select({
-      web: { boxShadow: '0px 4px 12px rgba(232,116,59,0.45)' },
+      web: { boxShadow: '0px 4px 12px rgba(181, 80, 27,0.45)' },
       default: {
-        shadowColor: '#E8743B',
+        shadowColor: '#B5501B',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.45,
         shadowRadius: 10,

@@ -39,12 +39,12 @@ const PendingChangesScreen = ({ navigation }) => {
         <View style={styles.actions}>
           {failed && (
             <TouchableOpacity style={styles.actionBtn} onPress={() => retryChange(change.id)}>
-              <Ionicons name="refresh-outline" size={15} color="#E8743B" />
+              <Ionicons name="refresh-outline" size={15} color="#B5501B" />
               <Text style={styles.retryText}>{t('offline.retry')}</Text>
             </TouchableOpacity>
           )}
           <TouchableOpacity style={styles.actionBtn} onPress={() => confirmDiscard(change)}>
-            <Ionicons name="trash-outline" size={15} color="#ef4444" />
+            <Ionicons name="trash-outline" size={15} color="#dc2626" />
             <Text style={styles.discardText}>{t('offline.discard')}</Text>
           </TouchableOpacity>
         </View>
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
   title: { flex: 1, fontSize: 20, fontWeight: '800', color: '#111827' },
   desc: { paddingHorizontal: 16, fontSize: 13, color: '#6b7280' },
   retryAllBtn: {
-    backgroundColor: '#E8743B', borderRadius: 999,
+    backgroundColor: '#B5501B', borderRadius: 999,
     paddingVertical: 7, paddingHorizontal: 14,
   },
   retryAllText: { color: '#fff', fontWeight: '700', fontSize: 13 },
@@ -124,8 +124,8 @@ const styles = StyleSheet.create({
   error: { fontSize: 13, color: '#b91c1c', marginTop: 6 },
   actions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 16, marginTop: 10 },
   actionBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  retryText: { color: '#E8743B', fontWeight: '700', fontSize: 13 },
-  discardText: { color: '#ef4444', fontWeight: '700', fontSize: 13 },
+  retryText: { color: '#B5501B', fontWeight: '700', fontSize: 13 },
+  discardText: { color: '#dc2626', fontWeight: '700', fontSize: 13 },
   empty: { alignItems: 'center', paddingTop: 60, gap: 10 },
   emptyText: { fontSize: 15, color: '#374151', fontWeight: '600' },
 });

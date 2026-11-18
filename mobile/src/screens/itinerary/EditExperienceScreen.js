@@ -15,7 +15,7 @@ import {
   itineraryCategories, placeCategories,
   reverseGeocode, searchDestinations, selectAuthUser, selectMe,
   setUserInfo, setUserInfoItineraries,
-  stepNameHintKey, ANALYTICS_EVENTS, TRIP_KINDS, experienceDates, isCalendarDay,
+  stepNameHintKey, ANALYTICS_EVENTS, TRIP_KINDS, experienceDates, isCalendarDay, joinStepNote, splitStepNote,
 } from '@tobeatraveller/shared';
 import { ByVanSection } from './ItineraryFormShared';
 import { trackEvent } from '../../utils/analytics';
@@ -41,13 +41,6 @@ const MOODS = [
   { key: 'grounding', emoji: '🌿' },
   { key: 'indulgent', emoji: '🍷' },
 ];
-
-const splitDescription = (raw = '') => {
-  const sep = '\n\n✍️ ';
-  const idx = raw.indexOf(sep);
-  if (idx === -1) return { description: raw, personalNote: '' };
-  return { description: raw.slice(0, idx), personalNote: raw.slice(idx + sep.length) };
-};
 
 const EditExperienceScreen = ({ navigation, route }) => {
   const { id } = route.params;
@@ -108,7 +101,7 @@ const EditExperienceScreen = ({ navigation, route }) => {
         const loadedSteps = (data.places ?? [])
           .sort((a, b) => (a.dayNumber ?? 1) - (b.dayNumber ?? 1) || (a.orderIndex ?? 0) - (b.orderIndex ?? 0))
           .map((p) => {
-            const { description, personalNote } = splitDescription(p.description ?? '');
+            const { description, personalNote } = splitStepNote(p.description);
             return {
               _key: `loaded-${p.id}`,
               _id: p.id,
@@ -241,7 +234,7 @@ const EditExperienceScreen = ({ navigation, route }) => {
         budget: 0, currency: 'EUR', numberOfPeople: travelers, category, isPublic, byVan,
         places: steps.filter(s => s.name.trim()).map((s, i) => ({
           id: s._id,
-          description: s.personalNote?.trim() ? `${s.description}\n\n✍️ ${s.personalNote.trim()}` : s.description,
+          description: joinStepNote(s.description, s.personalNote),
           category: s.category || 'other', orderIndex: i, dayNumber: s.dayNumber,
           infoPlace: { name: s.name, label: s.name, lat: s.lat || 0, lon: s.lon || 0 },
         })),
@@ -317,7 +310,7 @@ const EditExperienceScreen = ({ navigation, route }) => {
               <Text style={ls.sectionLabel}>{ce('whereGoing')}</Text>
               <View style={ls.destBox}>
                 <Ionicons name="location-outline" size={20} color={COLORS.accent} />
-                <TextInput style={ls.destInput} value={destQuery} onChangeText={searchDestination} placeholder={ce('destPlaceholder')} placeholderTextColor="#9ca3af" autoFocus />
+                <TextInput style={ls.destInput} value={destQuery} onChangeText={searchDestination} placeholder={ce('destPlaceholder')} placeholderTextColor="#6b7280" autoFocus />
                 {destSearching && <ActivityIndicator size="small" color={COLORS.accent} />}
               </View>
               {destResults.length > 0 && (
@@ -408,7 +401,7 @@ const EditExperienceScreen = ({ navigation, route }) => {
             {/* Intention */}
             <View style={ls.section}>
               <Text style={ls.sectionLabel}>💡 {ce('lookingFor')}</Text>
-              <TextInput style={ls.intentionInput} value={intention} onChangeText={setIntention} placeholder={`e.g. ${destination?.name ?? '…'}`} placeholderTextColor="#b0b8c4" multiline numberOfLines={3} maxLength={400} textAlignVertical="top" />
+              <TextInput style={ls.intentionInput} value={intention} onChangeText={setIntention} placeholder={`e.g. ${destination?.name ?? '…'}`} placeholderTextColor="#6b7280" multiline numberOfLines={3} maxLength={400} textAlignVertical="top" />
               <Text style={ls.intentionHint}>{ce('intentionHint')}</Text>
             </View>
 
@@ -428,7 +421,7 @@ const EditExperienceScreen = ({ navigation, route }) => {
           {/* Title */}
           <View style={ls.card}>
             <Text style={ls.cardLabel}>{ce('experienceName')}</Text>
-            <TextInput style={ls.titleInput} value={title} onChangeText={setTitle} placeholder={ce('namePlaceholder')} placeholderTextColor="#9ca3af" maxLength={50} />
+            <TextInput style={ls.titleInput} value={title} onChangeText={setTitle} placeholder={ce('namePlaceholder')} placeholderTextColor="#6b7280" maxLength={50} />
           </View>
 
           {/* Cover photo */}
@@ -515,8 +508,8 @@ const EditExperienceScreen = ({ navigation, route }) => {
               })}
             </ScrollView>
 
-            <TextInput style={ls.editInput} value={editDraft?.name ?? ''} onChangeText={v => setEditDraft(d => ({ ...d, name: v }))} placeholder={t(stepNameHintKey(editDraft?.category) ?? 'createExperience.nameMomentHint')} placeholderTextColor="#9ca3af" maxLength={100} />
-            <TextInput style={[ls.editInput, ls.editTextarea]} value={editDraft?.description ?? ''} onChangeText={v => setEditDraft(d => ({ ...d, description: v }))} placeholder={ce('detailsHint')} placeholderTextColor="#9ca3af" multiline maxLength={500} />
+            <TextInput style={ls.editInput} value={editDraft?.name ?? ''} onChangeText={v => setEditDraft(d => ({ ...d, name: v }))} placeholder={t(stepNameHintKey(editDraft?.category) ?? 'createExperience.nameMomentHint')} placeholderTextColor="#6b7280" maxLength={100} />
+            <TextInput style={[ls.editInput, ls.editTextarea]} value={editDraft?.description ?? ''} onChangeText={v => setEditDraft(d => ({ ...d, description: v }))} placeholder={ce('detailsHint')} placeholderTextColor="#6b7280" multiline maxLength={500} />
 
             <Text style={ls.modalSectionLabel}>{ce('theFeeling')}</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={ls.moodRow}>
@@ -532,7 +525,7 @@ const EditExperienceScreen = ({ navigation, route }) => {
             </ScrollView>
 
             <Text style={ls.modalSectionLabel}>{ce('yourStory')}</Text>
-            <TextInput style={[ls.editInput, ls.editTextarea, ls.noteInput]} value={editDraft?.personalNote ?? ''} onChangeText={v => setEditDraft(d => ({ ...d, personalNote: v }))} placeholder={ce('whyPlaceHint')} placeholderTextColor="#b0b8c4" multiline maxLength={300} />
+            <TextInput style={[ls.editInput, ls.editTextarea, ls.noteInput]} value={editDraft?.personalNote ?? ''} onChangeText={v => setEditDraft(d => ({ ...d, personalNote: v }))} placeholder={ce('whyPlaceHint')} placeholderTextColor="#6b7280" multiline maxLength={300} />
 
             <View style={ls.modalActions}>
               <TouchableOpacity style={ls.deleteBtn} onPress={() => removeStep(editingKey)}>
@@ -595,7 +588,7 @@ const etl = StyleSheet.create({
   contentLast: { paddingBottom: 4 },
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4, flexWrap: 'wrap' },
   badge: { alignSelf: 'flex-start', borderRadius: 6, paddingVertical: 2, paddingHorizontal: 7 },
-  badgeText: { fontSize: 9, fontWeight: '800', letterSpacing: 0.6 },
+  badgeText: { fontSize: 10, fontWeight: '800', letterSpacing: 0.6 },
   moodTag: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: '#E8F4F2', borderRadius: 999, paddingVertical: 2, paddingHorizontal: 7 },
   moodEmoji: { fontSize: 11 },
   moodLabel: { fontSize: 10, fontWeight: '600', color: '#1A535C' },
@@ -603,7 +596,7 @@ const etl = StyleSheet.create({
   desc: { fontSize: 13, color: '#6b7280', lineHeight: 18, marginBottom: 2 },
   personalNote: { fontSize: 12, color: '#92613a', fontStyle: 'italic', lineHeight: 17, marginBottom: 2 },
   editHint: { flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 2 },
-  editHintText: { fontSize: 11, color: '#9CA3AF' },
+  editHintText: { fontSize: 11, color: '#6b7280' },
 });
 
 const ls = StyleSheet.create({
@@ -628,26 +621,26 @@ const ls = StyleSheet.create({
   destResultName: { fontSize: 14, fontWeight: '600', color: '#111827' },
   destResultLabel: { fontSize: 12, color: '#6b7280', marginTop: 1 },
   destConfirmed: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 4, paddingTop: 3 },
-  destConfirmedText: { fontSize: 12, color: '#16a34a', fontWeight: '500', flex: 1 },
+  destConfirmedText: { fontSize: 12, color: '#15803d', fontWeight: '500', flex: 1 },
   stepperBox: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#fff', borderRadius: 14, padding: 10, borderWidth: 1, borderColor: '#E5E7EB' },
   stepperBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#F3F4F6', borderWidth: 1, borderColor: '#E5E7EB', alignItems: 'center', justifyContent: 'center' },
   stepperBtnOff: { opacity: 0.35 },
   stepperMid: { flex: 1, alignItems: 'center' },
   stepperNum: { fontSize: 22, fontWeight: '800', color: COLORS.text },
-  stepperUnit: { fontSize: 11, color: '#9CA3AF', marginTop: -2 },
+  stepperUnit: { fontSize: 11, color: '#6b7280', marginTop: -2 },
   catGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   catCard: { width: '30.5%', paddingVertical: 10, paddingHorizontal: 6, borderRadius: 12, borderWidth: 1.5, borderColor: '#E5E7EB', backgroundColor: '#fff', alignItems: 'center', gap: 3 },
   catCardOn: { borderColor: COLORS.accent, backgroundColor: '#E8F4F2' },
   catCardEmoji: { fontSize: 20 },
   catCardName: { fontSize: 11, fontWeight: '700', color: '#111827', textAlign: 'center' },
   catCardNameOn: { color: COLORS.accent },
-  catCardDesc: { fontSize: 9.5, color: '#9ca3af', textAlign: 'center', lineHeight: 13 },
+  catCardDesc: { fontSize: 11, color: '#6b7280', textAlign: 'center', lineHeight: 15 },
   intentionInput: { backgroundColor: '#fff', borderRadius: 14, padding: 13, borderWidth: 1.5, borderColor: '#E5E7EB', fontSize: 14, color: '#111827', lineHeight: 21, minHeight: 80, fontStyle: 'italic' },
-  intentionHint: { fontSize: 11, color: '#9ca3af' },
+  intentionHint: { fontSize: 11, color: '#6b7280' },
   genBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: COLORS.primary, borderRadius: 16, paddingVertical: 18, marginTop: 8, ...shadow(4, 0.2, 12, 4) },
   genBtnText: { color: '#fff', fontSize: 17, fontWeight: '800' },
   card: { backgroundColor: '#fff', borderRadius: 14, padding: 16, borderWidth: 1, borderColor: '#E5E7EB', ...shadow(1, 0.04, 4, 1) },
-  cardLabel: { fontSize: 11, fontWeight: '700', color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 },
+  cardLabel: { fontSize: 11, fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 },
   titleInput: { fontSize: 19, fontWeight: '700', color: COLORS.text },
   timelineTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
   timelineCount: { fontSize: 13, fontWeight: '600', color: '#6b7280' },
@@ -666,12 +659,12 @@ const ls = StyleSheet.create({
   visibilityOptOn: { borderColor: COLORS.accent, backgroundColor: '#E8F4F2' },
   visibilityOptIcon: { fontSize: 18 },
   visibilityOptName: { fontSize: 12, fontWeight: '700', color: '#111827' },
-  visibilityOptDesc: { fontSize: 10, color: '#9ca3af', textAlign: 'center' },
+  visibilityOptDesc: { fontSize: 10, color: '#6b7280', textAlign: 'center' },
   modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'flex-end' },
   modalSheet: { backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, paddingBottom: 32, ...shadow(-4, 0.15, 20, 16), maxHeight: '90%' },
   modalHandle: { width: 36, height: 4, borderRadius: 2, backgroundColor: '#E5E7EB', alignSelf: 'center', marginBottom: 16 },
   modalTitle: { fontSize: 16, fontWeight: '700', color: COLORS.text, marginBottom: 12 },
-  modalSectionLabel: { fontSize: 10, fontWeight: '700', color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, marginTop: 4 },
+  modalSectionLabel: { fontSize: 10, fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, marginTop: 4 },
   editTypeRow: { gap: 6, paddingBottom: 12 },
   typeChip: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingVertical: 6, paddingHorizontal: 11, borderRadius: 999, borderWidth: 1.5, borderColor: '#E5E7EB', backgroundColor: '#F9FAFB' },
   typeChipLabel: { fontSize: 12, color: '#6b7280', fontWeight: '500' },

@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
   metaRow: { flexDirection: 'row', gap: 8, marginTop: 1, flexWrap: 'wrap' },
   metaItem: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   metaText: { fontSize: 10, color: 'rgba(255,255,255,0.72)' },
-  metaTextCompact: { fontSize: 9, color: 'rgba(255,255,255,0.72)' },
+  metaTextCompact: { fontSize: 10, color: 'rgba(255,255,255,0.72)' },
 });
 
 export default ItineraryCard;
