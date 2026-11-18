@@ -64,6 +64,7 @@ async function runMigration() {
         console.log('✅ Successfully migrations completed');
     } catch (error) {
         console.error('❌ Error running migrations:', error);
+        process.exitCode = 1;
     } finally {
         await client.end();
     }
