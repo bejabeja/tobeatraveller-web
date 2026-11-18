@@ -8,7 +8,7 @@ import { IoChevronDown, IoLockClosedOutline, IoMapOutline } from "react-icons/io
 import { Link } from "react-router-dom";
 import {
   initialVanLogTripId, isVanLogCapReachedError, localCalendarDay, translateValidationMessage, tripsToLinkTo,
-  vanLogCategories, vanLogCategoryEmoji, vanLogEntryToFormValues, vanLogFormValuesToPayload,
+  vanLogCategories, vanLogCategoryEmoji, vanLogEntryToFormValues, vanLogFormValuesToPayload, userFacingError,
 } from "@tobeatraveller/shared";
 import { InputForm, TextAreaForm } from "../../components/form/InputForm";
 import AutocompleteObjectInput from "../../components/form/AutocompleteObjectInput";
@@ -79,7 +79,7 @@ const VanLogEntryModal = ({ entry = null, onClose, onSaved, initialCapReached = 
         setCapReached(true);
         return;
       }
-      toast.error(error.message || t("vanLog.saveError"));
+      toast.error(userFacingError(t, error, t("vanLog.saveError")));
     }
   };
 

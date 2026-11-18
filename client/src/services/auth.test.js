@@ -1,4 +1,7 @@
-jest.mock("@tobeatraveller/shared", () => ({ getApiUrl: () => "http://api.test" }));
+jest.mock("@tobeatraveller/shared", () => ({
+  ...jest.requireActual("@tobeatraveller/shared/src/utils/parseError.js"),
+  getApiUrl: () => "http://api.test",
+}));
 
 import { forgetStoredTokens, login } from "./auth";
 
@@ -32,5 +35,16 @@ describe("the web session", () => {
     expect(localStorage.getItem("access_token")).toBeNull();
     expect(localStorage.getItem("refresh_token")).toBeNull();
     expect(localStorage.getItem("cookie-consent")).toBe("granted");
+  });
+
+  // Regression: login caught its own error and parsed it again as if it were the answer, so
+  // a wrong password said "Something went wrong" instead of that the credentials were wrong.
+  it("keeps what the API said when signing in is refused", async () => {
+    global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 401, json: async () => ({ error: "Invalid credentials" }) });
+
+    const error = await login({ email: "jane@example.com", password: "wrong" }).catch((refused) => refused);
+
+    expect(error.message).toBe("Invalid credentials");
+    expect(error.apiMessage).toBe("Invalid credentials");
   });
 });

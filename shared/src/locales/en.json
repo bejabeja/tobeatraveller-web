@@ -2221,5 +2221,27 @@
   },
   "tools": {
     "unlockMore": "Go Premium to add more"
+  },
+  "apiErrors": {
+    "imagesOnly": "Only images can be uploaded.",
+    "receiptPhotoRequired": "Add the photo of the receipt.",
+    "commentNotFound": "This comment no longer exists.",
+    "reportTargetGone": "What you wanted to report no longer exists.",
+    "alreadyFollowing": "You already follow this person.",
+    "cannotFollowYourself": "You can't follow yourself.",
+    "subscriptionAlreadyActive": "You already have an active subscription.",
+    "noCancellationToResume": "Your subscription has no cancellation to undo.",
+    "noSubscription": "You don't have a subscription.",
+    "premiumRequired": "This is only for Premium.",
+    "tooManyConfirmationEmails": "We've already sent you several confirmation emails. Please try again later.",
+    "tooManyContactMessages": "You've sent several messages in a row. Please try again later.",
+    "tooManyReports": "You've sent many reports in a row. Please try again later.",
+    "tooManyGenerations": "You've generated many itineraries in a row. Wait a minute and try again.",
+    "generatorBusy": "The itinerary generator is very busy. Try again in a minute.",
+    "insufficientPermissions": "You don't have permission to do this.",
+    "onlySuperadminActsOnStaff": "Only a superadmin can change or delete a staff account.",
+    "onlySuperadminGrantsSuperadmin": "Only a superadmin can give the superadmin role.",
+    "cannotChangeOwnRole": "You can't change your own role.",
+    "cannotNoticeYourself": "You can't send yourself a notice."
   }
 }

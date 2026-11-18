@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { IoLockClosedOutline } from "react-icons/io5";
 import { Link } from "react-router-dom";
-import { isLifeDiaryCapReachedError, localCalendarDay } from "@tobeatraveller/shared";
+import { isLifeDiaryCapReachedError, localCalendarDay, userFacingError } from "@tobeatraveller/shared";
 import { InputForm, TextAreaForm } from "../../components/form/InputForm";
 import Modal from "../../components/modal/Modal";
 import AutocompleteObjectInput from "../../components/form/AutocompleteObjectInput";
@@ -114,7 +114,7 @@ const LifeDiaryFormModal = ({ entry, onClose, onSaved, initialCapReached = false
         setCapReached(true);
         return;
       }
-      toast.error(error.message || d("saveError"));
+      toast.error(userFacingError(t, error, d("saveError")));
     }
   };
 

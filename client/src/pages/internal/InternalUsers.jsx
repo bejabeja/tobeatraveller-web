@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
-import { ADMIN_NOTICE_MAX_LENGTH, adminNoticeSchema, formatDate, isIndefinitePremium } from "@tobeatraveller/shared";
+import { ADMIN_NOTICE_MAX_LENGTH, adminNoticeSchema, formatDate, isIndefinitePremium, userFacingError } from "@tobeatraveller/shared";
 import { IoEyeOutline, IoMailOutline, IoTrashOutline } from "react-icons/io5";
 import { useSelector } from "react-redux";
 import { TextAreaForm } from "../../components/form/InputForm";
@@ -84,7 +84,7 @@ const InternalUsers = () => {
       setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, role: newRole } : u)));
       toast.success(t("admin.roleUpdated"));
     } catch (err) {
-      toast.error(err.message || t("admin.roleUpdateError"));
+      toast.error(userFacingError(t, err, t("admin.roleUpdateError")));
     } finally {
       setUpdatingRoleId(null);
     }
@@ -122,7 +122,7 @@ const InternalUsers = () => {
         ? t("admin.tierKeptPaid", { date: shortDate(updated.premiumUntil) })
         : t("admin.tierUpdated"));
     } catch (err) {
-      toast.error(err.message || t("admin.tierUpdateError"));
+      toast.error(userFacingError(t, err, t("admin.tierUpdateError")));
     } finally {
       setUpdatingTierId(null);
     }
@@ -140,7 +140,7 @@ const InternalUsers = () => {
       }
       setPendingAction(null);
     } catch (err) {
-      toast.error(err.message || t("admin.deleteError"));
+      toast.error(userFacingError(t, err, t("admin.deleteError")));
     } finally {
       setConfirmingAction(false);
     }
@@ -154,7 +154,7 @@ const InternalUsers = () => {
       setNoticeUser(null);
       noticeForm.reset();
     } catch (err) {
-      toast.error(err.message || t("admin.noticeSendError"));
+      toast.error(userFacingError(t, err, t("admin.noticeSendError")));
     } finally {
       setSendingNotice(false);
     }

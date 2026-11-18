@@ -13,7 +13,7 @@ import { useTranslation } from 'react-i18next';
 import i18n, { changeLanguage } from '../../i18n';
 import {
   APP_LANGUAGES, changePassword, changeUnverifiedEmail, deleteMyAccount, exportMyData, fetchNotificationPreferences,
-  logoutUser, PASSWORD_MIN_LENGTH, selectAuthUser, selectMe, setUserInfo, toAppLanguage, translateAuthError, TRAVEL_STYLES,
+  logoutUser, PASSWORD_MIN_LENGTH, selectAuthUser, selectMe, setUserInfo, toAppLanguage, userFacingError, TRAVEL_STYLES,
   updateMyTravelStyle, updateNotificationPreferences,
 } from '@tobeatraveller/shared';
 import { shadow } from '../../utils/styles';
@@ -24,11 +24,6 @@ import { clearDeviceSessionData } from '../../utils/session';
 import { useOutbox } from '../../offline/useOutbox';
 import { useAnalyticsConsent } from '../../hooks/useAnalyticsConsent';
 import { ANALYTICS_CONSENT } from '../../utils/analytics';
-
-// Where the API puts a password typed to confirm that is not the account's, and its answer
-// once too many have been wrong: both are said as they are, anything else as the usual failure.
-const CURRENT_PASSWORD_FIELD = 'currentPassword';
-const TOO_MANY_REQUESTS_STATUS = 429;
 
 const NOTIFICATION_PREFERENCE_TOGGLES = [
   // Push only exists in the native app, not in the web build of mobile.
@@ -154,12 +149,6 @@ const SettingsScreen = ({ navigation }) => {
     );
   };
 
-  const passwordErrorMessage = (error, fallbackKey) => (
-    error.field === CURRENT_PASSWORD_FIELD || error.status === TOO_MANY_REQUESTS_STATUS
-      ? translateAuthError(t, error.message)
-      : t(fallbackKey)
-  );
-
   const toggleDeleteConfirm = () => {
     setDeleteInput('');
     setDeletePassword('');
@@ -176,7 +165,7 @@ const SettingsScreen = ({ navigation }) => {
       await clearDeviceSessionData();
       dispatch(logoutUser());
     } catch (error) {
-      setDeleteError(passwordErrorMessage(error, 'errors.deleteAccountFailed'));
+      setDeleteError(userFacingError(t, error, t('errors.deleteAccountFailed')));
       setDeleting(false);
     }
   };
@@ -233,7 +222,7 @@ const SettingsScreen = ({ navigation }) => {
       closeEmailForm();
       Alert.alert(t('emailVerification.changed', { email }));
     } catch (err) {
-      setEmailError(err.message ? translateAuthError(t, err.message) : t('errors.somethingWrong'));
+      setEmailError(userFacingError(t, err, t('errors.somethingWrong')));
     } finally {
       setChangingEmail(false);
     }
@@ -255,7 +244,7 @@ const SettingsScreen = ({ navigation }) => {
       closePasswordForm();
       Alert.alert(t('editProfile.passwordChanged'));
     } catch (err) {
-      setPasswordError(err.message ? translateAuthError(t, err.message) : t('errors.changePasswordFailed'));
+      setPasswordError(userFacingError(t, err, t('errors.changePasswordFailed')));
     } finally {
       setChangingPassword(false);
     }
@@ -274,7 +263,7 @@ const SettingsScreen = ({ navigation }) => {
     try {
       data = await exportMyData(exportPassword);
     } catch (error) {
-      setExportError(passwordErrorMessage(error, 'errors.exportDataFailed'));
+      setExportError(userFacingError(t, error, t('errors.exportDataFailed')));
       setExporting(false);
       return;
     }

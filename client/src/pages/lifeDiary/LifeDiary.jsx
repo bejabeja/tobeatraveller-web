@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import {
   IoAddOutline, IoJournalOutline, IoLocationOutline, IoPencilOutline, IoTrashOutline,
 } from "react-icons/io5";
-import { formatCalendarDay, isPremiumRequiredError, LIFE_DIARY_PAGE_SIZE, locationLine, refreshUnreadCountSoon } from "@tobeatraveller/shared";
+import { formatCalendarDay, isPremiumRequiredError, LIFE_DIARY_PAGE_SIZE, locationLine, refreshUnreadCountSoon, userFacingError } from "@tobeatraveller/shared";
 import LoadingButton from "../../components/LoadingButton";
 import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState";
 import Modal from "../../components/modal/Modal";
@@ -94,7 +94,7 @@ const LifeDiary = () => {
       setTotalCount((count) => Math.max(count - 1, 0));
       loadUsage();
     } catch (err) {
-      toast.error(err.message || d("deleteError"));
+      toast.error(userFacingError(t, err, d("deleteError")));
     } finally {
       setDeleting(false);
     }

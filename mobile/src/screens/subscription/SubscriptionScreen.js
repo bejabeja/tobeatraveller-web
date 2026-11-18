@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
   createCheckoutSession, createPortalSession, getMySubscription, PLAN_COMPARISON, PREMIUM_WELCOME_FEATURES, resumeSubscription, SUBSCRIPTION_FAQ,
-  selectAuthUser, selectIsAuthenticated, selectMe, setUserInfo, formatDate, getPremiumView, ANALYTICS_EVENTS,
+  selectAuthUser, selectIsAuthenticated, selectMe, setUserInfo, formatDate, getPremiumView, ANALYTICS_EVENTS, userFacingError,
 } from '@tobeatraveller/shared';
 import { trackEvent } from '../../utils/analytics';
 import { shadow } from '../../utils/styles';
@@ -214,7 +214,7 @@ const SubscriptionScreen = ({ navigation }) => {
       await Linking.openURL(url);
       awaitingCheckoutRef.current = !isBillingPortal;
     } catch (error) {
-      Alert.alert(error.message || t('subscription.checkoutErrorToast'));
+      Alert.alert(userFacingError(t, error, t('subscription.checkoutErrorToast')));
     } finally {
       setLoadingPlanId(null);
     }
@@ -227,7 +227,7 @@ const SubscriptionScreen = ({ navigation }) => {
       setSubscription(updated);
       trackEvent(ANALYTICS_EVENTS.SUBSCRIPTION_RESUMED, { view: view.kind });
     } catch (error) {
-      Alert.alert(error.message || t('subscription.resumeErrorToast'));
+      Alert.alert(userFacingError(t, error, t('subscription.resumeErrorToast')));
     } finally {
       setResuming(false);
     }
@@ -240,7 +240,7 @@ const SubscriptionScreen = ({ navigation }) => {
       trackEvent(ANALYTICS_EVENTS.SUBSCRIPTION_PORTAL_OPENED, { view: view.kind });
       await Linking.openURL(url);
     } catch (error) {
-      Alert.alert(error.message || t('subscription.portalErrorToast'));
+      Alert.alert(userFacingError(t, error, t('subscription.portalErrorToast')));
     } finally {
       setLoadingPortal(false);
     }

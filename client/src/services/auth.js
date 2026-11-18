@@ -31,23 +31,18 @@ export const createNewUser = async (user) => {
 }
 
 export const login = async (user) => {
-    try {
-        const response = await fetch(`${getApiUrl()}/auth/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(user),
-            credentials: 'include',
-        });
-        if (!response.ok) await parseError(response, 'Login failed');
+    const response = await fetch(`${getApiUrl()}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(user),
+        credentials: 'include',
+    });
+    if (!response.ok) await parseError(response, 'Login failed');
 
-        // The session comes back in cookies the page cannot read; the tokens also in the
-        // answer are for the app, and are not kept here.
-        const data = await response.json();
-        return data.user;
-    } catch (error) {
-        console.error(error);
-        await parseError(error);
-    }
+    // The session comes back in cookies the page cannot read; the tokens also in the
+    // answer are for the app, and are not kept here.
+    const data = await response.json();
+    return data.user;
 };
 
 export const logout = async () => {

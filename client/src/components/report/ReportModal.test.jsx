@@ -73,13 +73,25 @@ describe("ReportModal", () => {
 
   it("keeps the window open and says why when the report could not be sent", async () => {
     const onClose = jest.fn();
-    submitReport.mockRejectedValue(new Error("You already reported this"));
+    const tooMany = "Too many reports, please try again later.";
+    submitReport.mockRejectedValue(Object.assign(new Error(tooMany), { status: 429, apiMessage: tooMany }));
     renderModal({ onClose });
 
     fireEvent.click(screen.getByLabelText("report.reason.spam"));
     fireEvent.click(screen.getByRole("button", { name: "report.submit" }));
 
-    await waitFor(() => expect(toast.error).toHaveBeenCalledWith("You already reported this"));
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith("apiErrors.tooManyReports"));
     expect(onClose).not.toHaveBeenCalled();
+  });
+
+  // Regression: a failure on the server showed the request's own English, never the window's message.
+  it("says its own message when the server failed and said nothing", async () => {
+    submitReport.mockRejectedValue(Object.assign(new Error("Failed to send report"), { status: 500 }));
+    renderModal({ onClose: jest.fn() });
+
+    fireEvent.click(screen.getByLabelText("report.reason.spam"));
+    fireEvent.click(screen.getByRole("button", { name: "report.submit" }));
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith("report.sendError"));
   });
 });

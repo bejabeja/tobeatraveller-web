@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 import {
   aiPaceOptions, currencyOptions, dayPlacesPreview, daysToFold, DEFAULT_AI_PACE, GENERATE_TIMEOUT_MESSAGE, generateSmartItinerary,
   getCurrencySymbol, isPremiumRequiredError, itineraryCategories, placeCategories, formatBudgetAmount,
-  localCalendarDay, stepNameHintKey, ANALYTICS_EVENTS, TRIP_KINDS, tripEndDate,
+  localCalendarDay, stepNameHintKey, ANALYTICS_EVENTS, TRIP_KINDS, tripEndDate, userFacingError,
 } from '@tobeatraveller/shared';
 import DateField from '../../components/DateField';
 import { trackEvent } from '../../utils/analytics';
@@ -594,7 +594,7 @@ export const PlacesSection = ({
       } else {
         Alert.alert(
           t('errors.somethingWrong'),
-          error.message === GENERATE_TIMEOUT_MESSAGE ? t('itineraryForm.generateTimeout') : (error.message || t('itineraryForm.errorGenerate'))
+          error.message === GENERATE_TIMEOUT_MESSAGE ? t('itineraryForm.generateTimeout') : (userFacingError(t, error, t('itineraryForm.errorGenerate')))
         );
       }
     } finally {

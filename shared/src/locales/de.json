@@ -2221,5 +2221,27 @@
   },
   "tools": {
     "unlockMore": "Mit Premium mehr hinzufügen"
+  },
+  "apiErrors": {
+    "imagesOnly": "Du kannst nur Bilder hochladen.",
+    "receiptPhotoRequired": "Füge das Foto des Belegs hinzu.",
+    "commentNotFound": "Dieser Kommentar existiert nicht mehr.",
+    "reportTargetGone": "Was du melden wolltest, existiert nicht mehr.",
+    "alreadyFollowing": "Du folgst dieser Person bereits.",
+    "cannotFollowYourself": "Du kannst dir nicht selbst folgen.",
+    "subscriptionAlreadyActive": "Du hast bereits ein aktives Abo.",
+    "noCancellationToResume": "Für dein Abo ist keine Kündigung vorgemerkt.",
+    "noSubscription": "Du hast kein Abo.",
+    "premiumRequired": "Das gibt es nur mit Premium.",
+    "tooManyConfirmationEmails": "Wir haben dir schon mehrere Bestätigungs-E-Mails geschickt. Versuche es später noch einmal.",
+    "tooManyContactMessages": "Du hast mehrere Nachrichten hintereinander geschickt. Versuche es später noch einmal.",
+    "tooManyReports": "Du hast viele Meldungen hintereinander geschickt. Versuche es später noch einmal.",
+    "tooManyGenerations": "Du hast viele Reisepläne hintereinander erstellt. Warte eine Minute und versuche es noch einmal.",
+    "generatorBusy": "Der Reiseplan-Generator ist gerade sehr ausgelastet. Versuche es in einer Minute noch einmal.",
+    "insufficientPermissions": "Dazu hast du keine Berechtigung.",
+    "onlySuperadminActsOnStaff": "Nur ein Superadmin kann ein Team-Konto ändern oder löschen.",
+    "onlySuperadminGrantsSuperadmin": "Nur ein Superadmin kann die Superadmin-Rolle vergeben.",
+    "cannotChangeOwnRole": "Du kannst deine eigene Rolle nicht ändern.",
+    "cannotNoticeYourself": "Du kannst dir selbst keinen Hinweis schicken."
   }
 }

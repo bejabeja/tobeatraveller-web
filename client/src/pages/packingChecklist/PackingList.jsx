@@ -10,7 +10,7 @@ import { useSelector } from "react-redux";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   copyListName, isOnShoppingList, isPackingListCapReachedError, localCalendarDay, MOVE_DOWN, MOVE_UP, moveWithinCategory, normalizeSearchText,
-  packingCategories, tripsToLinkTo,
+  packingCategories, tripsToLinkTo, userFacingError,
 } from "@tobeatraveller/shared";
 import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState";
 import SelectMenu from "../../components/form/SelectMenu";
@@ -124,7 +124,7 @@ const PackingList = () => {
       setItems(await restartPackingList(listId));
       toast.success(p("restartDone"));
     } catch (err) {
-      toast.error(err.message || p("saveError"));
+      toast.error(userFacingError(t, err, p("saveError")));
     } finally {
       setRestarting(false);
     }
@@ -135,7 +135,7 @@ const PackingList = () => {
       setList(await updatePackingList(listId, { name }));
       setRenaming(false);
     } catch (err) {
-      toast.error(err.message || p("saveError"));
+      toast.error(userFacingError(t, err, p("saveError")));
     }
   };
 
@@ -145,7 +145,7 @@ const PackingList = () => {
       if (itineraryId) trackEvent(ANALYTICS_EVENTS.PACKING_LIST_LINKED_TO_TRIP);
       setChoosingTrip(false);
     } catch (err) {
-      toast.error(err.message || p("saveError"));
+      toast.error(userFacingError(t, err, p("saveError")));
     }
   };
 
@@ -155,7 +155,7 @@ const PackingList = () => {
       navigate(`${LISTS_PATH}/${copy.id}`);
     } catch (err) {
       if (isPackingListCapReachedError(err)) setCapReached(true);
-      else toast.error(err.message || p("saveError"));
+      else toast.error(userFacingError(t, err, p("saveError")));
     }
   };
 
@@ -166,7 +166,7 @@ const PackingList = () => {
       toast.success(p("listDeleted"));
       navigate(LISTS_PATH);
     } catch (err) {
-      toast.error(err.message || p("deleteError"));
+      toast.error(userFacingError(t, err, p("deleteError")));
       setDeleting(false);
     }
   };
@@ -177,7 +177,7 @@ const PackingList = () => {
       await updatePackingChecklistItem(item.id, { checked: !item.checked });
     } catch (err) {
       setItems(prev => prev.map(i => i.id === item.id ? { ...i, checked: item.checked } : i));
-      toast.error(err.message || p("saveError"));
+      toast.error(userFacingError(t, err, p("saveError")));
     }
   };
 
@@ -211,7 +211,7 @@ const PackingList = () => {
         await deletePackingChecklistItem(item.id);
       } catch (err) {
         setItems(prev => [...prev, item]);
-        toast.error(err.message || p("deleteError"));
+        toast.error(userFacingError(t, err, p("deleteError")));
       }
     }, UNDO_DELETE_WINDOW_MS);
   };
@@ -228,7 +228,7 @@ const PackingList = () => {
       setShoppingList(prev => [...prev, added]);
       toast.success(p("addedToShoppingList", { name: item.name }));
     } catch (err) {
-      toast.error(err.message || p("saveError"));
+      toast.error(userFacingError(t, err, p("saveError")));
     } finally {
       setAddingToShoppingList(null);
     }
@@ -240,7 +240,7 @@ const PackingList = () => {
       setItems(prev => prev.map(i => i.id === saved.id ? saved : i));
       setEditingItem(null);
     } catch (err) {
-      toast.error(err?.status === CONFLICT_STATUS ? p("itemAlreadyInCategory") : (err.message || p("saveError")));
+      toast.error(err?.status === CONFLICT_STATUS ? p("itemAlreadyInCategory") : (userFacingError(t, err, p("saveError"))));
     }
   };
 
@@ -254,7 +254,7 @@ const PackingList = () => {
       await Promise.all(moves.map(({ id, position }) => updatePackingChecklistItem(id, { position })));
     } catch (err) {
       setItems(previous);
-      toast.error(err.message || p("saveError"));
+      toast.error(userFacingError(t, err, p("saveError")));
     }
   };
 
@@ -271,7 +271,7 @@ const PackingList = () => {
       setItems(prev => [...prev, created]);
       setNewItemName("");
     } catch (err) {
-      toast.error(err.message || p("saveError"));
+      toast.error(userFacingError(t, err, p("saveError")));
     }
   };
 

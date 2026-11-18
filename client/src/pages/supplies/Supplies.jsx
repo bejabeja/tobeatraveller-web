@@ -6,7 +6,7 @@ import {
 } from "react-icons/io5";
 import {
   findSupplyByName, formatNumber, groupSuppliesByCategory, isInventoryCapReachedError, isPremiumRequiredError, isShoppingListCapReachedError, normalizeSearchText,
-  resolveQuickAddSupply, suggestSupplies, supplyCategories, supplyUnits,
+  resolveQuickAddSupply, suggestSupplies, supplyCategories, supplyUnits, userFacingError,
 } from "@tobeatraveller/shared";
 import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState";
 import TripActionsMenu from "../../components/itineraries/TripActionsMenu";
@@ -166,7 +166,7 @@ const Supplies = () => {
       loadData();
       loadUsage();
     } catch (err) {
-      toast.error(err.message || s("saveError"));
+      toast.error(userFacingError(t, err, s("saveError")));
     } finally {
       setConfirmingQuantity(false);
     }
@@ -187,7 +187,7 @@ const Supplies = () => {
       loadData();
       loadUsage();
     } catch (err) {
-      toast.error(err.message || s("deleteError"));
+      toast.error(userFacingError(t, err, s("deleteError")));
     } finally {
       setDeleting(false);
     }
@@ -234,7 +234,7 @@ const Supplies = () => {
       loadData({ silent: true });
       loadUsage();
     } catch (err) {
-      toast.error(err.message || s("saveError"));
+      toast.error(userFacingError(t, err, s("saveError")));
     } finally {
       setPurchasePending(item.id, false);
     }
@@ -292,7 +292,7 @@ const Supplies = () => {
     } catch (err) {
       const isCapReached = isShopping ? isShoppingListCapReachedError(err) : isInventoryCapReachedError(err);
       if (isCapReached) setFormTarget({ mode: isShopping ? "add-shopping" : "add-inventory", capReached: true });
-      else toast.error(err.message || s("saveError"));
+      else toast.error(userFacingError(t, err, s("saveError")));
     } finally {
       setAddingItem(false);
     }

@@ -9,17 +9,20 @@ export const setApiErrorTranslator = (t) => {
   translateApiMessage = (message) => translateValidationMessage(t, message);
 };
 
+// `apiMessage` is what the API said, untouched, and only when it said something: the message
+// falls back to `defaultMsg`, in English, which is for the logs and not for the person.
 export const parseError = async (response, defaultMsg = "Something went wrong") => {
-  let msg = defaultMsg;
+  let apiMessage;
   let field;
   try {
     const data = await response.json();
-    msg = data?.error || msg;
+    apiMessage = data?.error;
     field = data?.field;
   } catch (_) { }
-  const error = new Error(translateApiMessage(msg));
+  const error = new Error(translateApiMessage(apiMessage || defaultMsg));
   error.status = response.status;
   error.field = field;
+  error.apiMessage = apiMessage;
   throw error;
 }
 

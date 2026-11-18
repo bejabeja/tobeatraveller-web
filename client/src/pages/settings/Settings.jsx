@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { Trans, useTranslation } from "react-i18next";
 import {
-  APP_LANGUAGES, changeUnverifiedEmail, fetchNotificationPreferences, PASSWORD_MIN_LENGTH, toAppLanguage, translateAuthError,
+  APP_LANGUAGES, changeUnverifiedEmail, fetchNotificationPreferences, PASSWORD_MIN_LENGTH, toAppLanguage, userFacingError,
   TRAVEL_STYLES, updateMyTravelStyle, updateNotificationPreferences,
 } from "@tobeatraveller/shared";
 import i18n from "../../i18n";
@@ -29,11 +29,6 @@ import { usePageMeta } from "../../hooks/usePageMeta.js";
 import "./Settings.scss";
 
 const HOME_PATH = "/";
-// Where the API puts a password typed to confirm that is not the account's, and its answer
-// once too many have been wrong: both are said as they are, anything else as the usual failure.
-const CURRENT_PASSWORD_FIELD = "currentPassword";
-const TOO_MANY_REQUESTS_STATUS = 429;
-
 const NOTIFICATION_PREFERENCE_TOGGLES = [
   { key: "notifyOnComment", labelKey: "settings.notifyOnComment" },
   { key: "notifyOnLike", labelKey: "settings.notifyOnLike" },
@@ -112,12 +107,6 @@ const Settings = () => {
 
   if (!userMe) return <Spinner />;
 
-  const passwordErrorMessage = (error, fallbackKey) => (
-    error.field === CURRENT_PASSWORD_FIELD || error.status === TOO_MANY_REQUESTS_STATUS
-      ? translateAuthError(t, error.message)
-      : t(fallbackKey)
-  );
-
   const openExportModal = () => {
     setExportPassword("");
     setExportError("");
@@ -137,7 +126,7 @@ const Settings = () => {
       URL.revokeObjectURL(url);
       setShowExportModal(false);
     } catch (error) {
-      setExportError(passwordErrorMessage(error, "errors.exportDataFailed"));
+      setExportError(userFacingError(t, error, t("errors.exportDataFailed")));
     } finally {
       setIsExporting(false);
     }
@@ -183,7 +172,7 @@ const Settings = () => {
       toast.success(t("emailVerification.changed", { email }));
       closeEmailModal();
     } catch (err) {
-      setEmailError(err.message ? translateAuthError(t, err.message) : t("errors.somethingWrong"));
+      setEmailError(userFacingError(t, err, t("errors.somethingWrong")));
     } finally {
       setIsChangingEmail(false);
     }
@@ -215,7 +204,7 @@ const Settings = () => {
       toast.success(t("editProfile.passwordChanged"));
       closePasswordModal();
     } catch (err) {
-      setPasswordError(err.message ? translateAuthError(t, err.message) : t("errors.changePasswordFailed"));
+      setPasswordError(userFacingError(t, err, t("errors.changePasswordFailed")));
     } finally {
       setIsChangingPassword(false);
     }
@@ -231,7 +220,7 @@ const Settings = () => {
       toast.success(t("editProfile.accountDeleted"));
       navigate("/");
     } catch (error) {
-      setDeleteError(passwordErrorMessage(error, "errors.deleteAccountFailed"));
+      setDeleteError(userFacingError(t, error, t("errors.deleteAccountFailed")));
       setIsDeleting(false);
     }
   };

@@ -62,7 +62,7 @@ export { initialVanLogTripId, vanLogEntryToFormValues, vanLogFormValuesToPayload
 export { groupVanLogEntriesByMonth, groupVanLogEntriesByTrip, getVanLogFuelPriceTrend, getTripBudgetProgress, getVanLogDateRangePresets, getVanLogSpendingByCurrency, getVanLogBreakdownByCurrency } from './utils/vanLogStats.js';
 export * from './utils/formatLocale.js';
 export { formatTimeAgo, timeAgo } from './utils/timeAgo.js';
-export { translateAuthError } from './utils/authErrorMessages.js';
+export { translateApiError, userFacingError } from './utils/apiErrorMessages.js';
 export * from './utils/schemasValidation.js';
 export * from './utils/itineraryDraft.js';
 export * from './utils/travelStyle.js';

@@ -8,7 +8,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { clearError as clearAuthError, loginUser, selectAuthError, translateAuthError } from '@tobeatraveller/shared';
+import { clearError as clearAuthError, loginUser, selectAuthError, translateApiError } from '@tobeatraveller/shared';
 import { shadow, textShadow } from '../../utils/styles';
 
 const AUTH_BG = require('../../../assets/auth.webp');
@@ -148,7 +148,7 @@ const LoginScreen = ({ navigation, route }) => {
               </TouchableOpacity>
 
               {authError && Object.keys(errors).length === 0 && (
-                <Text style={styles.authError}>{translateAuthError(t, authError)}</Text>
+                <Text style={styles.authError}>{translateApiError(t, authError, t('auth.loginFailed'))}</Text>
               )}
 
               <TouchableOpacity

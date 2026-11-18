@@ -2279,5 +2279,27 @@
   },
   "tools": {
     "unlockMore": "Passe à Premium pour en ajouter"
+  },
+  "apiErrors": {
+    "imagesOnly": "Seules les images peuvent être envoyées.",
+    "receiptPhotoRequired": "Ajoute la photo du ticket.",
+    "commentNotFound": "Ce commentaire n'existe plus.",
+    "reportTargetGone": "Ce que tu voulais signaler n'existe plus.",
+    "alreadyFollowing": "Tu suis déjà cette personne.",
+    "cannotFollowYourself": "Tu ne peux pas te suivre toi-même.",
+    "subscriptionAlreadyActive": "Tu as déjà un abonnement actif.",
+    "noCancellationToResume": "Ton abonnement n'a aucune résiliation en attente.",
+    "noSubscription": "Tu n'as aucun abonnement.",
+    "premiumRequired": "C'est réservé à Premium.",
+    "tooManyConfirmationEmails": "Nous t'avons déjà envoyé plusieurs e-mails de confirmation. Réessaie plus tard.",
+    "tooManyContactMessages": "Tu as envoyé plusieurs messages d'affilée. Réessaie plus tard.",
+    "tooManyReports": "Tu as envoyé beaucoup de signalements d'affilée. Réessaie plus tard.",
+    "tooManyGenerations": "Tu as généré beaucoup d'itinéraires d'affilée. Attends une minute et réessaie.",
+    "generatorBusy": "Le générateur d'itinéraires est très occupé. Réessaie dans une minute.",
+    "insufficientPermissions": "Tu n'as pas la permission de faire ça.",
+    "onlySuperadminActsOnStaff": "Seul un superadmin peut modifier ou supprimer un compte de l'équipe.",
+    "onlySuperadminGrantsSuperadmin": "Seul un superadmin peut attribuer le rôle de superadmin.",
+    "cannotChangeOwnRole": "Tu ne peux pas changer ton propre rôle.",
+    "cannotNoticeYourself": "Tu ne peux pas t'envoyer un avis à toi-même."
   }
 }

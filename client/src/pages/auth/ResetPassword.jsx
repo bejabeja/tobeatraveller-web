@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useSearchParams } from "react-router-dom";
-import { resetPassword, translateAuthError } from "@tobeatraveller/shared";
+import { resetPassword, userFacingError } from "@tobeatraveller/shared";
 import { PasswordInputForm } from "../../components/form/PasswordInputForm";
 import SubmitButton from "../../components/form/SubmitButton";
 import { setImageAuthLoaded } from "../../store/auth/authActions";
@@ -84,7 +84,7 @@ const ResetPassword = () => {
       await resetPassword(token, newPassword);
       setSuccess(true);
     } catch (error) {
-      setServerError(error.message || t("errors.somethingWrong"));
+      setServerError(userFacingError(t, error, t("errors.somethingWrong")));
     }
   };
 
@@ -145,7 +145,7 @@ const ResetPassword = () => {
               <div className="auth__form-error" role="alert" aria-live="assertive">
                 {serverError ? (
                   <>
-                    {translateAuthError(t, serverError)}{" "}
+                    {serverError}{" "}
                     <Link to="/forgot-password" style={{ color: "var(--primary-color)", fontWeight: 600 }}>
                       {t("auth.requestNewLink")}
                     </Link>

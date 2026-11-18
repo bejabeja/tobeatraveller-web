@@ -17,8 +17,8 @@ jest.mock("../../store/auth/authSelectors", () => ({ selectimageAuthLoaded: () =
 jest.mock("@tobeatraveller/shared", () => ({
   ...jest.requireActual("../../../../shared/src/utils/parseRichText.js"),
   ...jest.requireActual("../../../../shared/src/utils/schemasValidation.js"),
+  ...jest.requireActual("../../../../shared/src/utils/apiErrorMessages.js"),
   forgotPassword: jest.fn(),
-  translateAuthError: (t, message) => message,
 }));
 
 import { forgotPassword } from "@tobeatraveller/shared";
@@ -39,5 +39,25 @@ describe("ForgotPassword", () => {
     const address = await screen.findByText("jane@example.com");
     expect(address.tagName).toBe("STRONG");
     expect(forgotPassword).toHaveBeenCalledWith("jane@example.com");
+  });
+
+  // Regression: a failure on the server showed the request's own English.
+  it("says the page's own message when the server failed and said nothing", async () => {
+    forgotPassword.mockRejectedValue(Object.assign(new Error("Forgot password failed"), { status: 500 }));
+    render(<MemoryRouter><ForgotPassword /></MemoryRouter>);
+
+    await userEvent.type(screen.getByRole("textbox"), "jane@example.com{Enter}");
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("errors.somethingWrong");
+  });
+
+  it("says too many requests in the person's language", async () => {
+    const tooMany = "Too many attempts, please try again later.";
+    forgotPassword.mockRejectedValue(Object.assign(new Error(tooMany), { status: 429, apiMessage: tooMany }));
+    render(<MemoryRouter><ForgotPassword /></MemoryRouter>);
+
+    await userEvent.type(screen.getByRole("textbox"), "jane@example.com{Enter}");
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("auth.tooManyAttempts");
   });
 });

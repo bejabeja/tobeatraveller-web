@@ -10,7 +10,7 @@ import {
 import {
   formatAmount, formatBudgetAmount, formatCalendarDay, formatNumber, getTripBudgetProgress, getVanLogDateRangePresets,
   groupVanLogEntriesByMonth, groupVanLogEntriesByTrip, isPremiumRequiredError, localCalendarDay, normalizeSearchText, vanLogCategories, vanLogCategoryEmoji,
-  locationLine, refreshUnreadCountSoon,
+  locationLine, refreshUnreadCountSoon, userFacingError,
 } from "@tobeatraveller/shared";
 import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState";
 import SelectMenu from "../../components/form/SelectMenu";
@@ -170,7 +170,7 @@ const VanLog = () => {
       setDeletingId(null);
       refresh();
     } catch (err) {
-      toast.error(err.message || t("vanLog.deleteError"));
+      toast.error(userFacingError(t, err, t("vanLog.deleteError")));
     } finally {
       setDeleting(false);
     }

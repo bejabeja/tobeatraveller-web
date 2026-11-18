@@ -8,7 +8,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { ANALYTICS_EVENTS, checkUsernameAvailable, clearError as clearAuthError, PASSWORD_MIN_LENGTH, registerUser, selectAuthError, translateAuthError } from '@tobeatraveller/shared';
+import { ANALYTICS_EVENTS, checkUsernameAvailable, clearError as clearAuthError, PASSWORD_MIN_LENGTH, registerUser, selectAuthError, translateApiError } from '@tobeatraveller/shared';
 import { trackEvent } from '../../utils/analytics';
 import { shadow, textShadow } from '../../utils/styles';
 import { RichText } from '../../components/RichText';
@@ -275,7 +275,7 @@ const RegisterScreen = ({ navigation }) => {
                     </Text>
                   </Text>
                 ) : (
-                  <Text style={styles.authError}>{translateAuthError(t, authError)}</Text>
+                  <Text style={styles.authError}>{translateApiError(t, authError, t('auth.registrationFailed'))}</Text>
                 )
               )}
 

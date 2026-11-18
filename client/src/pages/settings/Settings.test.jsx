@@ -39,7 +39,7 @@ jest.mock("../../store/user/userInfoSelectors", () => ({
 jest.mock("@tobeatraveller/shared", () => ({
   ...jest.requireActual("@tobeatraveller/shared/src/utils/schemasValidation.js"),
   ...jest.requireActual("@tobeatraveller/shared/src/utils/travelStyle.js"),
-  ...jest.requireActual("@tobeatraveller/shared/src/utils/authErrorMessages.js"),
+  ...jest.requireActual("@tobeatraveller/shared/src/utils/apiErrorMessages.js"),
   updateMyTravelStyle: jest.fn(),
   changeUnverifiedEmail: jest.fn(),
   APP_LANGUAGES: [],
@@ -104,7 +104,7 @@ describe("Settings: changing the password", () => {
 
   // Regression: the API's English text was shown as it came.
   it("says a wrong current password in the person's language", async () => {
-    changePassword.mockRejectedValue(Object.assign(new Error("Current password is incorrect"), { status: 400, field: "currentPassword" }));
+    changePassword.mockRejectedValue(Object.assign(new Error("Current password is incorrect"), { status: 400, field: "currentPassword", apiMessage: "Current password is incorrect" }));
     await submitNewPassword("abcdefgh");
 
     expect(await screen.findByText("auth.wrongCurrentPassword")).toBeInTheDocument();
@@ -244,7 +244,7 @@ describe("Settings: correcting an email that was never confirmed", () => {
   });
 
   it("says why it failed and keeps the form open", async () => {
-    changeUnverifiedEmail.mockRejectedValue(new Error("auth.emailInUse"));
+    changeUnverifiedEmail.mockRejectedValue(Object.assign(new Error("Email already in use"), { status: 409, field: "email", apiMessage: "Email already in use" }));
     render(<MemoryRouter><Settings /></MemoryRouter>);
 
     await userEvent.click(await screen.findByRole("button", { name: /emailVerification.changeLink/ }));
@@ -270,7 +270,8 @@ describe("Settings: where the plan and the invitations are", () => {
   });
 });
 
-const refusedWith = (status, message, field) => Object.assign(new Error(message), { status, field });
+// As parseError leaves it: the API's own words in apiMessage.
+const refusedWith = (status, message, field) => Object.assign(new Error(message), { status, field, apiMessage: message });
 
 // Regression: a session alone was enough to delete the account or download all its data.
 describe("Settings: confirming with the password", () => {

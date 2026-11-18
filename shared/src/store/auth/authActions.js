@@ -3,6 +3,8 @@ import { getUserForAuth } from "../../services/users";
 import { resetUserInfo } from "../user/userInfoActions";
 import { getCachedAuthUser, setCachedAuthUser } from "../../utils/cachedAuthUser";
 
+// The error kept is what the API said, untouched, for the screens to translate; the request's
+// own English, when the API said nothing, only if there is nothing else.
 export const registerUser = (user, onSuccess) => {
     return async (dispatch) => {
         try {
@@ -12,7 +14,7 @@ export const registerUser = (user, onSuccess) => {
             dispatch({ type: "@auth/login", payload: newUser });
             if (onSuccess) onSuccess();
         } catch (error) {
-            dispatch({ type: "@auth/create-user", error: error.message });
+            dispatch({ type: "@auth/create-user", error: error.apiMessage ?? error.message });
             throw error;
         }
     };
@@ -26,7 +28,7 @@ export const loginUser = (user, onSuccess) => {
             dispatch({ type: "@auth/login", payload: newUser });
             if (onSuccess) onSuccess();
         } catch (error) {
-            dispatch({ type: "@auth/login", payload: null, error: error.message });
+            dispatch({ type: "@auth/login", payload: null, error: error.apiMessage ?? error.message });
             throw error;
         }
     };

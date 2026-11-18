@@ -38,7 +38,7 @@ jest.mock('@tobeatraveller/shared', () => ({
   ...jest.requireActual('../../../../shared/src/utils/parseRichText.js'),
   ...jest.requireActual('../../../../shared/src/utils/schemasValidation.js'),
   ...jest.requireActual('../../../../shared/src/utils/travelStyle.js'),
-  ...jest.requireActual('../../../../shared/src/utils/authErrorMessages.js'),
+  ...jest.requireActual('../../../../shared/src/utils/apiErrorMessages.js'),
   selectAuthUser: () => ({ id: 'user-1', username: 'jane' }),
   selectMe: () => mockMe,
   setUserInfo: (id) => ({ type: 'setUserInfo', id }),
@@ -138,7 +138,7 @@ describe('changing the password', () => {
 
   // Regression: the API's English text was shown as it came.
   it("says a wrong current password in the person's language", async () => {
-    changePassword.mockRejectedValue(Object.assign(new Error('Current password is incorrect'), { status: 400, field: 'currentPassword' }));
+    changePassword.mockRejectedValue(Object.assign(new Error('Current password is incorrect'), { status: 400, field: 'currentPassword', apiMessage: 'Current password is incorrect' }));
     await submitNewPassword('abcdefgh');
 
     expect(screen.getByText('auth.wrongCurrentPassword')).toBeTruthy();
@@ -246,7 +246,7 @@ describe('correcting an email that was never confirmed', () => {
 
   it('says why it failed and keeps the form open', async () => {
     mockMe = UNCONFIRMED;
-    changeUnverifiedEmail.mockRejectedValue(new Error('auth.emailInUse'));
+    changeUnverifiedEmail.mockRejectedValue(Object.assign(new Error('Email already in use'), { status: 409, field: 'email', apiMessage: 'Email already in use' }));
     renderScreen();
 
     fireEvent.press(await screen.findByText('emailVerification.changeLink'));
@@ -309,7 +309,8 @@ describe('signing out', () => {
   });
 });
 
-const refusedWith = (status, message, field) => Object.assign(new Error(message), { status, field });
+// As parseError leaves it: the API's own words in apiMessage.
+const refusedWith = (status, message, field) => Object.assign(new Error(message), { status, field, apiMessage: message });
 
 // Regression: a session alone was enough to delete the account or download all its data.
 describe('confirming with the password', () => {

@@ -6,7 +6,7 @@ import { IoCameraOutline, IoTrashOutline, IoArrowBackOutline } from "react-icons
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { formatDate, profilePath } from "@tobeatraveller/shared";
+import { formatDate, profilePath, userFacingError } from "@tobeatraveller/shared";
 import { InputForm, TextAreaForm } from "../../components/form/InputForm";
 import UseCurrentLocationButton from "../../components/form/UseCurrentLocationButton";
 import Modal from "../../components/modal/Modal";
@@ -129,13 +129,14 @@ const EditProfile = () => {
       navigate(`/profile/${id}`);
     } catch (err) {
       if (err.field && err.field in updateUserSchema.shape) {
-        const message = err.message?.startsWith(USERNAME_COOLDOWN_ERROR) ? t("editProfile.usernameChangeLimit") : err.message;
+        const message = err.message?.startsWith(USERNAME_COOLDOWN_ERROR) ? t("editProfile.usernameChangeLimit") : userFacingError(t, err, err.message);
         setError(err.field, { type: "server", message });
         document.getElementById(err.field)?.scrollIntoView({ behavior: "smooth", block: "center" });
         document.getElementById(err.field)?.focus();
       } else {
-        toast.error(err.message || t("errors.updateProfileFailed"));
-        setErrorSubmit(err.message);
+        const message = userFacingError(t, err, t("errors.updateProfileFailed"));
+        toast.error(message);
+        setErrorSubmit(message);
       }
     }
   };

@@ -3,7 +3,7 @@ import { useId, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
-import { translateValidationMessage } from "@tobeatraveller/shared";
+import { translateValidationMessage, userFacingError } from "@tobeatraveller/shared";
 import { IoAddOutline, IoLockClosedOutline } from "react-icons/io5";
 import { Link } from "react-router-dom";
 import { isInventoryCapReachedError, isShoppingListCapReachedError, supplyCategories, supplyUnits } from "@tobeatraveller/shared";
@@ -89,7 +89,7 @@ const SupplyFormModal = ({ item, title, saveLabel, existingItems = [], listType,
         setCapReached(true);
         return;
       }
-      toast.error(error.message || s("saveError"));
+      toast.error(userFacingError(t, error, s("saveError")));
     }
   };
 

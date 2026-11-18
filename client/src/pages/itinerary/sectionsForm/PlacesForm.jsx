@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { MdClose, MdKeyboardArrowDown, MdKeyboardArrowRight, MdKeyboardArrowUp, MdOutlineExplore } from "react-icons/md";
 import { RiSparklingLine } from "react-icons/ri";
 import toast from "react-hot-toast";
-import { aiPaceOptions, dayPlacesPreview, daysToFold, DEFAULT_AI_PACE, isPremiumRequiredError } from "@tobeatraveller/shared";
+import { aiPaceOptions, dayPlacesPreview, daysToFold, DEFAULT_AI_PACE, isPremiumRequiredError, userFacingError } from "@tobeatraveller/shared";
 import { getCategoryIcon } from "../../../assets/icons";
 import AiGenerationUpsell from "../../../components/aiGenerationUpsell/AiGenerationUpsell";
 import AutocompletePlaceInput from "../../../components/form/AutocompletePlaceInput";
@@ -153,7 +153,7 @@ const PlacesForm = ({
       if (isPremiumRequiredError(error)) {
         setAiPremiumRequired(true);
       } else {
-        toast.error(error.message === GENERATE_TIMEOUT_MESSAGE ? f("generateTimeout") : (error.message || f("errorGenerate")));
+        toast.error(error.message === GENERATE_TIMEOUT_MESSAGE ? f("generateTimeout") : (userFacingError(t, error, f("errorGenerate"))));
       }
     } finally {
       setIsGenerating(false);

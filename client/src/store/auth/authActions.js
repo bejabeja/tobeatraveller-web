@@ -1,5 +1,5 @@
 import { toast } from "react-hot-toast";
-import { translateAuthError } from "@tobeatraveller/shared";
+import { userFacingError } from "@tobeatraveller/shared";
 import i18n from "../../i18n";
 import { createNewUser, login, logout } from "../../services/auth";
 import { getUserForAuth } from "../../services/users";
@@ -15,7 +15,7 @@ export const createUser = (user, onSuccess) => {
                 {
                     loading: i18n.t("auth.creatingAccount"),
                     success: i18n.t("auth.accountCreated"),
-                    error: (err) => translateAuthError(i18n.t.bind(i18n), err.message) || i18n.t("auth.registrationFailed"),
+                    error: (err) => userFacingError(i18n.t.bind(i18n), err, i18n.t("auth.registrationFailed")),
                 }
             );
             const newUser = await login(user);
@@ -36,7 +36,7 @@ export const loginUser = (user, onSuccess) => {
                 {
                     loading: i18n.t("auth.loggingIn"),
                     success: i18n.t("auth.welcomeBack"),
-                    error: (err) => translateAuthError(i18n.t.bind(i18n), err.message) || i18n.t("auth.loginFailed"),
+                    error: (err) => userFacingError(i18n.t.bind(i18n), err, i18n.t("auth.loginFailed")),
                 }
             );
             saveUserHint(newUser);

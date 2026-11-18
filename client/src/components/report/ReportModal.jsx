@@ -1,7 +1,7 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
-import { REPORT_DETAILS_MAX_LENGTH, REPORT_REASONS, reportDetailsError } from "@tobeatraveller/shared";
+import { REPORT_DETAILS_MAX_LENGTH, REPORT_REASONS, reportDetailsError, userFacingError } from "@tobeatraveller/shared";
 import { submitReport } from "../../services/contentReports";
 import Modal from "../modal/Modal";
 import "./ReportModal.scss";
@@ -39,7 +39,7 @@ const ReportModal = ({ isOpen, onClose, onSent, targetType, targetId }) => {
         close();
         return;
       }
-      toast.error(error.message || t("report.sendError"));
+      toast.error(userFacingError(t, error, t("report.sendError")));
     } finally {
       setSending(false);
     }

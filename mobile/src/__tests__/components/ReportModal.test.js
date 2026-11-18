@@ -2,6 +2,7 @@ jest.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key) => key }) 
 jest.mock('@tobeatraveller/shared', () => ({
   COLORS: jest.requireActual('../../../../shared/src/utils/constants/colors.js').COLORS,
   ...jest.requireActual('../../../../shared/src/utils/contentReports.js'),
+  ...jest.requireActual('../../../../shared/src/utils/apiErrorMessages.js'),
   submitReport: jest.fn(),
 }));
 
@@ -71,13 +72,14 @@ describe('ReportModal', () => {
   });
 
   it('says why it could not be sent and stays open', async () => {
-    submitReport.mockRejectedValue(new Error('You already reported this'));
+    const tooMany = 'Too many reports, please try again later.';
+    submitReport.mockRejectedValue(Object.assign(new Error(tooMany), { status: 429, apiMessage: tooMany }));
     const onClose = renderModal();
 
     fireEvent.press(screen.getByText('report.reason.spam'));
     fireEvent.press(screen.getByText('report.submit'));
 
-    await waitFor(() => expect(Alert.alert).toHaveBeenCalledWith('errors.somethingWrong', 'You already reported this'));
+    await waitFor(() => expect(Alert.alert).toHaveBeenCalledWith('errors.somethingWrong', 'apiErrors.tooManyReports'));
     expect(onClose).not.toHaveBeenCalled();
   });
 });

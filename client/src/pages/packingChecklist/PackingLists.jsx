@@ -6,7 +6,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
   isPackingListCapReachedError, localCalendarDay, PACKING_TEMPLATES, packingTemplateItems, suggestedTemplateForTrip,
-  toAppLanguage, TRAVEL_STYLES, tripsToLinkTo,
+  toAppLanguage, TRAVEL_STYLES, tripsToLinkTo, userFacingError,
 } from "@tobeatraveller/shared";
 import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState";
 import ToolEmptyState from "../../components/toolPage/ToolEmptyState";
@@ -87,7 +87,7 @@ const PackingLists = () => {
         setCapReached(true);
         return;
       }
-      toast.error(err.message || p("saveError"));
+      toast.error(userFacingError(t, err, p("saveError")));
     }
   };
 

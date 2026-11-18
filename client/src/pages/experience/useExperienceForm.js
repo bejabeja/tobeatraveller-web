@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
-import { DEFAULT_AI_PACE, experienceDates, isPremiumRequiredError, joinStepNote } from "@tobeatraveller/shared";
+import { DEFAULT_AI_PACE, experienceDates, isPremiumRequiredError, joinStepNote, userFacingError } from "@tobeatraveller/shared";
 import { GENERATE_TIMEOUT_MESSAGE, generateSmartItinerary } from "../../services/itineraries";
 import { useGeocodeSearch } from "../../hooks/useGeocodeSearch";
 import { useCurrentLocation } from "../../hooks/useCurrentLocation";
@@ -130,7 +130,7 @@ export const useExperienceForm = ({
       setPhase("review");
     } catch (error) {
       if (isPremiumRequiredError(error)) onPremiumRequired();
-      else toast.error(error.message === GENERATE_TIMEOUT_MESSAGE ? ce("generateTimeout") : (error.message || ce("generateError")));
+      else toast.error(error.message === GENERATE_TIMEOUT_MESSAGE ? ce("generateTimeout") : (userFacingError(t, error, ce("generateError"))));
     } finally {
       setGenerating(false);
     }

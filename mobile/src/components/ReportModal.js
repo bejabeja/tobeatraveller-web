@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { REPORT_DETAILS_MAX_LENGTH, REPORT_REASONS, reportDetailsError, submitReport } from '@tobeatraveller/shared';
+import { REPORT_DETAILS_MAX_LENGTH, REPORT_REASONS, reportDetailsError, submitReport, userFacingError } from '@tobeatraveller/shared';
 import { COLORS, shadow } from '../utils/styles';
 
 // Reports a comment, a trip or a profile. The team reads it; the reported
@@ -32,7 +32,7 @@ const ReportModal = ({ targetType, targetId, onClose, onSent }) => {
         onClose();
         return;
       }
-      Alert.alert(t('errors.somethingWrong'), error.message || t('report.sendError'));
+      Alert.alert(t('errors.somethingWrong'), userFacingError(t, error, t('report.sendError')));
     } finally {
       setSending(false);
     }

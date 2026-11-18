@@ -9,7 +9,7 @@ import { usePageMeta } from "../../hooks/usePageMeta";
 import { selectAuthUser, selectIsAuthenticated } from "../../store/auth/authSelectors";
 import { selectMe } from "../../store/user/userInfoSelectors";
 import { setUserInfo } from "../../store/user/userInfoActions";
-import { formatDate, getPremiumView, PLAN_COMPARISON, PREMIUM_WELCOME_FEATURES, SUBSCRIPTION_FAQ } from "@tobeatraveller/shared";
+import { formatDate, getPremiumView, PLAN_COMPARISON, PREMIUM_WELCOME_FEATURES, SUBSCRIPTION_FAQ, userFacingError } from "@tobeatraveller/shared";
 import { createCheckoutSession, createPortalSession, getMySubscription, resumeSubscription } from "../../services/subscription";
 import { getCategoryIcon } from "../../assets/icons";
 import { preloadImg } from "../../utils/preloadImg";
@@ -221,7 +221,7 @@ const Subscription = () => {
       }
       window.location.href = url;
     } catch (error) {
-      toast.error(error.message || t("subscription.checkoutErrorToast"));
+      toast.error(userFacingError(t, error, t("subscription.checkoutErrorToast")));
       setLoadingPlanId(null);
     }
   };
@@ -234,7 +234,7 @@ const Subscription = () => {
       trackEvent(ANALYTICS_EVENTS.SUBSCRIPTION_RESUMED, { view: view.kind });
       toast.success(t("subscription.resumeSuccessToast"));
     } catch (error) {
-      toast.error(error.message || t("subscription.resumeErrorToast"));
+      toast.error(userFacingError(t, error, t("subscription.resumeErrorToast")));
     } finally {
       setResuming(false);
     }
@@ -247,7 +247,7 @@ const Subscription = () => {
       trackEvent(ANALYTICS_EVENTS.SUBSCRIPTION_PORTAL_OPENED, { view: view.kind });
       window.location.href = url;
     } catch (error) {
-      toast.error(error.message || t("subscription.portalErrorToast"));
+      toast.error(userFacingError(t, error, t("subscription.portalErrorToast")));
       setLoadingPortal(false);
     }
   };

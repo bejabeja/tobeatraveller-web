@@ -11,7 +11,7 @@ jest.mock('@tobeatraveller/shared', () => ({
   clearError: jest.fn(() => 'clear-error'),
   loginUser: jest.fn(),
   selectAuthError: () => mockAuthError,
-  translateAuthError: (t, message) => message,
+  translateApiError: (t, message) => message,
 }));
 
 import { act, fireEvent, render, screen } from '@testing-library/react-native';

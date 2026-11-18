@@ -2279,5 +2279,27 @@
   },
   "tools": {
     "unlockMore": "Passa a Premium per aggiungerne altri"
+  },
+  "apiErrors": {
+    "imagesOnly": "Puoi caricare solo immagini.",
+    "receiptPhotoRequired": "Aggiungi la foto dello scontrino.",
+    "commentNotFound": "Questo commento non esiste più.",
+    "reportTargetGone": "Quello che volevi segnalare non esiste più.",
+    "alreadyFollowing": "Segui già questa persona.",
+    "cannotFollowYourself": "Non puoi seguire te stesso.",
+    "subscriptionAlreadyActive": "Hai già un abbonamento attivo.",
+    "noCancellationToResume": "Il tuo abbonamento non ha nessuna disdetta in sospeso.",
+    "noSubscription": "Non hai nessun abbonamento.",
+    "premiumRequired": "Questo è solo per Premium.",
+    "tooManyConfirmationEmails": "Ti abbiamo già inviato diverse email di conferma. Riprova più tardi.",
+    "tooManyContactMessages": "Hai inviato diversi messaggi di seguito. Riprova più tardi.",
+    "tooManyReports": "Hai inviato molte segnalazioni di seguito. Riprova più tardi.",
+    "tooManyGenerations": "Hai generato molti itinerari di seguito. Aspetta un minuto e riprova.",
+    "generatorBusy": "Il generatore di itinerari è molto occupato. Riprova tra un minuto.",
+    "insufficientPermissions": "Non hai il permesso di farlo.",
+    "onlySuperadminActsOnStaff": "Solo un superadmin può modificare o eliminare un account dello staff.",
+    "onlySuperadminGrantsSuperadmin": "Solo un superadmin può assegnare il ruolo di superadmin.",
+    "cannotChangeOwnRole": "Non puoi cambiare il tuo ruolo.",
+    "cannotNoticeYourself": "Non puoi inviare un avviso a te stesso."
   }
 }

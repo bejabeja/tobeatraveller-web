@@ -6,7 +6,7 @@ import RichText from "../../components/RichText";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { forgotPassword, translateAuthError } from "@tobeatraveller/shared";
+import { forgotPassword, userFacingError } from "@tobeatraveller/shared";
 import { InputForm } from "../../components/form/InputForm";
 import SubmitButton from "../../components/form/SubmitButton";
 import { setImageAuthLoaded } from "../../store/auth/authActions";
@@ -47,7 +47,7 @@ const ForgotPassword = () => {
       await forgotPassword(email);
       setSuccessEmail(email);
     } catch (error) {
-      setServerError(error.message || t("errors.somethingWrong"));
+      setServerError(userFacingError(t, error, t("errors.somethingWrong")));
     }
   };
 
@@ -121,7 +121,7 @@ const ForgotPassword = () => {
               />
 
               <div className="auth__form-error" role="alert" aria-live="assertive">
-                {serverError ? translateAuthError(t, serverError) : " "}
+                {serverError || " "}
               </div>
 
               <div className="auth__form-link">

@@ -14,7 +14,7 @@ import {
   isPremiumRequiredError, ITINERARY_DRAFT_KINDS, itineraryCategories, NEW_ITINERARY_DEFAULT_VISIBILITY, placeCategories,
   reverseGeocode, searchDestinations, selectAuthUser, selectMe,
   setUserInfo, setUserInfoItineraries,
-  stepNameHintKey, ANALYTICS_EVENTS, TRIP_KINDS, TRAVEL_STYLES, experienceDates, isCalendarDay, joinStepNote, tripCreatedProperties,
+  stepNameHintKey, ANALYTICS_EVENTS, TRIP_KINDS, TRAVEL_STYLES, experienceDates, isCalendarDay, joinStepNote, tripCreatedProperties, userFacingError,
 } from '@tobeatraveller/shared';
 import { ByVanSection } from './ItineraryFormShared';
 import { trackEvent } from '../../utils/analytics';
@@ -224,7 +224,7 @@ const PlanExperienceScreen = ({ navigation }) => {
       if (isPremiumRequiredError(error)) {
         Alert.alert(t('premium.requiredTitle'), t('premium.requiredDesc'));
       } else {
-        Alert.alert(t('errors.somethingWrong'), error.message === GENERATE_TIMEOUT_MESSAGE ? ce('generateTimeout') : (error.message || ce('generateError')));
+        Alert.alert(t('errors.somethingWrong'), error.message === GENERATE_TIMEOUT_MESSAGE ? ce('generateTimeout') : (userFacingError(t, error, ce('generateError'))));
       }
     } finally {
       setGenerating(false);

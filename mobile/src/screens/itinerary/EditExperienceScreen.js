@@ -15,7 +15,7 @@ import {
   itineraryCategories, placeCategories,
   reverseGeocode, searchDestinations, selectAuthUser, selectMe,
   setUserInfo, setUserInfoItineraries,
-  stepNameHintKey, ANALYTICS_EVENTS, TRIP_KINDS, experienceDates, isCalendarDay, joinStepNote, splitStepNote,
+  stepNameHintKey, ANALYTICS_EVENTS, TRIP_KINDS, experienceDates, isCalendarDay, joinStepNote, splitStepNote, userFacingError,
 } from '@tobeatraveller/shared';
 import { ByVanSection } from './ItineraryFormShared';
 import { trackEvent } from '../../utils/analytics';
@@ -196,7 +196,7 @@ const EditExperienceScreen = ({ navigation, route }) => {
       if (isPremiumRequiredError(error)) {
         Alert.alert(t('premium.requiredTitle'), t('premium.requiredDesc'));
       } else {
-        Alert.alert(t('errors.somethingWrong'), error.message === GENERATE_TIMEOUT_MESSAGE ? ce('generateTimeout') : (error.message || ce('generateError')));
+        Alert.alert(t('errors.somethingWrong'), error.message === GENERATE_TIMEOUT_MESSAGE ? ce('generateTimeout') : (userFacingError(t, error, ce('generateError'))));
       }
     } finally {
       setGenerating(false);
