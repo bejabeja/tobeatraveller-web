@@ -1,9 +1,9 @@
 import { reportDecisionSchema, reportReinstatementSchema, reportSchema } from "../utils/schemasValidation.js";
 import { REPORT_STATUSES } from "../utils/contentReports.js";
 import { ValidationError } from "../errors/ValidationError.js";
+import { pageSizeFrom } from '../utils/pagination.js';
 
 const DEFAULT_REPORTS_PAGE_SIZE = 20;
-const MAX_REPORTS_PAGE_SIZE = 100;
 
 export class ContentReportsController {
     constructor(contentReportsService) {
@@ -26,7 +26,7 @@ export class ContentReportsController {
     async listReports(req, res, next) {
         try {
             const status = Object.values(REPORT_STATUSES).includes(req.query.status) ? req.query.status : undefined;
-            const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || DEFAULT_REPORTS_PAGE_SIZE, 1), MAX_REPORTS_PAGE_SIZE);
+            const limit = pageSizeFrom(req.query.limit, DEFAULT_REPORTS_PAGE_SIZE);
             const offset = Math.max(parseInt(req.query.offset, 10) || 0, 0);
             const page = await this.contentReportsService.listReports({ status, limit, offset });
             return res.status(200).json(page);

@@ -10,7 +10,7 @@ import { countryCodeFromIp } from "../utils/geoLookup.js";
 import { logger } from "../utils/logger.js";
 import { AUDIT_EVENTS } from "../utils/auditEvents.js";
 import { ACTIVE_SUBSCRIPTION_STATUSES } from "../models/subscription.js";
-import { ROLES } from "../utils/roles.js";
+import { ROLES, STAFF_ROLES } from "../utils/roles.js";
 import { referralCodeFromUsername } from "../utils/referralCode.js";
 import { isUsernameChange, USERNAME_CHANGE_COOLDOWN_DAYS, usernameChangeAvailableAt } from "../utils/usernameChange.js";
 
@@ -29,6 +29,14 @@ const manualPremiumEnd = (months) => {
 const latestDate = (...dates) => {
     const present = dates.filter(Boolean);
     return present.length ? new Date(Math.max(...present)) : null;
+};
+
+// Staff accounts are only a superadmin's to change: otherwise an admin could take the
+// role from, or delete the account of, the superadmin above them.
+const assertCanActOnAccount = (target, actingUser) => {
+    if (STAFF_ROLES.includes(target.role) && actingUser.role !== ROLES.SUPERADMIN) {
+        throw new ForbiddenError("Only a superadmin can change or delete a staff account");
+    }
 };
 
 export class UserService {
@@ -175,6 +183,7 @@ export class UserService {
 
         const previousUser = await this.userRepository.getUserById(targetId);
         if (!previousUser) throw new NotFoundError("User not found");
+        assertCanActOnAccount(previousUser, actingUser);
 
         const user = await this.userRepository.updateRole(targetId, newRole);
 
@@ -414,6 +423,7 @@ export class UserService {
     async deleteUser(id, actingUser = null, { ip, userAgent } = {}) {
         const user = await this.userRepository.getUserById(id);
         if (!user) throw new NotFoundError("User not found");
+        if (actingUser && actingUser.id !== id) assertCanActOnAccount(user, actingUser);
 
         // Collected before the delete cascades, since itinerary/diary rows
         // (and their photo_public_id columns) won't exist to query afterwards.

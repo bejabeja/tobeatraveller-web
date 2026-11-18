@@ -1,6 +1,10 @@
 import { ValidationError } from "../errors/ValidationError.js";
 import { adminNoticeSchema, changePasswordSchema, updateLanguageSchema, updateTravelStyleSchema, updateUserRoleSchema, updateUserSchema, updateUserTierSchema } from "../utils/schemasValidation.js";
 import { getRequestContext } from "../utils/requestContext.js";
+import { pageNumberFrom, pageSizeFrom } from '../utils/pagination.js';
+
+const DEFAULT_USERS_PAGE_SIZE = 9;
+const DEFAULT_ADMIN_USERS_PAGE_SIZE = 20;
 
 const MAX_AVATAR_SIZE = 5 * 1024 * 1024; // 5 MB
 
@@ -219,11 +223,11 @@ export class UserController {
 
     async getAllUsersFiltered(req, res, next) {
         try {
-            const { searchName = '', page = 1, limit = 9, sortBy = 'username' } = req.query;
+            const { searchName = '', page, limit, sortBy = 'username' } = req.query;
             const filters = {
                 searchName,
-                page: parseInt(page),
-                limit: parseInt(limit),
+                page: pageNumberFrom(page),
+                limit: pageSizeFrom(limit, DEFAULT_USERS_PAGE_SIZE),
                 sortBy,
                 viewerId: req.user?.id,
             };
@@ -236,11 +240,11 @@ export class UserController {
 
     async getAllUsersForAdmin(req, res, next) {
         try {
-            const { searchName = '', page = 1, limit = 20, sortBy = 'username', role, isPremium } = req.query;
+            const { searchName = '', page, limit, sortBy = 'username', role, isPremium } = req.query;
             const filters = {
                 searchName,
-                page: parseInt(page),
-                limit: parseInt(limit),
+                page: pageNumberFrom(page),
+                limit: pageSizeFrom(limit, DEFAULT_ADMIN_USERS_PAGE_SIZE),
                 sortBy,
                 role,
                 isPremium: isPremium === undefined ? undefined : isPremium === 'true',

@@ -1,8 +1,8 @@
 import { ValidationError } from '../errors/ValidationError.js';
 import { createLifeDiaryEntrySchema, lifeDiaryEntrySchema } from '../utils/schemasValidation.js';
+import { pageSizeFrom } from '../utils/pagination.js';
 
 const DEFAULT_PAGE_SIZE = 30;
-const MAX_PAGE_SIZE = 100;
 
 export class LifeDiaryController {
     constructor(lifeDiaryService) {
@@ -25,7 +25,7 @@ export class LifeDiaryController {
 
     async getMyEntries(req, res, next) {
         try {
-            const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || DEFAULT_PAGE_SIZE, 1), MAX_PAGE_SIZE);
+            const limit = pageSizeFrom(req.query.limit, DEFAULT_PAGE_SIZE);
             const offset = Math.max(parseInt(req.query.offset, 10) || 0, 0);
             const page = await this.lifeDiaryService.getEntriesPageByUser(req.user.id, { limit, offset });
             res.status(200).json(page);

@@ -8,6 +8,9 @@ import { NotFoundError } from '../errors/NotFoundError.js';
 import { AUDIT_EVENTS } from '../utils/auditEvents.js';
 
 const isProduction = config.nodeEnv === 'production';
+// Checked against when the email has no account, at the same cost as a real one, so the
+// answer takes as long either way and its timing does not tell who has an account.
+const NO_ACCOUNT_PASSWORD_HASH = '$2b$10$Z/VzksABnWdpgVKhXc/aN.ngg/0Ssa1iFI..AMb8i3f48OojoadU6';
 export class AuthService {
     constructor(userRepository, emailService = null, passwordResetRepository = null, auditLogService = null) {
         this.userRepository = userRepository;
@@ -19,6 +22,7 @@ export class AuthService {
     async login({ email, password }, { ip, userAgent } = {}) {
         const user = await this.userRepository.findByEmail(email);
         if (!user) {
+            await bcrypt.compare(password, NO_ACCOUNT_PASSWORD_HASH);
             this.auditLogService?.log({
                 action: AUDIT_EVENTS.LOGIN_FAILED, metadata: { email, reason: 'user_not_found' },
                 ipAddress: ip, userAgent,
@@ -69,7 +73,9 @@ export class AuthService {
     // change opens nothing any more, nor does one of an account that is gone. The
     // access token it came with is left to run out: it lasts an hour at most, and
     // checking it on every request would put the database on each one.
-    async _verifyRefreshToken(refreshToken) {
+    // What the new access token says comes from the account as it is now: the role
+    // or name in a refresh token can be a week old (an admin since demoted).
+    async _sessionAccount(refreshToken) {
         let decoded;
         try {
             decoded = jwt.verify(refreshToken, config.jwtRefreshSecret);
@@ -80,17 +86,16 @@ export class AuthService {
         const user = await this.userRepository.getUserById(decoded.id);
         const validFromSeconds = user?.sessionsValidFrom ? Math.floor(new Date(user.sessionsValidFrom).getTime() / 1000) : 0;
         if (!user || decoded.iat < validFromSeconds) throw new AuthError('Unauthorized: Session ended');
-        return decoded;
+        return { id: user.id, username: user.username, role: user.role };
     }
 
     async refreshAccessTokenFromToken(refreshToken) {
-        const decoded = await this._verifyRefreshToken(refreshToken);
-        return this.generateAccessToken({ id: decoded.id, username: decoded.username, role: decoded.role });
+        return this.generateAccessToken(await this._sessionAccount(refreshToken));
     }
 
     async refreshAccessToken(refreshToken, res, req) {
-        const decodedRefresh = await this._verifyRefreshToken(refreshToken);
-        const newAccessToken = this.generateAccessToken({ id: decodedRefresh.id, username: decodedRefresh.username, role: decodedRefresh.role });
+        const account = await this._sessionAccount(refreshToken);
+        const newAccessToken = this.generateAccessToken(account);
 
         res.cookie('access_token', newAccessToken, {
             httpOnly: true,
@@ -99,7 +104,7 @@ export class AuthService {
             maxAge: 60 * 60 * 1000, // 1 hour
         });
 
-        req.user = { id: decodedRefresh.id, username: decodedRefresh.username, role: decodedRefresh.role };
+        req.user = account;
     }
 
     setAuthCookies(res, accessToken, refreshToken) {
@@ -159,11 +164,15 @@ export class AuthService {
         if (!record) {
             throw new NotFoundError('Invalid or expired token');
         }
+        // Taken before the password changes, so the same link opened twice at once sets it once.
+        const claimed = await this.passwordResetRepository.markAsUsed(record.id);
+        if (!claimed) {
+            throw new NotFoundError('Invalid or expired token');
+        }
 
         const hashedPassword = await bcrypt.hash(newPassword, 10);
 
         await this.userRepository.updatePassword(record.user_id, hashedPassword);
-        await this.passwordResetRepository.markAsUsed(record.id);
 
         await this.notifyPasswordChanged(record.user_id);
 

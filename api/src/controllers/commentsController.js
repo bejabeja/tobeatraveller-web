@@ -1,8 +1,8 @@
 import { commentSchema } from "../utils/schemasValidation.js";
 import { ValidationError } from "../errors/ValidationError.js";
+import { pageSizeFrom } from '../utils/pagination.js';
 
 const DEFAULT_COMMENTS_PAGE_SIZE = 50;
-const MAX_COMMENTS_PAGE_SIZE = 100;
 
 export class CommentsController {
     constructor(commentsService) {
@@ -30,7 +30,7 @@ export class CommentsController {
         try {
             const itineraryId = req.params.itineraryId;
 
-            const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || DEFAULT_COMMENTS_PAGE_SIZE, 1), MAX_COMMENTS_PAGE_SIZE);
+            const limit = pageSizeFrom(req.query.limit, DEFAULT_COMMENTS_PAGE_SIZE);
             const offset = Math.max(parseInt(req.query.offset, 10) || 0, 0);
             const page = await this.commentsService.getCommentsPageByItinerary(itineraryId, req.user?.id, { limit, offset });
 

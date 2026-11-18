@@ -4,7 +4,11 @@ import { WebView } from 'react-native-webview';
 import { useTranslation } from 'react-i18next';
 import { COLORS, shadow } from '../utils/styles';
 
-const buildMapHTML = (destinations) => `<!DOCTYPE html>
+// The destinations go inside the page's <script>, and their names come from the trips people
+// publish: \u003c keeps a "</script>" in a name from ending the script and starting its own.
+const scriptData = (value) => JSON.stringify(value).replace(/</g, '\\u003c');
+
+export const buildMapHTML = (destinations) => `<!DOCTYPE html>
 <html>
 <head>
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
@@ -24,7 +28,7 @@ const buildMapHTML = (destinations) => `<!DOCTYPE html>
 <script>
   var map=L.map('map',{zoomControl:false,attributionControl:false}).setView([20,10],2);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:10,minZoom:1}).addTo(map);
-  ${JSON.stringify(destinations)}.forEach(function(d){
+  ${scriptData(destinations)}.forEach(function(d){
     var lat=parseFloat(d.lat),lon=parseFloat(d.lon);
     if(isNaN(lat)||isNaN(lon))return;
     var icon=L.divIcon({className:'',

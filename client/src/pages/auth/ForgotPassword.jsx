@@ -2,6 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import RichText from "../../components/RichText";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
@@ -81,7 +82,7 @@ const ForgotPassword = () => {
             <div style={{ padding: "1rem 0" }}>
               <p style={{ fontSize: "0.9rem", lineHeight: 1.6, color: "var(--text-color)", marginBottom: "0.5rem" }}>
                 {t("auth.checkInbox")}.{" "}
-                <span dangerouslySetInnerHTML={{ __html: t("auth.resetLinkSent", { email: successEmail }) }} />
+                <span><RichText text={t("auth.resetLinkSent", { email: successEmail })} /></span>
               </p>
               <p style={{ fontSize: "0.82rem", color: "var(--text-secondary-color)" }}>
                 {t("auth.didntReceive")}{" "}

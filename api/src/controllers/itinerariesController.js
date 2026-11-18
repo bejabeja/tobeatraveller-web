@@ -1,4 +1,7 @@
 import { ValidationError } from '../errors/ValidationError.js';
+import { pageNumberFrom, pageSizeFrom } from '../utils/pagination.js';
+
+const DEFAULT_ITINERARIES_PAGE_SIZE = 10;
 
 export class ItinerariesController {
     constructor(itinerariesService) {
@@ -7,13 +10,13 @@ export class ItinerariesController {
 
     async filterItinerariesBy(req, res, next) {
         try {
-            const { category = 'all', destination = '', page = 1, limit = 10, sortBy = 'recent', ...restFilters } = req.query;
+            const { category = 'all', destination = '', page, limit, sortBy = 'recent', ...restFilters } = req.query;
             const filters = {
                 category,
                 destination,
                 sortBy,
-                page: parseInt(page),
-                limit: parseInt(limit),
+                page: pageNumberFrom(page),
+                limit: pageSizeFrom(limit, DEFAULT_ITINERARIES_PAGE_SIZE),
                 ...restFilters,
                 viewerId: req.user?.id,
             };

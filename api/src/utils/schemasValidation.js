@@ -279,6 +279,7 @@ export const reportReinstatementSchema = z.object({
 });
 
 export const userIdParamSchema = z.string().uuid("Invalid user id");
+export const itineraryIdParamSchema = z.string().uuid("Invalid itinerary id");
 
 const ISO_COUNTRY_CODE_SET = new Set(ISO_COUNTRY_CODES);
 

@@ -68,6 +68,16 @@ describe('AuthService', () => {
                 .rejects.toThrow(NotFoundError);
         });
 
+        // Regression: an email with no account was answered before any password check, so how
+        // long the answer took told whether the email had an account.
+        it('checks a password even when the email has no account, so both take as long', async () => {
+            mockUserRepository.findByEmail.mockResolvedValue(null);
+
+            await expect(authService.login({ email: 'unknown@example.com', password: 'pass' })).rejects.toThrow();
+
+            expect(bcrypt.compare).toHaveBeenCalledWith('pass', expect.stringMatching(/^\$2[aby]\$10\$/));
+        });
+
         it('throws AuthError when password is incorrect', async () => {
             mockUserRepository.findByEmail.mockResolvedValue(mockUser);
             bcrypt.compare.mockResolvedValue(false);
@@ -198,7 +208,7 @@ describe('AuthService', () => {
     describe('refreshing a session', () => {
         const OPENED_AT = Date.parse('2026-10-01T10:00:00Z') / 1000;
         const payload = (overrides = {}) => ({ id: 'user-1', username: 'johndoe', role: 'user', iat: OPENED_AT, ...overrides });
-        const accountWith = (sessionsValidFrom) => ({ id: 'user-1', sessionsValidFrom });
+        const accountWith = (sessionsValidFrom, overrides = {}) => ({ id: 'user-1', username: 'johndoe', role: 'user', sessionsValidFrom, ...overrides });
 
         beforeEach(() => {
             mockUserRepository.getUserById = vi.fn().mockResolvedValue(accountWith(null));
@@ -220,8 +230,9 @@ describe('AuthService', () => {
                 expect(token).toBe('new-access-token');
             });
 
-            it('carries the role from the refresh token so an admin does not lose access after a refresh', async () => {
+            it('keeps the role of an admin after a refresh', async () => {
                 jwt.verify.mockReturnValue(payload({ role: 'admin' }));
+                mockUserRepository.getUserById.mockResolvedValue(accountWith(null, { role: 'admin' }));
 
                 await authService.refreshAccessTokenFromToken('valid-refresh-token');
 
@@ -230,6 +241,31 @@ describe('AuthService', () => {
                     'test-secret',
                     { expiresIn: '1h' }
                 );
+            });
+
+            // Regression: the role came from the refresh token, so an admin who was demoted went
+            // on getting admin access tokens for the week the refresh token lasts.
+            it('gives the role and name the account has now, not the ones in the refresh token', async () => {
+                jwt.verify.mockReturnValue(payload({ role: 'admin', username: 'oldname' }));
+                mockUserRepository.getUserById.mockResolvedValue(accountWith(null, { role: 'user', username: 'newname' }));
+
+                await authService.refreshAccessTokenFromToken('valid-refresh-token');
+
+                expect(jwt.sign).toHaveBeenCalledWith(
+                    { id: 'user-1', username: 'newname', role: 'user' },
+                    'test-secret',
+                    { expiresIn: '1h' }
+                );
+            });
+
+            it('says who the cookie session is for with the role the account has now', async () => {
+                jwt.verify.mockReturnValue(payload({ role: 'admin' }));
+                mockUserRepository.getUserById.mockResolvedValue(accountWith(null, { role: 'user' }));
+                const req = {};
+
+                await authService.refreshAccessToken('valid-refresh-token', { cookie: vi.fn() }, req);
+
+                expect(req.user).toEqual({ id: 'user-1', username: 'johndoe', role: 'user' });
             });
 
             it('throws AuthError when the refresh token is invalid or expired', async () => {
@@ -361,12 +397,40 @@ describe('AuthService', () => {
     });
 
     describe('resetPassword()', () => {
+        // Regression: the link was checked, the password changed, and only then the link marked
+        // as used, so the same link opened twice at once could set the password twice.
+        it('uses a link only once, even when it is opened twice at the same time', async () => {
+            const mockPasswordResetRepository = {
+                findByTokenHash: vi.fn().mockResolvedValue({ id: 'reset-1', user_id: 'user-1' }),
+                markAsUsed: vi.fn().mockResolvedValue(false),
+            };
+            mockUserRepository.updatePassword = vi.fn();
+            authService = new AuthService(mockUserRepository, null, mockPasswordResetRepository, null);
+
+            await expect(authService.resetPassword('raw-token', 'newpassword123')).rejects.toThrow('Invalid or expired token');
+            expect(mockUserRepository.updatePassword).not.toHaveBeenCalled();
+        });
+
+        it('takes the link for this reset before changing the password', async () => {
+            const calls = [];
+            const mockPasswordResetRepository = {
+                findByTokenHash: vi.fn().mockResolvedValue({ id: 'reset-1', user_id: 'user-1' }),
+                markAsUsed: vi.fn(async () => { calls.push('markAsUsed'); return true; }),
+            };
+            mockUserRepository.updatePassword = vi.fn(async () => { calls.push('updatePassword'); });
+            authService = new AuthService(mockUserRepository, null, mockPasswordResetRepository, null);
+
+            await authService.resetPassword('raw-token', 'newpassword123');
+
+            expect(calls).toEqual(['markAsUsed', 'updatePassword']);
+        });
+
         // The repository's updatePassword ends every open session in the same statement, so a reset
         // must go through it and nothing else.
         it('sets the new password through the one that also ends the open sessions', async () => {
             const mockPasswordResetRepository = {
                 findByTokenHash: vi.fn().mockResolvedValue({ id: 'reset-1', user_id: 'user-1' }),
-                markAsUsed: vi.fn(),
+                markAsUsed: vi.fn().mockResolvedValue(true),
             };
             mockUserRepository.updatePassword = vi.fn();
             authService = new AuthService(mockUserRepository, null, mockPasswordResetRepository, null);
@@ -380,7 +444,7 @@ describe('AuthService', () => {
             const mockAuditLogService = { log: vi.fn() };
             const mockPasswordResetRepository = {
                 findByTokenHash: vi.fn().mockResolvedValue({ id: 'reset-1', user_id: 'user-1' }),
-                markAsUsed: vi.fn(),
+                markAsUsed: vi.fn().mockResolvedValue(true),
             };
             mockUserRepository.updatePassword = vi.fn();
             authService = new AuthService(mockUserRepository, null, mockPasswordResetRepository, mockAuditLogService);
@@ -398,7 +462,7 @@ describe('AuthService', () => {
             const mockEmailService = { sendPasswordChanged: vi.fn().mockResolvedValue(undefined) };
             const mockPasswordResetRepository = {
                 findByTokenHash: vi.fn().mockResolvedValue({ id: 'reset-1', user_id: 'user-1' }),
-                markAsUsed: vi.fn(),
+                markAsUsed: vi.fn().mockResolvedValue(true),
             };
             mockUserRepository.updatePassword = vi.fn();
             mockUserRepository.getUserById = vi.fn().mockResolvedValue({ id: 'user-1', username: 'johndoe', email: 'john@example.com', language: 'es' });
@@ -413,7 +477,7 @@ describe('AuthService', () => {
             const mockEmailService = { sendPasswordChanged: vi.fn().mockRejectedValue(new Error('Brevo down')) };
             const mockPasswordResetRepository = {
                 findByTokenHash: vi.fn().mockResolvedValue({ id: 'reset-1', user_id: 'user-1' }),
-                markAsUsed: vi.fn(),
+                markAsUsed: vi.fn().mockResolvedValue(true),
             };
             mockUserRepository.updatePassword = vi.fn();
             mockUserRepository.getUserById = vi.fn().mockRejectedValue(new Error('db hiccup'));
@@ -428,7 +492,7 @@ describe('AuthService', () => {
             const mockAuditLogService = { log: vi.fn() };
             const mockPasswordResetRepository = {
                 findByTokenHash: vi.fn().mockResolvedValue({ id: 'reset-1', user_id: 'user-1' }),
-                markAsUsed: vi.fn(),
+                markAsUsed: vi.fn().mockResolvedValue(true),
             };
             mockUserRepository.updatePassword = vi.fn();
             authService = new AuthService(mockUserRepository, null, mockPasswordResetRepository, mockAuditLogService);

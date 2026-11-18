@@ -6,11 +6,15 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// Checked by Cloudinary against what the file really is, not the type the browser sent:
+// an SVG can carry a script, and calling one a PNG gets it past the upload's own check.
+const PHOTO_FORMATS = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'heic', 'heif', 'avif'];
+
 export class CloudinaryService {
     async uploadImageFromBuffer(fileBuffer, folder = "itineraries") {
         return new Promise((resolve, reject) => {
             cloudinary.uploader.upload_stream(
-                { resource_type: "image", folder },
+                { resource_type: "image", folder, allowed_formats: PHOTO_FORMATS },
                 (error, result) => {
                     if (error) reject(error);
                     else resolve(result);

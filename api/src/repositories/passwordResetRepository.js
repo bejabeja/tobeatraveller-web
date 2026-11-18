@@ -31,10 +31,13 @@ export class PasswordResetRepository {
         return result.rows[0];
     }
 
+    // One statement that only marks a link nobody has used yet: of two requests with the same
+    // link at the same time, only one gets true.
     async markAsUsed(id) {
-        await db.query(
-            'UPDATE password_reset_tokens SET used_at = NOW() WHERE id = $1',
+        const result = await db.query(
+            'UPDATE password_reset_tokens SET used_at = NOW() WHERE id = $1 AND used_at IS NULL RETURNING id',
             [id]
         );
+        return result.rowCount > 0;
     }
 }

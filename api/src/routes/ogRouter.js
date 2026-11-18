@@ -9,8 +9,12 @@ import { BadgeService } from '../services/badgeService.js';
 import { ItineraryService } from '../services/itineraryService.js';
 import { UserService } from '../services/userService.js';
 import { buildDefaultOgMeta, buildItineraryOgMeta, buildPassportOgMeta, buildUserOgMeta } from '../utils/ogMeta.js';
-import { userIdParamSchema } from '../utils/schemasValidation.js';
+import { itineraryIdParamSchema, userIdParamSchema } from '../utils/schemasValidation.js';
 import { escapeXml as esc } from '../utils/xmlEscape.js';
+
+// A string inside the page's <script>: JSON keeps the quotes in, and \u003c keeps a
+// "</script>" in the value from ending the script and starting markup of its own.
+const scriptString = (value) => JSON.stringify(value).replace(/</g, '\\u003c');
 
 const ogHtml = ({ title, description, imageUrl, pageUrl, redirectUrl, type }) => `<!DOCTYPE html>
 <html lang="en">
@@ -36,7 +40,7 @@ const ogHtml = ({ title, description, imageUrl, pageUrl, redirectUrl, type }) =>
   <meta http-equiv="refresh" content="0;url=${esc(redirectUrl)}" />
 </head>
 <body>
-  <script>window.location.replace(${JSON.stringify(redirectUrl)})</script>
+  <script>window.location.replace(${scriptString(redirectUrl)})</script>
   <p><a href="${esc(redirectUrl)}">${esc(title)}</a></p>
 </body>
 </html>`;
@@ -85,9 +89,16 @@ export const createOgRouter = () => {
     // Read-only: the public passport, with no notifications to send.
     const badgeService = new BadgeService(new BadgeRepository(), null, userRepository);
 
+    // Only a real id goes into the page and its addresses: anything else in a link is
+    // not a trip or a profile, and gets the preview of the app.
+    const sendDefaultOgPage = (res, appUrl) =>
+        sendOgPage(res, buildDefaultOgMeta(appUrl), { pageUrl: appUrl, redirectUrl: appUrl, type: 'website' });
+
     router.get('/itinerary/:id', async (req, res) => {
-        const { id } = req.params;
         const appUrl = config.appUrl;
+        const idResult = itineraryIdParamSchema.safeParse(req.params.id);
+        if (!idResult.success) return sendDefaultOgPage(res, appUrl);
+        const id = idResult.data;
         const redirectUrl = `${appUrl}/itinerary/${id}`;
 
         try {
@@ -99,8 +110,10 @@ export const createOgRouter = () => {
     });
 
     router.get('/profile/:id', async (req, res) => {
-        const { id } = req.params;
         const appUrl = config.appUrl;
+        const idResult = userIdParamSchema.safeParse(req.params.id);
+        if (!idResult.success) return sendDefaultOgPage(res, appUrl);
+        const id = idResult.data;
         const redirectUrl = `${appUrl}/friend-profile/${id}`;
 
         try {
@@ -128,9 +141,7 @@ export const createOgRouter = () => {
     router.get('/passport/:id', async (req, res) => {
         const appUrl = config.appUrl;
         const idResult = userIdParamSchema.safeParse(req.params.id);
-        if (!idResult.success) {
-            return sendOgPage(res, buildDefaultOgMeta(appUrl), { pageUrl: appUrl, redirectUrl: appUrl, type: 'website' });
-        }
+        if (!idResult.success) return sendDefaultOgPage(res, appUrl);
 
         const { pageUrl, redirectUrl } = passportPageUrls(appUrl, idResult.data, req.query.ref);
         try {

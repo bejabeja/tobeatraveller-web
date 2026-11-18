@@ -10,6 +10,7 @@ import { UserService } from '../../services/userService.js';
 import { AuthError } from '../../errors/AuthError.js';
 import { NotFoundError } from '../../errors/NotFoundError.js';
 import { ConflictError } from '../../errors/ConflictError.js';
+import { ForbiddenError } from '../../errors/ForbiddenError.js';
 import { AUDIT_EVENTS } from '../../utils/auditEvents.js';
 
 const makeUser = (overrides = {}) => new User({
@@ -1213,5 +1214,65 @@ describe('UserService.getFilteredAllUsers()', () => {
         await service.getFilteredAllUsers({ searchName: '', page: 1, limit: 9, sortBy: 'itineraries', viewerId: 'user-1' });
 
         expect(userRepository.findByFilters).toHaveBeenCalledWith(expect.objectContaining({ publicTripsOnly: true }));
+    });
+});
+
+// Regression: an admin could take the role from, or delete the account of, the superadmin
+// above them (or another admin), since only granting superadmin was checked.
+describe('UserService: who staff can act on', () => {
+    const superadmin = { id: 'boss', username: 'boss', role: 'superadmin' };
+    const admin = { id: 'mod', username: 'mod', role: 'admin' };
+    let userRepository;
+    let service;
+
+    const withTarget = (target) => {
+        userRepository = {
+            getUserById: vi.fn(async () => makeUser(target)),
+            updateRole: vi.fn(async (id, role) => makeUser({ ...target, role })),
+            deleteUser: vi.fn(async () => {}),
+        };
+        service = new UserService(userRepository, { findImagePublicIdsByUserId: async () => [] }, {});
+    };
+
+    it.each(['superadmin', 'admin'])('does not let an admin change the role of a %s', async (role) => {
+        withTarget({ id: 'other-staff', role });
+
+        await expect(service.updateUserRole('other-staff', 'user', admin)).rejects.toThrow(ForbiddenError);
+        expect(userRepository.updateRole).not.toHaveBeenCalled();
+    });
+
+    it.each(['superadmin', 'admin'])('does not let an admin delete the account of a %s', async (role) => {
+        withTarget({ id: 'other-staff', role });
+
+        await expect(service.deleteUser('other-staff', admin)).rejects.toThrow(ForbiddenError);
+        expect(userRepository.deleteUser).not.toHaveBeenCalled();
+    });
+
+    it('lets an admin change the role of a user and delete their account', async () => {
+        withTarget({ id: 'someone', role: 'user' });
+
+        await service.updateUserRole('someone', 'admin', admin);
+        await service.deleteUser('someone', admin);
+
+        expect(userRepository.updateRole).toHaveBeenCalledWith('someone', 'admin');
+        expect(userRepository.deleteUser).toHaveBeenCalledWith('someone');
+    });
+
+    it('lets a superadmin change the role of an admin and delete their account', async () => {
+        withTarget({ id: 'mod', role: 'admin' });
+
+        await service.updateUserRole('mod', 'user', superadmin);
+        await service.deleteUser('mod', superadmin);
+
+        expect(userRepository.updateRole).toHaveBeenCalledWith('mod', 'user');
+        expect(userRepository.deleteUser).toHaveBeenCalledWith('mod');
+    });
+
+    it('lets an admin delete their own account', async () => {
+        withTarget({ id: 'mod', role: 'admin' });
+
+        await service.deleteUser('mod', admin);
+
+        expect(userRepository.deleteUser).toHaveBeenCalledWith('mod');
     });
 });
