@@ -780,10 +780,21 @@
     }
   }
 
-  &__entry-skeleton {
-    width: 100%;
-    height: 56px;
-    border-radius: 10px;
+  &__group-label-skeleton {
+    display: block;
+    width: 110px;
+  }
+
+  &__entry-icon-skeleton {
+    width: 1.75rem;
+    height: 1.5rem;
+    flex-shrink: 0;
+    border-radius: 6px;
+  }
+
+  &__entry-amount-skeleton {
+    width: 64px;
+    flex-shrink: 0;
   }
 
   &__empty {

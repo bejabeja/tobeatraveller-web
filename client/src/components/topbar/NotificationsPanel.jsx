@@ -8,7 +8,7 @@ import {
   selectNotificationsError,
   selectNotificationsLoading,
 } from "@tobeatraveller/shared";
-import NotificationItem from "../notifications/NotificationItem";
+import NotificationItem, { NotificationItemSkeleton } from "../notifications/NotificationItem";
 import "./NotificationsPanel.scss";
 
 const PREVIEW_COUNT = 5;
@@ -38,7 +38,7 @@ const NotificationsPanel = ({ isOpen, onClose }) => {
       {loading ? (
         <div className="notif-panel__list">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="notif-skeleton" />
+            <NotificationItemSkeleton key={i} />
           ))}
         </div>
       ) : error ? (

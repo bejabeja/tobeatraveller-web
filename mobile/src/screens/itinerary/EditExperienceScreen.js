@@ -26,6 +26,7 @@ import ExperienceStartDate from '../../components/ExperienceStartDate';
 import { PhotoPickerCard } from '../../components/PhotoPickerCard';
 import { useCurrentLocation } from '../../hooks/useCurrentLocation';
 import { UseCurrentLocationButton } from '../../components/UseCurrentLocationButton';
+import { FormSkeleton } from '../../components/Skeleton';
 
 const CATEGORY_EMOJI = {
   adventure:'🧗', relax:'🧘', culture:'🏛', romantic:'💕',
@@ -264,8 +265,8 @@ const EditExperienceScreen = ({ navigation, route }) => {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.bg }}>
-        <ActivityIndicator size="large" color={COLORS.accent} />
+      <View style={{ flex: 1, backgroundColor: COLORS.bg }}>
+        <FormSkeleton />
       </View>
     );
   }

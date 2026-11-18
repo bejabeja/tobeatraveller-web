@@ -14,7 +14,6 @@ import { GoSignOut } from "react-icons/go";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import Spinner from "../../components/spinner/Spinner";
 import { useLogout } from "../../hooks/useLogout";
 import { selectMe } from "../../store/user/userInfoSelectors";
 import { generateAvatar } from "../../utils/constants/constants";
@@ -26,9 +25,7 @@ const Account = () => {
   const userMe = useSelector(selectMe);
   const logout = useLogout();
 
-  if (!userMe) return <Spinner />;
-
-  const isPremium = !!userMe.isPremium;
+  const isPremium = !!userMe?.isPremium;
 
   // This page is the sole destination for the mobile bottom-nav's "Me" tab
   // (no more intermediate quick-menu in between, see Navbar.jsx), so it
@@ -92,20 +89,31 @@ const Account = () => {
       {/* The card itself is the profile shortcut (Instagram/X/TikTok pattern):
           tapping your own avatar/username is expected to open your profile,
           not just display it. */}
-      <Link to={`/profile/${userMe.id}`} className="account__header">
-        <img
-          src={optimizedCloudinaryUrl(userMe.avatarUrl, { width: 64 }) || generateAvatar(userMe.username)}
-          alt={userMe.username}
-          className="account__avatar"
-        />
-        <div>
-          <p className="account__username">@{userMe.username}</p>
-          {isPremium && <span className="account__premium-badge">{t("admin.premium")}</span>}
+      {!userMe ? (
+        // Only the header and the plan depend on the account: the links below are already there.
+        <div role="status" aria-busy="true" aria-label={t("common.loading")}>
+          <div className="account__header">
+            <div className="skeleton account__avatar" />
+            <div className="skeleton skeleton--text account__username-skeleton" />
+          </div>
+          <div className="skeleton account__upsell account__upsell-skeleton" />
         </div>
-        <IoChevronForward className="account__header-arrow" aria-hidden="true" />
-      </Link>
+      ) : (
+        <Link to={`/profile/${userMe.id}`} className="account__header">
+          <img
+            src={optimizedCloudinaryUrl(userMe.avatarUrl, { width: 64 }) || generateAvatar(userMe.username)}
+            alt={userMe.username}
+            className="account__avatar"
+          />
+          <div>
+            <p className="account__username">@{userMe.username}</p>
+            {isPremium && <span className="account__premium-badge">{t("admin.premium")}</span>}
+          </div>
+          <IoChevronForward className="account__header-arrow" aria-hidden="true" />
+        </Link>
+      )}
 
-      {!isPremium && (
+      {userMe && !isPremium && (
         <Link to="/subscription" className="account__upsell">
           <IoSparkles className="account__upsell-icon" aria-hidden="true" />
           <div>
@@ -115,7 +123,7 @@ const Account = () => {
           <IoChevronForward className="account__upsell-arrow" aria-hidden="true" />
         </Link>
       )}
-      {isPremium && (
+      {userMe && isPremium && (
         <Link to="/subscription" className="account__upsell account__upsell--premium">
           <IoCardOutline className="account__upsell-icon" aria-hidden="true" />
           <div>

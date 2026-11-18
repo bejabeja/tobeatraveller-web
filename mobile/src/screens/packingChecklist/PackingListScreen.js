@@ -24,6 +24,7 @@ import { useOutbox, useRefetchAfterSync } from '../../offline/useOutbox';
 import { trackEvent } from '../../utils/analytics';
 import { cacheGet, cacheSet, packingListItemsCacheKey, suppliesCacheKey } from '../../utils/offlineCache';
 import { COLORS, shadow } from '../../utils/styles';
+import { TextLinesSkeleton } from '../../components/Skeleton';
 
 // The icons are small and sit next to each other: the touch area reaches halfway to the neighbour.
 const ACTION_HIT_SLOP = { top: 6, bottom: 6, left: 6, right: 6 };
@@ -517,7 +518,9 @@ const PackingListScreen = ({ navigation, route }) => {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={COLORS.primary} />}
         >
           {loading ? (
-            <ActivityIndicator size="small" color={COLORS.primary} style={{ marginTop: 40 }} />
+            <View style={styles.category} accessibilityState={{ busy: true }}>
+              <TextLinesSkeleton widths={['30%', '70%', '60%', '75%', '50%']} />
+            </View>
           ) : loadError === 'notFound' ? (
             // Deleted elsewhere (on the web, say): trying again wouldn't help.
             <View style={styles.empty}>

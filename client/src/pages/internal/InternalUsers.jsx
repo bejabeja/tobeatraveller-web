@@ -9,7 +9,6 @@ import { useSelector } from "react-redux";
 import { TextAreaForm } from "../../components/form/InputForm";
 import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState";
 import Modal from "../../components/modal/Modal";
-import Spinner from "../../components/spinner/Spinner";
 import SelectMenu from "../../components/form/SelectMenu";
 import useDebouncedEffect from "../../hooks/useDebounced";
 import { deleteUserById, getAllUsersForAdmin, sendAdminNotice, updateUserRole, updateUserTier } from "../../services/users";
@@ -20,6 +19,7 @@ import UserDetailModal from "./UserDetailModal";
 import "./InternalUsers.scss";
 
 const PAGE_SIZE = 20;
+const SKELETON_ROWS = 6;
 const ASSIGNABLE_ROLES = ["user", "admin", "superadmin"];
 const GIFT_PREMIUM_MONTHS = [1, 3, 12];
 const REMOVE_PREMIUM = "free";
@@ -230,7 +230,19 @@ const InternalUsers = () => {
       </div>
 
       {loading ? (
-        <Spinner />
+        <div className="internal-users__list" role="status" aria-busy="true" aria-label={t("common.loading")}>
+          {Array.from({ length: SKELETON_ROWS }, (_, i) => (
+            <div key={i} className="internal-users__row">
+              <div className="skeleton internal-users__avatar" />
+              <div className="internal-users__info">
+                <div className="skeleton skeleton--text username" />
+                <div className="skeleton skeleton--text trips" />
+              </div>
+              <div className="skeleton internal-users__select-skeleton" />
+              <div className="skeleton internal-users__select-skeleton" />
+            </div>
+          ))}
+        </div>
       ) : users.length === 0 ? (
         <p className="internal-users__empty">{t("admin.noUsers")}</p>
       ) : (

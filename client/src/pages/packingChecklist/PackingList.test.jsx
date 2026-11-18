@@ -51,6 +51,21 @@ const renderList = (listItems = [item("i1", "Gas cerrado", "van", true), item("i
 
 beforeEach(() => { jest.clearAllMocks(); mockTrips = []; });
 
+// Regression: while the list arrived its title read "Packing lists", the page's name, and then
+// changed to the list's own.
+it("keeps the title empty until the list's own name arrives", async () => {
+  getPackingLists.mockReturnValue(new Promise(() => {}));
+  getPackingListItems.mockReturnValue(new Promise(() => {}));
+  render(
+    <MemoryRouter initialEntries={["/packing-checklist/l1"]}>
+      <Routes><Route path="/packing-checklist/:listId" element={<PackingList />} /></Routes>
+    </MemoryRouter>
+  );
+
+  expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("");
+  expect(screen.getByRole("status", { name: "common.loading" })).toBeInTheDocument();
+});
+
 // Regression: every category showed, empty ones too, each with its own
 // "add" box: a long page of empty boxes.
 it("shows only the categories that have something", async () => {

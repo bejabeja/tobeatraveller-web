@@ -125,3 +125,10 @@
 
   }
 }
+
+// As wide as the role and plan selects of a row.
+.internal-users__select-skeleton {
+  width: 120px;
+  height: 30px;
+  border-radius: 8px;
+}

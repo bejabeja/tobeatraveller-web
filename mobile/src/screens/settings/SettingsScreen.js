@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
-  ActivityIndicator, Alert, KeyboardAvoidingView, Platform,
-  ScrollView, StyleSheet, Switch, Text, TextInput,
-  TouchableOpacity, View,
+  Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View,
 } from 'react-native';
 import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
@@ -24,6 +22,7 @@ import { clearDeviceSessionData } from '../../utils/session';
 import { useOutbox } from '../../offline/useOutbox';
 import { useAnalyticsConsent } from '../../hooks/useAnalyticsConsent';
 import { ANALYTICS_CONSENT } from '../../utils/analytics';
+import { FormSkeleton } from '../../components/Skeleton';
 
 const NOTIFICATION_PREFERENCE_TOGGLES = [
   // Push only exists in the native app, not in the web build of mobile.
@@ -121,8 +120,8 @@ const SettingsScreen = ({ navigation }) => {
 
   if (!user) {
     return (
-      <View style={[styles.container, styles.loadingContainer, { paddingTop: insets.top }]}>
-        <ActivityIndicator size="large" color="#B5501B" />
+      <View style={[styles.container, { paddingTop: insets.top }]}>
+        <FormSkeleton />
       </View>
     );
   }
@@ -612,7 +611,6 @@ const SettingsScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8fafc' },
-  loadingContainer: { alignItems: 'center', justifyContent: 'center' },
 
   header: {
     flexDirection: 'row', alignItems: 'center',

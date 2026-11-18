@@ -73,3 +73,14 @@ const NotificationItem = ({ notification: n, onClick }) => {
 };
 
 export default NotificationItem;
+
+// One row as it will look, while the notifications arrive.
+export const NotificationItemSkeleton = () => (
+  <div className="notif-item notif-item--skeleton" aria-hidden="true">
+    <div className="skeleton notif-item__avatar" />
+    <div className="notif-item__body">
+      <div className="skeleton notif-item__line-skeleton" />
+      <div className="skeleton notif-item__line-skeleton notif-item__line-skeleton--short" />
+    </div>
+  </div>
+);

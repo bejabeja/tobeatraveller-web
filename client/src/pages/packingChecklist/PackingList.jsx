@@ -42,6 +42,7 @@ const UNDO_DELETE_WINDOW_MS = 5000;
 const SEARCH_FROM_ITEMS = 15;
 const DEFAULT_NEW_ITEM_CATEGORY = "other";
 const LISTS_PATH = "/packing-checklist";
+const SKELETON_ITEMS = 4;
 const NOT_FOUND_STATUS = 404;
 const CONFLICT_STATUS = 409;
 
@@ -310,7 +311,8 @@ const PackingList = () => {
         <IoArrowBack aria-hidden="true" /> {p("allLists")}
       </Link>
 
-      <ToolHeader title={list?.name ?? p("title")}>
+      {/* The list's own name, not the page's, once it arrives: "Packing lists" was a name that went away. */}
+      <ToolHeader title={list ? list.name : <span className="skeleton skeleton--text packing-checklist__title-skeleton" />}>
         {totalCount > 0 && (
           <span className={`packing-checklist__progress ${checkedCount === totalCount ? "packing-checklist__progress--complete" : ""}`}>
             {p("progress", { checked: checkedCount, total: totalCount })}
@@ -399,10 +401,20 @@ const PackingList = () => {
       )}
 
       {loading ? (
-        <div className="packing-checklist__categories">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="skeleton packing-checklist__category-skeleton" />
-          ))}
+        <div className="packing-checklist__categories" role="status" aria-busy="true" aria-label={t("common.loading")}>
+          <div className="packing-checklist__category">
+            <span className="skeleton skeleton--text packing-checklist__category-title-skeleton" />
+            <div className="packing-checklist__items">
+              {Array.from({ length: SKELETON_ITEMS }, (_, i) => (
+                <div key={i} className="packing-checklist__item">
+                  <span className="packing-checklist__item-label">
+                    <span className="skeleton packing-checklist__checkbox-skeleton" />
+                    <span className="skeleton skeleton--text packing-checklist__item-name-skeleton" />
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       ) : totalCount === 0 ? (
         <div className="packing-checklist__empty"><p>{p("noItems")}</p></div>

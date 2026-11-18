@@ -154,6 +154,25 @@
   gap: 0.5rem 1.25rem;
 }
 
+// On the cover's photo, a light block instead of the usual grey.
+.hero__next-trip-skeleton {
+  display: block;
+  background: rgba(255, 255, 255, 0.25);
+  animation: pulse 1.5s infinite ease-in-out;
+
+  &--line {
+    width: 220px;
+    height: 1.1rem;
+    border-radius: 4px;
+  }
+
+  &--button {
+    width: 140px;
+    height: 40px;
+    border-radius: 999px;
+  }
+}
+
 .hero__plan-link {
   width: fit-content;
   font-size: 0.9rem;

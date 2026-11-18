@@ -1,7 +1,7 @@
 import { useSelector } from "react-redux";
 import { Navigate, Outlet } from "react-router-dom";
 import { ADMIN_ROLES } from "@tobeatraveller/shared";
-import Spinner from "../components/spinner/Spinner";
+import PageSkeleton from "../components/pageSkeleton/PageSkeleton";
 import { selectAuthUser } from "../store/auth/authSelectors";
 import { selectMe, selectMeLoading } from "../store/user/userInfoSelectors";
 
@@ -15,7 +15,7 @@ const InternalGuard = () => {
   // session used to hydrate the app on load, and redirecting on that stale
   // value would incorrectly lock out a real admin.
   if (meLoading && !meDetail) {
-    return <Spinner />;
+    return <PageSkeleton />;
   }
 
   const user = meDetail ?? authUser;

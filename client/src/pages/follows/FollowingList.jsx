@@ -1,10 +1,10 @@
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
-import Spinner from "../../components/spinner/Spinner";
 import { useFollow } from "../../hooks/useFollow";
 import { useProfileData } from "../../hooks/useProfileData";
 import Error from "../error/Error";
 import { generateAvatar } from "../../utils/constants/constants";
+import FollowListSkeleton from "./FollowListSkeleton";
 import "./Follows.scss";
 
 const FollowingList = () => {
@@ -12,7 +12,7 @@ const FollowingList = () => {
   const { id } = useParams();
   const { following, loadingFollowing, error } = useProfileData(id, { withFollows: true });
 
-  if (loadingFollowing) return <Spinner />;
+  if (loadingFollowing) return <FollowListSkeleton title={t("profile.following")} />;
   if (error) {
     return (
       <Error message={t("followers.noFollowings")} />

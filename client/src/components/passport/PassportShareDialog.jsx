@@ -59,7 +59,7 @@ const PassportShareDialog = ({
 
       <div className="passport-share__layout">
         <div className="passport-share__media" aria-busy={updating}>
-          {loading && !previewUrl && <div className="passport-share__skeleton" />}
+          {loading && !previewUrl && <div className="skeleton passport-share__skeleton" />}
           {error && <p className="error-message">{t("passport.shareError")}</p>}
           {previewUrl && (
             <img

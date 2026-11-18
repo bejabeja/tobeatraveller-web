@@ -35,6 +35,15 @@ describe("PrivateLayout", () => {
     expect(screen.queryByText("recap page")).not.toBeInTheDocument();
   });
 
+  // Regression: the wait went from the page skeleton to a spinner and back to a skeleton.
+  it("waits with the same skeleton as while the page's code arrives", () => {
+    mockAuth = { isAuthenticated: false, isAuthChecked: false };
+
+    renderAt("/recap");
+
+    expect(screen.getByRole("status")).toHaveClass("page-skeleton");
+  });
+
   it("shows the page once the session is confirmed", () => {
     mockAuth = { isAuthenticated: true, isAuthChecked: true };
 

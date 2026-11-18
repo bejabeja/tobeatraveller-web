@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
@@ -18,6 +18,7 @@ import PassportMap from '../../components/PassportMap';
 import { usePassportLeaderboard } from '../../hooks/usePassportLeaderboard';
 import { useUserPassport } from '../../hooks/useUserPassport';
 import { trackEvent } from '../../utils/analytics';
+import { SkeletonBox } from '../../components/Skeleton';
 
 const PASSPORT_NAVY = '#1b2a41';
 const PASSPORT_GOLD = '#d9a441';
@@ -324,7 +325,10 @@ const PassportScreen = ({ navigation, route }) => {
       </View>
 
       {loading ? (
-        <ActivityIndicator style={styles.loading} size="large" color="#B5501B" />
+        <View style={styles.content} accessibilityState={{ busy: true }}>
+          <SkeletonBox style={styles.coverSkeleton} />
+          <SkeletonBox style={styles.sectionSkeleton} />
+        </View>
       ) : error || !passport ? (
         <>
           <Text style={styles.errorText}>{t('passport.loadError')}</Text>
@@ -467,7 +471,9 @@ const styles = StyleSheet.create({
   backText: { fontSize: 20, color: '#374151' },
   headerTitle: { flex: 1, fontSize: 18, fontWeight: '800', color: '#111827' },
   shareBtn: { marginLeft: 10, padding: 4 },
-  loading: { marginTop: 48 },
+  // As tall as the cover and the countries' map, so nothing moves when they arrive.
+  coverSkeleton: { height: 112, borderRadius: 18 },
+  sectionSkeleton: { height: 360, borderRadius: 18 },
   errorText: { margin: 24, marginBottom: 12, textAlign: 'center', color: '#b91c1c' },
   retryBtn: { alignSelf: 'center', paddingVertical: 10, paddingHorizontal: 24 },
   retryBtnText: { color: '#B5501B', fontWeight: '700', fontSize: 14 },

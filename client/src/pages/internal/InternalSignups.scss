@@ -40,3 +40,13 @@
     }
   }
 }
+
+.internal-signups__cell-skeleton {
+  display: inline-block;
+  width: 48px;
+  vertical-align: middle;
+
+  th[scope="row"] & {
+    width: 120px;
+  }
+}

@@ -12,7 +12,7 @@ import {
   selectNotificationsLoadingMore, selectNotificationsPage, selectNotificationsTotalPages,
 } from '@tobeatraveller/shared';
 import NotificationRow from '../../components/NotificationRow';
-import { UserRowSkeleton } from '../../components/Skeleton';
+import { NotificationRowSkeleton } from '../../components/Skeleton';
 import { shadow } from '../../utils/styles';
 
 
@@ -70,7 +70,7 @@ const NotificationsScreen = ({ navigation }) => {
 
       {loading && !refreshing ? (
         <View style={{ paddingHorizontal: 16, paddingTop: 8 }}>
-          {Array.from({ length: 8 }, (_, i) => <UserRowSkeleton key={i} />)}
+          {Array.from({ length: 8 }, (_, i) => <NotificationRowSkeleton key={i} />)}
         </View>
       ) : error ? (
         <View style={styles.empty}>

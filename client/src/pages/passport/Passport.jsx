@@ -441,7 +441,17 @@ const Passport = () => {
   }
 
   if (loading) {
-    return <div className="passport section__container"><div className="passport__skeleton" /></div>;
+    return (
+      <div className="passport section__container" role="status" aria-busy="true" aria-label={t("common.loading")}>
+        <div className="passport__toolbar">
+          <Link to={`/profile/${id}`} className="passport__back">
+            <IoArrowBack aria-hidden="true" /> {t("common.back")}
+          </Link>
+        </div>
+        <div className="skeleton passport__cover-skeleton" />
+        <div className="skeleton passport__section-skeleton" />
+      </div>
+    );
   }
 
   if (notFound) return <NotFound />;

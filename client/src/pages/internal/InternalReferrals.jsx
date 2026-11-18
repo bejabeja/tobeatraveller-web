@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState";
-import Spinner from "../../components/spinner/Spinner";
 import { getReferralAdminOverview } from "../../services/referral";
 import "./InternalReferrals.scss";
+
+const STAT_COUNT = 3;
+const SKELETON_ROWS = 3;
 
 const InternalReferrals = () => {
   const { t } = useTranslation();
@@ -22,7 +24,29 @@ const InternalReferrals = () => {
   useEffect(load, []);
 
   if (error) return <FeatureLoadState status={error} onRetry={load} />;
-  if (loading) return <Spinner />;
+  if (loading) {
+    return (
+      <section className="internal-referrals" role="status" aria-busy="true" aria-label={t("common.loading")}>
+        <div className="internal-referrals__stats">
+          {Array.from({ length: STAT_COUNT }, (_, i) => (
+            <div key={i} className="internal-referrals__stat">
+              <div className="skeleton internal-referrals__number-skeleton" />
+              <div className="skeleton skeleton--text shorter" />
+            </div>
+          ))}
+        </div>
+        <h2 className="internal-referrals__section-title">{t("admin.referralsTopReferrersTitle")}</h2>
+        <ul className="internal-referrals__list">
+          {Array.from({ length: SKELETON_ROWS }, (_, i) => (
+            <li key={i} className="internal-referrals__row">
+              <span className="skeleton skeleton--text internal-referrals__username-skeleton" />
+              <span className="skeleton skeleton--text internal-referrals__count-skeleton" />
+            </li>
+          ))}
+        </ul>
+      </section>
+    );
+  }
 
   return (
     <section className="internal-referrals">

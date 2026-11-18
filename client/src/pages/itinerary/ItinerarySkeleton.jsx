@@ -1,26 +1,36 @@
 import { useTranslation } from "react-i18next";
 import "./ItinerarySkeleton.scss";
 
-const STAT_COUNT = 4;
+const DESCRIPTION_LINES = 3;
 
-// A trip's page before it arrives: the cover, its title, the row of facts and the body.
+// A trip's page before it arrives, with the page's own frame: the cover as tall as the real
+// one, then the description beside the trip's map.
 const ItinerarySkeleton = () => {
   const { t } = useTranslation();
 
   return (
-    <div className="itinerary-skeleton" role="status" aria-busy="true" aria-label={t("common.loading")}>
-      <div className="skeleton itinerary-skeleton__cover" />
+    <section className="itinerary" role="status" aria-busy="true" aria-label={t("common.loading")}>
+      <div className="skeleton itinerary__hero itinerary-skeleton__cover" />
       <div className="section__container">
-        <div className="itinerary-skeleton__stats">
-          {Array.from({ length: STAT_COUNT }, (_, index) => (
-            <div key={index} className="skeleton itinerary-skeleton__stat" />
-          ))}
+        <div className="itinerary__body">
+          <div className="itinerary__main">
+            <div className="itinerary__section">
+              <div className="skeleton itinerary-skeleton__heading" />
+              {Array.from({ length: DESCRIPTION_LINES }, (_, index) => (
+                <div key={index} className="skeleton skeleton--text itinerary-skeleton__line" />
+              ))}
+            </div>
+            <div className="skeleton itinerary-skeleton__places" />
+          </div>
+          <aside className="itinerary__sidebar">
+            <div className="itinerary__sidebar-sticky">
+              <div className="skeleton itinerary-skeleton__heading" />
+              <div className="skeleton itinerary-skeleton__map" />
+            </div>
+          </aside>
         </div>
-        <div className="skeleton itinerary-skeleton__line" />
-        <div className="skeleton itinerary-skeleton__line itinerary-skeleton__line--short" />
-        <div className="skeleton itinerary-skeleton__body" />
       </div>
-    </div>
+    </section>
   );
 };
 

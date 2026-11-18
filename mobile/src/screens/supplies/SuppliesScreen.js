@@ -22,6 +22,7 @@ import {
 import { useOutbox, useRefetchAfterSync } from '../../offline/useOutbox';
 import { cacheGet, cacheSet, suppliesCacheKey } from '../../utils/offlineCache';
 import { shadow } from '../../utils/styles';
+import { ListRowSkeleton } from '../../components/Skeleton';
 
 // Buying is not final for this long: the check shows at once and the purchase
 // is only sent when the window closes, so a slip in the shop can be undone.
@@ -462,7 +463,7 @@ const SuppliesScreen = ({ navigation }) => {
             index === 0 && styles.rowFirst,
             index === section.data.length - 1 && styles.rowLast,
           ];
-          if (item._skeleton) return <View style={[...rowStyle, styles.rowSkeleton]} />;
+          if (item._skeleton) return <View style={rowStyle}><ListRowSkeleton leading={tab === 'shopping'} lines={1} /></View>;
 
           const isPending = pendingPurchaseIds.has(item.id);
           // An item a queued purchase/use-up will create has no server id
@@ -687,7 +688,6 @@ const styles = StyleSheet.create({
   },
   rowFirst: { borderTopLeftRadius: 12, borderTopRightRadius: 12 },
   rowLast: { borderBottomLeftRadius: 12, borderBottomRightRadius: 12, borderBottomWidth: 1 },
-  rowSkeleton: { height: 52, backgroundColor: '#f3f4f6' },
   rowMain: { flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 12 },
   rowText: { flex: 1, minWidth: 0, gap: 1 },
   rowName: { fontSize: 15, fontWeight: '600', color: '#111827' },

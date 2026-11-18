@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
+import FormSkeleton from "../../../components/pageSkeleton/FormSkeleton";
 import "../create/CreateItinerary.scss";
 import Modal from "../../../components/modal/Modal";
 import { getItineraryById, updateItinerary } from "../../../services/itinerary";
@@ -226,7 +227,8 @@ const EditItinerary = () => {
   if (!itineraryData) {
     return (
       <section className="section__container">
-        <p style={{ color: "var(--text-secondary-color)", padding: "2rem 0" }}>{t("common.loading")}</p>
+        <h1 className="form__title">{t("itinerary.editItinerary")}</h1>
+        <FormSkeleton />
       </section>
     );
   }

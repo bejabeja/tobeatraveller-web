@@ -1,9 +1,7 @@
 import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useState } from 'react';
 import {
-  ActivityIndicator, Alert, Image, KeyboardAvoidingView,
-  Platform, ScrollView, StyleSheet, Text, TextInput,
-  TouchableOpacity, View,
+  Alert, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
@@ -17,6 +15,7 @@ import {
   Field, GallerySection, PlacesSection, TravellersSection, useGalleryPicker, VisibilitySection, s,
 } from './ItineraryFormShared';
 import { shadow } from '../../utils/styles';
+import { FormSkeleton } from '../../components/Skeleton';
 
 const EditItineraryScreen = ({ route, navigation }) => {
   const { id } = route.params;
@@ -167,7 +166,7 @@ const EditItineraryScreen = ({ route, navigation }) => {
     if (!result.canceled && result.assets?.[0]) setPhotoUri(result.assets[0].uri);
   };
 
-  if (loading) return <ActivityIndicator size="large" color="#B5501B" style={{ flex: 1, marginTop: 60 }} />;
+  if (loading) return <FormSkeleton />;
 
   const currentPhoto = photoUri || itinerary?.photoUrl;
 

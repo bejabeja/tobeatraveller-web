@@ -40,6 +40,7 @@ const BlockedPeopleSection = () => {
         <h2 className="ep__section-label">{t("settings.blockedPeople")}</h2>
       </div>
       {loadFailed && <p className="settings__hint" role="alert">{t("block.listError")}</p>}
+      {!loadFailed && blockedUsers === null && <div className="skeleton skeleton--text settings__value-skeleton" aria-hidden="true" />}
       {!loadFailed && blockedUsers?.length === 0 && <p className="settings__hint">{t("settings.blockedPeopleEmpty")}</p>}
       {blockedUsers?.length > 0 && (
         <div className="settings__rows">

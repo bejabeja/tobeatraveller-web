@@ -12,7 +12,7 @@ import {
   selectNotificationsPage,
   selectNotificationsTotalPages,
 } from "@tobeatraveller/shared";
-import NotificationItem from "../../components/notifications/NotificationItem";
+import NotificationItem, { NotificationItemSkeleton } from "../../components/notifications/NotificationItem";
 import { usePageMeta } from "../../hooks/usePageMeta.js";
 import "./Notifications.scss";
 
@@ -51,7 +51,7 @@ const Notifications = () => {
       {loading ? (
         <div className="notifications__list">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="notif-skeleton" />
+            <NotificationItemSkeleton key={i} />
           ))}
         </div>
       ) : error ? (

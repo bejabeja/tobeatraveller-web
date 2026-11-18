@@ -26,6 +26,7 @@ import { useOutbox, useRefetchAfterSync } from '../../offline/useOutbox';
 import { cacheGet, cacheSet } from '../../utils/offlineCache';
 import { shadow } from '../../utils/styles';
 import VanLogStatsView from './VanLogStatsView';
+import { ListRowSkeleton } from '../../components/Skeleton';
 
 const EMPTY_FILTERS = { category: '', country: '', currency: '', dateFrom: '', dateTo: '', itineraryId: '' };
 
@@ -542,7 +543,7 @@ const VanLogScreen = ({ navigation }) => {
             index === 0 && styles.entryFirst,
             index === section.data.length - 1 && styles.entryLast,
           ];
-          if (item._skeleton) return <View style={[...rowStyle, styles.entrySkeleton]} />;
+          if (item._skeleton) return <View style={rowStyle}><ListRowSkeleton /></View>;
 
           const priceLine = item.category === 'fuel' && item.pricePerLiter != null
             ? `${formatNumber(item.pricePerLiter, language, { minimumFractionDigits: 3, maximumFractionDigits: 3 })} ${item.currency || ''}/L`
@@ -768,7 +769,6 @@ const styles = StyleSheet.create({
   },
   entryFirst: { borderTopLeftRadius: 12, borderTopRightRadius: 12 },
   entryLast: { borderBottomLeftRadius: 12, borderBottomRightRadius: 12, borderBottomWidth: 1 },
-  entrySkeleton: { height: 56, backgroundColor: '#f3f4f6' },
   entryIcon: { width: 26, textAlign: 'center', fontSize: 20, lineHeight: 24 },
   entryBody: { flex: 1, minWidth: 0, gap: 1 },
   entryTitle: { fontSize: 15, fontWeight: '600', color: '#111827', lineHeight: 24 },

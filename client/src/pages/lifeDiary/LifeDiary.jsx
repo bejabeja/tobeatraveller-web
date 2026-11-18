@@ -17,6 +17,7 @@ import { usePageMeta } from "../../hooks/usePageMeta.js";
 import "./LifeDiary.scss";
 
 const ENTRY_DATE_FORMAT = { day: "numeric", month: "short", year: "numeric" };
+const SKELETON_ENTRIES = 3;
 
 const LifeDiary = () => {
   const { t, i18n } = useTranslation();
@@ -123,9 +124,16 @@ const LifeDiary = () => {
       />
 
       {loading ? (
-        <div className="life-diary__entries">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="skeleton life-diary__entry-skeleton" />
+        <div className="life-diary__entries" role="status" aria-busy="true" aria-label={t("common.loading")}>
+          {Array.from({ length: SKELETON_ENTRIES }, (_, i) => (
+            <div key={i} className="life-diary__entry">
+              <div className="life-diary__entry-place">
+                <span className="skeleton skeleton--text short" />
+                <span className="skeleton skeleton--text life-diary__entry-date-skeleton" />
+              </div>
+              <div className="skeleton skeleton--text tagline" />
+              <div className="skeleton skeleton--text tagline-short" />
+            </div>
           ))}
         </div>
       ) : entries.length === 0 ? (

@@ -5,11 +5,11 @@ import { Link } from "react-router-dom";
 import { REPORT_DECISIONS, REPORT_STATUSES, REPORT_TARGET_TYPES } from "@tobeatraveller/shared";
 import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState";
 import LoadingButton from "../../components/LoadingButton";
-import Spinner from "../../components/spinner/Spinner";
 import { decideReport, getReports, reinstateReport } from "../../services/contentReports";
 import "./InternalReports.scss";
 
 const PAGE_SIZE = 20;
+const SKELETON_REPORTS = 2;
 
 const targetPath = ({ targetType, targetId }) => {
   if (targetType === REPORT_TARGET_TYPES.ITINERARY) return `/itinerary/${targetId}`;
@@ -100,7 +100,18 @@ const InternalReports = () => {
       {error ? (
         <FeatureLoadState status="error" onRetry={load} />
       ) : loading ? (
-        <Spinner />
+        <ul className="internal-reports__list" role="status" aria-busy="true" aria-label={t("common.loading")}>
+          {Array.from({ length: SKELETON_REPORTS }, (_, i) => (
+            <li key={i} className="internal-reports__item">
+              <div className="internal-reports__head">
+                <span className="skeleton skeleton--text internal-reports__reason-skeleton" />
+              </div>
+              <div className="skeleton skeleton--text tagline-short" />
+              <div className="skeleton internal-reports__excerpt-skeleton" />
+              <div className="skeleton skeleton--text short" />
+            </li>
+          ))}
+        </ul>
       ) : reports.length === 0 ? (
         <p className="internal-reports__empty">{t("admin.reportsEmpty")}</p>
       ) : (

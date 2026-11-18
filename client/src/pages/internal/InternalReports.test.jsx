@@ -6,7 +6,6 @@ jest.mock("react-hot-toast", () => ({ __esModule: true, default: { success: jest
 jest.mock("../../services/contentReports", () => ({ getReports: jest.fn(), decideReport: jest.fn(), reinstateReport: jest.fn() }));
 jest.mock("../../components/featureLoadState/FeatureLoadState", () => ({ onRetry }) => <button onClick={onRetry}>retry</button>);
 jest.mock("../../components/LoadingButton", () => ({ children, onClick }) => <button onClick={onClick}>{children}</button>);
-jest.mock("../../components/spinner/Spinner", () => () => <p>loading</p>);
 
 import toast from "react-hot-toast";
 import { decideReport, getReports, reinstateReport } from "../../services/contentReports";

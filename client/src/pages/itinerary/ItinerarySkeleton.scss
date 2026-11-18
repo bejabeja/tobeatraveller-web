@@ -1,37 +1,32 @@
 @use "../../components/SkeletonBase.scss";
 
 .itinerary-skeleton {
+  // The hero's own height comes from .itinerary__hero.
   &__cover {
-    width: 100%;
-    height: clamp(220px, 40vh, 420px);
     border-radius: 0;
   }
 
-  &__stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 0.75rem;
-    margin-bottom: 1.5rem;
-  }
-
-  &__stat {
-    height: 76px;
-    border-radius: 12px;
+  &__heading {
+    width: 160px;
+    height: 20px;
+    margin-bottom: 1rem;
   }
 
   &__line {
-    width: 80%;
-    height: 14px;
-    margin-bottom: 0.6rem;
+    width: 95%;
 
-    &--short {
-      width: 50%;
+    &:last-child {
+      width: 60%;
     }
   }
 
-  &__body {
+  &__places {
     height: 220px;
-    margin-top: 1.5rem;
+    border-radius: 12px;
+  }
+
+  &__map {
+    height: 360px;
     border-radius: 12px;
   }
 }

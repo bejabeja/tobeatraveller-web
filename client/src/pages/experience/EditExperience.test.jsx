@@ -97,7 +97,7 @@ describe("EditExperience: the moments of the plan", () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByRole("status")).toHaveTextContent("common.loading");
+    expect(screen.getByRole("status", { name: "common.loading" })).toBeInTheDocument();
   });
 
   it("shows the personal note apart from the description it was saved in", async () => {

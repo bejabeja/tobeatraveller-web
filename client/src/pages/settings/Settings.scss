@@ -200,3 +200,13 @@ $settings-row-min-height: 48px;
     }
   }
 }
+
+.settings__value-skeleton {
+  width: 180px;
+}
+
+.settings__select-skeleton {
+  width: 110px;
+  height: 28px;
+  border-radius: 8px;
+}

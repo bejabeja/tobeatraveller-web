@@ -20,6 +20,7 @@ import { applyPendingChanges, CHANGE_KINDS, COLLECTIONS, sortByEntryDateDesc } f
 import { useOutbox, useRefetchAfterSync } from '../../offline/useOutbox';
 import { cacheGet, cacheSet } from '../../utils/offlineCache';
 import { shadow } from '../../utils/styles';
+import { TextLinesSkeleton } from '../../components/Skeleton';
 
 // The icons are small and sit next to each other: the touch area reaches halfway to the neighbour.
 const ACTION_HIT_SLOP = { top: 6, bottom: 6, left: 6, right: 6 };
@@ -206,7 +207,7 @@ const LifeDiaryScreen = ({ navigation }) => {
           ) : null
         }
         renderItem={({ item }) => {
-          if (item._skeleton) return <View style={[styles.entry, styles.entrySkeleton]} />;
+          if (item._skeleton) return <View style={styles.entry}><TextLinesSkeleton widths={['35%', '25%', '90%', '60%']} /></View>;
 
           const expanded = expandedId === item.id;
           const hasMore = !!(item.lessonLearned || item.memories || item.peopleMet);
@@ -324,7 +325,6 @@ const styles = StyleSheet.create({
     padding: 14,
     ...shadow(2, 0.05, 6, 2),
   },
-  entrySkeleton: { height: 96, backgroundColor: '#f3f4f6', borderColor: '#f3f4f6' },
   entryTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   entryPlace: { flex: 1 },
   entryLocationRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },

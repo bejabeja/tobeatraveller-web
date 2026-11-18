@@ -177,8 +177,12 @@ const App = () => {
         {isAuthenticated && !isAuthRoute && <Topbar onOpenSearch={() => setSearchOpen(true)} />}
         {isAuthenticated && !isAuthRoute && <EmailVerificationBanner />}
         <main className="content">
-          <ErrorBoundary key={location.pathname}>
-            <Suspense fallback={isAuthRoute ? <Spinner /> : <PageSkeleton />}>
+          {/* Outside the boundary that starts afresh on each address: a new Suspense always shows its
+              fallback, so going to a page whose code had not arrived showed the generic skeleton and
+              then the page's own. Kept across pages, the router's transition keeps the page on screen
+              until the next one's code is there, and that one shows only its own skeleton. */}
+          <Suspense fallback={isAuthRoute ? <Spinner /> : <PageSkeleton />}>
+            <ErrorBoundary key={location.pathname}>
               <Routes>
                 {/* public routes */}
                 <Route path="/login" element={<Login />} />
@@ -246,8 +250,8 @@ const App = () => {
                 </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>
-            </Suspense>
-          </ErrorBoundary>
+            </ErrorBoundary>
+          </Suspense>
         </main>
 
         {isPublicRoute && <Footer />}

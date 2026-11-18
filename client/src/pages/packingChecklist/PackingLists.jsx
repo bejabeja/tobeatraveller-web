@@ -112,9 +112,12 @@ const PackingLists = () => {
       />
 
       {loading ? (
-        <div className="packing-lists__grid">
-          {Array.from({ length: SKELETON_CARDS }).map((_, i) => (
-            <div key={i} className="skeleton packing-lists__card-skeleton" />
+        <div className="packing-lists__grid" role="status" aria-busy="true" aria-label={t("common.loading")}>
+          {Array.from({ length: SKELETON_CARDS }, (_, i) => (
+            <div key={i} className="packing-lists__card packing-lists__card--skeleton">
+              <span className="skeleton skeleton--text packing-lists__card-name-skeleton" />
+              <span className="skeleton skeleton--text short" />
+            </div>
           ))}
         </div>
       ) : lists.length === 0 ? (

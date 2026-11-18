@@ -3,7 +3,6 @@ import { fireEvent, render, screen } from "@testing-library/react";
 jest.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key, vars) => (vars ? `${key}:${Object.values(vars).join("/")}` : key), i18n: { language: "es" } }) }));
 jest.mock("../../services/users", () => ({ getSignupBreakdown: jest.fn() }));
 jest.mock("../../components/featureLoadState/FeatureLoadState", () => ({ onRetry }) => <button onClick={onRetry}>retry</button>);
-jest.mock("../../components/spinner/Spinner", () => () => <p>loading</p>);
 
 import { getSignupBreakdown } from "../../services/users";
 import InternalSignups from "./InternalSignups";
@@ -27,6 +26,16 @@ describe("InternalSignups", () => {
     expect(screen.getByText("admin.signupsUnknownCountry")).toBeInTheDocument();
     expect(screen.getByText("admin.signupDevices.mobile_web").closest("tr")).toHaveTextContent("41");
     expect(screen.getAllByText("admin.signupsRecent:30")).toHaveLength(2);
+  });
+
+  it("keeps both tables with their titles while the counts arrive", () => {
+    getSignupBreakdown.mockReturnValue(new Promise(() => {}));
+
+    render(<InternalSignups />);
+
+    expect(screen.getByRole("status", { name: "common.loading" })).toBeInTheDocument();
+    expect(screen.getByText("admin.signupsByCountry")).toBeInTheDocument();
+    expect(screen.getByText("admin.signupsByDevice")).toBeInTheDocument();
   });
 
   it("lets the team try again when the counts could not be loaded", async () => {

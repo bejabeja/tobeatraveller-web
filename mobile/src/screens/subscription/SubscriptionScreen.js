@@ -11,6 +11,7 @@ import {
 } from '@tobeatraveller/shared';
 import { trackEvent } from '../../utils/analytics';
 import { shadow } from '../../utils/styles';
+import { SkeletonBox } from '../../components/Skeleton';
 
 // Premium is granted by the webhook, which can land a while after the customer
 // is back from the browser: the screen asks again a few times, and gives up
@@ -320,7 +321,7 @@ const SubscriptionScreen = ({ navigation }) => {
             </TouchableOpacity>
           </View>
         ) : view.kind === 'loading' ? (
-          <View style={styles.stateSkeleton} accessibilityState={{ busy: true }} />
+          <SkeletonBox style={styles.stateSkeleton} />
         ) : view.kind === 'trialCanceled' ? (
           <View style={styles.winBack}>
             <Ionicons name="hourglass-outline" size={36} color="#B5501B" style={styles.winBackIcon} />
@@ -548,7 +549,7 @@ const styles = StyleSheet.create({
   activationDelayedCta: { marginTop: 16 },
   activationDelayedBack: { fontSize: 13, color: '#6b7280', textDecorationLine: 'underline', marginTop: 14 },
   // Same height as the cards it stands in for, so nothing jumps when it loads.
-  stateSkeleton: { height: 200, borderRadius: 16, backgroundColor: '#e5e7eb', marginTop: 8 },
+  stateSkeleton: { height: 200, borderRadius: 16, marginTop: 8 },
 
   hero: { alignItems: 'center', paddingTop: 12, paddingBottom: 8 },
   heroIcon: { marginBottom: 12 },

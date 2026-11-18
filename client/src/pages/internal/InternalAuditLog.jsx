@@ -2,11 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState";
 import SelectMenu from "../../components/form/SelectMenu";
-import Spinner from "../../components/spinner/Spinner";
 import { getRecentAuditLog } from "../../services/auditLog";
 import "./InternalAuditLog.scss";
 
 const PAGE_SIZE = 50;
+const SKELETON_ROWS = 8;
 
 // One entry per action logged by the backend (api/src/utils/auditEvents.js).
 // Adding a new audited event only means adding a line here, not touching the
@@ -175,7 +175,14 @@ const InternalAuditLog = () => {
       </div>
 
       {loading && entries.length === 0 ? (
-        <Spinner />
+        <ul className="internal-audit-log__list" role="status" aria-busy="true" aria-label={t("common.loading")}>
+          {Array.from({ length: SKELETON_ROWS }, (_, i) => (
+            <li key={i} className="internal-audit-log__row">
+              <span className="skeleton skeleton--text internal-audit-log__description-skeleton" />
+              <span className="skeleton skeleton--text internal-audit-log__date-skeleton" />
+            </li>
+          ))}
+        </ul>
       ) : entries.length === 0 ? (
         <p className="internal-audit-log__empty">{t("admin.auditNoEntries")}</p>
       ) : (

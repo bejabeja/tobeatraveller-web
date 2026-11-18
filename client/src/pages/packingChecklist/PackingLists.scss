@@ -67,8 +67,12 @@
     }
   }
 
-  &__card-skeleton {
-    height: 96px;
-    border-radius: 14px;
+  &__card--skeleton {
+    pointer-events: none;
+  }
+
+  &__card-name-skeleton {
+    width: 70%;
+    height: 16px;
   }
 }

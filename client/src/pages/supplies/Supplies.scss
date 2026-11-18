@@ -425,10 +425,27 @@
     text-decoration: underline;
   }
 
-  &__group-skeleton {
-    width: 100%;
-    height: 140px;
-    border-radius: 14px;
+  &__group-title-skeleton {
+    width: 90px;
+    margin-left: 0.25rem;
+  }
+
+  &__checkbox-skeleton {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+
+  &__row-name-skeleton {
+    flex: 1;
+    max-width: 40%;
+  }
+
+  // Leaves the room of the row's menu button, like the real amount.
+  &__row-amount-skeleton {
+    width: 40px;
+    margin-left: auto;
+    margin-right: 2.5rem;
   }
 
   &__empty {

@@ -67,6 +67,17 @@
     }
   }
 
+  &__username-skeleton {
+    width: 140px;
+    height: 18px;
+  }
+
+  // As tall as the plan's card with its title and line, so nothing moves when it arrives.
+  &__upsell-skeleton {
+    height: 72px;
+    background: var(--secondary-color);
+  }
+
   &__upsell-icon {
     width: 1em;
     height: 1em;

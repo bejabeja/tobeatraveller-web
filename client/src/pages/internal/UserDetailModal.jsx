@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import { formatDate } from "@tobeatraveller/shared";
 import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState";
 import Modal from "../../components/modal/Modal";
-import Spinner from "../../components/spinner/Spinner";
 import { getItinerariesByUserId } from "../../services/itineraries";
 import { getRecentAuditLog } from "../../services/auditLog";
 import { describeEntry } from "./InternalAuditLog";
@@ -15,6 +14,8 @@ const HISTORY_LIMIT = 20;
 // Only the events this user was the target of (role/tier changes), not
 // every action logged for every user.
 const HISTORY_ACTIONS = ["role_updated", "tier_updated"];
+
+const SKELETON_ROWS = 2;
 
 const UserDetailModal = ({ user, onClose }) => {
   const { t, i18n } = useTranslation();
@@ -57,7 +58,21 @@ const UserDetailModal = ({ user, onClose }) => {
         {error ? (
           <FeatureLoadState status={error} />
         ) : loading ? (
-          <Spinner />
+          // Both sections with their titles; the rows go where the trips and the history will.
+          <div role="status" aria-busy="true" aria-label={t("common.loading")}>
+            {[t("admin.userDetailItinerariesTitle"), t("admin.userDetailHistoryTitle")].map((title) => (
+              <section key={title} className="user-detail-modal__section">
+                <h3 className="user-detail-modal__section-title">{title}</h3>
+                <ul className="user-detail-modal__list">
+                  {Array.from({ length: SKELETON_ROWS }, (_, i) => (
+                    <li key={i} className="user-detail-modal__row">
+                      <span className="skeleton skeleton--text user-detail-modal__line-skeleton" />
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ))}
+          </div>
         ) : (
           <>
             <section className="user-detail-modal__section">

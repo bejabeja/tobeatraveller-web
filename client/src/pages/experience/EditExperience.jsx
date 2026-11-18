@@ -11,6 +11,7 @@ import { selectAuthUser } from "../../store/auth/authSelectors";
 import { selectMe } from "../../store/user/userInfoSelectors";
 import { EXISTING_ITINERARY_VISIBILITY_FALLBACK } from "../../utils/schemasValidation";
 import ExperienceForm from "./ExperienceForm";
+import FormSkeleton from "../../components/pageSkeleton/FormSkeleton";
 import { DEFAULT_EXPERIENCE_CATEGORY, DEFAULT_EXPERIENCE_DAYS, MIN_TRAVELERS, useExperienceForm } from "./useExperienceForm";
 
 const byDayThenOrder = (a, b) => (a.dayNumber ?? 1) - (b.dayNumber ?? 1) || (a.orderIndex ?? 0) - (b.orderIndex ?? 0);
@@ -101,9 +102,7 @@ const EditExperience = () => {
   if (loading) {
     return (
       <div className="cexp section__container">
-        <div className="cexp__hero cexp__hero--loading" role="status">
-          <span>{t("common.loading")}</span>
-        </div>
+        <FormSkeleton />
       </div>
     );
   }

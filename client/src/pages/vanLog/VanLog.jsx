@@ -30,6 +30,7 @@ const EMPTY_FILTERS = { category: "", country: "", currency: "", dateFrom: "", d
 // "Today" is a period too short for statistics.
 const STATS_PERIOD_PRESET_KEYS = ["last7", "last30", "thisMonth"];
 const SHORT_DAY = { month: "short", day: "numeric" };
+const SKELETON_ENTRIES = 4;
 
 const escapeCsvField = (value) => {
   const str = value == null ? "" : String(value);
@@ -538,10 +539,24 @@ const VanLog = () => {
       {activeTab === "entries" && (
         <>
           {loading ? (
-            <div className="van-log__list">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="skeleton van-log__entry-skeleton" />
-              ))}
+            <div className="van-log__list" role="status" aria-busy="true" aria-label={t("common.loading")}>
+              <div className="van-log__group">
+                <div className="van-log__group-header">
+                  <span className="skeleton skeleton--text van-log__group-label-skeleton" />
+                </div>
+                <div className="van-log__group-rows">
+                  {Array.from({ length: SKELETON_ENTRIES }, (_, i) => (
+                    <div key={i} className="van-log__entry">
+                      <span className="skeleton van-log__entry-icon-skeleton" />
+                      <div className="van-log__entry-body">
+                        <div className="skeleton skeleton--text shorter" />
+                        <div className="skeleton skeleton--text short" />
+                      </div>
+                      <span className="skeleton skeleton--text van-log__entry-amount-skeleton" />
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           ) : entries.length === 0 && hasActiveFilters ? (
             <div className="van-log__empty">

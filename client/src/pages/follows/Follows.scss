@@ -1,3 +1,5 @@
+@use "../../components/SkeletonBase.scss";
+
 .follow-list {
   display: flex;
   flex-direction: column;
@@ -67,4 +69,22 @@
     margin: 0;
   }
 
+}
+
+.follow-card--skeleton:hover {
+  background-color: var(--white-color);
+  transform: none;
+}
+
+// Shrinks like the name does, so the card keeps its width.
+.follow-card__info--skeleton {
+  flex: 1;
+  min-width: 0;
+}
+
+.follow-card__button-skeleton {
+  width: 64px;
+  height: 36px;
+  border-radius: 8px;
+  flex-shrink: 0;
 }

@@ -137,44 +137,105 @@ export const ItineraryDetailSkeleton = () => {
   );
 };
 
+// ─── List row skeleton (van log, supplies) ───────────────────────────────────
+// Goes inside the list's own row, so it keeps its padding and borders.
+export const ListRowSkeleton = ({ leading = true, lines = 2 }) => {
+  const opacity = usePulse();
+  return (
+    <Animated.View style={[sk.listRow, { opacity }]}>
+      {leading && <View style={sk.listLeading} />}
+      <View style={sk.listText}>
+        <View style={[sk.line, { width: '60%', height: 12 }]} />
+        {lines > 1 && <View style={[sk.line, { width: '35%', height: 10 }]} />}
+      </View>
+      <View style={[sk.line, { width: 48, height: 12 }]} />
+    </Animated.View>
+  );
+};
+
+// ─── Notification row skeleton ────────────────────────────────────────────────
+export const NotificationRowSkeleton = () => {
+  const opacity = usePulse();
+  return (
+    <Animated.View style={[sk.userRow, { opacity }]}>
+      <View style={sk.notificationAvatar} />
+      <View style={{ flex: 1, gap: 7 }}>
+        <View style={[sk.line, { width: '80%', height: 12 }]} />
+        <View style={[sk.line, { width: '30%', height: 10 }]} />
+      </View>
+    </Animated.View>
+  );
+};
+
+// ─── Lines of text (a diary entry, a card's name and meta) ───────────────────
+export const TextLinesSkeleton = ({ widths = ['40%', '90%', '60%'] }) => {
+  const opacity = usePulse();
+  return (
+    <Animated.View style={[sk.textLines, { opacity }]}>
+      {widths.map((width, i) => <View key={i} style={[sk.line, { width, height: i === 0 ? 14 : 11 }]} />)}
+    </Animated.View>
+  );
+};
+
+// ─── Form skeleton (editing a trip) ──────────────────────────────────────────
+const FORM_SKELETON_FIELDS = 4;
+
+export const FormSkeleton = () => {
+  const opacity = usePulse();
+  return (
+    <Animated.View style={[sk.form, { opacity }]}>
+      <View style={[sk.line, { width: '50%', height: 20, marginBottom: 8 }]} />
+      {Array.from({ length: FORM_SKELETON_FIELDS }, (_, i) => (
+        <View key={i} style={sk.formField}>
+          <View style={[sk.line, { width: '30%', height: 11 }]} />
+          <View style={sk.formInput} />
+        </View>
+      ))}
+    </Animated.View>
+  );
+};
+
 // ─── Shared styles ────────────────────────────────────────────────────────────
+// One grey for every skeleton, so they all read as the same thing.
+const SKELETON_COLOR = '#e5e7eb';
+
 const sk = StyleSheet.create({
-  box:      { backgroundColor: '#e5e7eb', borderRadius: 6 },
-  line:     { backgroundColor: '#e5e7eb', borderRadius: 4 },
+  box:      { backgroundColor: SKELETON_COLOR, borderRadius: 6 },
+  line:     { backgroundColor: SKELETON_COLOR, borderRadius: 4 },
   metaRow:  { flexDirection: 'row', gap: 10 },
 
   // Itinerary card (full-bleed)
-  itinCard: { height: 200, borderRadius: 14, backgroundColor: '#dde3ec' },
+  itinCard: { height: 200, borderRadius: 14, backgroundColor: SKELETON_COLOR },
 
   // User card (Community grid)
   card: {
     backgroundColor: '#fff', borderRadius: 12, overflow: 'hidden',
     borderWidth: 1, borderColor: '#f3f4f6',
   },
-  cardImage: { width: '100%', height: 140, backgroundColor: '#e5e7eb' },
+  cardImage: { width: '100%', height: 140, backgroundColor: SKELETON_COLOR },
   cardBody:  { padding: 12, gap: 0 },
 
   // User card
   // Same shape as the person card: thin banner, centred avatar over it.
-  userBanner:      { height: 56, backgroundColor: '#e5e7eb' },
+  userBanner:      { height: 56, backgroundColor: SKELETON_COLOR },
   userAvatarWrapper: { alignSelf: 'center', marginTop: -28 },
-  userAvatar:      { width: 62, height: 62, borderRadius: 31, backgroundColor: '#d1d5db', borderWidth: 3, borderColor: '#fff' },
-  followBtnSk:     { height: 32, backgroundColor: '#e5e7eb', borderRadius: 999 },
-  followBtnSkSmall:{ width: 72, height: 30, backgroundColor: '#e5e7eb', borderRadius: 999 },
+  userAvatar:      { width: 62, height: 62, borderRadius: 31, backgroundColor: SKELETON_COLOR, borderWidth: 3, borderColor: '#fff' },
+  followBtnSk:     { height: 32, backgroundColor: SKELETON_COLOR, borderRadius: 999 },
+  followBtnSkSmall:{ width: 72, height: 30, backgroundColor: SKELETON_COLOR, borderRadius: 999 },
 
   // User row (follows)
   userRow: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#f3f4f6',
   },
-  rowAvatar: { width: 48, height: 48, borderRadius: 24, backgroundColor: '#e5e7eb' },
+  rowAvatar: { width: 48, height: 48, borderRadius: 24, backgroundColor: SKELETON_COLOR },
 
   // User avatar (home horizontal)
   userAvatarItem: { width: 88, alignItems: 'center' },
-  avatarCircle:   { width: 64, height: 64, borderRadius: 32, backgroundColor: '#e5e7eb' },
+  avatarCircle:   { width: 64, height: 64, borderRadius: 32, backgroundColor: SKELETON_COLOR },
 
   // Profile
-  profileBanner: { height: 110, backgroundColor: '#e5e7eb' },
+  profileBanner: { height: 110, backgroundColor: SKELETON_COLOR },
   profileCard: {
     backgroundColor: '#fff', marginHorizontal: 16, borderRadius: 16,
     marginTop: -24, paddingBottom: 16,
@@ -186,15 +247,15 @@ const sk = StyleSheet.create({
   },
   profileAvatar: {
     width: 80, height: 80, borderRadius: 40,
-    backgroundColor: '#e5e7eb', marginTop: -36,
+    backgroundColor: SKELETON_COLOR, marginTop: -36,
     borderWidth: 4, borderColor: '#fff',
   },
-  profileBtnSk:  { width: 100, height: 34, backgroundColor: '#e5e7eb', borderRadius: 999 },
+  profileBtnSk:  { width: 100, height: 34, backgroundColor: SKELETON_COLOR, borderRadius: 999 },
   profileStats:  { flexDirection: 'row', marginTop: 14, paddingTop: 14, borderTopWidth: 1, borderTopColor: '#f3f4f6' },
   profileStat:   { flex: 1, alignItems: 'center' },
 
   // Itinerary detail
-  detailHero:     { width: '100%', height: 420, backgroundColor: '#e5e7eb' },
+  detailHero:     { width: '100%', height: 420, backgroundColor: SKELETON_COLOR },
   detailBody:     { padding: 20 },
   detailStatsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 24 },
   detailStatCard: {
@@ -206,6 +267,21 @@ const sk = StyleSheet.create({
     borderBottomWidth: 1, borderBottomColor: '#f3f4f6',
   },
   detailPlaceNum: {
-    width: 28, height: 28, borderRadius: 14, backgroundColor: '#e5e7eb', flexShrink: 0,
+    width: 28, height: 28, borderRadius: 14, backgroundColor: SKELETON_COLOR, flexShrink: 0,
   },
+
+  // List row (van log, supplies), inside the list's own row
+  listRow:     { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12 },
+  listLeading: { width: 22, height: 22, borderRadius: 6, backgroundColor: SKELETON_COLOR },
+  listText:    { flex: 1, gap: 6 },
+
+  // Notification row
+  notificationAvatar: { width: 46, height: 46, borderRadius: 23, backgroundColor: SKELETON_COLOR },
+
+  textLines: { gap: 8 },
+
+  // Form
+  form:      { padding: 20, gap: 18 },
+  formField: { gap: 8 },
+  formInput: { height: 44, borderRadius: 10, backgroundColor: SKELETON_COLOR },
 });

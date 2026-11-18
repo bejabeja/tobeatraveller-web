@@ -45,12 +45,16 @@ $stamp-min-width: 120px;
     }
   }
 
-  &__skeleton {
-    height: 220px;
+  // The cover and the countries' map as tall as they arrive, so nothing moves.
+  &__cover-skeleton {
+    height: 150px;
     border-radius: 18px;
-    background: linear-gradient(90deg, #eee 25%, #f5f5f5 50%, #eee 75%);
-    background-size: 200% 100%;
-    animation: passport-shimmer 1.4s infinite;
+  }
+
+  &__section-skeleton {
+    height: 420px;
+    margin-top: 2rem;
+    border-radius: 18px;
   }
 
   // ─── First steps (owner, before the first stamp) ────────────────────
@@ -674,10 +678,6 @@ $stamp-min-width: 120px;
       font-size: 0.65rem;
     }
   }
-}
-
-@keyframes passport-shimmer {
-  to { background-position: -200% 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {

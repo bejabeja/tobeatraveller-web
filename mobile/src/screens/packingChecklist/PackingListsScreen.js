@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import {
-  ActivityIndicator, Alert, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View,
+  Alert, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -19,9 +19,12 @@ import { useRefetchAfterSync } from '../../offline/useOutbox';
 import { trackEvent } from '../../utils/analytics';
 import { cacheGet, cacheSet, packingListsCacheKey } from '../../utils/offlineCache';
 import { COLORS, shadow } from '../../utils/styles';
+import { TextLinesSkeleton } from '../../components/Skeleton';
 
 // Every list someone keeps (before driving off, a weekend, winter...), each
 // with how far along it is.
+const SKELETON_CARDS = 3;
+
 const PackingListsScreen = ({ navigation, route }) => {
   const { t, i18n } = useTranslation();
   const p = (key, vars) => t(`packingChecklist.${key}`, vars);
@@ -165,7 +168,11 @@ const PackingListsScreen = ({ navigation, route }) => {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={COLORS.primary} />}
       >
         {loading ? (
-          <ActivityIndicator size="small" color={COLORS.primary} style={{ marginTop: 40 }} />
+          Array.from({ length: SKELETON_CARDS }, (_, i) => (
+            <View key={i} style={styles.card} accessibilityState={{ busy: true }}>
+              <View style={styles.cardBody}><TextLinesSkeleton widths={['55%', '30%']} /></View>
+            </View>
+          ))
         ) : loadError ? (
           <FeatureLoadState status={loadError} onRetry={fetchLists} />
         ) : lists.length === 0 ? (

@@ -3,6 +3,8 @@ import { MemoryRouter } from "react-router-dom";
 
 let mockTrips = [];
 let mockDraft = null;
+let mockLoaded = true;
+let mockError = null;
 
 jest.mock("react-redux", () => ({ useSelector: (selector) => selector() }));
 jest.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key) => key }) }));
@@ -11,7 +13,8 @@ jest.mock("../../hooks/useUnfinishedDraft", () => ({ useUnfinishedDraft: () => m
 jest.mock("../../store/auth/authSelectors", () => ({ selectAuthUser: () => ({ id: "u1" }) }));
 jest.mock("../../store/user/userInfoSelectors", () => ({
   selectMyItineraries: () => mockTrips,
-  selectMyItinerariesLoaded: () => true,
+  selectMyItinerariesLoaded: () => mockLoaded,
+  selectMyItinerariesError: () => mockError,
 }));
 jest.mock("@tobeatraveller/shared", () => ({
   ...jest.requireActual("@tobeatraveller/shared/src/utils/nextTrip.js"),
@@ -28,9 +31,29 @@ const renderNextTrip = () => render(<MemoryRouter><NextTrip /></MemoryRouter>);
 beforeEach(() => {
   mockTrips = [];
   mockDraft = null;
+  mockLoaded = true;
+  mockError = null;
 });
 
 describe("NextTrip", () => {
+  it("keeps the room of its answer while the trips arrive", () => {
+    mockLoaded = false;
+
+    const { container } = renderNextTrip();
+
+    expect(container.querySelectorAll(".hero__next-trip-skeleton")).toHaveLength(2);
+  });
+
+  // Regression: the trips failing to load never marks them loaded, so the room kept pulsing.
+  it("leaves the room empty when the trips could not be loaded", () => {
+    mockLoaded = false;
+    mockError = "down";
+
+    const { container } = renderNextTrip();
+
+    expect(container).toBeEmptyDOMElement();
+  });
+
   it("asks where they are going next when they have no trip and nothing half done", () => {
     renderNextTrip();
 

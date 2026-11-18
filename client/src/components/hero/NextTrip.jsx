@@ -6,12 +6,13 @@ import { findNextTrip, listsForTrip, localCalendarDay } from "@tobeatraveller/sh
 import { getPackingLists } from "../../services/packingChecklist";
 import { useUnfinishedDraft } from "../../hooks/useUnfinishedDraft";
 import { selectAuthUser } from "../../store/auth/authSelectors";
-import { selectMyItineraries, selectMyItinerariesLoaded } from "../../store/user/userInfoSelectors";
+import { selectMyItineraries, selectMyItinerariesError, selectMyItinerariesLoaded } from "../../store/user/userInfoSelectors";
 
 const NextTrip = () => {
   const { t } = useTranslation();
   const itineraries = useSelector(selectMyItineraries);
   const loaded = useSelector(selectMyItinerariesLoaded);
+  const failed = Boolean(useSelector(selectMyItinerariesError));
   const draft = useUnfinishedDraft(useSelector(selectAuthUser)?.id);
   const next = loaded ? findNextTrip(itineraries, localCalendarDay()) : null;
   const nextTripId = next?.itinerary.id;
@@ -28,7 +29,19 @@ const NextTrip = () => {
       .catch(() => {});
   }, [nextTripId]);
 
-  if (!loaded) return null;
+  // Failing never marks them loaded: nothing then, as before, instead of a room that pulses for good.
+  if (!loaded && failed) return null;
+
+  // As much room as the usual answer (a line and the button) while the trips arrive, so the
+  // cover does not grow under the greeting.
+  if (!loaded) {
+    return (
+      <div className="hero__next-trip" aria-hidden="true">
+        <span className="hero__next-trip-skeleton hero__next-trip-skeleton--line" />
+        <span className="hero__next-trip-skeleton hero__next-trip-skeleton--button" />
+      </div>
+    );
+  }
 
   const planTrip = (
     <Link to="/create-itinerary" className={next ? "hero__plan-link" : "btn btn--primary"}>

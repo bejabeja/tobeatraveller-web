@@ -15,7 +15,7 @@ import i18n from "../../i18n";
 import { useGoBack } from "../../hooks/useGoBack";
 import SelectMenu from "../../components/form/SelectMenu";
 import Modal from "../../components/modal/Modal";
-import Spinner from "../../components/spinner/Spinner";
+import PageSkeleton from "../../components/pageSkeleton/PageSkeleton";
 import BlockedPeopleSection from "./BlockedPeopleSection";
 import { REOPEN_COOKIE_PREFERENCES_EVENT } from "../../utils/analytics";
 import { changePassword, deleteMyAccount, exportMyData } from "../../services/users";
@@ -105,7 +105,7 @@ const Settings = () => {
     loadNotificationPreferences();
   }, []);
 
-  if (!userMe) return <Spinner />;
+  if (!userMe) return <PageSkeleton />;
 
   const openExportModal = () => {
     setExportPassword("");
@@ -245,7 +245,9 @@ const Settings = () => {
           <div className="settings__rows">
             <div className="settings__row">
               <span className="settings__row-label">{t("auth.emailLabel")}</span>
-              <span className="settings__row-value">{userMe?.email}</span>
+              {userMe?.email
+                ? <span className="settings__row-value">{userMe.email}</span>
+                : <span className="skeleton skeleton--text settings__value-skeleton" />}
             </div>
             {meDetail?.emailVerified === false && (
               <SettingsActionRow label={t("emailVerification.changeLink")} onClick={() => setShowEmailModal(true)} />
@@ -263,6 +265,12 @@ const Settings = () => {
             </div>
             {/* Not before the whole profile has arrived: the basic one does not carry it, and
                 "not set" would be said to someone who did choose. */}
+            {!meDetail && meLoading && (
+              <div className="settings__row" aria-hidden="true">
+                <span className="settings__row-label">{t("settings.travelStyle")}</span>
+                <span className="skeleton settings__select-skeleton" />
+              </div>
+            )}
             {meDetail && (
               <div className="settings__row">
                 <span className="settings__row-label">{t("settings.travelStyle")}</span>
@@ -305,6 +313,17 @@ const Settings = () => {
                   {t("common.retry")}
                 </button>
               </div>
+            </div>
+          )}
+          {!notificationPreferences && !preferencesFailed && (
+            // The same rows with their labels, so the section does not open up when they arrive.
+            <div className="settings__rows" aria-busy="true">
+              {NOTIFICATION_PREFERENCE_TOGGLES.map(({ key, labelKey }) => (
+                <div className="settings__row" key={key}>
+                  <span className="settings__row-label">{t(labelKey)}</span>
+                  <span className="skeleton ep__toggle" />
+                </div>
+              ))}
             </div>
           )}
           {notificationPreferences && (

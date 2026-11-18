@@ -29,6 +29,7 @@ const UNDO_PURCHASE_WINDOW_MS = 5000;
 const SEARCH_FROM_ITEMS = 15;
 const PURCHASE_UNDO_TOAST_ID = "purchase-undo";
 const DEFAULT_QUICK_ADD_CATEGORY = "food";
+const SKELETON_ROWS = 4;
 
 const Supplies = () => {
   const { t, i18n } = useTranslation();
@@ -435,10 +436,19 @@ const Supplies = () => {
       )}
 
       {loading ? (
-        <div className="supplies__groups">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="skeleton supplies__group-skeleton" />
-          ))}
+        <div className="supplies__groups" role="status" aria-busy="true" aria-label={t("common.loading")}>
+          <div className="supplies__group">
+            <span className="skeleton skeleton--text supplies__group-title-skeleton" />
+            <div className="supplies__rows">
+              {Array.from({ length: SKELETON_ROWS }, (_, i) => (
+                <div key={i} className="supplies__row">
+                  {tab === "shopping" && <span className="skeleton supplies__checkbox-skeleton" />}
+                  <span className="skeleton skeleton--text shorter supplies__row-name-skeleton" />
+                  <span className="skeleton skeleton--text supplies__row-amount-skeleton" />
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       ) : items.length === 0 && query ? (
         <div className="supplies__empty">

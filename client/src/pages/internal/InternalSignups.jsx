@@ -2,11 +2,12 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { countryFlag, countryName } from "@tobeatraveller/shared";
 import FeatureLoadState from "../../components/featureLoadState/FeatureLoadState";
-import Spinner from "../../components/spinner/Spinner";
 import { getSignupBreakdown } from "../../services/users";
 import "./InternalSignups.scss";
 
-const BreakdownTable = ({ title, rows, recentDays, labelOf }) => {
+const SKELETON_ROWS = 3;
+
+const BreakdownTable = ({ title, rows, recentDays, labelOf, cellOf = (row, column) => row[column] }) => {
   const { t } = useTranslation();
 
   return (
@@ -17,15 +18,17 @@ const BreakdownTable = ({ title, rows, recentDays, labelOf }) => {
           <tr>
             <th scope="col" />
             <th scope="col">{t("admin.signupsTotal")}</th>
-            <th scope="col">{t("admin.signupsRecent", { count: recentDays })}</th>
+            <th scope="col">
+              {recentDays ? t("admin.signupsRecent", { count: recentDays }) : <span className="skeleton skeleton--text internal-signups__cell-skeleton" />}
+            </th>
           </tr>
         </thead>
         <tbody>
           {rows.map((row) => (
             <tr key={row.key}>
               <th scope="row">{labelOf(row)}</th>
-              <td>{row.total}</td>
-              <td>{row.recent}</td>
+              <td>{cellOf(row, "total")}</td>
+              <td>{cellOf(row, "recent")}</td>
             </tr>
           ))}
         </tbody>
@@ -51,7 +54,18 @@ const InternalSignups = () => {
   useEffect(load, []);
 
   if (error) return <FeatureLoadState status={error} onRetry={load} />;
-  if (loading) return <Spinner />;
+  // The same tables with their titles while the counts arrive; how many days are recent comes with them.
+  if (loading) {
+    const skeletonRows = Array.from({ length: SKELETON_ROWS }, (_, i) => ({ key: i }));
+    const skeletonCell = () => <span className="skeleton skeleton--text internal-signups__cell-skeleton" />;
+    return (
+      <div className="internal-signups" role="status" aria-busy="true" aria-label={t("common.loading")}>
+        <p className="internal-signups__intro">{t("admin.signupsIntro")}</p>
+        <BreakdownTable title={t("admin.signupsByCountry")} rows={skeletonRows} labelOf={skeletonCell} cellOf={skeletonCell} />
+        <BreakdownTable title={t("admin.signupsByDevice")} rows={skeletonRows} labelOf={skeletonCell} cellOf={skeletonCell} />
+      </div>
+    );
+  }
 
   const countryLabel = ({ countryCode }) => (countryCode
     ? `${countryFlag(countryCode)} ${countryName(countryCode, i18n.language)}`
