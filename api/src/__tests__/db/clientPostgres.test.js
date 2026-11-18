@@ -1,3 +1,4 @@
+import { EventEmitter } from 'node:events';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const pool = vi.hoisted(() => ({ connect: vi.fn(), on: vi.fn() }));
@@ -10,7 +11,7 @@ import client from '../../db/clientPostgres.js';
 import { logger } from '../../utils/logger.js';
 
 const networkError = (code = 'ECONNRESET') => Object.assign(new Error('Client network socket disconnected before secure TLS connection was established'), { code });
-const connection = (result = { rows: [{ ok: 1 }] }) => ({ query: vi.fn().mockResolvedValue(result), release: vi.fn() });
+const connection = (result = { rows: [{ ok: 1 }] }) => Object.assign(new EventEmitter(), { query: vi.fn().mockResolvedValue(result), release: vi.fn() });
 
 describe('clientPostgres', () => {
     beforeEach(() => {
@@ -72,6 +73,26 @@ describe('clientPostgres', () => {
         await expect(client.query('INSERT INTO t VALUES (1)')).rejects.toBe(lost);
         expect(conn.query).toHaveBeenCalledTimes(1);
         expect(conn.release).toHaveBeenCalledWith(lost);
+    });
+
+    // pg-pool only listens for errors on idle connections. When the server
+    // closes one in the middle of a query, pg rejects the query and also emits
+    // 'error'; with nobody listening, Node turns that into a crash.
+    it('does not crash when the connection dies in the middle of a query', async () => {
+        const lost = new Error('Connection terminated unexpectedly');
+        const conn = connection();
+        // pg emits from the socket's 'end' event, outside the query's call stack.
+        conn.query.mockImplementation(() => new Promise((resolve, reject) => {
+            process.nextTick(() => {
+                conn.emit('error', lost);
+                reject(lost);
+            });
+        }));
+        pool.connect.mockResolvedValue(conn);
+
+        await expect(client.query('SELECT 1')).rejects.toBe(lost);
+        expect(conn.release).toHaveBeenCalledWith(lost);
+        expect(conn.listenerCount('error')).toBe(0);
     });
 
     // Without a listener, an idle connection dying would crash the process.

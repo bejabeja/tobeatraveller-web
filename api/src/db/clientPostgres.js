@@ -49,12 +49,18 @@ const connect = async () => {
     }
 };
 
+// The pool stops listening for errors on a connection while it is checked out.
+// If the server closes it mid-query, pg rejects the query (which reaches the
+// error handler) and also emits 'error', which unheard would crash the process.
+const ignoreErrorAlreadyRejectingQuery = () => {};
+
 // Same as pool.query, but retrying the connection. A query that fails once
 // sent is never run again (a write would run twice); its connection is
 // thrown away in case it is the one that broke.
 const client = {
     async query(...args) {
         const connection = await connect();
+        connection.on('error', ignoreErrorAlreadyRejectingQuery);
         let failure;
         try {
             return await connection.query(...args);
@@ -62,6 +68,7 @@ const client = {
             failure = error;
             throw error;
         } finally {
+            connection.removeListener('error', ignoreErrorAlreadyRejectingQuery);
             connection.release(failure);
         }
     },
