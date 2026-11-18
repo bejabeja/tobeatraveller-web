@@ -1,9 +1,8 @@
-import bcrypt from 'bcrypt';
 import crypto from 'crypto';
-import { AuthError } from '../errors/AuthError.js';
 import { ConflictError } from '../errors/ConflictError.js';
 import { NotFoundError } from '../errors/NotFoundError.js';
 import { AUDIT_EVENTS } from '../utils/auditEvents.js';
+import { assertCurrentPassword } from '../utils/currentPassword.js';
 import { logger } from '../utils/logger.js';
 
 const TOKEN_BYTES = 32;
@@ -51,8 +50,7 @@ export class EmailVerificationService {
         if (!user) throw new NotFoundError('User not found');
         if (user.isEmailVerified()) throw new ConflictError('Email already confirmed', 'email');
 
-        const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
-        if (!isPasswordValid) throw new AuthError('Current password is incorrect');
+        await assertCurrentPassword(user, currentPassword);
 
         const email = newEmail.trim().toLowerCase();
         const owner = await this.userRepository.findByEmail(email);

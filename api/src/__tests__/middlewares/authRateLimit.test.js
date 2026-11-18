@@ -26,6 +26,11 @@ describe('auth rate limits', () => {
             (req, res) => res.status(200).json({}));
         app.post('/create', limits.signupPerIpRateLimit,
             (req, res) => res.status(req.body.taken ? 409 : 201).json({}));
+        // Like authenticate, which runs before it on the real routes: the account is in the token.
+        const signedInAs = (req, res, next) => { req.user = { id: req.get('x-account') }; next(); };
+        const passwordChecked = (req, res) => res.status(req.body.password === 'right-password' ? 200 : 401).json({});
+        app.post('/me/export', signedInAs, limits.wrongPasswordPerAccountRateLimit, passwordChecked);
+        app.post('/me/delete', signedInAs, limits.wrongPasswordPerAccountRateLimit, passwordChecked);
         app.use(errorHandler);
         await new Promise((resolve) => { server = app.listen(0, resolve); });
         baseUrl = `http://127.0.0.1:${server.address().port}`;
@@ -117,6 +122,34 @@ describe('auth rate limits', () => {
             await statusesOf(15, () => send(baseUrl, '/create', { taken: true }));
 
             expect((await send(baseUrl, '/create', {})).status).toBe(201);
+        });
+    });
+
+    describe('asking a signed-in person for their password again', () => {
+        const attempt = (path, account, password) => fetch(`${baseUrl}${path}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-account': account },
+            body: JSON.stringify({ password }),
+        });
+
+        // A stolen session must not be a way to find out the password, which then opens everything else.
+        it('stops guessing after 10 wrong passwords, counted across every place that asks', async () => {
+            const statuses = await statusesOf(11, (i) => attempt(i % 2 ? '/me/export' : '/me/delete', 'ana', 'wrong'));
+
+            expect(statuses.slice(0, 10)).toEqual(Array(10).fill(401));
+            expect(statuses[10]).toBe(429);
+        });
+
+        it('never counts the right password', async () => {
+            const statuses = await statusesOf(15, () => attempt('/me/export', 'ana', 'right-password'));
+
+            expect(statuses).toEqual(Array(15).fill(200));
+        });
+
+        it('keeps the wrong passwords on one account from locking another', async () => {
+            await statusesOf(10, () => attempt('/me/export', 'ana', 'wrong'));
+
+            expect((await attempt('/me/export', 'bob', 'right-password')).status).toBe(200);
         });
     });
 });

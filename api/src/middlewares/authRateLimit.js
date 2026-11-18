@@ -10,6 +10,7 @@ const FIFTEEN_MINUTES_MS = 15 * 60 * 1000;
 const ONE_HOUR_MS = 60 * 60 * 1000;
 const MAX_FAILED_LOGINS_PER_ACCOUNT = 10;
 const MAX_FAILED_LOGINS_PER_IP = 30;
+const MAX_WRONG_PASSWORDS_PER_ACCOUNT = 10;
 const MAX_PASSWORD_RESET_EMAILS_PER_ACCOUNT_PER_HOUR = 3;
 const MAX_PASSWORD_RESET_EMAILS_PER_IP_PER_HOUR = 10;
 const MAX_SIGNUPS_PER_IP_PER_HOUR = 10;
@@ -43,6 +44,18 @@ export const failedLoginPerIpRateLimit = rateLimit({
     ...baseOptions,
     windowMs: FIFTEEN_MINUTES_MS,
     limit: MAX_FAILED_LOGINS_PER_IP,
+    skipSuccessfulRequests: true,
+});
+
+// What asks a signed-in person for their password again (changing it or the email,
+// deleting the account, downloading its data): a stolen session must not be a way to
+// guess it. Runs after authenticate, keyed by the account and shared by all of them, so
+// spreading the guesses across them gains nothing; only the attempts that fail count.
+export const wrongPasswordPerAccountRateLimit = rateLimit({
+    ...baseOptions,
+    windowMs: FIFTEEN_MINUTES_MS,
+    limit: MAX_WRONG_PASSWORDS_PER_ACCOUNT,
+    keyGenerator: (req) => req.user.id,
     skipSuccessfulRequests: true,
 });
 

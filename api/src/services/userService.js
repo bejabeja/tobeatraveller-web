@@ -1,12 +1,12 @@
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from 'uuid';
 import db from '../db/clientPostgres.js';
-import { AuthError } from "../errors/AuthError.js";
 import { ConflictError } from "../errors/ConflictError.js";
 import { ForbiddenError } from "../errors/ForbiddenError.js";
 import { NotFoundError } from "../errors/NotFoundError.js";
 import { generateAvatar } from "../utils/avatar.js";
 import { countryCodeFromIp } from "../utils/geoLookup.js";
+import { assertCurrentPassword } from "../utils/currentPassword.js";
 import { logger } from "../utils/logger.js";
 import { AUDIT_EVENTS } from "../utils/auditEvents.js";
 import { ACTIVE_SUBSCRIPTION_STATUSES } from "../models/subscription.js";
@@ -357,10 +357,7 @@ export class UserService {
         const user = await this.userRepository.getUserById(id);
         if (!user) throw new NotFoundError("User not found");
 
-        const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
-        if (!isCurrentPasswordValid) {
-            throw new AuthError("Current password is incorrect");
-        }
+        await assertCurrentPassword(user, currentPassword);
 
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         await this.userRepository.updatePassword(id, hashedPassword);
@@ -420,10 +417,11 @@ export class UserService {
         return users.map(u => u.toFeaturedDTO());
     }
 
-    async deleteUser(id, actingUser = null, { ip, userAgent } = {}) {
+    async deleteUser(id, actingUser = null, { ip, userAgent } = {}, currentPassword = undefined) {
         const user = await this.userRepository.getUserById(id);
         if (!user) throw new NotFoundError("User not found");
-        if (actingUser && actingUser.id !== id) assertCanActOnAccount(user, actingUser);
+        if (actingUser?.id === id) await assertCurrentPassword(user, currentPassword);
+        else if (actingUser) assertCanActOnAccount(user, actingUser);
 
         // Collected before the delete cascades, since itinerary/diary rows
         // (and their photo_public_id columns) won't exist to query afterwards.
@@ -452,9 +450,10 @@ export class UserService {
         return { user, imagePublicIds: [...itineraryImagePublicIds, ...lifeDiaryImagePublicIds, ...receiptPhotoPublicIds] };
     }
 
-    async exportUserData(id, actingUser, { ip, userAgent } = {}) {
+    async exportUserData(id, actingUser, { ip, userAgent } = {}, currentPassword = undefined) {
         const user = await this.userRepository.getUserById(id);
         if (!user) throw new NotFoundError("User not found");
+        await assertCurrentPassword(user, currentPassword);
 
         const [
             itineraries, followers, following, commentsResult, likesResult, favoritesResult,

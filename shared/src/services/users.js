@@ -125,9 +125,11 @@ export const updateMyLanguage = async (language) => {
     }
 };
 
-export const deleteMyAccount = async () => {
+export const deleteMyAccount = async (currentPassword) => {
     const response = await authFetch(`${baseUrl()}/me`, {
         method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPassword }),
     });
     if (!response.ok) {
         await parseError(response, 'Failed to delete account');
@@ -146,10 +148,18 @@ export const deleteUserById = async (id) => {
 };
 
 // Gathers every table the user has data in, so it gets longer than the default.
-export const EXPORT_TIMEOUT_MS = 60_000;
+const EXPORT_TIMEOUT_MS = 60_000;
 
-export const exportMyData = async () => {
-    const response = await authFetch(`${baseUrl()}/me/export`, { timeoutMs: EXPORT_TIMEOUT_MS });
+// A POST and not a GET because it carries the password, which must not end up in a URL.
+export const exportRequest = (currentPassword) => ({
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ currentPassword }),
+    timeoutMs: EXPORT_TIMEOUT_MS,
+});
+
+export const exportMyData = async (currentPassword) => {
+    const response = await authFetch(`${baseUrl()}/me/export`, exportRequest(currentPassword));
     if (!response.ok) {
         await parseError(response, 'Failed to export data');
     }

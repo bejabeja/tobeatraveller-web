@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('../../db/clientPostgres.js', () => ({
     default: { query: vi.fn().mockResolvedValue({ rows: [] }) },
@@ -7,11 +7,13 @@ vi.mock('../../db/clientPostgres.js', () => ({
 import bcrypt from 'bcrypt';
 import { User } from '../../models/user.js';
 import { UserService } from '../../services/userService.js';
-import { AuthError } from '../../errors/AuthError.js';
 import { NotFoundError } from '../../errors/NotFoundError.js';
 import { ConflictError } from '../../errors/ConflictError.js';
 import { ForbiddenError } from '../../errors/ForbiddenError.js';
 import { AUDIT_EVENTS } from '../../utils/auditEvents.js';
+
+// A 400 on the field: a 401 would be taken by the apps for an expired session.
+const WRONG_PASSWORD = { statusCode: 400, field: 'currentPassword', message: 'Current password is incorrect' };
 
 const makeUser = (overrides = {}) => new User({
     id: 'user-1',
@@ -217,11 +219,48 @@ describe('UserService.deleteUser()', () => {
     it('logs a self-delete under a different action than an admin-initiated one', async () => {
         let loggedEntry;
         const auditLogService = { log: (entry) => { loggedEntry = entry; } };
+        userRepository.getUserById = async () => makeUser({ password: await bcrypt.hash('correct-password', 10) });
         service = new UserService(userRepository, itinerariesRepository, {}, null, lifeDiaryRepository, auditLogService);
 
-        await service.deleteUser('user-1', { id: 'user-1', username: 'jane' });
+        await service.deleteUser('user-1', { id: 'user-1', username: 'jane' }, {}, 'correct-password');
 
         expect(loggedEntry.action).toBe(AUDIT_EVENTS.ACCOUNT_DELETED_BY_SELF);
+    });
+
+    // Regression: a session was enough to delete the account, so whoever got hold of
+    // one (a phone left unlocked, a stolen token) could erase it for good.
+    describe('deleting one\'s own account', () => {
+        const self = { id: 'user-1', username: 'jane' };
+
+        beforeEach(async () => {
+            const password = await bcrypt.hash('correct-password', 10);
+            userRepository.getUserById = async () => makeUser({ password });
+            userRepository.deleteUser = vi.fn();
+        });
+
+        it('does not delete it with a wrong password', async () => {
+            await expect(service.deleteUser('user-1', self, {}, 'wrong-password')).rejects.toMatchObject(WRONG_PASSWORD);
+
+            expect(userRepository.deleteUser).not.toHaveBeenCalled();
+        });
+
+        it('does not delete it without the password', async () => {
+            await expect(service.deleteUser('user-1', self)).rejects.toMatchObject(WRONG_PASSWORD);
+
+            expect(userRepository.deleteUser).not.toHaveBeenCalled();
+        });
+
+        it('deletes it with the right password', async () => {
+            await service.deleteUser('user-1', self, {}, 'correct-password');
+
+            expect(userRepository.deleteUser).toHaveBeenCalledWith('user-1');
+        });
+
+        it('does not ask an admin deleting someone else for a password', async () => {
+            await service.deleteUser('user-1', { id: 'admin-1', username: 'root', role: 'admin' });
+
+            expect(userRepository.deleteUser).toHaveBeenCalledWith('user-1');
+        });
     });
 
     it('forwards the caller\'s ip and user agent to the log', async () => {
@@ -652,15 +691,46 @@ describe('UserService.create()', () => {
 });
 
 describe('UserService.exportUserData()', () => {
+    let passwordHash;
+    const accountWithPassword = (overrides = {}) => makeUser({ password: passwordHash, ...overrides });
+
+    beforeAll(async () => {
+        passwordHash = await bcrypt.hash('correct-password', 10);
+    });
+
+    // Regression: a session was enough to download everything the account holds (the
+    // email, the trips, the diary, who they follow and block) to whoever had one.
+    describe('the password', () => {
+        const buildService = (userRepository) => new UserService(
+            userRepository, { findByUserId: vi.fn(async () => []) }, { getFollowers: async () => [], getFollowing: async () => [] }
+        );
+
+        it('gives nothing with a wrong password', async () => {
+            const userRepository = { getUserById: async () => accountWithPassword(), findRetiredReferralCodes: async () => [] };
+            const service = buildService(userRepository);
+
+            await expect(service.exportUserData('user-1', { id: 'user-1', username: 'jane' }, {}, 'wrong-password'))
+                .rejects.toMatchObject(WRONG_PASSWORD);
+        });
+
+        it('gives nothing without the password', async () => {
+            const userRepository = { getUserById: async () => accountWithPassword(), findRetiredReferralCodes: async () => [] };
+            const service = buildService(userRepository);
+
+            await expect(service.exportUserData('user-1', { id: 'user-1', username: 'jane' }))
+                .rejects.toMatchObject(WRONG_PASSWORD);
+        });
+    });
+
     it('includes the people the user has blocked, since it is their own data', async () => {
         const db = (await import('../../db/clientPostgres.js')).default;
         db.query.mockImplementation(async (sql) => (
             sql.includes('user_blocks') ? { rows: [{ username: 'pest', created_at: '2026-10-01T10:00:00Z' }] } : { rows: [] }
         ));
-        const userRepository = { getUserById: async () => makeUser(), findRetiredReferralCodes: async () => [] };
+        const userRepository = { getUserById: async () => accountWithPassword(), findRetiredReferralCodes: async () => [] };
         const service = new UserService(userRepository, { findByUserId: async () => [] }, { getFollowers: async () => [], getFollowing: async () => [] });
 
-        const exported = await service.exportUserData('user-1', { id: 'user-1', username: 'jane' });
+        const exported = await service.exportUserData('user-1', { id: 'user-1', username: 'jane' }, {}, 'correct-password');
 
         expect(exported.blockedUsers).toEqual([{ username: 'pest', blockedAt: '2026-10-01T10:00:00Z' }]);
         db.query.mockResolvedValue({ rows: [] });
@@ -668,13 +738,13 @@ describe('UserService.exportUserData()', () => {
 
     it('logs a data_exported event for the requesting user, a GDPR data-subject request', async () => {
         let loggedEntry;
-        const userRepository = { getUserById: async () => makeUser(), findRetiredReferralCodes: async () => [] };
+        const userRepository = { getUserById: async () => accountWithPassword(), findRetiredReferralCodes: async () => [] };
         const itinerariesRepository = { findByUserId: async () => [] };
         const followRepository = { getFollowers: async () => [], getFollowing: async () => [] };
         const auditLogService = { log: (entry) => { loggedEntry = entry; } };
         const service = new UserService(userRepository, itinerariesRepository, followRepository, null, null, auditLogService);
 
-        await service.exportUserData('user-1', { id: 'user-1', username: 'jane' });
+        await service.exportUserData('user-1', { id: 'user-1', username: 'jane' }, {}, 'correct-password');
 
         expect(loggedEntry).toEqual({
             actorId: 'user-1', actorUsername: 'jane',
@@ -684,13 +754,13 @@ describe('UserService.exportUserData()', () => {
 
     it('forwards the caller\'s ip and user agent to the log', async () => {
         let loggedEntry;
-        const userRepository = { getUserById: async () => makeUser(), findRetiredReferralCodes: async () => [] };
+        const userRepository = { getUserById: async () => accountWithPassword(), findRetiredReferralCodes: async () => [] };
         const itinerariesRepository = { findByUserId: async () => [] };
         const followRepository = { getFollowers: async () => [], getFollowing: async () => [] };
         const auditLogService = { log: (entry) => { loggedEntry = entry; } };
         const service = new UserService(userRepository, itinerariesRepository, followRepository, null, null, auditLogService);
 
-        await service.exportUserData('user-1', { id: 'user-1', username: 'jane' }, { ip: '203.0.113.1', userAgent: 'Mozilla/5.0' });
+        await service.exportUserData('user-1', { id: 'user-1', username: 'jane' }, { ip: '203.0.113.1', userAgent: 'Mozilla/5.0' }, 'correct-password');
 
         expect(loggedEntry.ipAddress).toBe('203.0.113.1');
         expect(loggedEntry.userAgent).toBe('Mozilla/5.0');
@@ -701,14 +771,14 @@ describe('UserService.exportUserData()', () => {
     // record in the audit trail.
     it('does not log data_exported when assembling the export data fails', async () => {
         let loggedEntry;
-        const userRepository = { getUserById: async () => makeUser(), findRetiredReferralCodes: async () => [] };
+        const userRepository = { getUserById: async () => accountWithPassword(), findRetiredReferralCodes: async () => [] };
         const itinerariesRepository = { findByUserId: async () => { throw new Error('db down'); } };
         const followRepository = { getFollowers: async () => [], getFollowing: async () => [] };
         const auditLogService = { log: (entry) => { loggedEntry = entry; } };
         const service = new UserService(userRepository, itinerariesRepository, followRepository, null, null, auditLogService);
 
         await expect(
-            service.exportUserData('user-1', { id: 'user-1', username: 'jane' })
+            service.exportUserData('user-1', { id: 'user-1', username: 'jane' }, {}, 'correct-password')
         ).rejects.toThrow('db down');
 
         expect(loggedEntry).toBeUndefined();
@@ -719,7 +789,7 @@ describe('UserService.exportUserData()', () => {
     // (the "Download data" button) didn't actually return everything the user
     // had created in the app.
     it('includes van-log, supplies, packing-checklist, and life-diary (with images) content', async () => {
-        const userRepository = { getUserById: async () => makeUser(), findRetiredReferralCodes: async () => [] };
+        const userRepository = { getUserById: async () => accountWithPassword(), findRetiredReferralCodes: async () => [] };
         const itinerariesRepository = { findByUserId: async () => [] };
         const followRepository = { getFollowers: async () => [], getFollowing: async () => [] };
         const lifeDiaryRepository = {
@@ -738,7 +808,7 @@ describe('UserService.exportUserData()', () => {
             null, null, null, null, packingListRepository
         );
 
-        const result = await service.exportUserData('user-1', { id: 'user-1', username: 'jane' });
+        const result = await service.exportUserData('user-1', { id: 'user-1', username: 'jane' }, {}, 'correct-password');
 
         expect(result.vanLogEntries).toEqual([{ id: 'van-1' }]);
         expect(result.supplies).toEqual({ inventory: [{ id: 'inv-1' }], shoppingList: [{ id: 'shop-1' }] });
@@ -752,22 +822,22 @@ describe('UserService.exportUserData()', () => {
     it('includes how the person says they travel and when they confirmed their email', async () => {
         const emailVerifiedAt = new Date('2026-09-01T10:00:00.000Z');
         const userRepository = {
-            getUserById: async () => makeUser({ travelStyle: 'van', emailVerifiedAt }),
+            getUserById: async () => accountWithPassword({ travelStyle: 'van', emailVerifiedAt }),
             findRetiredReferralCodes: async () => [],
         };
         const service = new UserService(userRepository, { findByUserId: async () => [] }, { getFollowers: async () => [], getFollowing: async () => [] });
 
-        const result = await service.exportUserData('user-1', { id: 'user-1', username: 'jane' });
+        const result = await service.exportUserData('user-1', { id: 'user-1', username: 'jane' }, {}, 'correct-password');
 
         expect(result.profile.travelStyle).toBe('van');
         expect(result.profile.emailVerifiedAt).toEqual(emailVerifiedAt);
     });
 
     it('says they have not chosen, instead of leaving it out, when they have not', async () => {
-        const userRepository = { getUserById: async () => makeUser(), findRetiredReferralCodes: async () => [] };
+        const userRepository = { getUserById: async () => accountWithPassword(), findRetiredReferralCodes: async () => [] };
         const service = new UserService(userRepository, { findByUserId: async () => [] }, { getFollowers: async () => [], getFollowing: async () => [] });
 
-        const result = await service.exportUserData('user-1', { id: 'user-1', username: 'jane' });
+        const result = await service.exportUserData('user-1', { id: 'user-1', username: 'jane' }, {}, 'correct-password');
 
         expect(result.profile.travelStyle).toBeNull();
         expect(result.profile.emailVerifiedAt).toBeNull();
@@ -776,7 +846,7 @@ describe('UserService.exportUserData()', () => {
     it('includes the subscription and premium data, part of what a data-subject request covers', async () => {
         const premiumUntil = new Date('2030-01-01T00:00:00.000Z');
         const userRepository = {
-            getUserById: async () => makeUser({ premiumUntil, stripeCustomerId: 'cus_123' }),
+            getUserById: async () => accountWithPassword({ premiumUntil, stripeCustomerId: 'cus_123' }),
             findRetiredReferralCodes: async () => [],
         };
         const subscriptionRepository = {
@@ -790,7 +860,7 @@ describe('UserService.exportUserData()', () => {
             null, null, null, null, null, null, null, subscriptionRepository
         );
 
-        const { billing } = await service.exportUserData('user-1', { id: 'user-1', username: 'jane' });
+        const { billing } = await service.exportUserData('user-1', { id: 'user-1', username: 'jane' }, {}, 'correct-password');
 
         expect(billing).toEqual({
             stripeCustomerId: 'cus_123',
@@ -803,21 +873,21 @@ describe('UserService.exportUserData()', () => {
     });
 
     it('exports an empty billing section for someone who never subscribed', async () => {
-        const userRepository = { getUserById: async () => makeUser(), findRetiredReferralCodes: async () => [] };
+        const userRepository = { getUserById: async () => accountWithPassword(), findRetiredReferralCodes: async () => [] };
         const service = new UserService(userRepository, { findByUserId: async () => [] }, { getFollowers: async () => [], getFollowing: async () => [] });
 
-        const { billing } = await service.exportUserData('user-1', { id: 'user-1', username: 'jane' });
+        const { billing } = await service.exportUserData('user-1', { id: 'user-1', username: 'jane' }, {}, 'correct-password');
 
         expect(billing.subscriptions).toEqual([]);
     });
 
     it('omits van-log, supplies, packing-checklist, and life-diary content when those repositories are not wired', async () => {
-        const userRepository = { getUserById: async () => makeUser(), findRetiredReferralCodes: async () => [] };
+        const userRepository = { getUserById: async () => accountWithPassword(), findRetiredReferralCodes: async () => [] };
         const itinerariesRepository = { findByUserId: async () => [] };
         const followRepository = { getFollowers: async () => [], getFollowing: async () => [] };
         const service = new UserService(userRepository, itinerariesRepository, followRepository);
 
-        const result = await service.exportUserData('user-1', { id: 'user-1', username: 'jane' });
+        const result = await service.exportUserData('user-1', { id: 'user-1', username: 'jane' }, {}, 'correct-password');
 
         expect(result.vanLogEntries).toEqual([]);
         expect(result.supplies).toEqual({ inventory: [], shoppingList: [] });
@@ -826,7 +896,7 @@ describe('UserService.exportUserData()', () => {
     });
 
     it('includes the devices registered for push notifications', async () => {
-        const userRepository = { getUserById: async () => makeUser(), findRetiredReferralCodes: async () => [] };
+        const userRepository = { getUserById: async () => accountWithPassword(), findRetiredReferralCodes: async () => [] };
         const itinerariesRepository = { findByUserId: async () => [] };
         const followRepository = { getFollowers: async () => [], getFollowing: async () => [] };
         const pushDevice = { token: 'ExponentPushToken[a]', platform: 'android', locale: 'es' };
@@ -836,13 +906,13 @@ describe('UserService.exportUserData()', () => {
             null, null, null, null, null, null, null, null, null, pushTokensRepository
         );
 
-        const result = await service.exportUserData('user-1', { id: 'user-1', username: 'jane' });
+        const result = await service.exportUserData('user-1', { id: 'user-1', username: 'jane' }, {}, 'correct-password');
 
         expect(result.pushDevices).toEqual([pushDevice]);
     });
 
     it('includes the badges the user has earned and the countries in their passport, stamped and declared', async () => {
-        const userRepository = { getUserById: async () => makeUser(), findRetiredReferralCodes: async () => [] };
+        const userRepository = { getUserById: async () => accountWithPassword(), findRetiredReferralCodes: async () => [] };
         const itinerariesRepository = { findByUserId: async () => [] };
         const followRepository = { getFollowers: async () => [], getFollowing: async () => [] };
         const earned = [{ badgeId: 'explorer', earnedAt: new Date('2026-09-01') }];
@@ -858,7 +928,7 @@ describe('UserService.exportUserData()', () => {
             null, null, null, null, null, null, null, null, null, null, badgeRepository
         );
 
-        const result = await service.exportUserData('user-1', { id: 'user-1', username: 'jane' });
+        const result = await service.exportUserData('user-1', { id: 'user-1', username: 'jane' }, {}, 'correct-password');
 
         expect(result.badges).toEqual(earned);
         expect(result.countryStamps).toEqual(countryStamps);
@@ -867,12 +937,12 @@ describe('UserService.exportUserData()', () => {
 
     it('includes the earlier invite codes still kept after a change of username', async () => {
         const retired = [{ code: 'jane_old', retiredAt: '2026-03-01T00:00:00Z' }];
-        const userRepository = { getUserById: async () => makeUser(), findRetiredReferralCodes: async () => retired };
+        const userRepository = { getUserById: async () => accountWithPassword(), findRetiredReferralCodes: async () => retired };
         const service = new UserService(
             userRepository, { findByUserId: async () => [] }, { getFollowers: async () => [], getFollowing: async () => [] }
         );
 
-        const result = await service.exportUserData('user-1', { id: 'user-1', username: 'jane' });
+        const result = await service.exportUserData('user-1', { id: 'user-1', username: 'jane' }, {}, 'correct-password');
 
         expect(result.profile.previousReferralCodes).toEqual(retired);
     });
@@ -900,9 +970,11 @@ describe('UserService.changePassword()', () => {
             .rejects.toThrow(NotFoundError);
     });
 
-    it('throws AuthError when the current password is incorrect', async () => {
+    // Regression: it answered 401, which the apps take for an expired session: they renewed it
+    // and sent the same wrong password again, so each mistake spent two attempts.
+    it('says the current password is wrong on its field, not as a lost session', async () => {
         await expect(service.changePassword('user-1', 'wrong-password', 'new-password'))
-            .rejects.toThrow(AuthError);
+            .rejects.toMatchObject(WRONG_PASSWORD);
 
         expect(userRepository.updatePassword).not.toHaveBeenCalled();
     });
@@ -1268,10 +1340,10 @@ describe('UserService: who staff can act on', () => {
         expect(userRepository.deleteUser).toHaveBeenCalledWith('mod');
     });
 
-    it('lets an admin delete their own account', async () => {
-        withTarget({ id: 'mod', role: 'admin' });
+    it('lets an admin delete their own account, with their password like anyone else', async () => {
+        withTarget({ id: 'mod', role: 'admin', password: await bcrypt.hash('mod-password', 10) });
 
-        await service.deleteUser('mod', admin);
+        await service.deleteUser('mod', admin, {}, 'mod-password');
 
         expect(userRepository.deleteUser).toHaveBeenCalledWith('mod');
     });

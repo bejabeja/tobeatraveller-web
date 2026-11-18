@@ -2,6 +2,7 @@ import { Router } from "express";
 import { BadgeController } from "../controllers/badgeController.js";
 import { UserController } from "../controllers/userController.js";
 import { authenticate, optionalAuthenticate } from "../middlewares/authenticate.js";
+import { wrongPasswordPerAccountRateLimit } from "../middlewares/authRateLimit.js";
 import { requireRole } from "../middlewares/requireRole.js";
 import { upload } from "../middlewares/uploadImage.js";
 import { STAFF_ROLES } from "../utils/roles.js";
@@ -65,14 +66,14 @@ export const createUsersRouter = () => {
 
     router.get("/", authenticate, userController.getAllUsers.bind(userController));
     router.get("/me", authenticate, userController.getUserMe.bind(userController));
-    router.get("/me/export", authenticate, userController.exportMyData.bind(userController));
+    router.post("/me/export", authenticate, wrongPasswordPerAccountRateLimit, userController.exportMyData.bind(userController));
     router.put("/me", authenticate, upload.single("avatar"), userController.updateUserMe.bind(userController));
-    router.patch("/me/password", authenticate, userController.changePassword.bind(userController));
+    router.patch("/me/password", authenticate, wrongPasswordPerAccountRateLimit, userController.changePassword.bind(userController));
     router.patch("/me/language", authenticate, userController.updateMyLanguage.bind(userController));
     router.patch("/me/travel-style", authenticate, userController.updateMyTravelStyle.bind(userController));
     router.put("/me/declared-countries", authenticate, badgeController.updateMyDeclaredCountries.bind(badgeController));
     router.get("/me/passport/leaderboard", authenticate, badgeController.getMyLeaderboard.bind(badgeController));
-    router.delete("/me", authenticate, userController.deleteUserMe.bind(userController));
+    router.delete("/me", authenticate, wrongPasswordPerAccountRateLimit, userController.deleteUserMe.bind(userController));
     router.delete("/:id", authenticate, staffOnly, userController.deleteUserById.bind(userController));
     router.get("/featured", optionalAuthenticate, userController.getFeaturedUsers.bind(userController));
     router.get("/all", optionalAuthenticate, userController.getAllUsersFiltered.bind(userController));

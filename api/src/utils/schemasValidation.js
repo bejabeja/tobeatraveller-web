@@ -377,6 +377,10 @@ export const packingItemSchema = z.object({
 
 export const createPackingItemSchema = packingItemSchema.extend(clientGeneratedIdField);
 
+export const confirmPasswordSchema = z.object({
+    currentPassword: z.string().min(1, "validation.currentPasswordRequired"),
+});
+
 export const changePasswordSchema = z.object({
     currentPassword: z.string().min(1, "validation.currentPasswordRequired"),
     newPassword: z.string()

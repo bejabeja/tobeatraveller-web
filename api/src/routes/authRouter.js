@@ -4,6 +4,7 @@ import { authenticate } from "../middlewares/authenticate.js";
 import {
     failedLoginPerAccountRateLimit, failedLoginPerIpRateLimit,
     passwordResetPerAccountRateLimit, passwordResetPerIpRateLimit, signupPerIpRateLimit,
+    wrongPasswordPerAccountRateLimit,
 } from "../middlewares/authRateLimit.js";
 import { perIpResendVerificationRateLimit, perUserResendVerificationRateLimit } from "../middlewares/emailVerificationRateLimit.js";
 import { EmailVerificationRepository } from "../repositories/emailVerificationRepository.js";
@@ -59,7 +60,8 @@ export const createAuthRouter = () => {
         authController.resendVerification.bind(authController)
     );
     router.patch(
-        "/unverified-email", authenticate, perIpResendVerificationRateLimit, perUserResendVerificationRateLimit,
+        "/unverified-email", authenticate, wrongPasswordPerAccountRateLimit,
+        perIpResendVerificationRateLimit, perUserResendVerificationRateLimit,
         authController.changeUnverifiedEmail.bind(authController)
     );
 

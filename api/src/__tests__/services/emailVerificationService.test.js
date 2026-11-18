@@ -4,7 +4,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { EmailVerificationService } from '../../services/emailVerificationService.js';
 import { ReferralService } from '../../services/referralService.js';
 import { AUDIT_EVENTS } from '../../utils/auditEvents.js';
-import { AuthError } from '../../errors/AuthError.js';
 import { ConflictError } from '../../errors/ConflictError.js';
 
 const hash = (token) => crypto.createHash('sha256').update(token).digest('hex');
@@ -219,7 +218,8 @@ describe('EmailVerificationService', () => {
         });
 
         it('does not touch the address when the password is wrong', async () => {
-            await expect(service.changeUnverifiedEmail('user-1', 'nope', 'ana@nuevo.com')).rejects.toBeInstanceOf(AuthError);
+            await expect(service.changeUnverifiedEmail('user-1', 'nope', 'ana@nuevo.com'))
+                .rejects.toMatchObject({ statusCode: 400, field: 'currentPassword', message: 'Current password is incorrect' });
 
             expect(userRepository.updateUnverifiedEmail).not.toHaveBeenCalled();
             expect(emailService.sendVerifyEmail).not.toHaveBeenCalled();

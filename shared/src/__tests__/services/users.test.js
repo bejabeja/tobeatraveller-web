@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { setApiUrl } from '../../utils/apiConfig.js';
 import { setTokenStorage } from '../../utils/tokenStorage.js';
-import { checkUsernameAvailable, getFeaturedUsers, getUserForAuth, updateMyLanguage } from '../../services/users.js';
+import { checkUsernameAvailable, deleteMyAccount, exportMyData, getFeaturedUsers, getUserForAuth, updateMyLanguage } from '../../services/users.js';
 import { sendContact } from '../../services/auth.js';
 
 describe('updateMyLanguage', () => {
@@ -109,5 +109,33 @@ describe('getUserForAuth', () => {
 
         expect(user).toEqual({ id: 'u1' });
         expect(global.fetch.mock.calls[0][0]).toBe('http://api.test/users/me');
+    });
+});
+
+// Regression: the session alone deleted the account or downloaded all its data, so
+// whoever got hold of one could do either. The API now asks for the password too.
+describe('the requests that need the password again', () => {
+    beforeEach(() => {
+        setApiUrl('http://api.test');
+        setTokenStorage({ getItem: async () => 'token', setItem: async () => {}, removeItem: async () => {} });
+        global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => ({}) });
+    });
+
+    it('sends the password when deleting the account', async () => {
+        await deleteMyAccount('my-password');
+
+        const [url, options] = global.fetch.mock.calls[0];
+        expect(url).toBe('http://api.test/users/me');
+        expect(options.method).toBe('DELETE');
+        expect(JSON.parse(options.body)).toEqual({ currentPassword: 'my-password' });
+    });
+
+    it('sends the password in the body when downloading the data, never in the address', async () => {
+        await exportMyData('my-password');
+
+        const [url, options] = global.fetch.mock.calls[0];
+        expect(url).toBe('http://api.test/users/me/export');
+        expect(options.method).toBe('POST');
+        expect(JSON.parse(options.body)).toEqual({ currentPassword: 'my-password' });
     });
 });

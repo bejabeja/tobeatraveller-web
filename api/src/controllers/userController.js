@@ -1,5 +1,5 @@
 import { ValidationError } from "../errors/ValidationError.js";
-import { adminNoticeSchema, changePasswordSchema, updateLanguageSchema, updateTravelStyleSchema, updateUserRoleSchema, updateUserSchema, updateUserTierSchema } from "../utils/schemasValidation.js";
+import { adminNoticeSchema, changePasswordSchema, confirmPasswordSchema, updateLanguageSchema, updateTravelStyleSchema, updateUserRoleSchema, updateUserSchema, updateUserTierSchema } from "../utils/schemasValidation.js";
 import { getRequestContext } from "../utils/requestContext.js";
 import { pageNumberFrom, pageSizeFrom } from '../utils/pagination.js';
 
@@ -176,9 +176,13 @@ export class UserController {
     }
 
     async exportMyData(req, res, next) {
+        const result = confirmPasswordSchema.safeParse(req.body);
+        if (!result.success) {
+            return next(new ValidationError(result.error.errors[0]?.message || "Validation failed"));
+        }
         const { id } = req.user;
         try {
-            const data = await this.userService.exportUserData(id, req.user, getRequestContext(req));
+            const data = await this.userService.exportUserData(id, req.user, getRequestContext(req), result.data.currentPassword);
             res.setHeader('Content-Disposition', `attachment; filename="tobeatraveller-data-${id}.json"`);
             res.setHeader('Content-Type', 'application/json');
             res.status(200).json(data);
@@ -188,8 +192,12 @@ export class UserController {
     }
 
     async deleteUserMe(req, res, next) {
+        const result = confirmPasswordSchema.safeParse(req.body);
+        if (!result.success) {
+            return next(new ValidationError(result.error.errors[0]?.message || "Validation failed"));
+        }
         try {
-            await this._deleteUserAndCleanupImages(req.user.id, req.user, getRequestContext(req));
+            await this._deleteUserAndCleanupImages(req.user.id, req.user, getRequestContext(req), result.data.currentPassword);
             res.status(200).json({ message: "Account deleted" });
         } catch (error) {
             next(error);
@@ -205,8 +213,8 @@ export class UserController {
         }
     }
 
-    async _deleteUserAndCleanupImages(id, actingUser = null, requestContext = {}) {
-        const { user, imagePublicIds } = await this.userService.deleteUser(id, actingUser, requestContext);
+    async _deleteUserAndCleanupImages(id, actingUser = null, requestContext = {}, currentPassword = undefined) {
+        const { user, imagePublicIds } = await this.userService.deleteUser(id, actingUser, requestContext, currentPassword);
         const avatarPublicId = extractCloudinaryPublicId(user.avatarUrl);
         const publicIds = avatarPublicId ? [avatarPublicId, ...imagePublicIds] : imagePublicIds;
         await Promise.all(publicIds.map(publicId => this.cloudinaryService.deleteImage(publicId).catch(() => {})));

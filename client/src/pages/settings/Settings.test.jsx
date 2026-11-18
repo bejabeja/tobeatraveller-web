@@ -39,6 +39,7 @@ jest.mock("../../store/user/userInfoSelectors", () => ({
 jest.mock("@tobeatraveller/shared", () => ({
   ...jest.requireActual("@tobeatraveller/shared/src/utils/schemasValidation.js"),
   ...jest.requireActual("@tobeatraveller/shared/src/utils/travelStyle.js"),
+  ...jest.requireActual("@tobeatraveller/shared/src/utils/authErrorMessages.js"),
   updateMyTravelStyle: jest.fn(),
   changeUnverifiedEmail: jest.fn(),
   APP_LANGUAGES: [],
@@ -49,7 +50,7 @@ jest.mock("@tobeatraveller/shared", () => ({
 
 import toast from "react-hot-toast";
 import { changeUnverifiedEmail, fetchNotificationPreferences, updateMyTravelStyle } from "@tobeatraveller/shared";
-import { changePassword } from "../../services/users";
+import { changePassword, deleteMyAccount, exportMyData } from "../../services/users";
 import Settings from "./Settings";
 
 const submitNewPassword = async (newPassword) => {
@@ -99,6 +100,14 @@ describe("Settings: changing the password", () => {
     await userEvent.type(screen.getByLabelText("editProfile.confirmNewPasswordLabel"), "abcdefgh{Enter}");
 
     await waitFor(() => expect(changePassword).toHaveBeenCalledWith({ currentPassword: "old-password", newPassword: "abcdefgh" }));
+  });
+
+  // Regression: the API's English text was shown as it came.
+  it("says a wrong current password in the person's language", async () => {
+    changePassword.mockRejectedValue(Object.assign(new Error("Current password is incorrect"), { status: 400, field: "currentPassword" }));
+    await submitNewPassword("abcdefgh");
+
+    expect(await screen.findByText("auth.wrongCurrentPassword")).toBeInTheDocument();
   });
 
   it("changes it with 8 characters", async () => {
@@ -258,5 +267,69 @@ describe("Settings: where the plan and the invitations are", () => {
 
     expect(await screen.findByRole("link", { name: /settings.plan$/ })).toHaveAttribute("href", "/subscription");
     expect(screen.getByRole("link", { name: /settings.inviteFriends$/ })).toHaveAttribute("href", "/invite");
+  });
+});
+
+const refusedWith = (status, message, field) => Object.assign(new Error(message), { status, field });
+
+// Regression: a session alone was enough to delete the account or download all its data.
+describe("Settings: confirming with the password", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockMe = { id: "user-1", username: "jane", email: "jane@example.com" };
+    fetchNotificationPreferences.mockResolvedValue({
+      pushEnabled: false, notifyOnComment: true, notifyOnLike: true, notifyOnFollow: true, notifyOnFriendStamps: false,
+    });
+  });
+
+  const openDelete = async () => {
+    render(<MemoryRouter><Settings /></MemoryRouter>);
+    await userEvent.click(await screen.findByRole("button", { name: /^editProfile.deleteAccount/ }));
+  };
+  const deleteButton = () => screen.getAllByRole("button", { name: "editProfile.deleteAccount" }).at(-1);
+
+  it("does not delete the account until the password is typed too", async () => {
+    await openDelete();
+    await userEvent.type(screen.getByLabelText("editProfile.deleteAccountConfirmLabel"), "jane");
+
+    expect(deleteButton()).toBeDisabled();
+    await userEvent.type(screen.getByLabelText("editProfile.currentPasswordLabel"), "my-password");
+    await userEvent.click(deleteButton());
+
+    await waitFor(() => expect(deleteMyAccount).toHaveBeenCalledWith("my-password"));
+  });
+
+  it("says the password is wrong in the dialog, so it can be typed again", async () => {
+    deleteMyAccount.mockRejectedValue(refusedWith(400, "Current password is incorrect", "currentPassword"));
+    await openDelete();
+    await userEvent.type(screen.getByLabelText("editProfile.deleteAccountConfirmLabel"), "jane");
+    await userEvent.type(screen.getByLabelText("editProfile.currentPasswordLabel"), "wrong");
+    await userEvent.click(deleteButton());
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("auth.wrongCurrentPassword");
+    expect(screen.getByLabelText("editProfile.currentPasswordLabel")).toBeInTheDocument();
+  });
+
+  it("asks for the password before downloading the data, and sends it", async () => {
+    exportMyData.mockResolvedValue(new Blob(["{}"]));
+    URL.createObjectURL = jest.fn(() => "blob:x");
+    URL.revokeObjectURL = jest.fn();
+    jest.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+    render(<MemoryRouter><Settings /></MemoryRouter>);
+    await userEvent.click(await screen.findByRole("button", { name: /^editProfile.downloadData/ }));
+
+    expect(exportMyData).not.toHaveBeenCalled();
+    await userEvent.type(screen.getByLabelText("editProfile.currentPasswordLabel"), "my-password{Enter}");
+
+    await waitFor(() => expect(exportMyData).toHaveBeenCalledWith("my-password"));
+  });
+
+  it("says when there have been too many wrong passwords", async () => {
+    exportMyData.mockRejectedValue(refusedWith(429, "Too many attempts, please try again later."));
+    render(<MemoryRouter><Settings /></MemoryRouter>);
+    await userEvent.click(await screen.findByRole("button", { name: /^editProfile.downloadData/ }));
+    await userEvent.type(screen.getByLabelText("editProfile.currentPasswordLabel"), "wrong{Enter}");
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("auth.tooManyAttempts");
   });
 });

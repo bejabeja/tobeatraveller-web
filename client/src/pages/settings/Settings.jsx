@@ -8,7 +8,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { Trans, useTranslation } from "react-i18next";
 import {
-  APP_LANGUAGES, changeUnverifiedEmail, fetchNotificationPreferences, PASSWORD_MIN_LENGTH, toAppLanguage, TRAVEL_STYLES, updateMyTravelStyle, updateNotificationPreferences,
+  APP_LANGUAGES, changeUnverifiedEmail, fetchNotificationPreferences, PASSWORD_MIN_LENGTH, toAppLanguage, translateAuthError,
+  TRAVEL_STYLES, updateMyTravelStyle, updateNotificationPreferences,
 } from "@tobeatraveller/shared";
 import i18n from "../../i18n";
 import { useGoBack } from "../../hooks/useGoBack";
@@ -28,6 +29,10 @@ import { usePageMeta } from "../../hooks/usePageMeta.js";
 import "./Settings.scss";
 
 const HOME_PATH = "/";
+// Where the API puts a password typed to confirm that is not the account's, and its answer
+// once too many have been wrong: both are said as they are, anything else as the usual failure.
+const CURRENT_PASSWORD_FIELD = "currentPassword";
+const TOO_MANY_REQUESTS_STATUS = 429;
 
 const NOTIFICATION_PREFERENCE_TOGGLES = [
   { key: "notifyOnComment", labelKey: "settings.notifyOnComment" },
@@ -66,7 +71,12 @@ const Settings = () => {
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteConfirmInput, setDeleteConfirmInput] = useState("");
+  const [deletePassword, setDeletePassword] = useState("");
+  const [deleteError, setDeleteError] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exportPassword, setExportPassword] = useState("");
+  const [exportError, setExportError] = useState("");
   const [isExporting, setIsExporting] = useState(false);
   const [notificationPreferences, setNotificationPreferences] = useState(null);
   const [preferencesFailed, setPreferencesFailed] = useState(false);
@@ -102,18 +112,32 @@ const Settings = () => {
 
   if (!userMe) return <Spinner />;
 
+  const passwordErrorMessage = (error, fallbackKey) => (
+    error.field === CURRENT_PASSWORD_FIELD || error.status === TOO_MANY_REQUESTS_STATUS
+      ? translateAuthError(t, error.message)
+      : t(fallbackKey)
+  );
+
+  const openExportModal = () => {
+    setExportPassword("");
+    setExportError("");
+    setShowExportModal(true);
+  };
+
   const handleExportData = async () => {
+    setExportError("");
     setIsExporting(true);
     try {
-      const blob = await exportMyData();
+      const blob = await exportMyData(exportPassword);
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
       a.download = "tobeatraveller-my-data.json";
       a.click();
       URL.revokeObjectURL(url);
-    } catch {
-      toast.error(t("errors.exportDataFailed"));
+      setShowExportModal(false);
+    } catch (error) {
+      setExportError(passwordErrorMessage(error, "errors.exportDataFailed"));
     } finally {
       setIsExporting(false);
     }
@@ -159,7 +183,7 @@ const Settings = () => {
       toast.success(t("emailVerification.changed", { email }));
       closeEmailModal();
     } catch (err) {
-      setEmailError(err.message || t("errors.somethingWrong"));
+      setEmailError(err.message ? translateAuthError(t, err.message) : t("errors.somethingWrong"));
     } finally {
       setIsChangingEmail(false);
     }
@@ -191,22 +215,23 @@ const Settings = () => {
       toast.success(t("editProfile.passwordChanged"));
       closePasswordModal();
     } catch (err) {
-      setPasswordError(err.message || t("errors.changePasswordFailed"));
+      setPasswordError(err.message ? translateAuthError(t, err.message) : t("errors.changePasswordFailed"));
     } finally {
       setIsChangingPassword(false);
     }
   };
 
   const handleDeleteAccount = async () => {
-    if (deleteConfirmInput !== userMe?.username) return;
+    if (deleteConfirmInput !== userMe?.username || !deletePassword) return;
+    setDeleteError("");
     setIsDeleting(true);
     try {
-      await deleteMyAccount();
+      await deleteMyAccount(deletePassword);
       dispatch(logoutUser());
       toast.success(t("editProfile.accountDeleted"));
       navigate("/");
-    } catch {
-      toast.error(t("errors.deleteAccountFailed"));
+    } catch (error) {
+      setDeleteError(passwordErrorMessage(error, "errors.deleteAccountFailed"));
       setIsDeleting(false);
     }
   };
@@ -323,10 +348,9 @@ const Settings = () => {
           </div>
           <div className="settings__rows">
             <SettingsActionRow
-              label={isExporting ? t("common.loading") : t("editProfile.downloadData")}
+              label={t("editProfile.downloadData")}
               hint={t("editProfile.yourDataDesc")}
-              onClick={handleExportData}
-              disabled={isExporting}
+              onClick={openExportModal}
             />
           </div>
         </section>
@@ -371,7 +395,7 @@ const Settings = () => {
               danger
               label={t("editProfile.deleteAccount")}
               hint={t("editProfile.dangerZoneDesc")}
-              onClick={() => { setDeleteConfirmInput(""); setShowDeleteModal(true); }}
+              onClick={() => { setDeleteConfirmInput(""); setDeletePassword(""); setDeleteError(""); setShowDeleteModal(true); }}
             />
           </div>
         </section>
@@ -383,7 +407,7 @@ const Settings = () => {
         onConfirm={handleDeleteAccount}
         loading={isDeleting}
         loadingText={t("editProfile.deleting")}
-        confirmDisabled={deleteConfirmInput !== userMe?.username}
+        confirmDisabled={deleteConfirmInput !== userMe?.username || !deletePassword}
         title={t("editProfile.deleteAccountModal")}
         confirmText={t("editProfile.deleteAccount")}
         type="danger"
@@ -405,6 +429,46 @@ const Settings = () => {
             autoFocus
           />
         </div>
+        <div className="modal__input-wrap">
+          <input
+            id="delete-password-input"
+            className="ep__modal-input"
+            type="password"
+            aria-label={t("editProfile.currentPasswordLabel")}
+            placeholder={t("editProfile.currentPasswordLabel")}
+            autoComplete="current-password"
+            value={deletePassword}
+            onChange={(e) => setDeletePassword(e.target.value)}
+          />
+        </div>
+        {deleteError && <p className="ep__error" role="alert">{deleteError}</p>}
+      </Modal>
+
+      <Modal
+        isOpen={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        onConfirm={handleExportData}
+        loading={isExporting}
+        loadingText={t("common.loading")}
+        confirmDisabled={!exportPassword}
+        title={t("editProfile.downloadData")}
+        description={t("editProfile.downloadDataPasswordDesc")}
+        confirmText={t("editProfile.downloadData")}
+      >
+        <div className="modal__input-wrap">
+          <input
+            id="export-password-input"
+            className="ep__modal-input"
+            type="password"
+            aria-label={t("editProfile.currentPasswordLabel")}
+            placeholder={t("editProfile.currentPasswordLabel")}
+            autoComplete="current-password"
+            value={exportPassword}
+            onChange={(e) => setExportPassword(e.target.value)}
+            autoFocus
+          />
+        </div>
+        {exportError && <p className="ep__error" role="alert">{exportError}</p>}
       </Modal>
 
       <Modal

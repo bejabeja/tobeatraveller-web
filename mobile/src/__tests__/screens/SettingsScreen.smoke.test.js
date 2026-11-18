@@ -21,8 +21,8 @@ jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
 }));
 
-jest.mock('expo-file-system', () => ({ File: jest.fn(), Paths: {} }));
-jest.mock('expo-sharing', () => ({ shareAsync: jest.fn() }));
+jest.mock('expo-file-system', () => ({ File: jest.fn(() => ({ write: jest.fn(), uri: 'file://data.json' })), Paths: {} }));
+jest.mock('expo-sharing', () => ({ shareAsync: jest.fn(), isAvailableAsync: jest.fn() }));
 jest.mock('../../utils/pushNotifications', () => ({ registerForPushNotifications: jest.fn() }));
 jest.mock('../../utils/session', () => ({ clearDeviceSessionData: jest.fn() }));
 jest.mock('../../offline/useOutbox', () => ({
@@ -38,6 +38,7 @@ jest.mock('@tobeatraveller/shared', () => ({
   ...jest.requireActual('../../../../shared/src/utils/parseRichText.js'),
   ...jest.requireActual('../../../../shared/src/utils/schemasValidation.js'),
   ...jest.requireActual('../../../../shared/src/utils/travelStyle.js'),
+  ...jest.requireActual('../../../../shared/src/utils/authErrorMessages.js'),
   selectAuthUser: () => ({ id: 'user-1', username: 'jane' }),
   selectMe: () => mockMe,
   setUserInfo: (id) => ({ type: 'setUserInfo', id }),
@@ -55,7 +56,8 @@ jest.mock('@tobeatraveller/shared', () => ({
 
 import { Alert } from 'react-native';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
-import { changePassword, changeUnverifiedEmail, fetchNotificationPreferences, updateMyTravelStyle } from '@tobeatraveller/shared';
+import { changePassword, changeUnverifiedEmail, deleteMyAccount, exportMyData, fetchNotificationPreferences, updateMyTravelStyle } from '@tobeatraveller/shared';
+import * as Sharing from 'expo-sharing';
 import { changeLanguage } from '../../i18n';
 import { clearDeviceSessionData } from '../../utils/session';
 import SettingsScreen from '../../screens/settings/SettingsScreen';
@@ -132,6 +134,14 @@ describe('changing the password', () => {
     await submitNewPassword('        ');
 
     expect(changePassword).not.toHaveBeenCalled();
+  });
+
+  // Regression: the API's English text was shown as it came.
+  it("says a wrong current password in the person's language", async () => {
+    changePassword.mockRejectedValue(Object.assign(new Error('Current password is incorrect'), { status: 400, field: 'currentPassword' }));
+    await submitNewPassword('abcdefgh');
+
+    expect(screen.getByText('auth.wrongCurrentPassword')).toBeTruthy();
   });
 
   it('changes it with 8 characters', async () => {
@@ -296,5 +306,64 @@ describe('signing out', () => {
     await act(async () => { await buttons.find((button) => button.style === 'destructive').onPress(); });
 
     expect(clearDeviceSessionData).toHaveBeenCalled();
+  });
+});
+
+const refusedWith = (status, message, field) => Object.assign(new Error(message), { status, field });
+
+// Regression: a session alone was enough to delete the account or download all its data.
+describe('confirming with the password', () => {
+  const lastDeleteButton = () => screen.getAllByText('editProfile.deleteAccount').at(-1);
+
+  it('does not delete the account until the password is typed too, and sends it', async () => {
+    renderScreen();
+    fireEvent.press(await screen.findByText('editProfile.deleteAccount'));
+    fireEvent.changeText(screen.getByPlaceholderText('jane'), 'jane');
+
+    await act(async () => { fireEvent.press(lastDeleteButton()); });
+    expect(deleteMyAccount).not.toHaveBeenCalled();
+
+    fireEvent.changeText(screen.getByPlaceholderText('editProfile.currentPasswordLabel'), 'my-password');
+    await act(async () => { fireEvent.press(lastDeleteButton()); });
+
+    expect(deleteMyAccount).toHaveBeenCalledWith('my-password');
+  });
+
+  it('says the password is wrong under it and keeps the account', async () => {
+    deleteMyAccount.mockRejectedValue(refusedWith(400, 'Current password is incorrect', 'currentPassword'));
+    renderScreen();
+    fireEvent.press(await screen.findByText('editProfile.deleteAccount'));
+    fireEvent.changeText(screen.getByPlaceholderText('jane'), 'jane');
+    fireEvent.changeText(screen.getByPlaceholderText('editProfile.currentPasswordLabel'), 'wrong');
+
+    await act(async () => { fireEvent.press(lastDeleteButton()); });
+
+    expect(screen.getByText('auth.wrongCurrentPassword')).toBeTruthy();
+    expect(clearDeviceSessionData).not.toHaveBeenCalled();
+  });
+
+  it('asks for the password before downloading the data, and sends it', async () => {
+    exportMyData.mockResolvedValue({});
+    Sharing.isAvailableAsync.mockResolvedValue(true);
+    renderScreen();
+    fireEvent.press(await screen.findByText('editProfile.downloadData'));
+
+    expect(exportMyData).not.toHaveBeenCalled();
+    fireEvent.changeText(screen.getByPlaceholderText('editProfile.currentPasswordLabel'), 'my-password');
+    await act(async () => { fireEvent.press(screen.getAllByText('editProfile.downloadData').at(-1)); });
+
+    expect(exportMyData).toHaveBeenCalledWith('my-password');
+    expect(Sharing.shareAsync).toHaveBeenCalled();
+  });
+
+  it('says when there have been too many wrong passwords', async () => {
+    exportMyData.mockRejectedValue(refusedWith(429, 'Too many attempts, please try again later.'));
+    renderScreen();
+    fireEvent.press(await screen.findByText('editProfile.downloadData'));
+    fireEvent.changeText(screen.getByPlaceholderText('editProfile.currentPasswordLabel'), 'wrong');
+
+    await act(async () => { fireEvent.press(screen.getAllByText('editProfile.downloadData').at(-1)); });
+
+    expect(screen.getByText('auth.tooManyAttempts')).toBeTruthy();
   });
 });

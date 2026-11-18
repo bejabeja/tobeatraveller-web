@@ -1,4 +1,4 @@
-import { authFetch, EXPORT_TIMEOUT_MS } from "@tobeatraveller/shared";
+import { authFetch, exportRequest } from "@tobeatraveller/shared";
 import { parseError } from "../utils/parseError";
 
 export {
@@ -23,8 +23,8 @@ const baseUrl = `${import.meta.env.VITE_API_URL}/users`;
 
 // Kept separate from shared's exportMyData: this returns a Blob so the
 // browser can trigger a file download, while shared/mobile just needs JSON.
-export const exportMyData = async () => {
-    const response = await authFetch(`${baseUrl}/me/export`, { timeoutMs: EXPORT_TIMEOUT_MS });
+export const exportMyData = async (currentPassword) => {
+    const response = await authFetch(`${baseUrl}/me/export`, exportRequest(currentPassword));
     if (!response.ok) {
         await parseError(response, 'Failed to export data');
     }

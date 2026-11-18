@@ -5,6 +5,7 @@ const AUTH_ERROR_TRANSLATION_KEYS = {
     "Invalid or expired token": "errors.invalidLink",
     "Email already confirmed": "emailVerification.alreadyConfirmed",
     "Too many attempts, please try again later.": "auth.tooManyAttempts",
+    "Current password is incorrect": "auth.wrongCurrentPassword",
 };
 
 export const translateAuthError = (t, message) => {

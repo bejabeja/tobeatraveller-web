@@ -13,8 +13,8 @@ import { useTranslation } from 'react-i18next';
 import i18n, { changeLanguage } from '../../i18n';
 import {
   APP_LANGUAGES, changePassword, changeUnverifiedEmail, deleteMyAccount, exportMyData, fetchNotificationPreferences,
-  logoutUser, PASSWORD_MIN_LENGTH, selectAuthUser, selectMe, setUserInfo, toAppLanguage, TRAVEL_STYLES, updateMyTravelStyle,
-  updateNotificationPreferences,
+  logoutUser, PASSWORD_MIN_LENGTH, selectAuthUser, selectMe, setUserInfo, toAppLanguage, translateAuthError, TRAVEL_STYLES,
+  updateMyTravelStyle, updateNotificationPreferences,
 } from '@tobeatraveller/shared';
 import { shadow } from '../../utils/styles';
 import BlockedPeopleCard from '../../components/BlockedPeopleCard';
@@ -24,6 +24,11 @@ import { clearDeviceSessionData } from '../../utils/session';
 import { useOutbox } from '../../offline/useOutbox';
 import { useAnalyticsConsent } from '../../hooks/useAnalyticsConsent';
 import { ANALYTICS_CONSENT } from '../../utils/analytics';
+
+// Where the API puts a password typed to confirm that is not the account's, and its answer
+// once too many have been wrong: both are said as they are, anything else as the usual failure.
+const CURRENT_PASSWORD_FIELD = 'currentPassword';
+const TOO_MANY_REQUESTS_STATUS = 429;
 
 const NOTIFICATION_PREFERENCE_TOGGLES = [
   // Push only exists in the native app, not in the web build of mobile.
@@ -92,8 +97,13 @@ const SettingsScreen = ({ navigation }) => {
   const { changes: unsyncedChanges } = useOutbox();
   const [deleting, setDeleting] = useState(false);
   const [deleteInput, setDeleteInput] = useState('');
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteError, setDeleteError] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [showExportForm, setShowExportForm] = useState(false);
+  const [exportPassword, setExportPassword] = useState('');
+  const [exportError, setExportError] = useState('');
   const [notificationPreferences, setNotificationPreferences] = useState(null);
   const [updatingPreferenceKey, setUpdatingPreferenceKey] = useState(null);
   const [showPasswordForm, setShowPasswordForm] = useState(false);
@@ -144,15 +154,29 @@ const SettingsScreen = ({ navigation }) => {
     );
   };
 
+  const passwordErrorMessage = (error, fallbackKey) => (
+    error.field === CURRENT_PASSWORD_FIELD || error.status === TOO_MANY_REQUESTS_STATUS
+      ? translateAuthError(t, error.message)
+      : t(fallbackKey)
+  );
+
+  const toggleDeleteConfirm = () => {
+    setDeleteInput('');
+    setDeletePassword('');
+    setDeleteError('');
+    setShowDeleteConfirm(open => !open);
+  };
+
   const handleDeleteAccount = async () => {
-    if (deleteInput !== user?.username) return;
+    if (deleteInput !== user?.username || !deletePassword) return;
+    setDeleteError('');
     setDeleting(true);
     try {
-      await deleteMyAccount();
+      await deleteMyAccount(deletePassword);
       await clearDeviceSessionData();
       dispatch(logoutUser());
-    } catch {
-      Alert.alert(t('common.cancel'), t('errors.deleteAccountFailed'));
+    } catch (error) {
+      setDeleteError(passwordErrorMessage(error, 'errors.deleteAccountFailed'));
       setDeleting(false);
     }
   };
@@ -209,7 +233,7 @@ const SettingsScreen = ({ navigation }) => {
       closeEmailForm();
       Alert.alert(t('emailVerification.changed', { email }));
     } catch (err) {
-      setEmailError(err.message || t('errors.somethingWrong'));
+      setEmailError(err.message ? translateAuthError(t, err.message) : t('errors.somethingWrong'));
     } finally {
       setChangingEmail(false);
     }
@@ -231,16 +255,31 @@ const SettingsScreen = ({ navigation }) => {
       closePasswordForm();
       Alert.alert(t('editProfile.passwordChanged'));
     } catch (err) {
-      setPasswordError(err.message || t('errors.changePasswordFailed'));
+      setPasswordError(err.message ? translateAuthError(t, err.message) : t('errors.changePasswordFailed'));
     } finally {
       setChangingPassword(false);
     }
   };
 
+  const toggleExportForm = () => {
+    setExportPassword('');
+    setExportError('');
+    setShowExportForm(open => !open);
+  };
+
   const handleDownloadData = async () => {
+    setExportError('');
     setExporting(true);
+    let data;
     try {
-      const data = await exportMyData();
+      data = await exportMyData(exportPassword);
+    } catch (error) {
+      setExportError(passwordErrorMessage(error, 'errors.exportDataFailed'));
+      setExporting(false);
+      return;
+    }
+    setShowExportForm(false);
+    try {
       const file = new File(Paths.cache, 'tobeatraveller-my-data.json');
       file.write(JSON.stringify(data, null, 2));
 
@@ -464,11 +503,41 @@ const SettingsScreen = ({ navigation }) => {
               />
             </SettingsRow>
             <SettingsRow
-              label={exporting ? t('common.saving') : t('editProfile.downloadData')}
+              label={t('editProfile.downloadData')}
               hint={t('editProfile.yourDataDesc')}
-              onPress={handleDownloadData}
-              disabled={exporting}
+              expanded={showExportForm}
+              onPress={toggleExportForm}
             />
+            {showExportForm && (
+                <View style={styles.passwordForm}>
+                  <Text style={styles.deleteConfirmLabel}>{t('editProfile.downloadDataPasswordDesc')}</Text>
+                  <TextInput
+                    style={[styles.input, { marginTop: 6 }]}
+                    value={exportPassword}
+                    onChangeText={setExportPassword}
+                    placeholder={t('editProfile.currentPasswordLabel')}
+                    accessibilityLabel={t('editProfile.currentPasswordLabel')}
+                    placeholderTextColor="#6b7280"
+                    secureTextEntry
+                    autoComplete="current-password"
+                  />
+                  {!!exportError && <Text style={styles.errorText} accessibilityRole="alert">{exportError}</Text>}
+                  <View style={styles.deleteConfirmActions}>
+                    <TouchableOpacity style={styles.cancelBtn} onPress={toggleExportForm} disabled={exporting}>
+                      <Text style={styles.cancelBtnText}>{t('common.cancel')}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.primaryBtn, { flex: 1 }, (!exportPassword || exporting) && styles.btnDisabled]}
+                      onPress={handleDownloadData}
+                      disabled={!exportPassword || exporting}
+                    >
+                      <Text style={styles.primaryBtnText}>
+                        {exporting ? t('common.loading') : t('editProfile.downloadData')}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+            )}
           </View>
 
           <View style={styles.card}>
@@ -491,7 +560,7 @@ const SettingsScreen = ({ navigation }) => {
               label={t('editProfile.deleteAccount')}
               hint={t('editProfile.dangerZoneDesc')}
               expanded={showDeleteConfirm}
-              onPress={() => { setDeleteInput(''); setShowDeleteConfirm(open => !open); }}
+              onPress={toggleDeleteConfirm}
             />
             {showDeleteConfirm && (
                 <View style={styles.deleteConfirm}>
@@ -505,14 +574,26 @@ const SettingsScreen = ({ navigation }) => {
                     value={deleteInput}
                     onChangeText={setDeleteInput}
                     placeholder={user?.username}
+                    accessibilityLabel={t('editProfile.deleteAccountConfirmLabel')}
                     placeholderTextColor="#6b7280"
                     autoCapitalize="none"
                     autoCorrect={false}
                   />
+                  <TextInput
+                    style={[styles.input, { marginTop: 8 }]}
+                    value={deletePassword}
+                    onChangeText={setDeletePassword}
+                    placeholder={t('editProfile.currentPasswordLabel')}
+                    accessibilityLabel={t('editProfile.currentPasswordLabel')}
+                    placeholderTextColor="#6b7280"
+                    secureTextEntry
+                    autoComplete="current-password"
+                  />
+                  {!!deleteError && <Text style={styles.errorText} accessibilityRole="alert">{deleteError}</Text>}
                   <View style={styles.deleteConfirmActions}>
                     <TouchableOpacity
                       style={styles.cancelBtn}
-                      onPress={() => setShowDeleteConfirm(false)}
+                      onPress={toggleDeleteConfirm}
                       disabled={deleting}
                     >
                       <Text style={styles.cancelBtnText}>{t('common.cancel')}</Text>
@@ -521,10 +602,10 @@ const SettingsScreen = ({ navigation }) => {
                       style={[
                         styles.dangerBtn,
                         { flex: 1 },
-                        (deleteInput !== user?.username || deleting) && styles.btnDisabled,
+                        (deleteInput !== user?.username || !deletePassword || deleting) && styles.btnDisabled,
                       ]}
                       onPress={handleDeleteAccount}
-                      disabled={deleteInput !== user?.username || deleting}
+                      disabled={deleteInput !== user?.username || !deletePassword || deleting}
                     >
                       <Text style={styles.dangerBtnText}>
                         {deleting ? t('editProfile.deleting') : t('editProfile.deleteAccount')}
