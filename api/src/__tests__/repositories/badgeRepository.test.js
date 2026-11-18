@@ -137,6 +137,16 @@ describe('BadgeRepository', () => {
         expect(query).toContain(livedTripCondition('itineraries'));
     });
 
+    // Regression: an official trip whose account wasn't registered when the seed ran has no
+    // owner, and the daily job evaluated the badges of nobody out of it.
+    it('leaves out the trips starting today that have no owner', async () => {
+        client.query.mockResolvedValueOnce({ rows: [] });
+
+        await repo.findUsersWithTripStartingToday();
+
+        expect(client.query.mock.calls[0][0]).toMatch(/FROM itineraries\s+WHERE user_id IS NOT NULL/);
+    });
+
     // Private trips count too, as private countries (only the owner sees
     // them), except an untouched clone of someone else's trip.
     it('counts every trip the user really made, publicly or not, flagging which ones are public', async () => {

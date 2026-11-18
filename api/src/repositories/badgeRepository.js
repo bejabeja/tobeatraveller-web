@@ -134,10 +134,11 @@ export class BadgeRepository {
 
     // Whose public trip with a known country starts today: the daily job
     // stamps that country on the day, even if they do nothing in the app.
+    // An official trip whose account wasn't registered when the seed ran has no owner.
     async findUsersWithTripStartingToday() {
         const result = await client.query(
             `SELECT DISTINCT user_id FROM itineraries
-             WHERE ${livedTripCondition('itineraries')} AND location_country_code IS NOT NULL AND start_date = CURRENT_DATE`
+             WHERE user_id IS NOT NULL AND ${livedTripCondition('itineraries')} AND location_country_code IS NOT NULL AND start_date = CURRENT_DATE`
         );
         return result.rows.map(row => row.user_id);
     }
