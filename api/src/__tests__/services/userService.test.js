@@ -690,7 +690,24 @@ describe('UserService.create()', () => {
     });
 });
 
+const NO_SIGNUP_METADATA = { countryCode: null, userAgent: null };
+
 describe('UserService.exportUserData()', () => {
+    // Regression: the country and the browser of the sign-up were kept, but left out of the
+    // copy of everything the account holds that each person can download.
+    it('includes the country and the browser the account was created from', async () => {
+        const userRepository = {
+            getUserById: async () => makeUser({ password: passwordHash }),
+            findRetiredReferralCodes: async () => [],
+            getSignupMetadata: async () => ({ countryCode: 'CH', userAgent: 'Mozilla/5.0 (iPhone)' }),
+        };
+        const service = new UserService(userRepository, { findByUserId: async () => [] }, { getFollowers: async () => [], getFollowing: async () => [] });
+
+        const exported = await service.exportUserData('user-1', { id: 'user-1', username: 'jane' }, {}, 'correct-password');
+
+        expect(exported.profile.signup).toEqual({ countryCode: 'CH', userAgent: 'Mozilla/5.0 (iPhone)' });
+    });
+
     let passwordHash;
     const accountWithPassword = (overrides = {}) => makeUser({ password: passwordHash, ...overrides });
 
@@ -706,7 +723,7 @@ describe('UserService.exportUserData()', () => {
         );
 
         it('gives nothing with a wrong password', async () => {
-            const userRepository = { getUserById: async () => accountWithPassword(), findRetiredReferralCodes: async () => [] };
+            const userRepository = { getUserById: async () => accountWithPassword(), findRetiredReferralCodes: async () => [], getSignupMetadata: async () => NO_SIGNUP_METADATA };
             const service = buildService(userRepository);
 
             await expect(service.exportUserData('user-1', { id: 'user-1', username: 'jane' }, {}, 'wrong-password'))
@@ -714,7 +731,7 @@ describe('UserService.exportUserData()', () => {
         });
 
         it('gives nothing without the password', async () => {
-            const userRepository = { getUserById: async () => accountWithPassword(), findRetiredReferralCodes: async () => [] };
+            const userRepository = { getUserById: async () => accountWithPassword(), findRetiredReferralCodes: async () => [], getSignupMetadata: async () => NO_SIGNUP_METADATA };
             const service = buildService(userRepository);
 
             await expect(service.exportUserData('user-1', { id: 'user-1', username: 'jane' }))
@@ -727,7 +744,7 @@ describe('UserService.exportUserData()', () => {
         db.query.mockImplementation(async (sql) => (
             sql.includes('user_blocks') ? { rows: [{ username: 'pest', created_at: '2026-10-01T10:00:00Z' }] } : { rows: [] }
         ));
-        const userRepository = { getUserById: async () => accountWithPassword(), findRetiredReferralCodes: async () => [] };
+        const userRepository = { getUserById: async () => accountWithPassword(), findRetiredReferralCodes: async () => [], getSignupMetadata: async () => NO_SIGNUP_METADATA };
         const service = new UserService(userRepository, { findByUserId: async () => [] }, { getFollowers: async () => [], getFollowing: async () => [] });
 
         const exported = await service.exportUserData('user-1', { id: 'user-1', username: 'jane' }, {}, 'correct-password');
@@ -738,7 +755,7 @@ describe('UserService.exportUserData()', () => {
 
     it('logs a data_exported event for the requesting user, a GDPR data-subject request', async () => {
         let loggedEntry;
-        const userRepository = { getUserById: async () => accountWithPassword(), findRetiredReferralCodes: async () => [] };
+        const userRepository = { getUserById: async () => accountWithPassword(), findRetiredReferralCodes: async () => [], getSignupMetadata: async () => NO_SIGNUP_METADATA };
         const itinerariesRepository = { findByUserId: async () => [] };
         const followRepository = { getFollowers: async () => [], getFollowing: async () => [] };
         const auditLogService = { log: (entry) => { loggedEntry = entry; } };
@@ -754,7 +771,7 @@ describe('UserService.exportUserData()', () => {
 
     it('forwards the caller\'s ip and user agent to the log', async () => {
         let loggedEntry;
-        const userRepository = { getUserById: async () => accountWithPassword(), findRetiredReferralCodes: async () => [] };
+        const userRepository = { getUserById: async () => accountWithPassword(), findRetiredReferralCodes: async () => [], getSignupMetadata: async () => NO_SIGNUP_METADATA };
         const itinerariesRepository = { findByUserId: async () => [] };
         const followRepository = { getFollowers: async () => [], getFollowing: async () => [] };
         const auditLogService = { log: (entry) => { loggedEntry = entry; } };
@@ -771,7 +788,7 @@ describe('UserService.exportUserData()', () => {
     // record in the audit trail.
     it('does not log data_exported when assembling the export data fails', async () => {
         let loggedEntry;
-        const userRepository = { getUserById: async () => accountWithPassword(), findRetiredReferralCodes: async () => [] };
+        const userRepository = { getUserById: async () => accountWithPassword(), findRetiredReferralCodes: async () => [], getSignupMetadata: async () => NO_SIGNUP_METADATA };
         const itinerariesRepository = { findByUserId: async () => { throw new Error('db down'); } };
         const followRepository = { getFollowers: async () => [], getFollowing: async () => [] };
         const auditLogService = { log: (entry) => { loggedEntry = entry; } };
@@ -789,7 +806,7 @@ describe('UserService.exportUserData()', () => {
     // (the "Download data" button) didn't actually return everything the user
     // had created in the app.
     it('includes van-log, supplies, packing-checklist, and life-diary (with images) content', async () => {
-        const userRepository = { getUserById: async () => accountWithPassword(), findRetiredReferralCodes: async () => [] };
+        const userRepository = { getUserById: async () => accountWithPassword(), findRetiredReferralCodes: async () => [], getSignupMetadata: async () => NO_SIGNUP_METADATA };
         const itinerariesRepository = { findByUserId: async () => [] };
         const followRepository = { getFollowers: async () => [], getFollowing: async () => [] };
         const lifeDiaryRepository = {
@@ -823,7 +840,7 @@ describe('UserService.exportUserData()', () => {
         const emailVerifiedAt = new Date('2026-09-01T10:00:00.000Z');
         const userRepository = {
             getUserById: async () => accountWithPassword({ travelStyle: 'van', emailVerifiedAt }),
-            findRetiredReferralCodes: async () => [],
+            findRetiredReferralCodes: async () => [], getSignupMetadata: async () => NO_SIGNUP_METADATA,
         };
         const service = new UserService(userRepository, { findByUserId: async () => [] }, { getFollowers: async () => [], getFollowing: async () => [] });
 
@@ -834,7 +851,7 @@ describe('UserService.exportUserData()', () => {
     });
 
     it('says they have not chosen, instead of leaving it out, when they have not', async () => {
-        const userRepository = { getUserById: async () => accountWithPassword(), findRetiredReferralCodes: async () => [] };
+        const userRepository = { getUserById: async () => accountWithPassword(), findRetiredReferralCodes: async () => [], getSignupMetadata: async () => NO_SIGNUP_METADATA };
         const service = new UserService(userRepository, { findByUserId: async () => [] }, { getFollowers: async () => [], getFollowing: async () => [] });
 
         const result = await service.exportUserData('user-1', { id: 'user-1', username: 'jane' }, {}, 'correct-password');
@@ -847,7 +864,7 @@ describe('UserService.exportUserData()', () => {
         const premiumUntil = new Date('2030-01-01T00:00:00.000Z');
         const userRepository = {
             getUserById: async () => accountWithPassword({ premiumUntil, stripeCustomerId: 'cus_123' }),
-            findRetiredReferralCodes: async () => [],
+            findRetiredReferralCodes: async () => [], getSignupMetadata: async () => NO_SIGNUP_METADATA,
         };
         const subscriptionRepository = {
             findByUserId: async () => [{
@@ -873,7 +890,7 @@ describe('UserService.exportUserData()', () => {
     });
 
     it('exports an empty billing section for someone who never subscribed', async () => {
-        const userRepository = { getUserById: async () => accountWithPassword(), findRetiredReferralCodes: async () => [] };
+        const userRepository = { getUserById: async () => accountWithPassword(), findRetiredReferralCodes: async () => [], getSignupMetadata: async () => NO_SIGNUP_METADATA };
         const service = new UserService(userRepository, { findByUserId: async () => [] }, { getFollowers: async () => [], getFollowing: async () => [] });
 
         const { billing } = await service.exportUserData('user-1', { id: 'user-1', username: 'jane' }, {}, 'correct-password');
@@ -882,7 +899,7 @@ describe('UserService.exportUserData()', () => {
     });
 
     it('omits van-log, supplies, packing-checklist, and life-diary content when those repositories are not wired', async () => {
-        const userRepository = { getUserById: async () => accountWithPassword(), findRetiredReferralCodes: async () => [] };
+        const userRepository = { getUserById: async () => accountWithPassword(), findRetiredReferralCodes: async () => [], getSignupMetadata: async () => NO_SIGNUP_METADATA };
         const itinerariesRepository = { findByUserId: async () => [] };
         const followRepository = { getFollowers: async () => [], getFollowing: async () => [] };
         const service = new UserService(userRepository, itinerariesRepository, followRepository);
@@ -896,7 +913,7 @@ describe('UserService.exportUserData()', () => {
     });
 
     it('includes the devices registered for push notifications', async () => {
-        const userRepository = { getUserById: async () => accountWithPassword(), findRetiredReferralCodes: async () => [] };
+        const userRepository = { getUserById: async () => accountWithPassword(), findRetiredReferralCodes: async () => [], getSignupMetadata: async () => NO_SIGNUP_METADATA };
         const itinerariesRepository = { findByUserId: async () => [] };
         const followRepository = { getFollowers: async () => [], getFollowing: async () => [] };
         const pushDevice = { token: 'ExponentPushToken[a]', platform: 'android', locale: 'es' };
@@ -912,7 +929,7 @@ describe('UserService.exportUserData()', () => {
     });
 
     it('includes the badges the user has earned and the countries in their passport, stamped and declared', async () => {
-        const userRepository = { getUserById: async () => accountWithPassword(), findRetiredReferralCodes: async () => [] };
+        const userRepository = { getUserById: async () => accountWithPassword(), findRetiredReferralCodes: async () => [], getSignupMetadata: async () => NO_SIGNUP_METADATA };
         const itinerariesRepository = { findByUserId: async () => [] };
         const followRepository = { getFollowers: async () => [], getFollowing: async () => [] };
         const earned = [{ badgeId: 'explorer', earnedAt: new Date('2026-09-01') }];
@@ -937,7 +954,7 @@ describe('UserService.exportUserData()', () => {
 
     it('includes the earlier invite codes still kept after a change of username', async () => {
         const retired = [{ code: 'jane_old', retiredAt: '2026-03-01T00:00:00Z' }];
-        const userRepository = { getUserById: async () => accountWithPassword(), findRetiredReferralCodes: async () => retired };
+        const userRepository = { getUserById: async () => accountWithPassword(), findRetiredReferralCodes: async () => retired, getSignupMetadata: async () => NO_SIGNUP_METADATA };
         const service = new UserService(
             userRepository, { findByUserId: async () => [] }, { getFollowers: async () => [], getFollowing: async () => [] }
         );
@@ -1346,5 +1363,36 @@ describe('UserService: who staff can act on', () => {
         await service.deleteUser('mod', admin, {}, 'mod-password');
 
         expect(userRepository.deleteUser).toHaveBeenCalledWith('mod');
+    });
+});
+
+describe('UserService.getSignupBreakdown()', () => {
+    // The country and the browser of each sign-up, kept to see where the community grows:
+    // counted, never shown one person at a time.
+    it('counts the sign-ups by country and by device, in all and over the last 30 days', async () => {
+        const now = new Date('2026-11-18T12:00:00Z');
+        const userRepository = {
+            countSignupsByCountry: vi.fn(async () => [{ countryCode: 'CH', total: 3, recent: 1 }, { countryCode: null, total: 2, recent: 0 }]),
+            countSignupsByUserAgent: vi.fn(async () => [
+                { userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_7) Mobile/15E148', total: 2, recent: 1 },
+                { userAgent: 'Mozilla/5.0 (Linux; Android 14) Mobile Safari', total: 1, recent: 1 },
+                { userAgent: 'okhttp/4.12.0', total: 1, recent: 0 },
+                { userAgent: null, total: 1, recent: 0 },
+            ]),
+        };
+        const service = new UserService(userRepository);
+
+        const breakdown = await service.getSignupBreakdown(now);
+
+        expect(userRepository.countSignupsByCountry).toHaveBeenCalledWith(new Date('2026-10-19T12:00:00Z'));
+        expect(breakdown).toEqual({
+            recentDays: 30,
+            countries: [{ countryCode: 'CH', total: 3, recent: 1 }, { countryCode: null, total: 2, recent: 0 }],
+            devices: [
+                { device: 'mobile_web', total: 3, recent: 2 },
+                { device: 'android_app', total: 1, recent: 0 },
+                { device: 'unknown', total: 1, recent: 0 },
+            ],
+        });
     });
 });

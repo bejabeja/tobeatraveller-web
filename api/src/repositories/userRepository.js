@@ -90,6 +90,37 @@ export class UserRepository {
         return result.rows.map(row => ({ code: row.code, retiredAt: row.retired_at }));
     }
 
+    async getSignupMetadata(userId) {
+        const result = await db.query(
+            "SELECT signup_country_code, signup_user_agent FROM users WHERE id = $1",
+            [userId]
+        );
+        const row = result.rows[0];
+        return { countryCode: row?.signup_country_code ?? null, userAgent: row?.signup_user_agent ?? null };
+    }
+
+    // Sign-ups by country, in all and since a date. Test accounts are not part of the community.
+    async countSignupsByCountry(since) {
+        const result = await db.query(
+            `SELECT signup_country_code, COUNT(*) AS total, COUNT(*) FILTER (WHERE created_at >= $1) AS recent
+             FROM users WHERE role != 'test'
+             GROUP BY signup_country_code
+             ORDER BY total DESC, signup_country_code`,
+            [since]
+        );
+        return result.rows.map(row => ({ countryCode: row.signup_country_code, total: Number(row.total), recent: Number(row.recent) }));
+    }
+
+    async countSignupsByUserAgent(since) {
+        const result = await db.query(
+            `SELECT signup_user_agent, COUNT(*) AS total, COUNT(*) FILTER (WHERE created_at >= $1) AS recent
+             FROM users WHERE role != 'test'
+             GROUP BY signup_user_agent`,
+            [since]
+        );
+        return result.rows.map(row => ({ userAgent: row.signup_user_agent, total: Number(row.total), recent: Number(row.recent) }));
+    }
+
     // Once the reservation is over the name is free for anyone: the row goes.
     async purgeRetiredReferralCodes() {
         const result = await db.query(

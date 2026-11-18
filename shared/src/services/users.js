@@ -216,6 +216,17 @@ export const getAllUsersForAdmin = async ({ searchName = '', page = 1, limit = 2
     return response.json();
 };
 
+export const getSignupBreakdown = async () => {
+    const response = await authFetch(`${baseUrl()}/admin/signups`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+    });
+    if (!response.ok) {
+        await parseError(response, "Failed to get the sign-ups");
+    }
+    return response.json();
+};
+
 export const updateUserRole = async (id, role) => {
     const response = await authFetch(`${baseUrl()}/${id}/role`, {
         method: 'PATCH',

@@ -165,8 +165,13 @@ export class AuthService {
         if (decoded.sid) await this.authSessionRepository.delete(decoded.sid);
     }
 
-    async purgeExpiredSessions() {
-        return this.authSessionRepository.deleteExpired();
+    // A link to change the password is otherwise only deleted when the same person asks for another.
+    async purgeExpired() {
+        const [sessions, passwordResetLinks] = await Promise.all([
+            this.authSessionRepository.deleteExpired(),
+            this.passwordResetRepository.deleteExpired(),
+        ]);
+        return { sessions, passwordResetLinks };
     }
 
     setAuthCookies(res, accessToken, refreshToken) {

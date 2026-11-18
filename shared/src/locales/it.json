@@ -549,7 +549,24 @@
     "auditEmailVerified": "{{actor}} ha confermato la sua email",
     "reportReinstate": "Ripristina",
     "reportReinstated": "Ripristinato, e l'autore avvisato",
-    "auditContentReinstated": "{{actor}} ha ripristinato un {{type}} di {{target}}"
+    "auditContentReinstated": "{{actor}} ha ripristinato un {{type}} di {{target}}",
+    "signupsTitle": "Iscrizioni",
+    "signupsIntro": "Da dove arrivano le persone che si iscrivono: il paese viene dall'indirizzo della richiesta, che non viene conservato, e il dispositivo dal browser. Solo conteggi, mai quelli di una persona. Gli account di prova non contano.",
+    "signupsByCountry": "Per paese",
+    "signupsByDevice": "Per dispositivo",
+    "signupsTotal": "In totale",
+    "signupsRecent_one": "Ultimo giorno",
+    "signupsRecent_other": "Ultimi {{count}} giorni",
+    "signupsRecent_many": "Ultimi {{count}} giorni",
+    "signupsUnknownCountry": "Paese sconosciuto",
+    "signupDevices": {
+      "ios_app": "App per iPhone",
+      "android_app": "App per Android",
+      "mobile_web": "Web sul telefono",
+      "desktop_web": "Web sul computer",
+      "other": "Altro",
+      "unknown": "Nessun dato"
+    }
   },
   "profile": {
     "shareProfile": "Condividi profilo",

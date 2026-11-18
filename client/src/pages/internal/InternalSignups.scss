@@ -1,0 +1,42 @@
+.internal-signups {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+
+  &__intro {
+    color: var(--text-secondary-color, #666);
+    font-size: 0.9rem;
+  }
+
+  &__section-title {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+  }
+
+  &__table {
+    width: 100%;
+    max-width: 520px;
+    border-collapse: collapse;
+
+    th,
+    td {
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid var(--border-color, #eee);
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    th[scope="row"],
+    thead th:first-child {
+      text-align: left;
+      font-weight: 600;
+    }
+
+    thead th {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary-color, #666);
+    }
+  }
+}

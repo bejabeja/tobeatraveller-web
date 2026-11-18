@@ -540,7 +540,23 @@
     "auditEmailVerified": "{{actor}} hat die E-Mail bestätigt",
     "reportReinstate": "Wiederherstellen",
     "reportReinstated": "Wiederhergestellt, und der Autor informiert",
-    "auditContentReinstated": "{{actor}} hat einen {{type}} von {{target}} wiederhergestellt"
+    "auditContentReinstated": "{{actor}} hat einen {{type}} von {{target}} wiederhergestellt",
+    "signupsTitle": "Registrierungen",
+    "signupsIntro": "Woher die Menschen kommen, die sich registrieren: Das Land stammt aus der Adresse der Anfrage, die nicht gespeichert wird, und das Gerät aus dem Browser. Nur Zahlen, nie die einer einzelnen Person. Testkonten zählen nicht.",
+    "signupsByCountry": "Nach Land",
+    "signupsByDevice": "Nach Gerät",
+    "signupsTotal": "Insgesamt",
+    "signupsRecent_one": "Letzter Tag",
+    "signupsRecent_other": "Letzte {{count}} Tage",
+    "signupsUnknownCountry": "Unbekanntes Land",
+    "signupDevices": {
+      "ios_app": "iPhone-App",
+      "android_app": "Android-App",
+      "mobile_web": "Web auf dem Handy",
+      "desktop_web": "Web auf dem Computer",
+      "other": "Andere",
+      "unknown": "Keine Daten"
+    }
   },
   "profile": {
     "shareProfile": "Profil teilen",

@@ -22,6 +22,20 @@ describe('AuthController sessions', () => {
         controller = new AuthController({}, authService, {});
     });
 
+    describe('the daily purge', () => {
+        it('deletes what expired, of the sessions and of both kinds of email link, and says how many', async () => {
+            authService.purgeExpired = vi.fn().mockResolvedValue({ sessions: 3, passwordResetLinks: 2 });
+            const emailVerificationService = { purgeExpiredLinks: vi.fn().mockResolvedValue(4) };
+            controller = new AuthController({}, authService, emailVerificationService);
+            const res = makeRes();
+
+            await controller.purgeExpired({}, res, vi.fn());
+
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith({ sessions: 3, passwordResetLinks: 2, emailVerificationLinks: 4 });
+        });
+    });
+
     describe('renewing', () => {
         // Regression: the web kept its refresh token where any script on the page could read it.
         it('renews the web from its cookie, rotates it, and puts the new tokens back in cookies, none in the answer', async () => {

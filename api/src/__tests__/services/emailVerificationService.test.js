@@ -48,6 +48,16 @@ describe('EmailVerificationService', () => {
         );
     });
 
+    describe('purgeExpiredLinks()', () => {
+        // Regression: a confirmation link that expired was only deleted when the same person
+        // asked for another one, so most of them were kept for good.
+        it('deletes the confirmation links that expired', async () => {
+            emailVerificationRepository.deleteExpired = vi.fn(async () => 4);
+
+            expect(await service.purgeExpiredLinks()).toBe(4);
+        });
+    });
+
     describe('issueToken()', () => {
         it('gives back a token that nobody could guess', async () => {
             const first = await service.issueToken('user-1');

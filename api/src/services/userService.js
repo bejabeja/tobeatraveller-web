@@ -6,6 +6,7 @@ import { ForbiddenError } from "../errors/ForbiddenError.js";
 import { NotFoundError } from "../errors/NotFoundError.js";
 import { generateAvatar } from "../utils/avatar.js";
 import { countryCodeFromIp } from "../utils/geoLookup.js";
+import { signupDeviceFromUserAgent } from "../utils/signupDevice.js";
 import { assertCurrentPassword } from "../utils/currentPassword.js";
 import { logger } from "../utils/logger.js";
 import { AUDIT_EVENTS } from "../utils/auditEvents.js";
@@ -13,6 +14,9 @@ import { ACTIVE_SUBSCRIPTION_STATUSES } from "../models/subscription.js";
 import { ROLES, STAFF_ROLES } from "../utils/roles.js";
 import { referralCodeFromUsername } from "../utils/referralCode.js";
 import { isUsernameChange, USERNAME_CHANGE_COOLDOWN_DAYS, usernameChangeAvailableAt } from "../utils/usernameChange.js";
+
+const SIGNUP_RECENT_DAYS = 30;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 // A staff-granted premium with no end date: far enough out to behave as
 // "indefinite" without a magic null/sentinel value that isPremium() would
@@ -458,7 +462,7 @@ export class UserService {
         const [
             itineraries, followers, following, commentsResult, likesResult, favoritesResult,
             lifeDiaryEntries, vanLogEntries, inventoryItems, shoppingListItems, packingChecklistItems, packingLists,
-            pushDevices, badges, countryStamps, declaredCountries, previousReferralCodes, subscriptions, blockedUsersResult,
+            pushDevices, badges, countryStamps, declaredCountries, previousReferralCodes, signup, subscriptions, blockedUsersResult,
         ] = await Promise.all([
             this.itinerariesRepository.findByUserId(id),
             this.followRepository.getFollowers(id),
@@ -492,6 +496,7 @@ export class UserService {
             this.badgeRepository ? this.badgeRepository.findStampedCountries(id) : [],
             this.badgeRepository ? this.badgeRepository.findDeclaredCountries(id) : [],
             this.userRepository.findRetiredReferralCodes(id),
+            this.userRepository.getSignupMetadata(id),
             this.subscriptionRepository ? this.subscriptionRepository.findByUserId(id) : [],
             db.query(
                 `SELECT u.username, b.created_at
@@ -537,6 +542,9 @@ export class UserService {
                 travelStyle: user.travelStyle,
                 emailVerifiedAt: user.emailVerifiedAt ?? null,
                 createdAt: user.createdAt,
+                // Where the account was created from: the country (worked out from the address,
+                // which is not kept) and the browser or device.
+                signup,
             },
             billing: {
                 stripeCustomerId: user.stripeCustomerId ?? null,
@@ -570,6 +578,28 @@ export class UserService {
             followers: followers.map(f => ({ id: f.id, username: f.username })),
             blockedUsers: blockedUsersResult.rows.map(row => ({ username: row.username, blockedAt: row.created_at })),
             following: following.map(f => ({ id: f.id, username: f.username })),
+        };
+    }
+
+    // Where the community grows from, for the team: counts only, never one person's sign-up.
+    async getSignupBreakdown(now = new Date()) {
+        const since = new Date(now.getTime() - SIGNUP_RECENT_DAYS * DAY_MS);
+        const [countries, userAgents] = await Promise.all([
+            this.userRepository.countSignupsByCountry(since),
+            this.userRepository.countSignupsByUserAgent(since),
+        ]);
+
+        const devices = new Map();
+        for (const { userAgent, total, recent } of userAgents) {
+            const device = signupDeviceFromUserAgent(userAgent);
+            const counted = devices.get(device) ?? { device, total: 0, recent: 0 };
+            devices.set(device, { device, total: counted.total + total, recent: counted.recent + recent });
+        }
+
+        return {
+            recentDays: SIGNUP_RECENT_DAYS,
+            countries,
+            devices: [...devices.values()].sort((a, b) => b.total - a.total),
         };
     }
 

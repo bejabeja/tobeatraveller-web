@@ -408,6 +408,18 @@ describe('AuthService', () => {
         });
     });
 
+    describe('purgeExpired()', () => {
+        // Regression: a password link that expired was only deleted when the same person asked
+        // for another one, so most of them were kept for good.
+        it('deletes the expired sessions and the expired links to change the password', async () => {
+            const authSessionRepository = { deleteExpired: vi.fn().mockResolvedValue(3) };
+            const passwordResetRepository = { deleteExpired: vi.fn().mockResolvedValue(2) };
+            authService = new AuthService(mockUserRepository, null, passwordResetRepository, null, authSessionRepository);
+
+            expect(await authService.purgeExpired()).toEqual({ sessions: 3, passwordResetLinks: 2 });
+        });
+    });
+
     describe('forgotPassword()', () => {
         let mockPasswordResetRepository;
         let mockAuditLogService;

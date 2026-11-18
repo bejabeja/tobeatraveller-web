@@ -40,4 +40,9 @@ export class PasswordResetRepository {
         );
         return result.rowCount > 0;
     }
+
+    async deleteExpired() {
+        const result = await db.query('DELETE FROM password_reset_tokens WHERE expires_at < NOW()');
+        return result.rowCount;
+    }
 }

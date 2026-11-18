@@ -28,4 +28,9 @@ export class EmailVerificationRepository {
     async markAsUsed(id) {
         await db.query('UPDATE email_verification_tokens SET used_at = NOW() WHERE id = $1', [id]);
     }
+
+    async deleteExpired() {
+        const result = await db.query('DELETE FROM email_verification_tokens WHERE expires_at < NOW()');
+        return result.rowCount;
+    }
 }

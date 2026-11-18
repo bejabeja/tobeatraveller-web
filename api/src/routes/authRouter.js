@@ -53,7 +53,7 @@ export const createAuthRouter = () => {
     router.post("/create", signupPerIpRateLimit, authController.create.bind(authController));
     router.post("/login", failedLoginPerIpRateLimit, failedLoginPerAccountRateLimit, authController.login.bind(authController));
     router.post("/refresh", authController.refresh.bind(authController));
-    router.get("/scheduled-purge", requireCronSecret, authController.purgeExpiredSessions.bind(authController));
+    router.get("/scheduled-purge", requireCronSecret, authController.purgeExpired.bind(authController));
     router.post("/logout", authController.logout.bind(authController));
     router.post("/forgot-password", passwordResetPerIpRateLimit, passwordResetPerAccountRateLimit, authController.forgotPassword.bind(authController));
     router.post("/reset-password", authController.resetPassword.bind(authController));

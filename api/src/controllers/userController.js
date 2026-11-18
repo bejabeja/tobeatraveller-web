@@ -245,6 +245,14 @@ export class UserController {
         }
     }
 
+    async getSignupBreakdown(req, res, next) {
+        try {
+            res.status(200).json(await this.userService.getSignupBreakdown());
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async getAllUsersForAdmin(req, res, next) {
         try {
             const { searchName = '', page, limit, sortBy = 'username', role, isPremium } = req.query;

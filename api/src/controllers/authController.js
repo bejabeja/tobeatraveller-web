@@ -143,10 +143,13 @@ export class AuthController {
         }
     }
 
-    async purgeExpiredSessions(req, res, next) {
+    async purgeExpired(req, res, next) {
         try {
-            const deletedCount = await this.authService.purgeExpiredSessions();
-            return res.status(200).json({ deletedCount });
+            const [{ sessions, passwordResetLinks }, emailVerificationLinks] = await Promise.all([
+                this.authService.purgeExpired(),
+                this.emailVerificationService.purgeExpiredLinks(),
+            ]);
+            return res.status(200).json({ sessions, passwordResetLinks, emailVerificationLinks });
         } catch (error) {
             next(error);
         }

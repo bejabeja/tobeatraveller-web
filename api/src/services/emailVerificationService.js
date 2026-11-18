@@ -32,6 +32,11 @@ export class EmailVerificationService {
         return token;
     }
 
+    // A link is otherwise only deleted when the same person asks for another.
+    async purgeExpiredLinks() {
+        return this.emailVerificationRepository.deleteExpired();
+    }
+
     async sendVerification(userId) {
         const user = await this.userRepository.getUserById(userId);
         if (!user) throw new NotFoundError('User not found');

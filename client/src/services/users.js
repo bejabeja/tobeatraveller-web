@@ -14,6 +14,7 @@ export {
     deleteUserById,
     getAllUsers,
     getAllUsersForAdmin,
+    getSignupBreakdown,
     updateUserRole,
     updateUserTier,
     sendAdminNotice,

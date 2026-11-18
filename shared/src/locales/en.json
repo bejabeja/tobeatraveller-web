@@ -540,7 +540,23 @@
     "auditEmailVerified": "{{actor}} confirmed their email",
     "reportReinstate": "Reinstate",
     "reportReinstated": "Reinstated, and its author told",
-    "auditContentReinstated": "{{actor}} reinstated a {{type}} by {{target}}"
+    "auditContentReinstated": "{{actor}} reinstated a {{type}} by {{target}}",
+    "signupsTitle": "Sign-ups",
+    "signupsIntro": "Where the people who sign up come from: the country comes from the address of the request, which is not kept, and the device from the browser. Counts only, never one person's. Test accounts are left out.",
+    "signupsByCountry": "By country",
+    "signupsByDevice": "By device",
+    "signupsTotal": "In all",
+    "signupsRecent_one": "Last day",
+    "signupsRecent_other": "Last {{count}} days",
+    "signupsUnknownCountry": "Unknown country",
+    "signupDevices": {
+      "ios_app": "iPhone app",
+      "android_app": "Android app",
+      "mobile_web": "Web on a phone",
+      "desktop_web": "Web on a computer",
+      "other": "Other",
+      "unknown": "No data"
+    }
   },
   "profile": {
     "shareProfile": "Share profile",

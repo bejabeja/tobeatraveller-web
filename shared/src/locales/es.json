@@ -549,7 +549,24 @@
     "auditEmailVerified": "{{actor}} confirmó su correo",
     "reportReinstate": "Restituir",
     "reportReinstated": "Restituido, y su autor avisado",
-    "auditContentReinstated": "{{actor}} restituyó un {{type}} de {{target}}"
+    "auditContentReinstated": "{{actor}} restituyó un {{type}} de {{target}}",
+    "signupsTitle": "Altas",
+    "signupsIntro": "De dónde llega la gente que se registra: el país sale de la dirección de la solicitud, que no se guarda, y el dispositivo, del navegador. Solo recuentos, nunca los de una persona. Las cuentas de prueba no cuentan.",
+    "signupsByCountry": "Por país",
+    "signupsByDevice": "Por dispositivo",
+    "signupsTotal": "En total",
+    "signupsRecent_one": "Último día",
+    "signupsRecent_other": "Últimos {{count}} días",
+    "signupsRecent_many": "Últimos {{count}} días",
+    "signupsUnknownCountry": "País desconocido",
+    "signupDevices": {
+      "ios_app": "App de iPhone",
+      "android_app": "App de Android",
+      "mobile_web": "Web en el móvil",
+      "desktop_web": "Web en el ordenador",
+      "other": "Otro",
+      "unknown": "Sin datos"
+    }
   },
   "profile": {
     "shareProfile": "Compartir perfil",

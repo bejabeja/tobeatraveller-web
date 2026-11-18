@@ -79,6 +79,7 @@ export const createUsersRouter = () => {
     router.get("/featured", optionalAuthenticate, userController.getFeaturedUsers.bind(userController));
     router.get("/all", optionalAuthenticate, userController.getAllUsersFiltered.bind(userController));
     router.get("/admin", authenticate, staffOnly, userController.getAllUsersForAdmin.bind(userController));
+    router.get("/admin/signups", authenticate, staffOnly, userController.getSignupBreakdown.bind(userController));
     router.get("/suggested", authenticate, userController.getSuggestedUsers.bind(userController));
     router.get("/check-username", optionalAuthenticate, userController.checkUsernameAvailable.bind(userController));
     router.patch("/:id/role", authenticate, staffOnly, userController.updateUserRole.bind(userController));
