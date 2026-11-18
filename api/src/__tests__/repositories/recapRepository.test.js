@@ -120,14 +120,4 @@ describe('RecapRepository', () => {
         expect(await repo.findUsersWithActivity(FROM, TO)).toEqual(['u1', 'u2']);
         expect(client.query.mock.calls[0][0]).toContain(livedTripCondition('itineraries'));
     });
-
-    // Regression: an official trip whose account wasn't registered when the seed ran has no
-    // owner, and the announcement made a notification for nobody out of it.
-    it('leaves out the trips that have no owner', async () => {
-        client.query.mockResolvedValueOnce({ rows: [] });
-
-        await repo.findUsersWithActivity(FROM, TO);
-
-        expect(client.query.mock.calls[0][0]).toMatch(/FROM itineraries\s+WHERE user_id IS NOT NULL/);
-    });
 });

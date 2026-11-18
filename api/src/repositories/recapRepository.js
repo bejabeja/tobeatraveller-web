@@ -129,7 +129,6 @@ export class RecapRepository {
 
     // Who has something to see in the year's recap, for the announcement:
     // activity in the part of the year lived so far, like the recap itself.
-    // An official trip whose account wasn't registered when the seed ran has no owner.
     async findUsersWithActivity(from, to) {
         const result = await client.query(
             `SELECT user_id FROM van_log_entries WHERE entry_date BETWEEN $1::date AND LEAST($2::date, CURRENT_DATE)
@@ -137,7 +136,7 @@ export class RecapRepository {
              SELECT user_id FROM life_diary_entries WHERE entry_date BETWEEN $1::date AND LEAST($2::date, CURRENT_DATE)
              UNION
              SELECT user_id FROM itineraries
-             WHERE user_id IS NOT NULL AND ${livedTripCondition('itineraries')} AND start_date <= LEAST($2::date, CURRENT_DATE) AND end_date >= $1::date`,
+             WHERE ${livedTripCondition('itineraries')} AND start_date <= LEAST($2::date, CURRENT_DATE) AND end_date >= $1::date`,
             [from, to]
         );
         return result.rows.map(row => row.user_id);
