@@ -5,6 +5,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 describe('authFetch with the session in cookies (the web)', () => {
     let authFetch;
     let getUserForAuth;
+    let login;
+    let logout;
+    let changePassword;
+    let initAuthUser;
     let storage;
 
     beforeEach(async () => {
@@ -12,7 +16,9 @@ describe('authFetch with the session in cookies (the web)', () => {
         const authFetchModule = await import('../../utils/authFetch.js');
         const { setApiUrl } = await import('../../utils/apiConfig.js');
         const { setTokenStorage } = await import('../../utils/tokenStorage.js');
-        ({ getUserForAuth } = await import('../../services/users.js'));
+        ({ getUserForAuth, changePassword } = await import('../../services/users.js'));
+        ({ login, logout } = await import('../../services/auth.js'));
+        ({ initAuthUser } = await import('../../store/auth/authActions.js'));
         authFetch = authFetchModule.authFetch;
         setApiUrl('http://api.test');
         storage = { setItem: vi.fn(), getItem: vi.fn(async () => 'should-not-be-read'), removeItem: vi.fn() };
@@ -63,5 +69,47 @@ describe('authFetch with the session in cookies (the web)', () => {
         global.fetch = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => ({ id: 'user-1' }) });
 
         await expect(getUserForAuth()).resolves.toEqual({ id: 'user-1' });
+    });
+
+    // The app's web build used the phone's way: the tokens in localStorage, for any script to take.
+    it('signs in with the cookies and keeps no token in the storage', async () => {
+        global.fetch = vi.fn().mockResolvedValue({
+            ok: true, status: 200, json: async () => ({ user: { id: 'user-1' }, accessToken: 'access', refreshToken: 'refresh' }),
+        });
+
+        await expect(login({ email: 'jane@example.com', password: 'secret' })).resolves.toEqual({ id: 'user-1' });
+
+        expect(global.fetch.mock.calls[0][1].credentials).toBe('include');
+        expect(storage.setItem).not.toHaveBeenCalled();
+    });
+
+    it('keeps no token in the storage after changing the password', async () => {
+        global.fetch = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => ({ accessToken: 'access', refreshToken: 'refresh' }) });
+
+        await changePassword({ currentPassword: 'old-password', newPassword: 'new-password' });
+
+        expect(storage.setItem).not.toHaveBeenCalled();
+    });
+
+    it('does not ask the API who is signed in when nobody was signed in last in this browser', async () => {
+        storage.getItem = vi.fn(async () => null);
+        global.fetch = vi.fn();
+        const dispatched = [];
+
+        await initAuthUser()((action) => dispatched.push(action));
+
+        expect(global.fetch).not.toHaveBeenCalled();
+        expect(dispatched[0]).toEqual({ type: '@auth/init', payload: null });
+    });
+
+    it('signs out with the cookies, so the API ends the session it has in them', async () => {
+        storage.getItem = vi.fn(async () => null);
+        global.fetch = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => ({}) });
+
+        await logout();
+
+        const [url, options] = global.fetch.mock.calls[0];
+        expect(url).toBe('http://api.test/auth/logout');
+        expect(options.credentials).toBe('include');
     });
 });

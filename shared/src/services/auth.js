@@ -1,7 +1,7 @@
 import { parseError } from "../utils/parseError";
 import { getApiUrl } from "../utils/apiConfig";
 import { tokenStorage } from "../utils/tokenStorage";
-import { authFetch } from "../utils/authFetch";
+import { authFetch, isCookieSession } from "../utils/authFetch";
 import { setCachedAuthUser } from "../utils/cachedAuthUser";
 
 const baseUrl = () => getApiUrl();
@@ -18,18 +18,22 @@ export const createNewUser = async (user) => {
     return response.json();
 };
 
+// In a browser the session comes back in cookies no script can read, and the tokens also in
+// the answer are not kept: they are for the phone, which keeps them in its secure storage.
 export const login = async (user) => {
     const response = await fetch(`${baseUrl()}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(user),
-        credentials: 'omit',
+        credentials: isCookieSession() ? 'include' : 'omit',
     });
     if (!response.ok) await parseError(response, 'Login failed');
 
     const data = await response.json();
-    await tokenStorage.setItem('access_token', data.accessToken);
-    if (data.refreshToken) await tokenStorage.setItem('refresh_token', data.refreshToken);
+    if (!isCookieSession()) {
+        await tokenStorage.setItem('access_token', data.accessToken);
+        if (data.refreshToken) await tokenStorage.setItem('refresh_token', data.refreshToken);
+    }
     return data.user;
 };
 
@@ -102,7 +106,7 @@ export const logout = async () => {
     try {
         await fetch(`${baseUrl()}/auth/logout`, {
             method: 'POST',
-            credentials: 'omit',
+            credentials: isCookieSession() ? 'include' : 'omit',
             headers: {
                 'Content-Type': 'application/json',
                 ...(token ? { Authorization: `Bearer ${token}` } : {}),

@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
-import { ADMIN_NOTICE_MAX_LENGTH, adminNoticeSchema, formatDate, isIndefinitePremium, userFacingError } from "@tobeatraveller/shared";
+import { ADMIN_NOTICE_MAX_LENGTH, ADMIN_ROLES, adminNoticeSchema, formatDate, isIndefinitePremium, SUPERADMIN_ROLE, userFacingError } from "@tobeatraveller/shared";
 import { IoEyeOutline, IoMailOutline, IoTrashOutline } from "react-icons/io5";
 import { useSelector } from "react-redux";
 import { TextAreaForm } from "../../components/form/InputForm";
@@ -30,7 +30,13 @@ const InternalUsers = () => {
   const { t, i18n } = useTranslation();
   const authUser = useSelector(selectAuthUser);
   const meDetail = useSelector(selectMe);
-  const currentUserId = (meDetail ?? authUser)?.id;
+  const currentUser = meDetail ?? authUser;
+  const currentUserId = currentUser?.id;
+  const actingAsSuperadmin = currentUser?.role === SUPERADMIN_ROLE;
+  // As the API decides: nobody changes their own account here, and only a superadmin changes
+  // or deletes one of the team, or makes someone a superadmin. What it would turn down is not offered.
+  const canManage = (user) => user.id !== currentUserId && (actingAsSuperadmin || !ADMIN_ROLES.includes(user.role));
+  const grantableRoles = actingAsSuperadmin ? ASSIGNABLE_ROLES : ASSIGNABLE_ROLES.filter((role) => role !== SUPERADMIN_ROLE);
 
   const [users, setUsers] = useState([]);
   const [searchName, setSearchName] = useState("");
@@ -230,9 +236,11 @@ const InternalUsers = () => {
       ) : (
         <div className="internal-users__list">
           {users.map((user) => {
-            const roleOptions = ASSIGNABLE_ROLES.includes(user.role)
-              ? ASSIGNABLE_ROLES
-              : [user.role, ...ASSIGNABLE_ROLES];
+            const manageable = canManage(user);
+            const roleOptions = grantableRoles.includes(user.role)
+              ? grantableRoles
+              : [user.role, ...grantableRoles];
+            const onlySuperadmin = !manageable && user.id !== currentUserId ? t("apiErrors.onlySuperadminActsOnStaff") : undefined;
 
             return (
               <div key={user.id} className="internal-users__row">
@@ -258,7 +266,7 @@ const InternalUsers = () => {
                   variant="compact"
                   className="internal-users__role-select"
                   ariaLabel={user.username}
-                  disabled={user.id === currentUserId || updatingRoleId === user.id}
+                  disabled={!manageable || updatingRoleId === user.id}
                   options={roleOptions.map((role) => ({ value: role, label: t(`admin.roleName.${role}`, role) }))}
                   value={user.role}
                   onChange={(role) => handleRoleChange(user, role)}
@@ -301,7 +309,8 @@ const InternalUsers = () => {
                   type="button"
                   className="internal-users__delete"
                   onClick={() => setPendingAction({ kind: "delete", user })}
-                  disabled={user.id === currentUserId}
+                  disabled={!manageable}
+                  title={onlySuperadmin}
                   aria-label={t("common.delete")}
                 >
                   <IoTrashOutline />

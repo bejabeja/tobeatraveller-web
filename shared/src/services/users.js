@@ -96,8 +96,10 @@ export const changePassword = async ({ currentPassword, newPassword }) => {
     const data = await response.json();
     // The new password closed every session, this device's too: the one it is given
     // replaces it, or the next renewal would sign out whoever just changed it.
-    if (data.accessToken) await tokenStorage.setItem('access_token', data.accessToken);
-    if (data.refreshToken) await tokenStorage.setItem('refresh_token', data.refreshToken);
+    if (!isCookieSession()) {
+        if (data.accessToken) await tokenStorage.setItem('access_token', data.accessToken);
+        if (data.refreshToken) await tokenStorage.setItem('refresh_token', data.refreshToken);
+    }
     return data;
 };
 

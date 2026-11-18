@@ -1,3 +1,14 @@
+// EAS sets it to the profile in eas.json while it builds; it is not set running the app locally.
+const isProductionBuild = process.env.EAS_BUILD_PROFILE === 'production';
+
+// A build for the stores without them would still be made, and would talk to localhost: the
+// API, and the links to share and to the terms. Better that it fails and says which is missing.
+const REQUIRED_IN_PRODUCTION = ['EXPO_PUBLIC_API_URL', 'EXPO_PUBLIC_WEB_URL'];
+if (isProductionBuild) {
+  const missing = REQUIRED_IN_PRODUCTION.filter((name) => !process.env[name]);
+  if (missing.length) throw new Error(`Set ${missing.join(' and ')} for the production build (EAS environment variables).`);
+}
+
 module.exports = ({ config }) => ({
   ...config,
   name: 'To Be a Traveller',
@@ -18,8 +29,9 @@ module.exports = ({ config }) => ({
       backgroundImage: './assets/android-icon-background.png',
       monochromeImage: './assets/android-icon-monochrome.png',
     },
-    // Allow HTTP connections (needed for local dev API and any non-HTTPS backend)
-    usesCleartextTraffic: true,
+    // Plain HTTP is only for talking to the API on the local network while developing: the
+    // app in the stores only talks HTTPS.
+    usesCleartextTraffic: !isProductionBuild,
     permissions: ['READ_MEDIA_IMAGES', 'READ_EXTERNAL_STORAGE', 'ACCESS_COARSE_LOCATION'],
   },
   web: { favicon: './assets/favicon.png' },

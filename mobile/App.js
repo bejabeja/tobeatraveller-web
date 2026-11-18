@@ -6,7 +6,7 @@ import { Provider, useDispatch } from 'react-redux';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as SecureStore from 'expo-secure-store';
 import {
-  store, setApiUrl, setTokenStorage, initAuthUser,
+  store, setApiUrl, setTokenStorage, enableCookieSession, initAuthUser,
   selectIsAuthenticated, selectAuthUser, selectMe, ADMIN_ROLES,
   setUserInfo, setUserInfoItineraries, refreshUnreadCount,
 } from '@tobeatraveller/shared';
@@ -24,6 +24,21 @@ import { useAnalyticsConsent } from './src/hooks/useAnalyticsConsent';
 import { identifyUser } from './src/utils/analytics';
 
 setApiUrl(API_URL);
+
+// Where a sign-in from before kept the session in the browser, before it moved to cookies.
+const LEGACY_WEB_TOKEN_KEYS = ['access_token', 'refresh_token'];
+
+// In a browser the session is kept in cookies no script can read, and the storage keeps only
+// who was signed in last (to open signed in offline); on the phone, the tokens go in its
+// secure storage. Whoever had a session in the browser before signs in again once.
+if (Platform.OS === 'web') {
+  enableCookieSession();
+  try {
+    LEGACY_WEB_TOKEN_KEYS.forEach((key) => localStorage.removeItem(key));
+  } catch {
+    // Storage the browser does not let the page use holds nothing to forget.
+  }
+}
 
 setTokenStorage(
   Platform.OS === 'web'

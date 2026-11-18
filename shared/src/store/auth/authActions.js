@@ -2,6 +2,7 @@ import { createNewUser, login, logout } from "../../services/auth";
 import { getUserForAuth } from "../../services/users";
 import { resetUserInfo } from "../user/userInfoActions";
 import { getCachedAuthUser, setCachedAuthUser } from "../../utils/cachedAuthUser";
+import { isCookieSession } from "../../utils/authFetch";
 
 // The error kept is what the API said, untouched, for the screens to translate; the request's
 // own English, when the API said nothing, only if there is nothing else.
@@ -48,6 +49,13 @@ export const logoutUser = () => {
 
 export const initAuthUser = () => {
     return async (dispatch) => {
+        // In a browser the session is in a cookie the page cannot see: with nobody signed in
+        // last on it, asking would only cost each visitor a 401 and a renewal.
+        if (isCookieSession() && !(await getCachedAuthUser())) {
+            dispatch({ type: "@auth/init", payload: null });
+            dispatch(resetUserInfo());
+            return;
+        }
         try {
             const user = await getUserForAuth();
             await setCachedAuthUser(user);

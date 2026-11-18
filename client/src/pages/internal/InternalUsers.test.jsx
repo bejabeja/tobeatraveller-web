@@ -16,6 +16,8 @@ jest.mock("@tobeatraveller/shared", () => {
     isIndefinitePremium: (date) => new Date(date).getFullYear() > 2100,
     ADMIN_NOTICE_MAX_LENGTH: 500,
     adminNoticeSchema: z.object({ message: z.string().min(3) }),
+    ...jest.requireActual("../../../../shared/src/utils/roles.js"),
+    userFacingError: (t, error, fallback) => fallback,
   };
 });
 jest.mock("../../hooks/useDebounced", () => (effect, deps) => require("react").useEffect(effect, deps));
@@ -29,7 +31,8 @@ jest.mock("../../services/users", () => ({
 jest.mock("./UserDetailModal", () => ({ user, onClose }) => (
   user ? <div data-testid="user-detail-modal">{user.username}<button onClick={onClose}>close</button></div> : null
 ));
-jest.mock("../../store/auth/authSelectors", () => ({ selectAuthUser: () => ({ id: "admin-1" }) }));
+let mockActingRole = "admin";
+jest.mock("../../store/auth/authSelectors", () => ({ selectAuthUser: () => ({ id: "admin-1", role: mockActingRole }) }));
 jest.mock("../../store/user/userInfoSelectors", () => ({ selectMe: () => null }));
 jest.mock("../../utils/constants/constants", () => ({ generateAvatar: () => "avatar.svg" }));
 
@@ -123,4 +126,49 @@ it("disables sending a notice to yourself", async () => {
   await renderWith(user({ id: "admin-1" }));
 
   expect(screen.getByRole("button", { name: "admin.sendNotice" })).toBeDisabled();
+});
+
+// Regression: an admin was offered to change or delete another admin, or to make someone a
+// superadmin, and the API turned it down with an error.
+const roleOption = (role) => document.querySelector(`[role="option"][data-value="${role}"]`);
+
+describe("what an admin is offered for each account", () => {
+  afterEach(() => { mockActingRole = "admin"; });
+
+  it("does not let an admin change or delete an account of the team", async () => {
+    await renderWith(user({ role: "admin" }));
+
+    expect(screen.getByRole("combobox", { name: "jane" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "common.delete" })).toBeDisabled();
+  });
+
+  it("lets an admin change and delete a traveller's account, but not make them a superadmin", async () => {
+    await renderWith(user({ role: "user" }));
+
+    const roleSelect = screen.getByRole("combobox", { name: "jane" });
+    expect(roleSelect).toBeEnabled();
+    expect(screen.getByRole("button", { name: "common.delete" })).toBeEnabled();
+    fireEvent.click(roleSelect);
+    expect(roleOption("superadmin")).toBeNull();
+    expect(roleOption("admin")).not.toBeNull();
+  });
+
+  it("lets a superadmin change and delete an account of the team, and make a superadmin", async () => {
+    mockActingRole = "superadmin";
+    await renderWith(user({ role: "admin" }));
+
+    const roleSelect = screen.getByRole("combobox", { name: "jane" });
+    expect(roleSelect).toBeEnabled();
+    expect(screen.getByRole("button", { name: "common.delete" })).toBeEnabled();
+    fireEvent.click(roleSelect);
+    expect(roleOption("superadmin")).not.toBeNull();
+  });
+
+  it("does not let anyone change or delete their own account here", async () => {
+    mockActingRole = "superadmin";
+    await renderWith(user({ id: "admin-1", role: "superadmin" }));
+
+    expect(screen.getByRole("combobox", { name: "jane" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "common.delete" })).toBeDisabled();
+  });
 });
